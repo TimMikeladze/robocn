@@ -79,12 +79,12 @@ const RING = 2.6
 const SLEW_RATE = 26
 const NATIVE_VIEW: RobotView = "plan"
 
-const fits: Record<RobotView, number> = { plan: 1, front: 1, profile: 0.98, iso: 0.84 }
+const fits: Record<RobotView, number> = { plan: 1.25, front: 1.2, profile: 1.25, iso: 1 }
 const frames: Record<RobotView, Vec2> = {
-  plan: { x: 66, y: 13 },
-  front: { x: 66, y: 92 },
-  profile: { x: 113, y: 78 },
-  iso: { x: 88, y: 78 },
+  plan: { x: 66, y: 5 },
+  front: { x: 66, y: 84 },
+  profile: { x: 112, y: 72 },
+  iso: { x: 89, y: 84 },
 }
 
 const viewNames: Record<RobotView, string> = {
