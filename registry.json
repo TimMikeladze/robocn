@@ -438,7 +438,7 @@
       "name": "robot-gripper",
       "type": "registry:ui",
       "title": "Robot gripper",
-      "description": "Standalone parallel or angular gripper with controlled jaw opening, status lamp, and four paint variants.",
+      "description": "Standalone parallel or angular gripper with controlled jaw opening, status lamp, and four paint variants. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
         "machines"
@@ -460,7 +460,7 @@
       "name": "conveyor-belt",
       "type": "registry:ui",
       "title": "Conveyor belt",
-      "description": "Conveyor with automatic or controlled belt travel, reversible direction, rollers, and a configurable number of workpieces.",
+      "description": "Conveyor with automatic or controlled belt travel, reversible direction, rollers, and a configurable number of workpieces. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
         "machines"
@@ -552,14 +552,15 @@
       "name": "rotary-table",
       "type": "registry:ui",
       "title": "Rotary table",
-      "description": "A controlled rotary indexing table with equally spaced fixtures, optional workpieces, a fixed drive motor, and four paint variants.",
+      "description": "A controlled rotary indexing table with equally spaced fixtures, optional workpieces, a fixed drive motor, and four paint variants. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
         "machines"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
-        "{REGISTRY_URL}/r/use-robot-motion.json"
+        "{REGISTRY_URL}/r/use-robot-motion.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json"
       ],
       "files": [
         {
@@ -573,7 +574,7 @@
       "name": "linear-actuator",
       "type": "registry:ui",
       "title": "Linear actuator",
-      "description": "A controlled linear cylinder with rod and piston travel, optional cutaway view, stroke ruler, and four paint variants.",
+      "description": "A controlled linear cylinder with rod and piston travel, optional cutaway view, stroke ruler, and four paint variants. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
         "actuators"
@@ -595,7 +596,7 @@
       "name": "servo-motor",
       "type": "registry:ui",
       "title": "Servo motor",
-      "description": "A positional servo motor with controlled horn angle, single, double, or cross horns, mounting tabs, and optional cable.",
+      "description": "A positional servo motor with controlled horn angle, single, double, or cross horns, mounting tabs, and optional cable. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
         "actuators"

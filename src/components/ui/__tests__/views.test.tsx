@@ -59,11 +59,11 @@ const machines: Record<string, (view?: RobotView) => React.ReactElement> = {
   "scara-arm": (view) => <ScaraArm animate={false} behavior="static" view={view} />,
   "delta-arm": (view) => <DeltaArm animate={false} behavior="static" view={view} />,
   "gantry-arm": (view) => <GantryArm animate={false} behavior="static" view={view} />,
-  "robot-gripper": () => <RobotGripper animate={false} opening={0.4} />,
-  "conveyor-belt": () => <ConveyorBelt animate={false} position={0.3} />,
-  "linear-actuator": () => <LinearActuator animate={false} extension={0.6} />,
-  "servo-motor": () => <ServoMotor animate={false} angle={35} />,
-  "rotary-table": () => <RotaryTable animate={false} angle={24} />,
+  "robot-gripper": (view) => <RobotGripper animate={false} opening={0.4} view={view} />,
+  "conveyor-belt": (view) => <ConveyorBelt animate={false} position={0.3} view={view} />,
+  "linear-actuator": (view) => <LinearActuator animate={false} extension={0.6} view={view} />,
+  "servo-motor": (view) => <ServoMotor animate={false} angle={35} view={view} />,
+  "rotary-table": (view) => <RotaryTable animate={false} angle={24} view={view} />,
   "robot-rover": () => <RobotRover animate={false} heading={20} steering={12} wheelTravel={0.2} />,
   "courier-droid": () => <CourierDroid animate={false} heading={20} steering={12} />,
   "orb-droid": () => <OrbDroid look={{ x: 0.3, y: -0.2 }} track={false} />,
@@ -97,6 +97,11 @@ const natives: Partial<Record<keyof typeof machines, RobotView>> = {
   "scara-arm": "plan",
   "delta-arm": "iso",
   "gantry-arm": "front",
+  "robot-gripper": "front",
+  "conveyor-belt": "profile",
+  "linear-actuator": "profile",
+  "servo-motor": "front",
+  "rotary-table": "plan",
 }
 
 const tippedFrom = (native: RobotView): RobotView =>
