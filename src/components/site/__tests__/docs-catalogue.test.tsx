@@ -30,7 +30,21 @@ const droidSlugs = [
 /** The equine pair and the footfall solver under them. */
 const equineSlugs = [
   "robot-horse",
+  "robot-pegasus",
+  "robot-camel",
   "gait-kinematics",
+] as const
+
+/** The vehicle family: seven machines and the solver under two of them. */
+const vehicleSlugs = [
+  "robot-car",
+  "transit-bus",
+  "cargo-plane",
+  "hydrofoil-craft",
+  "launch-vehicle",
+  "strike-starfighter",
+  "ion-interceptor",
+  "vehicle-geometry",
 ] as const
 
 /** The produce family: three field units and the solver under them. */
@@ -42,7 +56,7 @@ const produceSlugs = [
 ] as const
 
 /** The bears, and the plantigrade solver under them. */
-const ursineSlugs = ["robot-bear", "bear-kinematics"] as const
+const ursineSlugs = ["robot-bear", "robot-polar-bear", "robot-panda", "bear-kinematics"] as const
 
 /** The menagerie: twelve animals on the solvers the first five proved. */
 const menagerieSlugs = [
@@ -83,6 +97,21 @@ const machinePartSlugs = [
 ] as const
 
 /** Electromagnetic actuators, machines, sensors, and their geometry helper. */
+/** The oil field: ten machines and the closed-loop solver under them. */
+const oilFieldSlugs = [
+  "pumpjack",
+  "drilling-derrick",
+  "mud-pump",
+  "wellhead-tree",
+  "storage-tank",
+  "oil-tanker",
+  "tanker-truck",
+  "flare-stack",
+  "fractionating-column",
+  "jackup-rig",
+  "linkage-geometry",
+] as const
+
 const electromagneticSlugs = [
   "solenoid-valve",
   "electromagnetic-relay",
@@ -117,6 +146,15 @@ const deviceSlugs = [
   "device-geometry",
 ] as const
 
+/** The input devices, and the solver under them. */
+const inputSlugs = [
+  "key-switch",
+  "robot-keypad",
+  "robot-keyboard",
+  "input-terminal",
+  "keyboard-geometry",
+] as const
+
 /** The humanoid frame: the hand rebuilt, the rest of the skeleton, two solvers. */
 const skeletonSlugs = [
   "robot-hand",
@@ -128,6 +166,21 @@ const skeletonSlugs = [
   "skeleton-kinematics",
 ] as const
 
+/** The bodies, the machine that carries them, and the two new solvers. */
+const celestialSlugs = [
+  "celestial-planet",
+  "celestial-moon",
+  "celestial-star",
+  "celestial-asteroid",
+  "orrery",
+  "celestial-geometry",
+  "robot-sunflower",
+  "phyllotaxis-geometry",
+  "battle-station",
+  "debris-field",
+  "hull-geometry",
+] as const
+
 const entries: CatalogueEntry[] = [
   { slug: 'robot-arm', title: 'Robot arm', summary: 'Articulated chain with eight tools.', group: 'Arms', item: 'robot-arm' },
   { slug: 'robot-rover', title: 'Robot rover', summary: 'Ground vehicle with steering.', group: 'Robots', item: 'robot-rover' },
@@ -135,12 +188,22 @@ const entries: CatalogueEntry[] = [
 ]
 
 describe('docs catalogue', () => {
+  it.each(celestialSlugs)("documents and demos %s", (slug) => {
+    expect(docs.some((entry) => entry.slug === slug && entry.item === slug)).toBe(true)
+    expect(demoFor(slug)).toBeTruthy()
+  })
+
   it.each(droidSlugs)("documents and demos %s", (slug) => {
     expect(docs.some((entry) => entry.slug === slug && entry.item === slug)).toBe(true)
     expect(demoFor(slug)).toBeTruthy()
   })
 
   it.each(equineSlugs)("documents and demos %s", (slug) => {
+    expect(docs.some((entry) => entry.slug === slug && entry.item === slug)).toBe(true)
+    expect(demoFor(slug)).toBeTruthy()
+  })
+
+  it.each(vehicleSlugs)("documents and demos %s", (slug) => {
     expect(docs.some((entry) => entry.slug === slug && entry.item === slug)).toBe(true)
     expect(demoFor(slug)).toBeTruthy()
   })
@@ -175,7 +238,17 @@ describe('docs catalogue', () => {
     expect(demoFor(slug)).toBeTruthy()
   })
 
+  it.each(inputSlugs)("documents and demos %s", (slug) => {
+    expect(docs.some((entry) => entry.slug === slug && entry.item === slug)).toBe(true)
+    expect(demoFor(slug)).toBeTruthy()
+  })
+
   it.each(machinePartSlugs)("documents and demos %s", (slug) => {
+    expect(docs.some((entry) => entry.slug === slug && entry.item === slug)).toBe(true)
+    expect(demoFor(slug)).toBeTruthy()
+  })
+
+  it.each(oilFieldSlugs)("documents and demos %s", (slug) => {
     expect(docs.some((entry) => entry.slug === slug && entry.item === slug)).toBe(true)
     expect(demoFor(slug)).toBeTruthy()
   })

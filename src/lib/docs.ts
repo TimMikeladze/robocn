@@ -1479,6 +1479,88 @@ pose.height // hip height in world units`,
     ],
   },
   {
+    slug: "robot-polar-bear", item: "robot-polar-bear", title: "Robot polar bear", group: "Robots",
+    summary: "The same plantigrade chassis with a second support system. swim hands the load from the soles to the water in one number: the base of support stops mattering, the hull settles to its waterline, the hind limbs trail, and the forelimbs paddle on a stroke path their two links are solved to.",
+    files: ["components/ui/robot-polar-bear.tsx"],
+    usage: `import { RobotPolarBear } from "@/components/ui/robot-polar-bear"
+
+<RobotPolarBear behavior="swim" />
+
+// Or work the handover yourself: half in, half out.
+<RobotPolarBear swim={0.5} showContacts showSupport />`,
+    props: [
+      view("profile", "animal"),
+      { name: "behavior", type: '"plod" | "swim" | "stalk" | "rear" | "static"', default: '"swim"', description: "What it does when nothing is driving it: afloat with the forelimbs alternating, the plantigrade walk, a long low creep with the neck below the shoulder, a rise onto the hind soles, or standing square." },
+      { name: "phase", type: "number", description: "Controlled stride, or stroke, fraction. Supplying it stops the internal clock." },
+      { name: "speed", type: "number", default: "0.45", description: "Strides, or strokes, per second." },
+      { name: "offset", type: "number", default: "0", description: "Seconds of offset, so a pair of them breaks step." },
+      ...gaitLoop(),
+      { name: "swim", type: "number", description: "0 on the floor to 1 afloat — the handover. Omit and the behavior works it; drag it with the pointer." },
+      { name: "strokes", type: "number", default: "1", description: "Forelimb strokes per cycle, clamped 0.25–4. The two sides run half a cycle apart." },
+      { name: "rear", type: "number", description: "0 on four soles to 1 up on the hind pair. Scaled out by swim: nothing rears in the water." },
+      { name: "balance", type: "number", description: "How much of the carriage the balance rule takes, 0 scripted to 1 derived." },
+      { name: "arch", type: "number", description: "Back curvature, −1 hollowed to 1 roached." },
+      { name: "crouch", type: "number", description: "Leg fold, 0 standing tall to 1 down on the hocks." },
+      { name: "neck", type: "number", description: "Neck carriage, −1 run right down below the shoulder to 1 held high. The long neck is this animal's signature, so it is its own axis." },
+      { name: "gaze", type: "number", description: "Head and eye aim, −1..1. Omit and it follows the pointer." },
+      { name: "interactive", type: "boolean", default: "true", description: "Drag up and down to work the handover, arrows for 10% (25% with shift), Home on the floor and End in the water." },
+      { name: "onSwimChange", type: "(swim: number) => void", description: "Fired while a person is working the handover by hand." },
+      { name: "showGround", type: "boolean", default: "true", description: "The ground line and the shadow, which fades out as the water takes the weight." },
+      { name: "showContacts", type: "boolean", default: "false", description: "Mark each grounded sole, shaded by the share of the weight it still carries." },
+      { name: "showSupport", type: "boolean", default: "false", description: "Draw the base of support, the centre of mass, and the margin between them." },
+      { name: "label", type: "string", description: "Caption underneath the animal." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "swim is one number with four consequences, all arithmetic: legLoad(i) = (1 − swim) · supportLoad(i) and buoyancy = swim, so the soles unload; the hull rises to its draft at the waterline; the hind limbs stop stepping and trail; and the forelimbs cross over from standing to paddling.",
+      "The stroke is a path and the limb is an output of it: the paw traces a closed loop that pulls deep and recovers shallow, and solveChain2 produces the shoulder and elbow from wherever on it the paw is. polarStroke is exported as a pure function of the beat, and the path itself is drawn while swimming.",
+      "Buoyancy is a prop, not a computed displacement. There is no hydrodynamics of any kind: the stroke makes no thrust, the hull has no drag, and the draft is a constant rather than a function of what is submerged.",
+      "Everything the bear says about its soles holds here too — the sole is rigid, the contact is read off the geometry, and the loads are a static distribution rather than a dynamics solve.",
+    ],
+  },
+  {
+    slug: "robot-panda", item: "robot-panda", title: "Robot panda", group: "Robots",
+    summary: "The bear that sits down to use its hands. The seat is a third contact with a span of its own — which is what buys back a base once both forepaws have left the floor — and the pseudo-thumb's pad gap is an output of whatever is between the pads rather than of the dial.",
+    files: ["components/ui/robot-panda.tsx"],
+    usage: `import { RobotPanda } from "@/components/ui/robot-panda"
+
+<RobotPanda behavior="feed" />
+
+// Or sit it down and hand it a stalk of your own size.
+<RobotPanda sit={1} grip={1} stalkWidth={8} stalk={{ x: 30, y: 34 }} showSupport />`,
+    props: [
+      view("profile", "animal"),
+      { name: "behavior", type: '"feed" | "sit" | "amble" | "static"', default: '"feed"', description: "What it does when nothing is driving it: sit and bring a stalk up to the muzzle, sit with both forelimbs free, the lateral-sequence plantigrade walk, or standing square." },
+      { name: "phase", type: "number", description: "Controlled cycle fraction. Supplying it stops the internal clock." },
+      { name: "speed", type: "number", default: "0.35", description: "Feeding cycles, or strides, per second." },
+      { name: "offset", type: "number", default: "0", description: "Seconds of offset, so a pair of them breaks step." },
+      ...gaitLoop(),
+      { name: "sit", type: "number", description: "0 standing to 1 down on the seat. Omit and the behavior works it." },
+      { name: "grip", type: "number", description: "How far the pseudo-thumb is closed on the digits, 0–1." },
+      { name: "stalkWidth", type: "number", default: "5", description: "Stalk diameter in world units, 0–9. What the thumb has to open around — the pad gap answers it." },
+      { name: "stalk", type: "Vec2", description: "Where the stalk is, in the animal's own frame: x forward from the hip, y up off the floor. Both forepaws are solved to it. Omit and the pointer is the stalk." },
+      { name: "chew", type: "number", description: "Jaw opening, 0 shut to 1 wide. Omit and the behavior chews." },
+      { name: "arch", type: "number", description: "Back curvature, −1 hollowed to 1 roached." },
+      { name: "crouch", type: "number", description: "Leg fold, 0 standing tall to 1 down on the hocks." },
+      { name: "gaze", type: "number", description: "Eye aim, −1..1. The head tips toward the stalk on its own once it is near the muzzle." },
+      { name: "balance", type: "number", description: "How much of the carriage the balance rule takes, 0 scripted to 1 derived." },
+      { name: "interactive", type: "boolean", default: "true", description: "The pointer is the stalk — both forepaws solve to wherever it is — and a click takes a bite." },
+      { name: "onStalkChange", type: "(stalk: Vec2) => void", description: "Fired with the stalk position on a click." },
+      { name: "onBite", type: "() => void", description: "Fired on the click that bites." },
+      { name: "showGround", type: "boolean", default: "true", description: "The ground line and the shadow." },
+      { name: "showContacts", type: "boolean", default: "false", description: "Mark each grounded sole, shaded by the share of the weight it carries." },
+      { name: "showSupport", type: "boolean", default: "false", description: "Draw the base of support and the centre of mass. This is the machine where you can watch the base being bought." },
+      { name: "label", type: "string", description: "Caption underneath the animal." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "The seat is not a pose: the pelvis is rigid on the body, so where its underside ends up is a consequence of the tilt, and when it would go through the floor the animal rests on it. It then enters solveSupport as a third contact with a span of its own. Just before it lands, both forepaws are on the stalk and the two hind soles have rolled onto their heels — two points in the same place, which is not a base — so the seat is what is holding the animal up, and the blueprint variant draws it.",
+      "The pad gap is an output: gap = 9 · (1 − grip), and a stalk wider than the gap rides the thumb further open at the same grip. Closing on nothing brings the pads together. The digits, the claws and the pelage are drawn; the thumb's angle and the forelimb chains are solved.",
+      "The stalk is a real target: solveSole places each forepaw on it and the two links answer, so moving the stalk moves the whole chain. The two paws stack on it the way a pair of hands do.",
+      "Illustrative kinematics with a static weight distribution on top — no dynamics, no grasp forces, no friction between pad and stalk, and the animal does not travel across its frame.",
+    ],
+  },
+  {
     slug: "bear-kinematics", item: "bear-kinematics", title: "Bear kinematics", group: "Foundations",
     summary: "The plantigrade solver behind the bears: a rigid sole placed on the floor with the leg solved to the ankle it produces, the base of support those intervals make, and the static share of the weight at each contact.",
     files: ["lib/robocn/bear.ts"],
@@ -1541,6 +1623,91 @@ solveSupport([{ id: "hind", span: leg.span }], 6).margin // 1 centred, 0 on an e
       "The neck's nod is derived the same way — it answers the forehand's load against what the forehand carries standing square — so a walking horse nods twice a stride, once per foreleg, and a trotting one barely nods. balance is the dial between that and the scripted carriage.",
       "The load is a static weight distribution: the forehand's 58 percent shared out among whichever feet are down, summing to exactly one body while anything is down and to nothing in a suspension. No acceleration, no ground reaction force, no centre of pressure, no impulse at footfall.",
       "The body's rise through a suspension is a scripted curve per gait rather than a ballistic trajectory, and the animal never travels across the frame while its feet move. The mane, the tail's hair and the head's plating are drawn, not solved.",
+    ],
+  },
+  {
+    slug: "robot-pegasus", item: "robot-pegasus", title: "Robot pegasus", group: "Robots",
+    summary: "One body, two ways of holding it up, and the number between them. lift splits the animal's weight between its legs and its wings, and four things answer it at once: the fetlocks recoil, the legs run out of reach and fold, the stride fades out, and the wingbeat fades in. The wing is three bones solved to a tip tracing a figure of eight.",
+    files: ["components/ui/robot-pegasus.tsx"],
+    usage: `import { RobotPegasus } from "@/components/ui/robot-pegasus"
+
+<RobotPegasus behavior="launch" />
+
+// Or work the handover yourself and watch everything answer it.
+<RobotPegasus lift={0.5} spread={0.8} beat={0.2} gait="canter" showContacts />`,
+    props: [
+      view("profile", "animal"),
+      { name: "behavior", type: '"launch" | "canter" | "soar" | "hover" | "static"', default: '"launch"', description: "What it does when nothing is supplied. launch is the one that crosses the handover; canter stays on the floor; soar and hover are both entirely on the wings." },
+      { name: "lift", type: "number", description: "The handover, 0 the legs carry the whole animal to 1 the wings do. The one prop the machine is about. Omit and the behavior decides." },
+      { name: "spread", type: "number", description: "Wing extension, 0 furled against the body to 1 spread. Folding is the tip path closing, not a different drawing. Omit and it comes up with the lift." },
+      { name: "beat", type: "number", description: "Controlled wingbeat fraction. Omit and it runs off the stride at wingbeats per cycle." },
+      { name: "wingbeats", type: "number", description: "Wingbeats per stride. Omit and the behavior sets it — a hover beats fastest because it is holding station on the wings alone." },
+      { name: "gait", type: '"halt" | "walk" | "trot" | "pace" | "canter" | "gallop"', description: "The footfall pattern whatever weight is still on the feet runs. Omit and the behavior picks one." },
+      { name: "lead", type: '"left" | "right"', default: '"right"', description: "Which foreleg lands last, for the canter and the gallop." },
+      { name: "phase", type: "number", description: "Controlled stride fraction. Supplying it stops the internal clock." },
+      { name: "speed", type: "number", default: "0.5", description: "Strides per second." },
+      { name: "offset", type: "number", default: "0", description: "Seconds of offset, so a flight of them breaks step." },
+      ...gaitLoop(),
+      { name: "arch", type: "number", description: "Back curvature, −1 hollowed to 1 roached. Omit and the behavior sets it." },
+      { name: "crouch", type: "number", description: "Leg fold, 0 standing tall to 1 dropped. Omit and the behavior decides." },
+      { name: "neck", type: "number", description: "Neck carriage, −1 head to the floor to 1 head high. Omit and the behavior sets it." },
+      { name: "tail", type: "number", description: "Tail carriage, −1 clamped under the quarters to 1 flagged out behind." },
+      { name: "ears", type: "number", description: "Ears, −1 pinned back to 1 pricked forward. Omit and they prick at the pointer." },
+      { name: "gaze", type: "number", description: "Head and eye aim, −1..1. Omit and it follows the pointer." },
+      { name: "interactive", type: "boolean", default: "true", description: "Drag up and down to work the handover — the frame's height is the whole of it — with arrows stepping 10% and shift 25%, Home on the floor and End in the air. The head tracks the pointer." },
+      { name: "onLiftChange", type: "(lift: number) => void", description: "Fired with the handover, 0–1." },
+      { name: "showGround", type: "boolean", default: "true", description: "The ground line and the shadow, which shrinks as it leaves the floor." },
+      { name: "showContacts", type: "boolean", default: "false", description: "Mark the hooves still carrying weight." },
+      { name: "label", type: "string", description: "Caption underneath the animal." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "lift is one load budget shared between two support systems: the legs carry 1 − lift of the body and the wings carry lift, and the leg loads are the gait solver's own numbers scaled by it. That is what makes the fetlocks recoil as the animal goes up rather than being told to.",
+      "The legs fold because they run out of reach, not because a script folds them: the floor stays where it is while the body rises, and once the hoof target is past the limb's own reach the target comes back in along the same line. It is a rule, but one keyed to the geometry.",
+      "Each wing is three bones solved to a wingtip path rather than three scripted angles. The path is a 1:2 Lissajous — one cycle up and down against two fore and aft — which is the figure of eight a wingtip traces, and spread scales the whole path, so folding the wing is the same solve with a nearer target.",
+      "The wings are modelled in three space and go through the camera in their own group, so they are exact from every angle. In a true side elevation a lateral span foreshortens and the two wings very nearly superimpose — that is what a side elevation of a wing is, not a drawing bug. Plan and front show the span.",
+      "No aerodynamics of any kind: the wing generates no modelled lift, and lift is a prop rather than a computed force. No dynamics under the feet either — the load is a static weight distribution, and the rise is a ramp rather than a ballistic trajectory. The animal never travels across its frame.",
+    ],
+  },
+  {
+    slug: "robot-camel", item: "robot-camel", title: "Robot camel", group: "Robots",
+    summary: "Every other machine in the set stands on a line. This one's ground is a medium with a depth, and its feet go into it — as deep as what each is carrying, and less deep because the pad opens under the load and drops its own pressure. The hump is a store that slumps as it empties, and the roll is an output of the gait.",
+    files: ["components/ui/robot-camel.tsx"],
+    usage: `import { RobotCamel } from "@/components/ui/robot-camel"
+
+<RobotCamel behavior="pace" />
+
+// Or put it on rock and watch the feet come back up out of the ground.
+<RobotCamel gait="pace" phase={0.2} ground={0} reserve={0.3} showContacts />`,
+    props: [
+      view("profile", "animal"),
+      { name: "behavior", type: '"pace" | "walk" | "trot" | "couch" | "static"', default: '"pace"', description: "What it does when phase is not supplied. pace is the signature — the lateral two-beat nothing else in the set uses — and trot is the control case for the roll." },
+      { name: "gait", type: '"halt" | "walk" | "trot" | "pace" | "canter" | "gallop"', description: "Footfall pattern, overriding the one the behavior picked." },
+      { name: "ground", type: "number", description: "What it is standing on, 0 rock to 1 dry sand. The loaded feet go into it. Omit and the behavior sets it." },
+      { name: "reserve", type: "number", description: "How much is left in the hump, 1 full and upright to 0 empty and folded over. The base is held while the height goes. Omit and the behavior decides." },
+      { name: "phase", type: "number", description: "Controlled cycle fraction. Supplying it stops the internal clock." },
+      { name: "speed", type: "number", default: "0.5", description: "Strides per second." },
+      { name: "offset", type: "number", default: "0", description: "Seconds of offset, so a string of them breaks step." },
+      ...gaitLoop(),
+      { name: "arch", type: "number", description: "Back curvature, −1 hollowed to 1 roached. Omit and the behavior sets it." },
+      { name: "crouch", type: "number", description: "Leg fold, 0 standing tall to 1 couched. Omit and the behavior decides." },
+      { name: "neck", type: "number", description: "Neck carriage, −1 head to the floor to 1 head high. Omit and the behavior sets it." },
+      { name: "tail", type: "number", description: "Tail carriage, −1 clamped to 1 held out." },
+      { name: "ears", type: "number", description: "Ears, −1 pinned back to 1 pricked forward. Omit and they prick at the pointer." },
+      { name: "gaze", type: "number", description: "Head and eye aim, −1..1. Omit and it follows the pointer." },
+      { name: "interactive", type: "boolean", default: "true", description: "Drag up and down to work the ground — firm at the top of the frame, soft at the bottom, so dragging down is sinking — with arrows stepping 10% and shift 25%, Home on rock and End in sand. The head tracks the pointer." },
+      { name: "onGroundChange", type: "(ground: number) => void", description: "Fired with the ground's softness, 0–1." },
+      { name: "showGround", type: "boolean", default: "true", description: "The ground line, and the band of yielding material under it." },
+      { name: "showContacts", type: "boolean", default: "false", description: "Mark the pads carrying weight, at the width the load has opened them to." },
+      { name: "label", type: "string", description: "Caption underneath the animal." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "The ground is the new axis and it is the only floor in the registry with a depth. padSpread opens the pad under load and footSinkage turns the pressure that leaves into a depth, so each loaded foot sits as deep as what it carries — and an opening pad drops its own pressure, which is why the same animal on the same sand stays higher up than it would on a foot that did not open. The tests assert exactly that comparison.",
+      "It is a proportional rule, not a soil model: no bearing capacity, no shear, no compaction, and the rim of disturbed ground around a sunk foot is drawn rather than displaced from anywhere.",
+      "The hump is one outline bent rather than one drawing swapped for another: its base is pinned to the back and does not move, its height falls with the reserve, and past the halfway mark it leans over while the rear flank goes slack. It conserves no volume.",
+      "The roll is an output of the gait. A pace is the lateral two-beat, so the whole weight is on one side and the roll swings to a full ±1 once each way per stride; a trot's support is diagonal, so all that is ever off-centre is the forehand's share against the hind end's — 0.16 of a body, exactly, whenever either diagonal is down. camelRoll is exported pure, and the test asserts that residual rather than eyeballing it.",
+      "Illustrative kinematics throughout: the load is a static weight distribution, there is no impulse at footfall, the roll is a proportional rule rather than a moment about anything, and the animal never travels across its frame.",
     ],
   },
   {
@@ -1784,15 +1951,19 @@ spineOutline(pose, (s) => 12 * (1 - s)) // the hull, as one path`,
   },
   {
     slug: "gait-kinematics", item: "gait-kinematics", title: "Gait kinematics", group: "Foundations",
-    summary: "The footfall solver behind the horse: six named gaits as real touchdown sequences, a beat count derived from them, the support pattern, and the share of the body's weight on every grounded foot.",
+    summary: "The footfall solver behind the horse, the pegasus and the camel: six named gaits as real touchdown sequences, a beat count derived from them rather than declared, the support pattern, and the share of the body's weight on every grounded foot — plus the three things that one number drives.",
     files: ["lib/robocn/gait.ts"],
-    usage: `import { solveGait, gaitBeats, fetlockSink } from "@/lib/robocn/gait"
+    usage: `import { solveGait, fetlockSink, padSpread, footSinkage } from "@/lib/robocn/gait"
 
 const pose = solveGait({ gait: "canter", phase: 0.4, lead: "left" })
 pose.beats     // 3 — counted from the footfalls, not declared
 pose.support   // how many feet are down right now
 pose.legs      // id, fore, touchdown, contact, load, foot
-fetlockSink(pose.legs[0].load) // degrees the sprung pastern drops`,
+
+// Three things the same load number drives.
+fetlockSink(leg.load)                  // degrees the sprung pastern drops
+padSpread(leg.load)                    // how far a splay pad opens
+footSinkage(leg.load, 0.8)             // how deep it goes into soft ground`,
     api: [
       { name: "solveGait", type: "(options?: GaitOptions) => GaitPose", description: "One instant of a gait: who is down, when each limb landed, where its foot is, and what share of the standing weight it carries." },
       { name: "GaitOptions", type: "{ gait?, phase?, lead?, duty?, stride?, lift? }", description: "Gait is halt, walk, trot, pace, canter or gallop; lead is the foreleg that lands last and only the canter and the gallop have one; duty overrides the gait's own; stride and lift are normalized foot travel and swing height." },
@@ -1800,11 +1971,14 @@ fetlockSink(pose.legs[0].load) // degrees the sprung pastern drops`,
       { name: "GaitPose", type: "{ gait, beats, duty, lead, leadLeg, support, airborne, forehand, legs }", description: "beats is the number of distinct footfall instants, counted from the touchdowns; support is how many feet are down; airborne is the suspension." },
       { name: "gaitBeats", type: "(gait: EquineGait) => number", description: "The beat count on its own: 4 for a walk, 2 for a trot and a pace, 3 for a canter, 4 for a gallop, 0 for a halt." },
       { name: "fetlockSink", type: "(load: number) => number", description: "The sprung pastern: how far the fetlock drops, in degrees, under a load. A passive joint whose angle is an output of the gait." },
-      { name: "gaitLimits", type: "{ reach: 16, clearance: 11, fetlock: 30 }", description: "What stride, lift and a full load mean in world units and degrees." },
+      { name: "padSpread", type: "(load: number) => number", description: "A splay pad opening under load, as a multiple of its own unloaded width. The same primitive as fetlockSink off the same number, with a different consequence." },
+      { name: "footSinkage", type: "(load: number, ground: number, spread?: number) => number", description: "How far a foot goes into the ground, in world units. Pressure is load over contact area and ground is how soft it is, so a pad that opens under load sinks less than one that does not. A proportional rule, not a soil model." },
+      { name: "gaitLimits", type: "{ reach: 16, clearance: 11, fetlock: 30, spread: 0.55, sinkage: 9 }", description: "What stride, lift, a full load, a fully opened pad and fully soft ground mean in world units and degrees." },
     ],
     notes: [
       "The beat count is read off the touchdown instants rather than declared, which is what makes walk-versus-trot a fact about the numbers. The pace and the trot both come out at two, on different diagonals — proof that the count alone does not name a gait.",
       "The load is a static weight distribution — the forehand's share divided among whichever feet are down — and not a dynamics solve. No acceleration, no ground reaction, no centre of pressure. It solves no legs either: the components own their own limb chains and read the load off this.",
+      "fetlockSink, padSpread and footSinkage are all consequences of that one load number, which is why they live here rather than in the machines that spend them: a sprung joint, a foot that opens, and a ground that gives are the same arithmetic read three ways.",
     ],
   },
   {
@@ -1988,6 +2162,223 @@ pose.height // body height in world units`,
       ...form.slice(0, 2), ...palette,
     ],
     notes: ["The component does not generate samples. The demo supplies a deterministic room outline and obstacle, clearly labelled as sample data.", "Negative, non-finite, and beyond-range distances are omitted. Non-finite angles are omitted. Zero-distance returns are valid and plot at the origin.", "Returns are drawn by age: each brightens as the ray passes it and fades over the next 150° of sweep, down to a floor that keeps the plot readable as a map between passes. That is display only — nothing is filtered. Supply a new samples array when fresh sensor data arrives."],
+  },
+  {
+    slug: "robot-car", item: "robot-car", title: "Robot car", group: "Robots",
+    summary: "An autonomous road car with a real steering rack: one angle in, two different wheel angles out, plus the lean the turn radius implies and a body that rides the road on its own axles.",
+    files: ["components/ui/robot-car.tsx"],
+    usage: `import { RobotCar } from "@/components/ui/robot-car"
+
+<RobotCar behavior="cruise" />
+
+// Plan view is where the two front wheels visibly disagree.
+<RobotCar view="plan" steer={34} roughness={0} />
+<RobotCar interactive onSteerChange={setSteer} />`,
+    props: [
+      view("profile", "car"),
+      { name: "steer", type: "number", description: "Centreline steering angle in degrees, positive to starboard, clamped to ±60. Omit it and the behaviour drives the rack." },
+      { name: "onSteerChange", type: "(steer: number) => void", description: "The commanded angle, while a person is steering it." },
+      { name: "behavior", type: '"cruise" | "slalom" | "park" | "static"', default: '"cruise"', description: "Lane-keeping, a real weave, or a shuffle to full lock and back." },
+      { name: "roughness", type: "number", default: "0.35", description: "How rough the road under the wheels is, 0 (glass) to 1. The body takes the least-squares line through its axle contacts; the dampers keep the rest." },
+      { name: "speed", type: "number", default: "0.35", description: "Steering cycles per second. The road passes underneath at a rate the behaviour sets." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Press and drag across the car to steer it; arrow keys turn the rack 4° at a time, Home centres it, Escape hands it back." },
+      { name: "showSensor", type: "boolean", default: "true", description: "The roof sensor drum." },
+      { name: "showGround", type: "boolean", default: "true", description: "The road surface the wheels are standing on." },
+      { name: "active", type: "boolean", description: "Light the lamps. Omit and they light while it is driving." },
+      { name: "label", type: "string", description: "Caption underneath the car." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: ["Solved: the two front wheel angles and the turn radius, from `ackermann()` — the inner wheel always turns harder, because it runs on the smaller circle. The body's heave and pitch are the least-squares line through the axle contacts, which is what a rigid body on springs actually settles to.", "Stated rather than solved: the body leans a fixed fraction of the lateral-acceleration angle, outward, the way a car rolls — there is no roll stiffness and no weight transfer. The road is an illustrative profile, not a measured surface.", "Nothing integrates a path. The steering angle is a pose, not a trajectory, and the car never goes anywhere."],
+  },
+  {
+    slug: "transit-bus", item: "transit-bus", title: "Transit bus", group: "Robots",
+    summary: "An articulated city bus. Steer the front axle and the rear section's angle is solved from the hitch, so the tail swings out of a turn and comes back straight on its own.",
+    files: ["components/ui/transit-bus.tsx"],
+    usage: `import { TransitBus } from "@/components/ui/transit-bus"
+
+<TransitBus behavior="route" />
+
+// Plan is where the articulation reads. A stop is one number.
+<TransitBus view="plan" steer={30} />
+<TransitBus doors={1} behavior="service" />`,
+    props: [
+      view("profile", "bus"),
+      { name: "steer", type: "number", description: "Front-axle steering in degrees, positive to starboard, clamped to ±42. Omit it and the behaviour drives it." },
+      { name: "onSteerChange", type: "(steer: number) => void", description: "The commanded angle, while a person is steering it." },
+      { name: "doors", type: "number", description: "Doors, 0 shut to 1 open. The bus kneels on the same number, because a bus kneels to open. Omit it and the behaviour works the stop." },
+      { name: "behavior", type: '"route" | "service" | "static"', default: '"route"', description: "Running a route, or working a stop: pull in, kneel, open, stand, shut, pull away." },
+      { name: "articulated", type: "boolean", default: "true", description: "A rear section on a turntable, or one rigid body. Turning it off removes the hitch and the concertina." },
+      { name: "speed", type: "number", default: "0.3", description: "Steering cycles per second." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Press and drag across the bus to steer it; arrow keys turn the rack 3° at a time." },
+      { name: "showGround", type: "boolean", default: "true", description: "The kerb it pulls up to." },
+      { name: "active", type: "boolean", description: "Light the destination sign. Omit and it lights in service." },
+      { name: "label", type: "string", description: "Caption underneath the bus." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: ["Solved: the articulation angle, from `hitchAngle()`. The pivot rides a circle behind the drive axle and the towed axle cannot slide sideways, which fixes the angle between the sections. It is a steady state with no history, so a bus that has been round a roundabout comes out of it straight rather than unwinding.", "The concertina ribs belong half to each section, so the fold genuinely opens on the outside of the bend. The plug doors stand off the side before their leaves part.", "Illustrated: the kneel is a stated drop and roll on the doors' own number. No tyre model, no load, no swept-path envelope, and nothing integrates a manoeuvre."],
+  },
+  {
+    slug: "cargo-plane", item: "cargo-plane", title: "Cargo plane", group: "Robots",
+    summary: "A high-wing freighter that banks because it was asked to turn. Give it a rate of turn and an airspeed and the bank is solved; the ailerons carry the roll it has not finished.",
+    files: ["components/ui/cargo-plane.tsx"],
+    usage: `import { CargoPlane } from "@/components/ui/cargo-plane"
+
+<CargoPlane behavior="circuit" engines={4} />
+
+// The same commanded turn banks further at speed.
+<CargoPlane turn={3} airspeed={160} view="front" />
+<CargoPlane behavior="approach" />`,
+    props: [
+      view("plan", "aircraft"),
+      { name: "turn", type: "number", description: "Commanded rate of turn in degrees per second, positive to starboard, clamped to ±6. Omit it and the behaviour flies it." },
+      { name: "onTurnChange", type: "(turn: number) => void", description: "The commanded rate, while a person is flying it." },
+      { name: "airspeed", type: "number", default: "110", description: "True airspeed in metres per second. The bank for a given rate of turn is not the same at every speed." },
+      { name: "configuration", type: "number", description: "Flaps, gear and ramp together, 0 clean to 1 dirty. Omit it and the behaviour sets it." },
+      { name: "behavior", type: '"cruise" | "circuit" | "approach" | "static"', default: '"cruise"', description: "Hold a heading, fly rate-one turns each way, or come down dirty." },
+      { name: "engines", type: "2 | 4", default: "4", description: "Two engines or four, on the same wing." },
+      { name: "speed", type: "number", default: "0.2", description: "Turn cycles per second." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Press and drag across the aircraft to command a turn; arrow keys change the rate half a degree per second at a time." },
+      { name: "showRamp", type: "boolean", default: "true", description: "The rear loading ramp, down at the dirty end of the configuration." },
+      { name: "active", type: "boolean", description: "Light the navigation lamps and the beacon." },
+      { name: "label", type: "string", description: "Caption underneath the aircraft." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: ["Solved: the bank, from `coordinatedBank()`. A rate of turn at an airspeed fixes the radius, and a coordinated turn stands at atan(v²/rg) — so doubling the speed at the same radius asks for four times the tangent.", "The ailerons are not a second animation: they carry the difference between the bank the aircraft is holding and the one the turn asks for, so they return to neutral once the turn is established and never move in level flight.", "Illustrated: the wing is a flat plate and the propellers are drawn rather than solved. Nothing computes lift, drag, load factor or a stall, and the aircraft does not travel."],
+  },
+  {
+    slug: "hydrofoil-craft", item: "hydrofoil-craft", title: "Hydrofoil craft", group: "Robots",
+    summary: "A foilborne ferry — the one machine here that climbs out of its own ground plane. Lift goes as the square of speed, so the surface-piercing V sheds immersed area and the hull rises clear.",
+    files: ["components/ui/hydrofoil-craft.tsx"],
+    usage: `import { HydrofoilCraft } from "@/components/ui/hydrofoil-craft"
+
+<HydrofoilCraft behavior="takeoff" />
+
+// Below takeoff she is hullborne and rides the swell.
+<HydrofoilCraft knots={12} />
+<HydrofoilCraft knots={44} view="front" />`,
+    props: [
+      view("profile", "craft"),
+      { name: "knots", type: "number", description: "Speed through the water, 0–60. Supplying it stops the loop." },
+      { name: "onKnotsChange", type: "(knots: number) => void", description: "The commanded speed, while a person is at the throttle." },
+      { name: "takeoffSpeed", type: "number", default: "18", description: "The speed the foils can first carry the boat at. Below it she stays hullborne however hard she is driven." },
+      { name: "behavior", type: '"takeoff" | "foilborne" | "moor" | "static"', default: '"takeoff"', description: "Work up through the transition and back down, hold her up, or lie alongside." },
+      { name: "speed", type: "number", default: "0.22", description: "Throttle cycles per second." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Press and drag across her to set the speed; arrow keys move it two knots at a time, Home stops, End is full ahead." },
+      { name: "showSea", type: "boolean", default: "true", description: "The sea, the waterline, and the hull's shadow in it." },
+      { name: "active", type: "boolean", description: "Spray off the struts. Omit and it appears whenever they are cutting water." },
+      { name: "label", type: "string", description: "Caption underneath the craft." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: ["Solved: the rise, from `foilRise()`. A surface-piercing foil carrying a steady weight has to shed immersed area as 1/v², and the only way it can is by climbing until less of the V is wetted — so the accent on each limb is genuinely the part still below the waterline after the boat has risen.", "Below the takeoff speed the foil cannot carry her at all: she stays hullborne and rides the swell, and the ride goes quiet as she comes up, which is what a hydrofoil is for.", "Illustrated: the swell is a stated shape and the bow's lift through the transition is a rule. No drag, no wave-making, no cavitation, no righting moment, and she does not travel."],
+  },
+  {
+    slug: "launch-vehicle", item: "launch-vehicle", title: "Launch vehicle", group: "Robots",
+    summary: "A two-stage orbital booster: it flies a pitch program, gimbals against it, throws half of itself away, and reports the ideal Δv left from the rocket equation.",
+    files: ["components/ui/launch-vehicle.tsx"],
+    usage: `import { LaunchVehicle } from "@/components/ui/launch-vehicle"
+
+<LaunchVehicle behavior="ascent" />
+
+// One number is the whole flight.
+<LaunchVehicle ascent={0.62} />
+<LaunchVehicle ascent={0} showReadout={false} engines={5} />`,
+    props: [
+      view("front", "vehicle"),
+      { name: "ascent", type: "number", description: "Where the vehicle is in its ascent, 0 on the pad to 1 at insertion. Supplying it stops the loop." },
+      { name: "onAscentChange", type: "(ascent: number) => void", description: "The commanded point in the ascent, while a person is scrubbing it." },
+      { name: "behavior", type: '"ascent" | "hold" | "static"', default: '"ascent"', description: "Fly the ascent, or sit on the pad." },
+      { name: "engines", type: "5 | 9", default: "9", description: "Engines in the first-stage cluster. They all gimbal together." },
+      { name: "speed", type: "number", default: "0.16", description: "Flights per second, at the outside." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Press and drag up the frame to scrub the ascent; arrow keys move it four percent at a time, Home is the pad and End is insertion." },
+      { name: "showPad", type: "boolean", default: "true", description: "The pad and its hold-downs, which fall away as she climbs." },
+      { name: "showReadout", type: "boolean", default: "true", description: "Pitch, the stage that is burning, and the ideal Δv still attached." },
+      { name: "label", type: "string", description: "Caption underneath the vehicle." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: ["Solved: the remaining Δv, from `tsiolkovsky()` summed over the stages still attached — so the number drops the moment the booster lets go, which is the only honest way to draw staging. The stage figures are stated, not a real vehicle.", "The engines gimbal against the program rather than being animated: they carry the pitch the stack has not taken up, so they centre once it is tracking and swing hardest through the pitchover.", "Illustrated: the pitch program is a curve chosen to look like a gravity turn, not a solved trajectory. There is no thrust, drag, mass flow, gravity loss or atmosphere, and no altitude is computed — the drawing is in the vehicle's own frame, and the pad is what falls away."],
+  },
+  {
+    slug: "strike-starfighter", item: "strike-starfighter", title: "Strike starfighter", group: "Robots",
+    summary: "A split-foil attack fighter: four wings on two fore-aft hinges that open from a cruise plane into an X, carrying their own engines and tip cannons with them.",
+    files: ["components/ui/strike-starfighter.tsx"],
+    usage: `import { StrikeStarfighter } from "@/components/ui/strike-starfighter"
+
+<StrikeStarfighter behavior="attack" />
+
+// Front is where the X is; plan is the same hinge from above.
+<StrikeStarfighter foils={1} view="front" />
+<StrikeStarfighter foils={0} bank={35} />`,
+    props: [
+      view("front", "fighter"),
+      { name: "foils", type: "number", description: "The S-foils, 0 closed (cruise) to 1 open (attack). Supplying it stops the loop." },
+      { name: "onFoilsChange", type: "(foils: number) => void", description: "The commanded opening, while a person is working the foils." },
+      { name: "bank", type: "number", description: "Roll about the fore-aft axis in degrees. Omit it and the behaviour flies it." },
+      { name: "behavior", type: '"patrol" | "attack" | "static"', default: '"patrol"', description: "Cruise with the foils closed and open them for a look, or hold them open and fly hard." },
+      { name: "speed", type: "number", default: "0.25", description: "Foil cycles per second." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Press and drag up the frame to open the foils; arrow keys move them five percent at a time." },
+      { name: "showCannons", type: "boolean", default: "true", description: "Cannons on the four wing tips. They are carried on the panels, so opening the foils spreads them." },
+      { name: "active", type: "boolean", description: "Light the engines, the canopy and the nose sensor." },
+      { name: "label", type: "string", description: "Caption underneath the fighter." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: ["One geometry, four panels, two hinges. Each pair swings about a fore-aft axis at its own root, and every panel keeps its span and its chord at every opening — the engines and the tip cannons are carried on the panels rather than drawn where they look right, so opening the foils genuinely spreads the guns and the thrust line.", "`bank` rolls the whole airframe about the same axis, which is why an opened X reads as an X from every camera: it is projected, not redrawn.", "A science-fiction archetype and nothing more: no character, no markings, no livery. Nothing here is aerodynamic — there is no air — and the fighter does not travel."],
+  },
+  {
+    slug: "ion-interceptor", item: "ion-interceptor", title: "Ion interceptor", group: "Robots",
+    summary: "A twin ion-drive interceptor: hexagonal panels pitching on lateral pylons, around a pod that yaws inside them and carries its viewport and emitters round with it.",
+    files: ["components/ui/ion-interceptor.tsx"],
+    usage: `import { IonInterceptor } from "@/components/ui/ion-interceptor"
+
+<IonInterceptor behavior="patrol" />
+
+// Square to the camera the panels are hexagons; from above they are lines.
+<IonInterceptor panelPitch={0} view="front" />
+<IonInterceptor panelPitch={55} yaw={30} view="plan" />`,
+    props: [
+      view("front", "interceptor"),
+      { name: "panelPitch", type: "number", description: "Panel pitch about the pylons in degrees, clamped to ±80. Supplying it stops the loop." },
+      { name: "onPanelPitchChange", type: "(pitch: number) => void", description: "The commanded pitch, while a person is working the panels." },
+      { name: "yaw", type: "number", description: "The pod's own yaw inside the pylons, ±55 degrees. Omit it and the behaviour turns it." },
+      { name: "behavior", type: '"patrol" | "intercept" | "static"', default: '"patrol"', description: "Drift with the panels near square, or work them hard while the pod hunts." },
+      { name: "ribs", type: "number", default: "3", description: "Ribs across each panel's face, 0–6. They foreshorten with the panel and vanish with it edge-on." },
+      { name: "speed", type: "number", default: "0.3", description: "Panel cycles per second." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Press and drag across the interceptor to pitch the panels; arrow keys move them 5° at a time." },
+      { name: "active", type: "boolean", description: "Light the viewport and the emitters." },
+      { name: "label", type: "string", description: "Caption underneath the interceptor." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: ["The panels are flat plates in space, not artwork: the same geometry is a pair of tall hexagons head-on, a pair of lines from straight above when they are square, and a pair of widening slabs as they come round. Pitch is a rotation about each pylon's own axis.", "The pod turns inside the pylons, so the viewport, the armoured face and the emitters all come round with it while the pylons and panels stay where the airframe put them.", "A science-fiction archetype and nothing more: no character, no markings, no livery. There is no aerodynamics here and no ion physics either."],
+  },
+  {
+    slug: "vehicle-geometry", item: "vehicle-geometry", title: "Vehicle geometry", group: "Foundations",
+    summary: "The constraints a vehicle works against: Ackermann steering, steady-state articulation, the coordinated bank, a rigid body on N axles, the rocket equation, and surface-piercing foil lift.",
+    files: ["lib/robocn/vehicle.ts"],
+    usage: `import { ackermann, hitchAngle, coordinatedBank, foilRise } from "@/lib/robocn/vehicle"
+
+const rack = ackermann(25, { wheelbase: 120, track: 62 })
+rack.inner > rack.outer   // the inner wheel runs on the smaller circle
+hitchAngle(25, { wheelbase: 106, track: 60, hitch: 29 }, 57)
+coordinatedBank(110, 2100) // degrees
+foilRise(32, 18)           // 0 hullborne .. 1 foilborne`,
+    api: [
+      { name: "ackermann", type: "(steer: number, geometry: SteerGeometry) => AckermannPose", description: "The angle the centreline would need, answered with the two the wheels actually take, plus the radius the rear axle runs on. Exact geometry; the inner wheel always turns harder." },
+      { name: "hitchAngle", type: "(steer, tractor: TractorGeometry, trailerWheelbase) => number", description: "The steady-state articulation angle of a towed section, signed with the steer. No history, so straightening the rack straightens the vehicle." },
+      { name: "coordinatedBank", type: "(speed, radius, gravity?) => number", description: "atan(v²/rg), in degrees. An infinite radius or no speed is wings level." },
+      { name: "axleRide", type: "(surface: (x) => number, positions) => AxleRide", description: "A rigid body on N axles over a surface: the least-squares heave and pitch it settles to, and each axle's own travel from it." },
+      { name: "tsiolkovsky / stackDeltaV", type: "(massRatio, exhaustVelocity) => number / (stages) => number", description: "vₑ ln(mr), and the sum over the stages still attached. A ratio at or below one is no Δv." },
+      { name: "foilLift / foilRise", type: "(speed, area, coefficient?, density?) => number / (speed, takeoff) => number", description: "The ideal lift equation, and the rise that follows from it: below the takeoff speed nothing, above it the wetted fraction is (takeoff/v)² and the rest is the climb." },
+      { name: "pitchProgram", type: "(fraction: number, kick?: number) => number", description: "Illustrative. Degrees from vertical over an ascent: vertical off the pad, kicked over early, most of the turn taken in the middle. Not a solved trajectory." },
+      { name: "roadProfile", type: "(x, amplitude?, wavelength?) => number", description: "Illustrative. Two sines that do not share a period, so a body running over it never repeats over a short run." },
+      { name: "wheelSolid / rollPoint", type: "(centre, radius, halfWidth, steer?, steps?) => Vec3[] / (point, depth, roll, centre?) => Vec3", description: "Drawing geometry: a steered wheel as the solid it is, and a profile-elevation point lifted into the world and rolled about the fore-aft axis. Both feed straight into slabPath." },
+    ],
+    notes: ["Everything here is exact geometry except `pitchProgram` and `roadProfile`, which are stated shapes and say so. Nothing integrates a path, a force or a mass.", "Positive is to starboard everywhere — clockwise seen from above — the same sense as every heading in the set. `rollPoint` follows the aircraft convention instead: positive puts the starboard side down."],
   },
   {
     slug: "robot-gripper", item: "robot-gripper", title: "Robot gripper",
@@ -2687,6 +3078,178 @@ const panel = panelTransform(camera, corner, along, down, 104, 78)`,
       "Pure functions over plain objects. No React, no dependencies, and no dynamics — no friction in the hinge, no detent force on the crown, no material in the band, and no contact between the stand's foot and the desk beyond the requirement that it be there.",
       "`camera.plane` covers artwork in the horizontal plane and `camera.wall` covers a vertical one. `panelTransform` is for everything in between — a lid, a propped slate, a turned handset — which is where the screens in this family actually live.",
       "Panel axes follow what a reader of the panel sees rather than the world: a screen facing the front camera runs its own left-to-right from +x to −x, because from nose-on the machine's starboard side is on your left.",
+    ],
+  },
+  {
+    slug: "keyboard-geometry", item: "keyboard-geometry", title: "Keyboard geometry", group: "Foundations",
+    summary: "The mechanisms under a machine you type on: travel with real hysteresis, an asymmetric keystroke, a unit-pitch deck with a stagger, matrix scan order, and caps standing on a raked plane.",
+    files: ["lib/robocn/keyboard.ts"],
+    usage: `import { keyTravel, keyboardLayout, matrixScan, deckFrame, capSolid } from "@/lib/robocn/keyboard"
+
+const key = keyTravel(0.55, { travel: 4, actuation: 2, closed })  // -> actuated partway down
+const deck = keyboardLayout([[1, 1, 1, 1], [1.25, 6.25, 1.25]])   // unit widths, one pitch
+const scan = matrixScan(clock, 5, 14)                             // one row energized at a time
+const face = deckFrame({ x: 0, y: 18, z: 0 }, 22)                 // a raked key plane
+const cap = capSolid(camera, face, deck.keys[3], key.fraction)`,
+    api: [
+      { name: "keyTravel", type: "(press, options?) => KeyTravelPose", description: "One key's travel. The contact closes at `actuation` on the way down and opens at `reset` on the way up, so pass the previous state as `closed` and the switch has real hysteresis instead of chattering at one point." },
+      { name: "pressCurve", type: "(t) => number", description: "The shape of one keystroke: a fast fall, a moment bottomed out, and a slower return on the spring. Nothing in this family presses like a sine." },
+      { name: "keyboardLayout", type: "(rows, options?) => KeyboardDeck", description: "Rows of unit widths laid out on one pitch with a per-row stagger, indexed in scan order. `rowUnits` reports each row's own width, so a row that does not fill the deck is drawn short rather than stretched." },
+      { name: "keycapProfile", type: "(row, rows, base?) => KeycapProfile", description: "The sculpt of one row: how far its caps stand above the deck and how far their faces tilt. The home row is the low point and the rows either side of it tilt inward." },
+      { name: "matrixScan", type: "(clock, rows, columns) => MatrixScanPose", description: "Where a scan has got to: one row energized, the columns read across it, wrapping in both directions. Which key is down and which key is being looked at are two different things." },
+      { name: "strokePresses", type: "(strikes, keys, stroke, options?) => number[]", description: "How far every key of a deck is pressed at a point in a passage, given a schedule of strikes. Overlapping strikes give the key the deeper press." },
+      { name: "codeStrikes", type: "(indices, keys, options?) => KeyStrike[]", description: "A schedule that strikes each index in turn, evenly across the passage and inside it at both ends. Keys outside the deck are dropped, not clamped onto a key nobody asked for." },
+      { name: "deckFrame", type: "(origin, rake) => DeckFrame", description: "The frame a raked key face lives in: across, downhill toward the operator, and out of the face. Keys press along the negative normal, which is why a raked deck shows its travel from a front camera and a flat one does not." },
+      { name: "capSolid", type: "(camera, frame, placement, press, options?) => string", description: "One keycap as a tapered box standing on that frame, projected and hulled — truthful from all four cameras." },
+      { name: "deckPanel / capFace", type: "(camera, frame, …) => PanelProjection", description: "A rectangle of the deck — a legend, a readout strip — as one affine transform plus whether the camera can see its front at all." },
+    ],
+    notes: [
+      "Pure functions over plain objects. No dynamics: no force curve, no tactile bump force, no click leaf, no key rollover, no debounce timing, no ghosting and no character encoding.",
+      "The scan *order* is the real one — rows strobed, columns read across them. The scan *rate* is whatever clock you hand it.",
+      "Travel and actuation are world units, so a switch with more travel really does stand its cap higher and trip further down. A contact placed past the end of the travel simply never closes, rather than being clamped onto the bottom.",
+    ],
+  },
+  {
+    slug: "key-switch", item: "key-switch", title: "Key switch", group: "Machines",
+    summary: "One mechanical keyswitch, sectioned: a stem on a coil spring whose contact closes partway down the travel and opens again higher than it closed.",
+    files: ["components/ui/key-switch.tsx"],
+    usage: `import { KeySwitch } from "@/components/ui/key-switch"
+
+<KeySwitch action="tactile" behavior="tap" />
+
+// Controlled, or a switch you can press with a finger.
+<KeySwitch press={0.55} travel={4} actuation={2} />
+<KeySwitch interactive onActuatedChange={setClosed} />`,
+    props: [
+      view("profile", "switch"),
+      { name: "press", type: "number", description: "Controlled press, 0 at rest to 1 bottomed out. Omit it and the stem runs behavior." },
+      { name: "behavior", type: '"tap" | "flutter" | "hold" | "static"', default: '"tap"', description: "One whole keystroke a cycle, the band around the actuation point where the hysteresis stops it chattering, or pressed and held." },
+      { name: "action", type: '"linear" | "tactile" | "clicky"', default: '"tactile"', description: "What the stem's leg does on the way down: a plain bar, a bar with a lobe on it, or one that drives a separate jacket." },
+      { name: "travel", type: "number", default: "4", description: "Full travel of the stem in world units, clamped to 2–6. It is geometry: more travel stands the cap higher at rest." },
+      { name: "actuation", type: "number", default: "travel / 2", description: "How far down the contact closes, world units. It reopens a tenth of the travel higher than that." },
+      { name: "speed", type: "number", default: "0.5", description: "Strokes per second." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Drag down the frame to press it, or arrow-key it 5% at a time; Home and End park it up and bottomed out." },
+      { name: "onPressChange", type: "(press: number) => void", description: "Press throughout a drag or a key press." },
+      { name: "onActuatedChange", type: "(closed: boolean) => void", description: "Fires when the contact closes or opens — once per event, never once per frame." },
+      { name: "showBoard", type: "boolean", default: "true", description: "The board the switch is mounted through." },
+      { name: "label", type: "string", description: "Caption below the state readout." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "The only machine here whose output is discrete. Everything else in the set reports a number; this reports a contact that is either closed or not, and the point it closes at is partway down a continuous travel with overtravel left after it.",
+      "It has real hysteresis: the leaf resets a tenth of the travel higher than it actuated, so easing off a key that has registered does not open it again straight away. The `flutter` behaviour is there to show exactly that.",
+      "Bottoming out is geometry rather than a limit: the stem's skirt lands on the cavity floor at the end of the travel, and the cap lands on the housing at the same moment.",
+      "The cutaway is a drawing in the machine's own fore-aft plane, projected. From `plan` and `front` that plane is edge on — a line, which is what a section seen from the side is — so from those two the switch is drawn as the solids it is made of, and the cap's travel is still what moves.",
+      "No dynamics: no force curve, no tactile bump force, no click leaf physics, no debounce. The spring is drawn compressing at its real proportion; it is not resolving any load.",
+    ],
+  },
+  {
+    slug: "robot-keypad", item: "robot-keypad", title: "Robot keypad", group: "Machines",
+    summary: "A raked bench entry pad on a scanned matrix: the key that is down and the cell the scan is reading are two different things, and both are drawn.",
+    files: ["components/ui/robot-keypad.tsx"],
+    usage: `import { RobotKeypad } from "@/components/ui/robot-keypad"
+
+<RobotKeypad code="4813" outcome="granted" />
+
+// Controlled, or a pad you can scrub through the entry.
+<RobotKeypad typed={0.45} rows={4} columns={3} rake={22} showScan />
+<RobotKeypad interactive onTypedChange={setTyped} />`,
+    props: [
+      view("front", "keypad"),
+      { name: "typed", type: "number", description: "Controlled position through the entry, 0 to 1. Omit it and the keys run behavior. It is `typed` rather than `stroke` because `stroke` is an SVG attribute." },
+      { name: "behavior", type: '"entry" | "scan" | "idle" | "static"', default: '"entry"', description: "Work through the entry and answer it, run the matrix scan with nothing pressed, or sit with the backlight on." },
+      { name: "code", type: "string", default: '"4813"', description: "The characters it enters, in order. Anything not on a cap is dropped rather than mapped onto a key nobody asked for." },
+      { name: "outcome", type: '"granted" | "denied"', default: '"granted"', description: "What it answers with once the entry is in. It compares nothing — this is the answer, not the result of a check." },
+      { name: "rows", type: "number", default: "4", description: "Rows in the matrix, rounded and clamped to 3–5." },
+      { name: "columns", type: "number", default: "3", description: "Columns in the matrix, rounded and clamped to 3–4. A fourth column gets lettered keys, so no legend is ever drawn twice." },
+      { name: "rake", type: "number", default: "22", description: "How far the key face is tipped up from the bench, degrees, clamped 0–40. Geometry: it sets the wedge's back height, and it is what makes a press visible head on." },
+      { name: "showScan", type: "boolean", default: "false", description: "Draw the row rails and outline the cell the scan is reading. Blueprint draws them anyway." },
+      { name: "speed", type: "number", default: "0.3", description: "Entries per second." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Drag across the face to scrub the entry, or arrow-key it a digit at a time." },
+      { name: "onTypedChange", type: "(typed: number) => void", description: "Position through the entry throughout a drag or a key press." },
+      { name: "onEntryChange", type: "(digits: number) => void", description: "How many digits have been taken, when that changes — never once per frame." },
+      { name: "label", type: "string", description: "Caption below the state readout." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "The matrix is scanned, not wired one line per key: one row is energized and the columns are read across it. The cell being read is outlined and the key that is down is pressed, because they are not the same thing and a drawing that conflates them is lying about how a keypad works.",
+      "The rake is the mechanism, not the styling. A key face flat on the bench presses straight into a front camera and shows nothing; tipped up, the same travel moves the cap down the screen. Set `rake={0}` and you can see the machine lose its own legibility, honestly.",
+      "Each cap is a box standing on the face and pressing along its normal, so the travel is truthful from every camera rather than being a vertical nudge that only works in one of them.",
+      "It checks nothing. There is no code comparison, no lockout, no attempt counter, no timing and no encoding: `outcome` is the answer it has been told to give.",
+      "From `plan` the camera stands past the far edge of the deck, so the legends read away from you. That is what looking at a keypad over its own top edge does, and it is the same projection every other machine in the set uses.",
+      "An original archetype. No manufacturer, product line, wordmark or key set is reproduced here or in the demo.",
+    ],
+  },
+  {
+    slug: "robot-keyboard", item: "robot-keyboard", title: "Robot keyboard", group: "Machines",
+    summary: "A whole key deck placed by a unit grid: rows in 1u, 1.25u and 6.25u widths on one pitch, sculpted caps, and a split layout whose halves are genuinely turned apart.",
+    files: ["components/ui/robot-keyboard.tsx"],
+    usage: `import { RobotKeyboard } from "@/components/ui/robot-keyboard"
+
+<RobotKeyboard layout="compact" behavior="type" />
+
+// Controlled, or a deck you can scrub a passage across.
+<RobotKeyboard typed={0.4} layout="split" profile="sculpted" />
+<RobotKeyboard interactive onTypedChange={setTyped} />`,
+    props: [
+      view("iso", "deck"),
+      { name: "typed", type: "number", description: "Controlled position through the passage, 0 to 1. Omit it and the deck runs behavior. It is `typed` rather than `stroke` because `stroke` is an SVG attribute." },
+      { name: "behavior", type: '"type" | "ripple" | "scan" | "idle" | "static"', default: '"type"', description: "Type the passage, run a self-test wave across the deck, strobe the matrix with nothing pressed, or sit still." },
+      { name: "layout", type: '"compact" | "extended" | "split"', default: '"compact"', description: "Which deck it is. `extended` adds a function row and a four-column block; `split` cuts the same rows down the middle and turns the halves apart." },
+      { name: "profile", type: '"sculpted" | "flat"', default: '"sculpted"', description: "Sculpted rows dish toward the home row and tilt their faces with it, which is what gives the deck a profile in elevation. Flat makes every cap one height." },
+      { name: "strokes", type: "number", default: "16", description: "Keystrokes in the passage, rounded and clamped to 4–40." },
+      { name: "rake", type: "number", default: "6", description: "How far the case is tipped up from the desk, degrees, clamped 0–16." },
+      { name: "backlight", type: "boolean", default: "true", description: "Light the caps that are down." },
+      { name: "showScan", type: "boolean", default: "false", description: "Draw the row rails and outline the cell the scan is reading." },
+      { name: "speed", type: "number", default: "0.22", description: "Passages per second." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Drag across the deck to scrub the passage, or arrow-key it a stroke at a time." },
+      { name: "onTypedChange", type: "(typed: number) => void", description: "Position through the passage throughout a drag or a key press." },
+      { name: "label", type: "string", description: "Caption below the state readout." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "The rows are specified in unit widths and laid out on one pitch, so the stagger falls out of the widths the way it does on a real board rather than being nudged into place. A 60% deck comes to sixty-one keys because that is what the rows add up to.",
+      "`split` is a change to where the keys are, not a second drawing: each half is turned about the deck's own centre and pushed out, and every cap carries the turn as its own spin. The one difference in the rows is that a 6.25u space cannot belong to one half, so it becomes two thumb keys.",
+      "Sculpting is real geometry: each row's caps stand at their own height and their top faces tilt toward the home row, which is why the deck has a profile from a side camera and a flat board does not.",
+      "The caps are blank, and a passage is a rhythm across the deck rather than text. Nothing here encodes a character, maps a layout, or reproduces anyone's key set.",
+      "No dynamics and no electronics: no rollover, no debounce, no ghosting. The scan order is the real one — a row strobed, the columns read across it — and the scan rate is whatever `speed` says.",
+    ],
+  },
+  {
+    slug: "input-terminal", item: "input-terminal", title: "Input terminal", group: "Machines",
+    summary: "A bench console with two coupled mechanisms: a head canted on a hinge, and a key deck whose strokes are what put glyphs on its screen.",
+    files: ["components/ui/input-terminal.tsx"],
+    usage: `import { InputTerminal } from "@/components/ui/input-terminal"
+
+<InputTerminal behavior="session" screen="query" />
+
+// Controlled — two scalars, because it has two mechanisms.
+<InputTerminal cant={18} typed={0.6} screen="log" lines={10} />
+<InputTerminal interactive onCantChange={setCant} />`,
+    props: [
+      view("front", "console"),
+      { name: "cant", type: "number", description: "Controlled head angle, degrees back from upright, clamped 6–45. Omit it and the head runs behavior." },
+      { name: "typed", type: "number", description: "Controlled position through the passage, 0 to 1. Omit it and the keys run behavior." },
+      { name: "behavior", type: '"session" | "query" | "idle" | "static"', default: '"session"', description: "Set the head, type under it and lay it back; type with the head parked; sit with the cursor blinking; or stop." },
+      { name: "screen", type: '"boot" | "log" | "query" | "off"', default: '"query"', description: "What the display is showing. Structure in palette roles — a status band, filled lines, a block cursor — never text." },
+      { name: "lines", type: "number", default: "7", description: "Lines the screen holds, rounded and clamped to 4–12. The passage fills exactly that many." },
+      { name: "speed", type: "number", default: "0.2", description: "Sessions per second." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Drag down the frame to lay the head back, or arrow-key it 3° at a time; Shift 10°, Home and End upright and right back." },
+      { name: "onCantChange", type: "(cant: number) => void", description: "Head angle throughout a drag or a key press." },
+      { name: "showDesk", type: "boolean", default: "true", description: "The contact shadow under the case." },
+      { name: "label", type: "string", description: "Caption below the state readout." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "The only machine in the set where one mechanism drives another: the glyph count on the screen is the keystrokes the deck has taken, so the cursor sits wherever the keys have got to. Scrub the passage and both move together, because they are the same number.",
+      "Two mechanisms means two controlled props. `cant` is the one you grab, and the loop keeps running while `typed` is still the machine's own — a head held by hand carries on typing underneath it, which is what pinning a value while the clock runs on is for. Supplying both, or `behavior=\"static\"`, parks everything.",
+      "The head is hinged up a column at the back of the case rather than on the deck's own edge, which is what makes this a console rather than a machine that folds shut. `clamshell-laptop` is the one that folds.",
+      "It computes nothing. The screen draws structure — a status band, filled lines, a block cursor — and never text: no encoding, no shell, no output, and no application's artwork.",
+      "An original archetype. No manufacturer, product line, wordmark or paint scheme is reproduced here or in the demo.",
     ],
   },
   {
@@ -4073,7 +4636,7 @@ const frame = trackerFrame(aimFrom({ x: 0.3, y: 0.8, z: -0.5 }))`,
       view("front", "machine"),
       { name: "daylight", type: "number", description: "Controlled time of day, 0 and 1 midnight and 0.5 noon. Supplying it stops the loop." },
       { name: "sun", type: "{ azimuth: number; elevation: number }", description: "Where the light actually is. Overrides the day arc and the pointer entirely." },
-      { name: "behavior", type: '"sweep" | "day" | "nod" | "static"', default: '"sweep"', description: "Sweep runs dawn to dusk; day runs the whole twenty-four hours, so the head turns away and the rays furl at night; nod is the hunting a tracker does once it has arrived." },
+      { name: "behavior", type: '"sweep" | "day" | "nod" | "static"', default: '"sweep"', description: "Sweep runs the working arc — the part of the day a collector collects in, which a two-axis mount's azimuth range is sized for; day runs the whole twenty-four hours, so the head turns away and the rays furl at night; nod is the hunting a tracker does once it has arrived." },
       { name: "speed", type: "number", default: "0.14", description: "Passes of the arc per second." },
       ...loop,
       { name: "interactive", type: "boolean", default: "false", description: "Drag across it to scrub the day; arrows step 3 percent, shift 10, Home dawn and End dusk." },
@@ -4285,6 +4848,109 @@ terminator(44, { x: 0.4, y: 0.7, z: -0.6 })`,
       "The periods are not free either: they come from the third law, `T ∝ a^{3/2}`, so an outer body is slow because it is far out.",
       "Drawn from above, where the ellipses read true. Tipping the camera brings out the column and the plinth, which are the parts that only exist off the plan axis.",
       "Solved: Kepler's equation, the orbits and their foci, the periods, the arms, and the hub train as real horizontal circles. Illustrated: the gear teeth are not drawn and nothing is geared to anything — there is no gravity here and the bodies do not pull on each other.",
+    ],
+  },
+  {
+    slug: "hull-geometry", item: "hull-geometry", title: "Hull geometry", group: "Foundations",
+    summary: "An equal-area tiling of a sphere into armour plates whose areas sum to exactly one, a fracture front and the straight-line travel behind it, a shock ring as a real circle, and a paraboloid dish.",
+    files: ["lib/robocn/hull.ts"],
+    usage: `import { hullPlates, burst, dish, dishNormal } from "@/lib/robocn/hull"
+
+const plates = hullPlates(9, { perCourse: 12 })
+plates.reduce((sum, plate) => sum + plate.area, 0)   // exactly 1: no gaps
+burst(plates[7], 0.4, { origin: { x: 0, y: 0, z: -1 }, spread: 1.6 })`,
+    api: [
+      { name: "hullPlates(courses, options?)", type: "HullPlate[]", description: "The tiling. Courses are cut by equal area and divided into equal longitudes, so the plate areas sum to exactly one sphere at every course and plate count. Plates per course track the cosine of the latitude, so a polar plate is not a sliver." },
+      { name: "plateOutline(plate, steps?)", type: "{ latitude, longitude }[]", description: "That plate's boundary: along the south parallel, up the east meridian, back along the north, down the west. A parallel is a curve on the body, so each edge is stepped rather than chorded." },
+      { name: "plateNormal(plate)", type: "Vec3", description: "The unit direction of the plate's centre — where it sits on the intact hull." },
+      { name: "burst(plate, progress, options?)", type: "PlateBurst", description: "The breakup. A fracture front sweeps out from `origin`, so a plate's `release` is 0 until the front reaches it; after that it travels in a straight line. At progress 0 every plate is back at `plateNormal` exactly, and the distance from the centre never decreases." },
+      { name: "shockRing(centre, axis, radius, steps?)", type: "Vec3[]", description: "A real circle of that radius in the plane through `centre` square to `axis`. Projected, it is the ellipse — nothing has to draw one." },
+      { name: "dish(radius, depth)", type: "DishSurface", description: "A paraboloid from its rim and its depth, carrying the focal length `r²/(4d)` measured from the vertex." },
+      { name: "dishProfile / dishNormal / dishFocalPoint", type: "Vec2", description: "A point on the bowl, its outward normal there, and where the focus sits — all in the bowl's own axial plane. Reflecting an axial ray about that normal at any point on the surface sends it through the focus, which is what lets an emitter array be solved rather than aimed." },
+      { name: "direction(latitude, longitude)", type: "Vec3", description: "The unit direction at a latitude and longitude, pole on `y` — the same convention `celestial-geometry` uses, so plate geometry hands straight to `surfacePoint`." },
+    ],
+    notes: [
+      "Pure functions over plain numbers and `{x, y, z}`. No React, no camera, no dependency but `clamp`.",
+      "Courses are cut by equal area rather than by equal angle, which is the reason the sum is exact rather than nearly right: the area of a zone depends only on its height, so stepping `sin(latitude)` uniformly gives every course exactly its share.",
+      "The travel never comes back in, whatever the `focus` blend, because both candidate directions — straight out, and away from the rupture — have a non-negative component along the plate's own normal.",
+      "No structure, no mass, no energy and no collision. Pieces pass through each other's paths because nothing is stopping them, and `progress` runs backwards as happily as forwards.",
+    ],
+  },
+  {
+    slug: "battle-station", item: "battle-station", title: "Battle station", group: "Machines",
+    summary: "An armoured orbital station whose hull is a real tiling: the breakup launches every plate down its own line behind a fracture front, and putting it back reassembles the sphere exactly.",
+    files: ["components/ui/battle-station.tsx"],
+    usage: `import { BattleStation } from "@/components/ui/battle-station"
+
+<BattleStation behavior="detonate" courses={9} perCourse={12} />
+<BattleStation breakup={0.4} interactive onBreakupChange={setBreakup} />`,
+    props: [
+      view("front", "station"),
+      { name: "breakup", type: "number", description: "Controlled breakup, 0 intact to 1 fully apart. Supplying it stops the loop." },
+      { name: "behavior", type: '"patrol" | "charge" | "detonate" | "static"', default: '"detonate"', description: "Patrol just turns it; charge winds the dish up and fires; detonate fires, lets the hull go and puts it back." },
+      { name: "speed", type: "number", default: "0.14", description: "Cycles per second." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Drag across it to work the breakup; arrows 5 percent, shift 15, Home intact and End apart." },
+      { name: "onBreakupChange", type: "(breakup: number) => void", description: "Fires on every drag and key press, in controlled mode too." },
+      { name: "charge", type: "number", description: "Controlled dish charge, 0 cold to 1 firing. Omit and the behaviour drives it." },
+      { name: "spin", type: "number", description: "Controlled rotation about the pole, in degrees. Omit and the clock turns it." },
+      { name: "tilt", type: "number", default: "18", description: "Degrees the pole leans out of vertical." },
+      { name: "courses", type: "number", default: "9", description: "Armour courses pole to pole, clamped 3..21. Every course is exactly the same area." },
+      { name: "perCourse", type: "number", default: "12", description: "Plates round the equator, clamped 4..28. Every other course scales by its own cosine." },
+      { name: "plating", type: "number", default: "1", description: "How much of the hull is plated. Courses come off pole-first, showing the ribs and girdle rings under them." },
+      { name: "trench", type: "boolean", default: "true", description: "The equatorial service trench: a course carrying no plating at all, so it is a hole in the hull rather than a stripe on one." },
+      { name: "ribs", type: "number", default: "12", description: "Meridional ribs on the frame under the plating, clamped 0..24." },
+      { name: "dishLatitude / dishLongitude", type: "number", default: "34 / 72", description: "Degrees: where the focusing dish sits on the hull. It is placeable, not a fixed signature position." },
+      { name: "dishSpan", type: "number", default: "26", description: "Degrees of hull the dish bore takes up, measured from its axis. Clamped 8..48 — the plates inside it are removed." },
+      { name: "emitters", type: "number", default: "8", description: "Emitters round the bowl, clamped 0..16. Their rays are solved onto the focus." },
+      { name: "rupture", type: "number", default: "24", description: "Degrees round the body the hull fails at. The fracture front starts here." },
+      { name: "spread", type: "number", default: "0.75", description: "How far a plate travels by the end, in radii. Clamped 0..6." },
+      { name: "seed", type: "number", default: "5", description: "Any integer. The same seed is the same breakup, every render." },
+      { name: "sun", type: "number", default: "38", description: "Where the light is, in degrees round the body; 0 is behind the viewer." },
+      ...droidForm.filter((row) => row.name !== "showGround"),
+    ],
+    notes: [
+      "The hull is a tiling, not a texture: equal-area courses divided into equal longitudes, whose plate areas sum to exactly one sphere. `breakup` launches those plates rather than fading one drawing into another, and at 0 every plate is back where the tiling put it to the last bit — so the intact station is not a second drawing.",
+      "It peels rather than inflates. A fracture front sweeps out from the rupture, so the near side lets go while the far side is still whole, and each plate then travels in a straight line at its own share of the speed.",
+      "The trench is a course with nothing on it, and `plating` takes courses away pole-first, which is why the ribs and girdle rings show through. Both are the same tiling read a different way: under construction and coming apart are one ordering run in two directions.",
+      "The dish is a paraboloid. Its focal length is `r²/(4d)` and each emitter ray is an axial ray reflected about the bowl's own normal, so the rays converge on the focus because the surface does. The beam that leaves the focus is illustrated.",
+      "Solved: the tiling and its areas, every plate boundary, the fracture front and release order, the trajectories, the dish surface and the emitter convergence, the day-night line, the per-plate illumination, and the projection of all of it. Illustrated: the trench and hatch detail, the beam's taper and glow, the shock ring's expansion rate, and the rib profile.",
+      "Nothing is simulated. No mass, no energy, no structural model and no collision — plates pass through each other's paths because nothing is stopping them, and `breakup` runs backwards as happily as forwards. It is a tiling coming apart, not a thing failing.",
+      "An original archetype: a generic armoured orbital station. The dish position is a prop, the plating is a generic course pattern, and nothing here reproduces a craft, a crest or a paint scheme from anywhere.",
+    ],
+  },
+  {
+    slug: "debris-field", item: "debris-field", title: "Debris field", group: "Machines",
+    summary: "A population of hull fragments on straight trajectories from one rupture, each released at its own moment and turning at its own rate, drawn back to front so a near fragment occludes a far one.",
+    files: ["components/ui/debris-field.tsx"],
+    usage: `import { DebrisField } from "@/components/ui/debris-field"
+
+<DebrisField behavior="drift" courses={6} perCourse={9} showTrails />
+<DebrisField spread={0.7} interactive onSpreadChange={setSpread} />`,
+    props: [
+      view("front", "field"),
+      { name: "spread", type: "number", description: "Controlled scatter, 0 still assembled to 1 fully apart. Supplying it stops the loop." },
+      { name: "behavior", type: '"burst" | "drift" | "tumble" | "static"', default: '"drift"', description: "Burst runs the scatter out and back; drift holds it and lets the tumble carry the drawing; tumble holds it further out." },
+      { name: "speed", type: "number", default: "0.1", description: "Cycles per second." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Drag across it to scrub the scatter; arrows 5 percent, shift 15, Home assembled and End apart." },
+      { name: "onSpreadChange", type: "(spread: number) => void", description: "Fires on every drag and key press, in controlled mode too." },
+      { name: "courses", type: "number", default: "6", description: "Courses the body was plated in, clamped 2..14. With `perCourse` it sets the fragment count." },
+      { name: "perCourse", type: "number", default: "9", description: "Fragments round the equator of that body, clamped 2..20." },
+      { name: "reach", type: "number", default: "1.3", description: "How far a fragment travels at full spread, in radii. Clamped 0..12." },
+      { name: "rupture", type: "number", default: "18", description: "Degrees round the field the rupture sat at." },
+      { name: "showTrails", type: "boolean", default: "false", description: "Straight lines back to the piece of hull each fragment came off — the trajectories, drawn." },
+      { name: "showShock", type: "boolean", default: "true", description: "The expanding front." },
+      { name: "seed", type: "number", default: "5", description: "Any integer. The same seed is the same field, every render." },
+      { name: "sun", type: "number", default: "38", description: "Where the light is, in degrees round the field; 0 is behind the viewer." },
+      ...droidForm.filter((row) => row.name !== "showGround"),
+    ],
+    notes: [
+      "This is the only drawing in the set that has to decide what is in front of what. Everything else here is one object; this is a population with nothing holding it in any order, so the fragments are sorted by `camera.depth` and painted back to front — and the order changes when the camera moves rather than the artwork being redrawn per angle.",
+      "Every fragment is a plate off the same tiling `battle-station` is built from, on the same solved trajectory. At `spread` 0 they reassemble into the body exactly, which is what makes the scatter readable as a scatter of something.",
+      "The fragments keep turning after they have flown out, because nothing stopped them: the tumble runs off the clock rather than off the travel. That is the difference from the station's breakup, where a plate turns only while it is being thrown.",
+      "Solved: the tiling, the fracture front and its release order, the straight-line travel, each fragment's own tumble frame, the illumination, the depth sort, the shock ring as a real circle in a stated plane, and the trails — which are straight because the solver makes them so.",
+      "Illustrated: the fragment edge shading and the shock ring's expansion rate and fade. There is no mass, no energy, no gravity and no collision: fragments pass through each other's paths, and `spread` is a number you can scrub in both directions rather than a time after an event.",
     ],
   },
   {
@@ -4531,6 +5197,108 @@ const block = tacklePosition(3, { lines: 8, drumRadius: 11, topHeight: 204, floo
     notes: [
       "The legs are trusses in world space and the hull is a solid, so all four cameras are looking at the same rig.",
       "The seabed and the water are drawn. Nothing computes buoyancy, penetration, punch-through, leg loads or a sea state.",
+    ],
+  },
+  {
+    slug: "spring-hopper", item: "spring-hopper", title: "Spring hopper", group: "Robots",
+    summary: "A single-legged rig that bounces on a real spring. Flight is a parabola and stance is a mass on a spring, and how long each lasts is a consequence of the drop height and the spring rate rather than a duty knob.",
+    files: ["components/ui/spring-hopper.tsx"],
+    usage: `import { SpringHopper } from "@/components/ui/spring-hopper"
+
+<SpringHopper behavior="hop" />
+
+// Softer spring, taller hop: longer contact, deeper squat, same ballistics.
+<SpringHopper behavior="bound" stiffness={14} height={0.9} />
+
+// Or load the spring yourself. Controlled compression plants it on the ground.
+<SpringHopper compression={0.8} interactive onCompressionChange={setLoad} />`,
+    props: [
+      view("profile", "rig"),
+      { name: "behavior", type: '"hop" | "bound" | "pump" | "static"', default: '"hop"', description: "What it does when compression is not supplied: the steady bounce, a taller one with the leg swung for the landing, or working the spring on the spot without ever leaving the ground." },
+      { name: "compression", type: "number", description: "Controlled spring load, 0 free to 1 at the deepest it goes. Supplying it stops the loop and plants the machine — you cannot drive it into the air." },
+      { name: "onCompressionChange", type: "(compression: number) => void", description: "Fires throughout a drag and on every arrow key, so interaction works in controlled mode too." },
+      { name: "height", type: "number", default: "0.5", description: "Apex of the hop in hop units, 0–1. One hop unit is 70 drawing units." },
+      { name: "stiffness", type: "number", default: "40", description: "Spring rate in weights per hop unit, 4–400. Static sag is its reciprocal, and it sets the contact time." },
+      { name: "speed", type: "number", default: "0.8", description: "Hops per second." },
+      { name: "interactive", type: "boolean", default: "false", description: "Drag down the frame to load the spring; release and it eases back into the behaviour. Arrows 5%, shift 15%, Home free and End fully loaded." },
+      ...loop,
+      { name: "signal", type: '"idle" | "ready" | "warning"', default: '"ready"', description: "Mast lamp: neutral, accent, or shell." },
+      { name: "showGround", type: "boolean", default: "true", description: "The ground line and the shadow, which shrinks as it rises." },
+      { name: "label", type: "string", description: "Caption underneath; the blueprint variant adds the duty factor to it." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "The spring is drawn as a spring: a sampled helix whose coil count and radius never change, because a real one compresses by twisting its wire. It cannot pass its own solid height, and when it lands there the machine stops sinking — soften the spring under a full-height drop in the demo and you can watch it bottom out.",
+      "Stance and flight are solved, not tweened. Contact time is the closed form for a mass on a spring under gravity, so a stiffer spring gives a shorter, harder contact at the same hop height and the duty factor moves with it.",
+      "Illustrated, not solved: the leg swing and the reaction wheel that answers it. A free machine really does turn a wheel against its limb to aim the next landing, but the ratio here is drawn rather than an inertia model. The leg never swings while the foot is planted.",
+      "No damping inside the stance, no travel across the frame, no motor and no energy budget — the steady hop is the ideal lossless case. An original archetype: a single-legged hopping test rig, with no manufacturer or character reproduced.",
+    ],
+  },
+  {
+    slug: "ball-hopper", item: "ball-hopper", title: "Ball hopper", group: "Robots",
+    summary: "A bounding sensor ball whose shell is its own compliance. It flattens on impact at constant volume — so it has to get exactly that much wider — and with a restitution below one it bounces lower each time and comes to rest.",
+    files: ["components/ui/ball-hopper.tsx"],
+    usage: `import { BallHopper } from "@/components/ui/ball-hopper"
+
+<BallHopper behavior="bounce" />
+
+// Dropped and left alone: each bounce is e² of the last, then it sits down.
+<BallHopper behavior="settle" restitution={0.55} />
+
+// Or hold it up yourself and let go.
+<BallHopper altitude={1} interactive onAltitudeChange={setHeight} />`,
+    props: [
+      view("front", "shell"),
+      { name: "behavior", type: '"bounce" | "settle" | "skitter" | "static"', default: '"bounce"', description: "What it does when altitude is not supplied: the steady bounce, a whole settling sequence a cycle, or fast low bounces with the band turning." },
+      { name: "altitude", type: "number", description: "Controlled height, 0 on the ground to 1 at the top of its drop. Supplying it stops the loop and holds it there — off the ground, so not touching and not squashed." },
+      { name: "onAltitudeChange", type: "(altitude: number) => void", description: "Fires throughout a drag and on every arrow key." },
+      { name: "spin", type: "number", description: "Which way the sensor band faces, in degrees. Omit and it turns as it bounces." },
+      { name: "height", type: "number", default: "0.6", description: "Apex of the bounce in hop units, 0–1. One hop unit is 70 drawing units." },
+      { name: "stiffness", type: "number", default: "40", description: "Shell stiffness in weights per hop unit, 4–400. Sets the contact time and how deep the squash goes." },
+      { name: "restitution", type: "number", default: "0.66", description: "Fraction of the landing speed returned at take-off, 0–1. Apexes decay by its square, which is what drives settle." },
+      { name: "speed", type: "number", default: "0.7", description: "Bounces a second, or settling sequences a second when the behavior is settle." },
+      { name: "interactive", type: "boolean", default: "false", description: "Drag up the frame to lift it; release and it drops. Arrows 5%, shift 15%, Home on the ground and End at the top." },
+      ...loop,
+      { name: "signal", type: '"idle" | "ready" | "warning"', default: '"ready"', description: "Optic lamp: neutral, accent, or shell." },
+      { name: "showGround", type: "boolean", default: "true", description: "The horizon line and the shadow, which shrinks as it rises." },
+      { name: "label", type: "string", description: "Caption underneath; the blueprint variant adds the restitution to it." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "The squash conserves volume: an oblate spheroid with rx² ry = r³, so flattening the shell widens it by exactly that much. Because the orthographic projection of a spheroid is exactly an axis-aligned ellipse, a squashed ball reads as a flatter one in the elevations and a wider one in plan view, out of one geometry and with no artwork per angle.",
+      "It comes to rest in finite time, which is not free: contact time does not go to zero as the landing speed does, so an ideal Zeno bounce never finishes. The sequence ends when the rebound can no longer lift the shell clear, and it then sits at its static sag.",
+      "Illustrated, not solved: the contact patch — a constant-volume shell stays tangent to the ground, so the patch is drawn rather than cut — and the yaw, which does not come out of the contact. The band, lugs, vents and optic sit on the shell's own surface and are drawn only where a camera can see them.",
+      "Not orb-droid: that one rolls, never leaves the ground, and has a rigid shell. Nothing travels across the frame, and no friction, spin-up or material is modelled. An original archetype: a throwable bounding sensor ball.",
+    ],
+  },
+  {
+    slug: "hopper-dynamics", item: "hopper-dynamics", title: "Hopper dynamics", group: "Foundations",
+    summary: "The bounce solver behind both hoppers: an exact parabola in the air, an exact spring-mass stance on the ground, and the split between them derived rather than dialled.",
+    files: ["lib/robocn/hopper.ts"],
+    usage: `import { solveHop, hopTimings, solveDrop, springCoils, squashRadii } from "@/lib/robocn/hopper"
+
+const timings = hopTimings({ height: 0.5, stiffness: 40 })
+timings.duty  // fraction of the cycle spent touching the ground
+
+const state = solveHop({ phase: 0.3, stiffness: 40 })
+state.altitude  // negative while the compliance is loaded
+
+solveDrop({ time: 4, height: 1, restitution: 0.6 }).resting
+springCoils({ length: 40, turns: 6, radius: 7, wire: 1.4 }).bottomedOut
+squashRadii(30, 0.25)  // { rx, ry }, at constant volume`,
+    api: [
+      { name: "solveHop", type: "(options?: HopOptions) => HopState", description: "The steady bounce as a function of the cycle fraction: touchdown at phase 0, stance, take-off, flight. Wraps in both directions." },
+      { name: "HopState", type: "{ altitude, compression, squeeze, contact, velocity, load, bounce, resting }", description: "Altitude is height above the machine's free-standing rest and goes negative while the compliance is loaded; load is in machine weights, so 1 is standing still." },
+      { name: "hopTimings", type: "(options?: HopOptions) => HopTimings", description: "Contact, flight, cycle, duty, depth, take-off speed, static sag and natural frequency — every one a consequence of the drop height and the spring rate." },
+      { name: "solveDrop", type: "(options?: DropOptions) => HopState", description: "A machine released from height at time 0 and left alone: apexes decay by the square of the restitution until the rebound cannot lift it clear, after which it sits at its static sag." },
+      { name: "dropTimings", type: "(options?: DropOptions) => { bounces, settleTime, apexAt }", description: "How many contacts the sequence makes, when it is over, and when each apex falls — enough to loop a settling behaviour on." },
+      { name: "springCoils", type: "(options?: SpringOptions) => SpringCoils", description: "A helix seen side-on, which is a sinusoid. Coil count and radius are invariant, and the length is clamped at the solid height and reported as bottomedOut." },
+      { name: "squashRadii", type: "(radius: number, squeeze: number) => { rx, ry }", description: "An oblate spheroid at constant volume: rx² ry = r³." },
+    ],
+    notes: [
+      "Units are mass 1 and gravity 1, so a hop unit is whatever the drawing decides one is, and a load of 1 is the machine's own weight. Static sag is 1 / stiffness.",
+      "Contact ends when the spring force returns to zero, which is not half a period — gravity biases the oscillation, and the closed form is (2/ω)(π − atan(vω/g)). That is the number a duty-factor knob would have got wrong.",
+      "No damping inside the stance, no horizontal travel, no friction, no spin-up from contact, no material and no actuator. The loss is taken at take-off as a restitution coefficient, which is how a bounce is actually measured.",
     ],
   },
 ]

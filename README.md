@@ -41,6 +41,7 @@ installs at.
 | `robot-avocado` | Split-shell specimen pod: one body of revolution halved on its own centre plane, the two halves tilting apart on a rod under the machine while the stone rides up out of the gap on a screw column. Shut, it reassembles exactly. |
 | `robot-strawberry` | Berry-shelled field unit whose sensor studs are placed by the golden angle over *equal areas* of its own skin and run out along their own surface normals, under a calyx of rigid blades on one hinge. |
 | `robot-tomato` | Truss-hung crop unit: a clamp, a peduncle with two hinges sharing one swing angle, a lobed shell, and a ripening front that is real coverage of the surface rather than a colour ramp. The only machine here that hangs. |
+| `robot-sunflower` | Heliotropic collector mast: a golden-angle floret lattice on a dished head, aimed at the light by a solved two-axis tracker, on a stem that leans toward it while the gimbal collar takes up exactly what the stem did not. The spiral arms are found in the lattice, not placed in it. |
 | `protocol-droid` | Humanoid translator with controlled postures, gestures, head angle, and optional exposed wiring. |
 | `security-droid` | Tall angular guard frame with patrol poses, pointer-tracking sensor bar, and alert state. |
 | `medical-droid` | Clinical assistant with diagnostic readout and independently selected instrument arms. |
@@ -75,12 +76,19 @@ installs at.
 | `robot-scorpion` | Eight legs plus a metasoma solved in the sagittal plane, so the arch is a real height. |
 | `robot-mantis` | Raptorial forelimbs solved to a real target — the only animal here with somewhere to reach. |
 | `robot-frog` | Solved hind legs driven through crouch, launch, trail and landing by one pair of numbers. |
+| `spring-hopper` | The first machine here that bounces: a real helical spring with a solid height it can hit, and a contact time that falls out of the spring rate. |
+| `ball-hopper` | A shell that is its own compliance — flattened at constant volume, so it has to get exactly that much wider — and comes to rest in finite time. |
+| `hopper-dynamics` | The bounce solver: an exact parabola in the air, an exact spring-mass stance, and the duty factor derived rather than dialled. |
 | `robot-turtle` | The gait solver at four legs, under a procedurally plated carapace everything retracts into. |
 | `robot-cat` | Four solved legs whose roots are the two ends of a solved spine: the arch moves them both. |
 | `robot-dog` | The cat's twin with a floating shoulder: the hip is a spine joint, the shoulder is the far end of a swinging scapula, the neck is solved to the floor, and the tail is solved across the centre plane so the wag runs out of the drawing. |
 | `robot-fox` | The third answer to what moves a leg root: the whole body tips about its hip. The brush is an output rather than an input, and the two ears pan onto one quarry so their axes converge. |
 | `robot-bear` | The quadruped that stands up: soles that are intervals rather than points, so the feet make a base of support with edges, and a balance rule that keeps the centre of mass inside it — or does not, and topples. |
+| `robot-polar-bear` | The same chassis with a second support system: one number hands the load from the soles to the water, the hind limbs trail, and the forelimbs solve to a stroke path. |
+| `robot-panda` | The bear that sits down to use its hands: the seat is a third contact that buys back the base both forepaws just left, and the pseudo-thumb's gap is an output of what is held. |
 | `robot-horse` | The first machine whose gait is a real thing rather than a label: named footfall sequences with the beat counted off them, and a fetlock and a neck that are both driven by the load each foot is carrying. |
+| `robot-pegasus` | The only machine here with two ways of holding itself up: one number hands its weight from its legs to its wings, and the fetlocks, the fold, the stride and the beat all answer it. Its wing is three bones solved to a tip tracing a figure of eight. |
+| `robot-camel` | The only machine whose floor is not a line. Its ground has a depth and its feet go into it — less far because the pad opens under the load and drops its own pressure. The hump is a store that slumps, and the roll is an output of the gait. |
 | `robot-inchworm` | A looper that moves by alternating anchors, with the arch height solved from the anchor span. |
 | `micro-duck` | Bipedal duck robot: solved legs, a craning neck, and a beak that opens. |
 | `duck-kinematics` | Pure biped pose solver: footfall cycle, S-curve neck chain, hinged beak. |
@@ -99,6 +107,14 @@ installs at.
 | `robot-rover` | Four- or six-wheel ground robot with controlled heading, steering, and tread travel. |
 | `robot-drone` | Quad- or hexacopter with counter-rotating propellers and optional guards. |
 | `lidar-scan` | Polar range display for supplied angle-distance samples. |
+| `vehicle-geometry` | The constraints a vehicle works against: Ackermann steering, steady-state articulation, the coordinated bank, a rigid body on N axles, the rocket equation, and surface-piercing foil lift. |
+| `robot-car` | An autonomous road car whose two front wheels are solved from one steering angle, with the lean the turn radius implies and a body that rides the road on its own axles. |
+| `transit-bus` | An articulated city bus whose rear section angle is solved from the hitch, with plug doors, a concertina at the joint, and a kneel that rides on the doors' own number. |
+| `cargo-plane` | A high-wing freighter that banks because it was asked to turn, with ailerons carrying the roll it has not finished. |
+| `hydrofoil-craft` | A foilborne ferry that climbs out of its own ground plane: lift goes as v², so the surface-piercing V sheds wetted area as she rises. |
+| `launch-vehicle` | A two-stage booster that flies a pitch program, gimbals against it, stages, and reports the ideal Δv left from the rocket equation. |
+| `strike-starfighter` | A split-foil attack fighter: four wings on two fore-aft hinges that open from a cruise plane into an X, carrying their engines and cannons with them. |
+| `ion-interceptor` | A twin ion-drive interceptor: hexagonal panels pitching on lateral pylons around a pod that yaws inside them. |
 | `robot-gripper` | A standalone parallel or angular gripper with controlled jaw opening. |
 | `conveyor-belt` | A conveyor with automatic or controlled travel, reversible direction, and workpieces. |
 | `transmission-geometry` | Gear outlines and mesh phase, assembly-valid planetary trains, taut belt paths, and an energy chain folded over its bend. |
@@ -131,6 +147,11 @@ installs at.
 | `resolver` | A rotary transformer producing ideal sine and cosine position channels. |
 | `transformer-core` | EI and toroidal cores with selectable winding ratios and reversible flux. |
 | `device-geometry` | The mechanisms in a machine you carry: a hinge, a kickstand that has to close, rotary detents that wrap, a constant-pitch link band, and a screen on a plane at any attitude. |
+| `keyboard-geometry` | The mechanisms under a machine you type on: travel with real hysteresis, an asymmetric keystroke, a unit-pitch deck with a stagger, matrix scan order, and caps standing on a raked face. |
+| `key-switch` | One mechanical keyswitch, sectioned: a stem on a coil spring whose contact closes partway down the travel and opens again higher than it closed. |
+| `robot-keypad` | A raked bench entry pad on a scanned matrix: the key that is down and the cell the scan is reading are two different things, and both are drawn. |
+| `robot-keyboard` | A whole key deck placed by a unit grid: rows in 1u, 1.25u and 6.25u widths on one pitch, caps sculpted per row, and a split layout whose halves are genuinely turned apart. |
+| `input-terminal` | A bench console with two coupled mechanisms: a head canted on a hinge, and a key deck whose strokes are what put glyphs on its screen. |
 | `clamshell-laptop` | A portable workstation on one solved hinge: the lid keeps its length, the screen only draws from a camera that can see it, and the hinge stops at the travel it has. |
 | `slate-tablet` | A slate and its kickstand on one recline axis, with the foot solved onto the desk — and folded flat when the leg is too short to reach. |
 | `wheel-player` | A pocket media player whose click wheel is geared to its list: one turn is one pass, the detents wrap, and the hold switch is a real interlock. |
@@ -141,6 +162,13 @@ installs at.
 | `gramophone-horn` | The acoustic deck a century earlier: a mainspring whose governor holds the speed until it runs down, a crank that is the wind, and an exponential horn. |
 | `music-box-drum` | A pinned barrel bending a comb tuned by length, and letting go the instant the pin reaches the tip. The notes are a pattern you pass it. |
 | `busker-droid` | A one-machine band whose pose comes from data: a step pattern raises each beater and drops it on the beat, both arms solved to what they are about to hit. |
+| `celestial-planet` | A tilted, turning globe with latitude bands, polar caps, longitude storms and a ring system the body genuinely occludes — the far arc is cut where the silhouette crosses it, and the day-night line is a projected great circle. |
+| `celestial-moon` | The phase machine: a lunation whose crescent is the projection of the terminator circle rather than a drawn shape, and a libration that rocks the body so the limb craters come round and go again. |
+| `celestial-star` | A luminous body drawn from the limb-darkening law rather than a gradient, with granulation, a rotating spot belt, prominence loops anchored on the limb, and a corona. |
+| `celestial-asteroid` | An irregular body whose radius is a deterministic sum of cosine lobes, so its silhouette genuinely changes as it turns — and it tumbles about an axis that is itself going round. |
+| `orrery` | A geared model of a system: bodies carried on radial arms whose length *is* the orbital radius, running fast at periapsis and slow at apoapsis on real Kepler ellipses with the hub at a focus. |
+| `battle-station` | An armoured orbital station whose hull is a real tiling: the breakup launches every plate down its own line behind a fracture front, and putting it back reassembles the sphere exactly. A girdle trench, a plating axis, and a dish that focuses because it is a paraboloid. |
+| `debris-field` | What is left: a population of hull fragments on straight trajectories from one rupture, each released at its own moment and turning at its own rate — the only drawing here that has to decide what is in front of what. |
 | `robot-arm` | The articulated arm. Any number of links, eight end effectors, four paint variants, four mounts. |
 | `robot-arm-3d` | The same arm as a procedural react-three-fiber rig. |
 | `robot-stage` | Canvas, lights, contact shadow, grid floor and orbit controls for the 3D items. |
@@ -151,11 +179,25 @@ installs at.
 | `robot-loader` | A pick-and-place cycle as a loading indicator, determinate or not. |
 | `arm-controls` | A teach pendant: one slider per joint, driving an arm in forward kinematics. |
 | `robot-kinematics` | The solver. No React, no three.js, no dependencies. |
+| `phyllotaxis-geometry` | The golden-angle disc, the Fibonacci spiral arms that fall out of it, a dished face and its normals, and a two-axis aim solved from a direction. |
+| `celestial-geometry` | Kepler's equation solved to machine precision, ellipses about a focus, the terminator great circle, illumination and limb darkening, body frames, and a deterministic irregular radius field. |
+| `hull-geometry` | A sphere tiled into armour plates by equal area, whose areas sum to exactly one; a fracture front and the straight-line travel behind it; a shock ring as a real circle in a stated plane; and a paraboloid dish carrying its own focal length. |
 | `robot-style` | Sizes, variants, palette resolution, and the theme variables and keyframes. |
 | `robot-color` | CSS variables and `oklch()` turned into something three.js can parse. |
 | `use-robot-arm` | Animated pose for a link chain, plus `useEasedPoint`. |
 | `use-pointer-target` | Pointer position in a component's own world units. |
 | `use-robot-motion` | The clock the machines run on, the rate limiter, and press-and-drag control. |
+| `linkage-geometry` | Closed-loop kinematics: a four-bar solved as a circle intersection, a slider-crank with an analytic stroke, and block-and-tackle travel from rope length. |
+| `pumpjack` | A beam pump with its four-bar actually solved: the polished-rod stroke is what the link lengths produce, not a number anyone typed. |
+| `drilling-derrick` | A travelling block that is reeved rather than positioned — the drum's payout is shared between the lines, so advantage is visible as rope. |
+| `mud-pump` | One, two or three slider-cranks on a shaft, with a discharge summed from the solved piston velocities. |
+| `wellhead-tree` | The valve stack on a well: rising stems show their state, and the accent follows only the bore the open valves leave through. |
+| `storage-tank` | A floating roof riding the liquid, with a rolling ladder solved from wherever the roof is. Or a cone roof, which tells you nothing. |
+| `oil-tanker` | The one machine whose ground plane cuts through it: cargo carries the boot top and the load line under the waterline. |
+| `tanker-truck` | Two rigid bodies on one kingpin, where the hitch is a real yaw in world space and the compartments empty from the rear. |
+| `flare-stack` | A knockout drum, a derrick-supported riser and a lit tip, under a plume whose length is a proportion and whose lean is the wind. |
+| `fractionating-column` | A crude tower whose tray count rebuilds the column — spacing, seams and draw heights all come off it. Four named cuts. |
+| `jackup-rig` | Fixed-length legs and a hull that climbs them: one number is both the air gap above the water and the stick-up above the deck. |
 
 Installing a component pulls in what it needs: `robot-arm` brings `robot-kinematics`,
 `robot-style` and both hooks, and the theme variables ride along with `robot-style`.

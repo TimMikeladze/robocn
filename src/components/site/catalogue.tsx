@@ -40,8 +40,10 @@ import { CasingDroid } from "@/components/ui/casing-droid"
 import { CyberTrooper } from "@/components/ui/cyber-trooper"
 import { CustodianDroid } from "@/components/ui/custodian-droid"
 import { GuideDroid } from "@/components/ui/guide-droid"
+import { RobotCamel } from "@/components/ui/robot-camel"
 import { RobotHorse } from "@/components/ui/robot-horse"
 import { RobotHound } from "@/components/ui/robot-hound"
+import { RobotPegasus } from "@/components/ui/robot-pegasus"
 import { MonolithDroid } from "@/components/ui/monolith-droid"
 import { PylonDroid } from "@/components/ui/pylon-droid"
 import { SentinelConsole } from "@/components/ui/sentinel-console"
@@ -62,11 +64,15 @@ import { RobotSpider } from "@/components/ui/robot-spider"
 import { RobotAnt } from "@/components/ui/robot-ant"
 import { RobotBat } from "@/components/ui/robot-bat"
 import { RobotDragonfly } from "@/components/ui/robot-dragonfly"
+import { BallHopper } from "@/components/ui/ball-hopper"
 import { RobotFrog } from "@/components/ui/robot-frog"
+import { SpringHopper } from "@/components/ui/spring-hopper"
 import { RobotCat } from "@/components/ui/robot-cat"
 import { RobotDog } from "@/components/ui/robot-dog"
 import { RobotFox } from "@/components/ui/robot-fox"
 import { RobotBear } from "@/components/ui/robot-bear"
+import { RobotPolarBear } from "@/components/ui/robot-polar-bear"
+import { RobotPanda } from "@/components/ui/robot-panda"
 import { RobotInchworm } from "@/components/ui/robot-inchworm"
 import { RobotJellyfish } from "@/components/ui/robot-jellyfish"
 import { RobotManta } from "@/components/ui/robot-manta"
@@ -76,6 +82,13 @@ import { RobotScorpion } from "@/components/ui/robot-scorpion"
 import { RobotSeahorse } from "@/components/ui/robot-seahorse"
 import { RobotTurtle } from "@/components/ui/robot-turtle"
 import { RobotQuadruped } from "@/components/ui/robot-quadruped"
+import { RobotCar } from "@/components/ui/robot-car"
+import { TransitBus } from "@/components/ui/transit-bus"
+import { CargoPlane } from "@/components/ui/cargo-plane"
+import { HydrofoilCraft } from "@/components/ui/hydrofoil-craft"
+import { LaunchVehicle } from "@/components/ui/launch-vehicle"
+import { StrikeStarfighter } from "@/components/ui/strike-starfighter"
+import { IonInterceptor } from "@/components/ui/ion-interceptor"
 import { LinearActuator } from "@/components/ui/linear-actuator"
 import { ServoMotor } from "@/components/ui/servo-motor"
 import { SolenoidValve } from "@/components/ui/solenoid-valve"
@@ -104,6 +117,10 @@ import { MusicBoxDrum } from "@/components/ui/music-box-drum"
 import { BuskerDroid } from "@/components/ui/busker-droid"
 import { SlabHandset } from "@/components/ui/slab-handset"
 import { WristTerminal } from "@/components/ui/wrist-terminal"
+import { KeySwitch } from "@/components/ui/key-switch"
+import { RobotKeypad } from "@/components/ui/robot-keypad"
+import { RobotKeyboard } from "@/components/ui/robot-keyboard"
+import { InputTerminal } from "@/components/ui/input-terminal"
 import { ArmFabricator } from "@/components/ui/arm-fabricator"
 import { DroneFabricator } from "@/components/ui/drone-fabricator"
 import { Fabricator } from "@/components/ui/fabricator"
@@ -129,6 +146,14 @@ import { RobotTorso } from "@/components/ui/robot-torso"
 import { RobotSkeleton } from "@/components/ui/robot-skeleton"
 import { SuctionGripper } from "@/components/ui/suction-gripper"
 import { ToolChanger } from "@/components/ui/tool-changer"
+import { RobotSunflower } from "@/components/ui/robot-sunflower"
+import { CelestialPlanet } from "@/components/ui/celestial-planet"
+import { CelestialMoon } from "@/components/ui/celestial-moon"
+import { CelestialStar } from "@/components/ui/celestial-star"
+import { CelestialAsteroid } from "@/components/ui/celestial-asteroid"
+import { Orrery } from "@/components/ui/orrery"
+import { BattleStation } from "@/components/ui/battle-station"
+import { DebrisField } from "@/components/ui/debris-field"
 import { CatalogueStage } from "@/components/site/catalogue-stage"
 import { useNearViewport } from "@/components/site/use-near-viewport"
 import { Pumpjack } from "@/components/ui/pumpjack"
@@ -173,7 +198,7 @@ const art: Record<string, Art> = {
   "wellhead-tree": { line: "Open valves decide which bore is live.", art: <WellheadTree size={140} phase={0.5} /> },
   "storage-tank": { line: "The roof floats, and the ladder answers.", art: <StorageTank size={200} courses={5} phase={0.6} /> },
   "oil-tanker": { line: "The cargo sets how deep she sits.", art: <OilTanker size={280} behavior="swell" phase={0.2} /> },
-  "tanker-truck": { line: "Two bodies, one kingpin, a real yaw.", art: <TankerTruck size={300} hitch={18} phase={0.3} /> },
+  "tanker-truck": { line: "Two bodies, one kingpin, a real yaw.", art: <TankerTruck size={300} phase={0.3} /> },
   "flare-stack": { line: "A plume that is a length, not a rate.", art: <FlareStack size={118} phase={0.25} /> },
   "fractionating-column": { line: "The tray count rebuilds the whole tower.", art: <FractionatingColumn size={124} behavior="swing" trays={18} cut={2} phase={0.4} /> },
   "jackup-rig": { line: "One number: the air gap and the stick-up.", art: <JackupRig size={150} phase={0.35} /> },
@@ -216,12 +241,19 @@ const art: Record<string, Art> = {
   "robot-scorpion": { line: "A tail that leaves the ground plane.", art: <RobotScorpion size={200} gait="tripod" interactive={false} /> },
   "robot-mantis": { line: "Forelimbs solved to a real target.", art: <RobotMantis size={205} interactive={false} /> },
   "robot-frog": { line: "One pair of numbers is the whole jump.", art: <RobotFrog size={190} interactive={false} /> },
+  "spring-hopper": { line: "A real spring, with a solid height it can hit.", art: <SpringHopper size={190} behavior="hop" speed={0.9} /> },
+  "ball-hopper": { line: "Flattened on impact, it has to get wider.", art: <BallHopper size={178} behavior="bounce" speed={0.8} /> },
+  "hopper-dynamics": { line: "Flight is a parabola; stance is a spring.", art: <SpringHopper size={190} behavior="bound" speed={0.7} variant="blueprint" /> },
   "robot-cat": { line: "Four solved legs hung off a back that arches.", art: <RobotCat size={230} interactive={false} /> },
   "robot-dog": { line: "A floating shoulder, a solved neck, and a wag that runs out of the page.", art: <RobotDog size={235} interactive={false} /> },
   "robot-fox": { line: "The whole body tips, and the brush answers for it.", art: <RobotFox size={235} behavior="listen" interactive={false} /> },
   "robot-bear": { line: "Plantigrade soles, so it has a base to stand up over.", art: <RobotBear size={210} behavior="rear" offset={1.1} interactive={false} /> },
+  "robot-polar-bear": { line: "One number hands its weight from the soles to the water.", art: <RobotPolarBear size={215} behavior="swim" interactive={false} /> },
+  "robot-panda": { line: "Sits down, which is how both hands come free.", art: <RobotPanda size={215} behavior="feed" offset={0.9} interactive={false} /> },
   "bear-kinematics": { line: "The sole, the base of support, and the margin over it.", art: <RobotBear size={210} behavior="rear" offset={1.1} variant="blueprint" showSupport interactive={false} /> },
   "robot-horse": { line: "Real gaits, and a fetlock that sinks under the weight it carries.", art: <RobotHorse size={230} behavior="trot" interactive={false} showContacts /> },
+  "robot-pegasus": { line: "One number hands its weight from its legs to its wings.", art: <RobotPegasus size={235} behavior="launch" interactive={false} /> },
+  "robot-camel": { line: "The only floor here with a depth, and feet that go into it.", art: <RobotCamel size={235} behavior="pace" ground={0.9} interactive={false} showContacts /> },
   "robot-turtle": { line: "Four legs, and a shell it can vanish into.", art: <RobotTurtle size={175} gait="wave" interactive={false} /> },
   "robot-inchworm": { line: "No wave at all: two anchors and an arch.", art: <RobotInchworm size={200} interactive={false} /> },
   "micro-duck": { line: "A biped that walks, pecks, and quacks.", art: <MicroDuck size={132} gait="walk" /> },
@@ -229,6 +261,13 @@ const art: Record<string, Art> = {
   "robot-quadruped": { line: "Four solved legs, standing, walking, and trotting.", art: <RobotQuadruped size={240} gait="trot" /> },
   "robot-rover": { line: "Four or six wheels, heading, and steering.", art: <RobotRover size={170} wheels={6} /> },
   "robot-drone": { line: "Four or six rotors, guards, and blade angles.", art: <RobotDrone size={170} /> },
+  "robot-car": { line: "One steering number, two different wheel angles.", art: <RobotCar size={170} behavior="slalom" roughness={0.55} /> },
+  "transit-bus": { line: "The bend is solved from the steer, and she kneels to open.", art: <TransitBus size={185} behavior="service" /> },
+  "cargo-plane": { line: "It banks because it was asked to turn.", art: <CargoPlane size={170} behavior="circuit" /> },
+  "hydrofoil-craft": { line: "Lift goes as v\u00b2, so the hull climbs out of the water.", art: <HydrofoilCraft size={180} behavior="takeoff" /> },
+  "launch-vehicle": { line: "Flies a pitch program, stages, and drops its own \u0394v.", art: <LaunchVehicle size={140} behavior="ascent" showReadout={false} /> },
+  "strike-starfighter": { line: "Four wings, two hinges, one X.", art: <StrikeStarfighter size={175} behavior="attack" /> },
+  "ion-interceptor": { line: "Hexagons head-on, two lines from above.", art: <IonInterceptor size={165} behavior="intercept" /> },
   "lidar-scan": { line: "Your range data, plotted in polar coordinates.", art: <LidarScan size={160} samples={lidarSamples} /> },
   "robot-face": { line: "Eyes that follow the pointer. Six moods.", art: <RobotFace size={150} mood="curious" /> },
   "robot-loader": { line: "Pick and place as a progress indicator.", art: <RobotLoader size={250} /> },
@@ -287,8 +326,22 @@ const art: Record<string, Art> = {
   "wheel-player": { line: "A click wheel geared to the list it scrolls.", art: <WheelPlayer size={130} rows={8} /> },
   "slab-handset": { line: "One slab, turned: screen, edge, then the array.", art: <SlabHandset size={150} screen="map" /> },
   "wrist-terminal": { line: "A crown geared to the dial, on a band that holds its length.", art: <WristTerminal size={132} closure={0.8} /> },
+  "key-switch": { line: "A contact that closes partway down, not at the bottom.", art: <KeySwitch size={150} action="tactile" /> },
+  "robot-keypad": { line: "A scanned matrix: the key down and the cell read are not the same.", art: <RobotKeypad size={150} view="iso" showScan /> },
+  "robot-keyboard": { line: "Rows in units on one pitch, and caps sculpted per row.", art: <RobotKeyboard size={170} layout="split" /> },
+  "input-terminal": { line: "The keys it strikes are what fills its own screen.", art: <InputTerminal size={160} screen="query" /> },
 
   "robot-skeleton": { line: "A biped whose walk is one duty factor away from a run.", art: <RobotSkeleton size={164} gait="walk" view="profile" /> },
+
+  // Bodies — the things machinery is pointed at, drawn the way machines are.
+  "celestial-planet": { line: "A ring the body really stands in front of, and behind.", art: <CelestialPlanet size={168} surface="banded" moons={2} /> },
+  "celestial-moon": { line: "The crescent is the terminator, projected.", art: <CelestialMoon size={168} craters={54} /> },
+  "celestial-star": { line: "Limb darkening as a law, not a gradient.", art: <CelestialStar size={168} kind="giant" prominences={4} /> },
+  "celestial-asteroid": { line: "The one body whose outline changes as it turns.", art: <CelestialAsteroid size={168} body="contact" seed={4} moonlet /> },
+  orrery: { line: "Arms whose length is the orbital radius.", art: <Orrery size={176} bodies={5} eccentricity={0.6} /> },
+  "battle-station": { line: "A hull that comes apart into the plates it was made of.", art: <BattleStation size={168} behavior="detonate" phase={0.18} courses={9} perCourse={12} /> },
+  "debris-field": { line: "A population, depth-sorted: near covers far.", art: <DebrisField size={168} behavior="drift" showTrails /> },
+  "robot-sunflower": { line: "A golden-angle head, aimed at the light by a solved tracker.", art: <RobotSunflower size={176} track={false} florets={140} arms={8} /> },
 
   // Foundations — the machine that exercises the file, drawn as a drawing.
   "robot-kinematics": { line: "Two-link cosines and FABRIK, with the envelope drawn.", art: <RobotArm size={190} variant="blueprint" behavior="idle" phase={0.9} showEnvelope tool="welder" /> },
@@ -305,6 +358,7 @@ const art: Record<string, Art> = {
   "spine-kinematics": { line: "A serpenoid travelling wave with taper and steady turn.", art: <RobotSnake size={195} variant="blueprint" waves={1.4} interactive={false} showGround={false} /> },
   "hexapod-kinematics": { line: "Radial legs, knees solved in each leg's own plane.", art: <RobotSpider size={168} variant="blueprint" gait="ripple" interactive={false} /> },
   "device-geometry": { line: "Hinges, kickstands, detents and bands, solved.", art: <SlateTablet size={195} variant="blueprint" view="profile" screen="home" /> },
+  "keyboard-geometry": { line: "Travel, hysteresis, a unit-pitch deck and a raked face.", art: <RobotKeyboard size={170} variant="blueprint" showScan /> },
   "sound-geometry": { line: "A spiral groove, and the arm angle it fixes.", art: <TurntableDeck size={190} variant="blueprint" behavior="scratch" phase={0.3} /> },
   "produce-geometry": { line: "Profiles revolved, a lattice by area, halves that reassemble.", art: <RobotStrawberry size={150} variant="blueprint" seeds={34} interactive={false} /> },
   "transmission-geometry": { line: "Meshing teeth, taut belts, and a chain over its bend.", art: <PlanetaryGearbox size={158} variant="blueprint" sunTeeth={20} planetTeeth={14} planets={4} showRatio={false} /> },
@@ -313,6 +367,9 @@ const art: Record<string, Art> = {
   "use-robot-arm": { line: "The solver as a hook: pose an arm without rendering one.", art: <RobotArm size={190} variant="outline" behavior="sweep" phase={0.7} showEnvelope tool="gripper" /> },
   "use-robot-motion": { line: "The clock, the drag and the scalar every machine runs on.", art: <RobotLoader size={250} variant="outline" /> },
   "use-pointer-target": { line: "Pointer position, in the machine's own world units.", art: <RobotFace size={150} variant="outline" mood="curious" /> },
+  "phyllotaxis-geometry": { line: "A golden angle, and the Fibonacci arms that fall out of it.", art: <RobotSunflower size={176} variant="blueprint" track={false} florets={150} arms={13} /> },
+  "celestial-geometry": { line: "Kepler's equation, ellipses about a focus, and the light.", art: <Orrery size={176} variant="blueprint" bodies={4} inclination={18} /> },
+  "hull-geometry": { line: "A tiling that sums to one sphere, and the front that opens it.", art: <BattleStation size={176} variant="blueprint" behavior="detonate" phase={0.3} /> },
 }
 
 /** Exported for the coverage test — a card that exists nowhere else is a bug. */

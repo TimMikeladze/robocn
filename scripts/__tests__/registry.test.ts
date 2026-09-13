@@ -50,6 +50,18 @@ const droidCollection = [
 /** The equine pair and the footfall solver under them. */
 const equineCollection = [
   "robot-horse",
+  "robot-pegasus",
+  "robot-camel",
+] as const
+
+const vehicleCollection = [
+  "robot-car",
+  "transit-bus",
+  "cargo-plane",
+  "hydrofoil-craft",
+  "launch-vehicle",
+  "strike-starfighter",
+  "ion-interceptor",
 ] as const
 
 const produceCollection = [
@@ -59,7 +71,21 @@ const produceCollection = [
 ] as const
 
 /** The bears: plantigrade machines on one support solver. */
-const ursineCollection = ["robot-bear"] as const
+const ursineCollection = ["robot-bear", "robot-polar-bear", "robot-panda"] as const
+
+/** The oil field: ten machines and the closed-loop solver under three of them. */
+const oilFieldCollection = [
+  "pumpjack",
+  "drilling-derrick",
+  "mud-pump",
+  "wellhead-tree",
+  "storage-tank",
+  "oil-tanker",
+  "tanker-truck",
+  "flare-stack",
+  "fractionating-column",
+  "jackup-rig",
+] as const
 
 const electromagneticMachines = [
   "solenoid-valve",
@@ -93,6 +119,26 @@ const deviceCollection = [
   "wrist-terminal",
 ] as const
 
+/** The input devices: four machines you type on, on one geometry solver. */
+const inputCollection = [
+  "key-switch",
+  "robot-keypad",
+  "robot-keyboard",
+  "input-terminal",
+] as const
+
+/** The bodies, and the solver under them. */
+const celestialCollection = [
+  "celestial-planet",
+  "celestial-moon",
+  "celestial-star",
+  "celestial-asteroid",
+  "orrery",
+] as const
+
+/** The station, what is left of it, and the solver under both. */
+const hullCollection = ["battle-station", "debris-field"] as const
+
 describe("registry.json", () => {
   it.each(soundMachines)("publishes %s as one UI source file", (name) => {
     const item = registry.items.find((candidate) => candidate.name === name)
@@ -109,6 +155,36 @@ describe("registry.json", () => {
     expect(item?.files[0]?.path).toBe(`src/components/ui/${name}.tsx`)
   })
 
+  it.each(inputCollection)("publishes %s on the keyboard solver", (name) => {
+    const item = registry.items.find((candidate) => candidate.name === name)
+    expect(item?.type).toBe("registry:ui")
+    expect(item?.files).toHaveLength(1)
+    expect(item?.files[0]?.path).toBe(`src/components/ui/${name}.tsx`)
+    expect(item?.registryDependencies).toContain("{REGISTRY_URL}/r/keyboard-geometry.json")
+  })
+
+  it.each(celestialCollection)("publishes %s as one UI source file", (name) => {
+    const item = registry.items.find((candidate) => candidate.name === name)
+    expect(item?.type).toBe("registry:ui")
+    expect(item?.files).toHaveLength(1)
+    expect(item?.files[0]?.path).toBe(`src/components/ui/${name}.tsx`)
+  })
+
+  it.each(hullCollection)("publishes %s on the hull solver", (name) => {
+    const item = registry.items.find((candidate) => candidate.name === name)
+    expect(item?.type).toBe("registry:ui")
+    expect(item?.files).toHaveLength(1)
+    expect(item?.files[0]?.path).toBe(`src/components/ui/${name}.tsx`)
+    expect(item?.registryDependencies).toContain("{REGISTRY_URL}/r/hull-geometry.json")
+  })
+
+  it("publishes robot-sunflower as one UI source file", () => {
+    const item = registry.items.find((candidate) => candidate.name === "robot-sunflower")
+    expect(item?.type).toBe("registry:ui")
+    expect(item?.files).toHaveLength(1)
+    expect(item?.files[0]?.path).toBe("src/components/ui/robot-sunflower.tsx")
+  })
+
   it.each(droidCollection)("publishes %s as one UI source file", (name) => {
     const item = registry.items.find((candidate) => candidate.name === name)
     expect(item?.type).toBe("registry:ui")
@@ -117,6 +193,13 @@ describe("registry.json", () => {
   })
 
   it.each(equineCollection)("publishes %s as one UI source file", (name) => {
+    const item = registry.items.find((candidate) => candidate.name === name)
+    expect(item?.type).toBe("registry:ui")
+    expect(item?.files).toHaveLength(1)
+    expect(item?.files[0]?.path).toBe(`src/components/ui/${name}.tsx`)
+  })
+
+  it.each(vehicleCollection)("publishes %s as one UI source file", (name) => {
     const item = registry.items.find((candidate) => candidate.name === name)
     expect(item?.type).toBe("registry:ui")
     expect(item?.files).toHaveLength(1)
@@ -135,6 +218,19 @@ describe("registry.json", () => {
     expect(item?.type).toBe("registry:ui")
     expect(item?.files).toHaveLength(1)
     expect(item?.files[0]?.path).toBe(`src/components/ui/${name}.tsx`)
+  })
+
+  it.each(oilFieldCollection)("publishes %s as one UI source file", (name) => {
+    const item = registry.items.find((candidate) => candidate.name === name)
+    expect(item?.type).toBe("registry:ui")
+    expect(item?.files).toHaveLength(1)
+    expect(item?.files[0]?.path).toBe(`src/components/ui/${name}.tsx`)
+  })
+
+  it("ships the closed-loop solver the oil field is built on", () => {
+    const item = registry.items.find((candidate) => candidate.name === "linkage-geometry")
+    expect(item?.type).toBe("registry:lib")
+    expect(item?.files[0]?.path).toBe("src/lib/robocn/linkage.ts")
   })
 
   it.each(electromagneticMachines)("publishes %s as one UI source file", (name) => {

@@ -39,6 +39,15 @@ Consumers install with `npx shadcn@latest add https://<host>/r/robot-arm.json`, 
 | `robot-style` | lib | Size scale, variants, palette resolution from CSS vars, view camera. |
 | `use-robot-arm` | hook | Animated pose state for a link chain. |
 | `use-pointer-target` | hook | Pointer position mapped into arm world units. |
+| `celestial-geometry` | lib | Kepler's equation, ellipses about a focus, the terminator circle, illumination, limb darkening, body frames, an irregular radius field. |
+| `celestial-planet` | ui | A tilted globe with bands, caps, storms and a ring system the body genuinely occludes. |
+| `celestial-moon` | ui | The phase machine: the crescent is the projected terminator, and libration rocks the limb into view. |
+| `celestial-star` | ui | Limb darkening as a law, granulation, a rotating spot belt, prominence loops on the limb. |
+| `celestial-asteroid` | ui | An irregular body whose silhouette changes as it turns, tumbling about a moving axis. |
+| `orrery` | ui | Bodies on arms whose length is the orbital radius, on real Kepler ellipses with the hub at a focus. |
+| `hull-geometry` | lib | An equal-area tiling of a sphere into armour plates summing to exactly one, a fracture front and the straight-line travel behind it, a shock ring, and a paraboloid dish. |
+| `battle-station` | ui | An armoured orbital station whose hull is that tiling: it comes apart into the plates it was made of, and goes back together exactly. |
+| `debris-field` | ui | The same fragments with the body taken away, depth-sorted so a near piece occludes a far one. |
 | `robot-arm` | ui | The flagship: SVG articulated arm, N links, 8 tools, 4 variants. |
 | `robot-arm-3d` | ui | The same arm as a procedural react-three-fiber rig. |
 | `robot-stage` | ui | Canvas + lights + floor + orbit controls for the 3D items. |
@@ -58,9 +67,17 @@ Consumers install with `npx shadcn@latest add https://<host>/r/robot-arm.json`, 
 | `robot-cat` | ui | Legs hung off a solved spine: the arch moves the shoulder and the hip, and the legs answer. |
 | `robot-dog` | ui | The same spine with a floating shoulder, a solved neck, and a tail solved across the centre plane. |
 | `robot-fox` | ui | Tips its whole body about its hip; the brush is an output of the pitch and the ears triangulate. |
+| `robot-bear` | ui | Plantigrade soles make each foot an interval, so the feet make a base of support with edges; rearing collapses it and the balance rule keeps the mass inside it — or does not, and topples. |
+| `robot-polar-bear` | ui | One number hands the load from the soles to the water: the hull settles to a waterline, the hind limbs trail, and the forelimbs solve to a stroke path. |
+| `robot-panda` | ui | The seat is a third contact that buys back the base both forepaws just left, and the pseudo-thumb's pad gap is an output of what is held. |
+| `robot-horse` | ui | Named gaits as real footfall sequences with the beat counted off them; the load drives a sprung fetlock and a nodding neck. |
+| `robot-pegasus` | ui | One load budget shared between legs and wings; the wing is three bones solved to a tip tracing a figure of eight. |
+| `robot-camel` | ui | The only floor in the set with a depth: the pad opens under load, that drops its pressure, and the pressure is the sinkage. |
+| `gait-kinematics` | lib | Six equine gaits as touchdown sequences: the beat counted, the support pattern, the lead, and the share of the body on every grounded foot. |
 | `robot-fish` | ui | Swimming fish built on a travelling body wave, with fins and a dart. |
 | `robot-snake` | ui | Serpentine crawler: even wave, sidewinding lift, coil, strike. |
 | `spine-kinematics` | lib | Serpenoid travelling-wave spine with taper, turn and clearance. |
+| `bear-kinematics` | lib | Plantigrade stance: a rigid sole placed on the floor with the leg solved to the ankle it produces, the base of support those intervals make, and the static load at each contact. |
 | `robot-spider` | ui | Eight-legged plan-view walker with solved knees and three gaits. |
 | `robot-crab` | ui | Sideways walker on the same gait solver, with hinged claws. |
 | `hexapod-kinematics` | lib | Radial four-to-ten-leg gait solver, knees solved per leg. |
@@ -83,6 +100,8 @@ Consumers install with `npx shadcn@latest add https://<host>/r/robot-arm.json`, 
 | `robot-avocado` | ui | Split-shell pod: one surface halved, tilted apart on a rod, with the stone riding up the gap. |
 | `robot-strawberry` | ui | Berry shell whose sensor studs are placed by area over its own skin, under a calyx of rigid blades. |
 | `robot-tomato` | ui | Truss-hung fruit on a two-hinge peduncle, with a ripening front that is coverage rather than a ramp. |
+| `phyllotaxis-geometry` | lib | Golden-angle disc lattices, the Fibonacci arms that fall out of them, a dished face, and a two-axis aim solved from a direction. |
+| `robot-sunflower` | ui | Heliotropic collector mast: a floret lattice on a dished head aimed by a solved tracker, on a stem that leans while the collar takes the remainder. |
 | `casing-droid` | ui | Armoured conical casing unit: dome, skirt, neck cage, eyestalk, manipulator, emitter. |
 | `astromech-droid` | ui | Barrel repair unit: ride heights, dome, livery, feet, antenna, ports, periscope, holo. |
 | `attendant-droid` | ui | Plated etiquette humanoid: builds, faceplates, hands, collar, plating teardown. |
@@ -139,11 +158,33 @@ Consumers install with `npx shadcn@latest add https://<host>/r/robot-arm.json`, 
 | `wheel-player` | ui | A pocket player whose click wheel is geared to its list, with a hold switch that is a real interlock. |
 | `slab-handset` | ui | One slab turned about its own axis: screen, edge, then the back and its camera array. |
 | `wrist-terminal` | ui | A crown geared to a dial, on a link band that keeps its length. |
+| `vehicle-geometry` | lib | Ackermann steering, steady-state articulation, the coordinated bank, a rigid body on N axles, the rocket equation, surface-piercing foil lift. |
+| `robot-car` | ui | One steering number, two different wheel angles, and a body that rides the road on its own axles. |
+| `transit-bus` | ui | An articulated bus whose rear section angle is solved from the hitch, with plug doors and a kneel on the doors' own number. |
+| `cargo-plane` | ui | A freighter that banks because it was asked to turn; the ailerons carry the roll it has not finished. |
+| `hydrofoil-craft` | ui | The one machine that climbs out of its own ground plane: lift as v², so the surface-piercing V sheds wetted area. |
+| `launch-vehicle` | ui | Flies a pitch program, gimbals against it, stages, and reports the Δv still attached. |
+| `strike-starfighter` | ui | Four wings on two fore-aft hinges that open from a cruise plane into an X. |
+| `ion-interceptor` | ui | Hexagonal panels pitching on lateral pylons, around a pod that yaws inside them. |
+| `hopper-dynamics` | lib | Bounce dynamics: an exact parabola in the air, an exact spring-mass stance, and the duty factor between them derived. |
+| `spring-hopper` | ui | A one-legged rig on a real helical spring, with a solid height it can be crushed onto. |
+| `ball-hopper` | ui | A shell that is its own compliance: flattened at constant volume, and it comes to rest in finite time. |
 | `sound-geometry` | lib | Spiral groove, tonearm tracking error, exponential horn, spring governor, tuned comb, pinned barrel. |
 | `turntable-deck` | ui | An arm geared to its platter by the groove, and the tracking error that falls out of it. |
 | `gramophone-horn` | ui | A mainspring and its governor, a crank that is the wind, and an exponential horn. |
 | `music-box-drum` | ui | A pinned barrel bending a comb tuned by length, and letting go on the pin. |
 | `busker-droid` | ui | The only machine here whose pose comes from data: a step pattern, two solved arms. |
+| `linkage-geometry` | lib | Closed loops: four-bar, slider-crank, block and tackle, and the elevation-to-world helpers. |
+| `pumpjack` | ui | A beam pump whose stroke is what the four-bar produces, not a tween. |
+| `drilling-derrick` | ui | A block reeved on 4–12 lines; the drum's payout is shared between them. |
+| `mud-pump` | ui | One to three slider-cranks on a shaft, discharge summed from the solved velocities. |
+| `wellhead-tree` | ui | A valve stack whose line-up decides which bore is live. |
+| `storage-tank` | ui | A floating roof on the liquid, and a rolling ladder solved from it. |
+| `oil-tanker` | ui | Cargo sets the draft, so the sea line cuts a hull that moves. |
+| `tanker-truck` | ui | Tractor and trailer on one kingpin, yawed in world space. |
+| `flare-stack` | ui | A modelled stack under an illustrated plume, and it says which is which. |
+| `fractionating-column` | ui | Tray count as an axis: spacing, seams and draw heights all come off it. |
+| `jackup-rig` | ui | Fixed legs, a climbing hull: one number is the air gap and the stick-up. |
 
 ### Humanoid skeleton
 
@@ -160,6 +201,36 @@ variants at each step. That caught the two that only a drawing shows: the toe be
 through the floor at push-off, which is what gave the foot its real hinge at the ball, and a
 rib cage that projected as a stack of rings until the hoops were opened into arcs that
 descend as they come forward.
+
+### Hoofed machines
+
+`vitest` over `gait-kinematics` and the three machines on it. The beat count of every gait read
+off its own touchdowns (4, 2, 2, 3, 4) rather than declared; the loads summing to exactly one
+body whenever any foot is down and to nothing in a suspension; a canter and a gallop mirroring
+exactly about the lead while the symmetrical gaits ignore it; a walk never dropping below two
+feet down and a gallop provably leaving the floor; no foot ever driven below the floor.
+
+Per machine: the horse's fetlock sitting lower over its own hoof when loaded than when free,
+and the forehand's pair sunk further than the hind's standing square, because the forehand
+carries more; the poll swinging further across a stride with `balance` on than off. The
+pegasus's leg loads going to zero and its limbs folding as `lift` reaches 1, the body rising
+with it, and half a body still on the feet at 0.5; every wing bone holding its exact length at
+any beat and any spread; the wingtip crossing zero twice fore-and-aft for every once up-and-
+down, which is what makes the path a figure of eight. The camel's sunk feet being exactly its
+loaded feet, its pads narrower on a swinging limb than a standing one, and a pace rolling to a
+full ±1 while a trot's roll is exactly the forehand split — 0.16 of a body — at every instant
+either diagonal is down.
+
+That last one is the correction worth recording: the test first asserted a trot rolls *zero*,
+and the arithmetic said 0.16. The arithmetic was right, because a trot's diagonal puts a
+forehand against a hind end rather than two equal sides. The claim in the docs changed to match
+the solver rather than the other way round.
+
+Drag mapping through synthetic pointer events on all three, reduced motion parking every loop,
+`tsc --noEmit`, `eslint`, `registry:build` and `next build` clean, and all four views and all
+four variants rendered headless at each step — which is what caught the pegasus's wings being
+foreshortened to a line in their own native elevation, and sent them through the real camera in
+their own group instead of riding the body's flat artwork.
 
 ## Customisation contract
 
@@ -697,3 +768,315 @@ slider contract on all four, nonsense input on every numeric axis, and the behav
 fixed phases), `tsc --noEmit`, `eslint`, `pnpm registry:build`, `pnpm build`, and driven in
 Chrome: every docs page, all four views, all four variants, the landing cards, reduced motion,
 and the pages at 390px with no horizontal overflow.
+
+## The heliotropic collector
+
+One machine on one new solver: `robot-sunflower` on `phyllotaxis-geometry`. The light is a
+*direction*, and everything on the machine is written in the frame that direction implies —
+`aimFrom` turns it into an azimuth and an elevation, `trackerFrame` turns the pair back into
+the head's own axes, and the disc, the rays and the leaf panels are all placed in those axes,
+so they cannot disagree about where the sun is. Design note:
+[heliotropic-collector.md](heliotropic-collector.md).
+
+Two things fall out rather than being drawn. The florets are placed by the golden angle over
+equal area, and the *spiral arms* are then found in the result: `parastichyOffsets` reports
+which index step has the closest neighbours, and for any lattice from 80 to 600 florets those
+steps are consecutive Fibonacci numbers. Nothing in the file knows that. And the gimbal collar
+is a remainder — the stem leans toward the light on its own and the collar takes up exactly
+what the stem did not, so the head's normal never comes off the sun however far the mast bends.
+
+The stem is `spine-kinematics` doing new work rather than a new solver: a fixed contour length
+whose steady `turn` is the heliotropic lean, with every link exactly the same length at every
+lean. Illustrated: the hub speckle, the anchor feet, the blueprint's incidence ray. There is no
+photometry, no ephemeris and no plant model — `daylight` is a shaped number, not a solar
+position for a date and a latitude.
+
+## Celestial bodies
+
+Four bodies and the machine that carries them, on one new solver: `celestial-geometry`,
+`celestial-planet`, `celestial-moon`, `celestial-star`, `celestial-asteroid`, `orrery`. The set
+draws machinery; this family draws the things machinery is pointed at, and draws them the same
+way — solved rather than illustrated, projected rather than redrawn, and grabbable. Design
+note: [celestial-bodies.md](celestial-bodies.md).
+
+Each earns its place on a mechanism nothing else here has. The planet is the only item with a
+part **occluded by the body it belongs to**: the ring is one annulus in the equatorial plane,
+and a ring point is hidden when it is behind the centre plane *and* its perpendicular distance
+to the line of sight is inside the radius — exact for a sphere seen orthographically. The moon
+is the **terminator as a projected great circle**, which is why its crescent flips the right way
+at quarter without anything drawing a crescent. The star is a **surface brightness law drawn as
+geometry**: each shell is an annulus carrying `1 − I/I₀` off `1 − u(1 − μ)`, so a giant's limb
+is visibly darker than a dwarf's because the coefficient is. The asteroid is the only body whose
+**silhouette changes as it turns** — its radius is a deterministic sum of cosine lobes, so the
+outline is the farthest projected sample in each angular bin rather than a hull that would
+bridge every hollow. And the orrery makes **Kepler's laws visible**: the arm's length *is* the
+orbital radius, so it telescopes over a year, the body runs at periapsis and loiters at
+apoapsis, the hub sits at a focus, and the periods come from `T ∝ a^{3/2}`.
+
+Nothing here is simulated beyond that: no gravity, no perturbation theory, no radiative
+transfer, no ephemeris and no scale. The bodies do not pull on each other, the elements are the
+caller's, and no real or fictional world is named. Each docs page's `notes` says which parts are
+solved and which are illustrated.
+
+### Verification for these eight items
+
+`vitest`: the two new solvers directly — Kepler inverting itself to 1e-9 at every anomaly up to
+`e = 0.97`, equal areas in equal times, the orbit's focus, the terminator on the sphere and
+square to the light, the limb-darkening law monotone from centre to limb, an irregular radius
+bounded by its depth and continuous over a closed walk with no seam, orthonormal body frames, a
+sphere lattice with equal-area cover, the golden-angle disc spacing by area, and the parastichy
+offsets coming out consecutive Fibonacci numbers for seven different lattice sizes. Then the
+components: the ring cut into far and near runs, the day-night line moving with the light and
+not the body, a latitude band that cannot show rotation against a storm that must, the crescent's
+area at new, quarter and full, libration rocking the craters and stopping when it is switched
+off, a giant's limb darker than a dwarf's, loops growing with activity, a rock's outline changing
+as it turns and staying the same for a seed, an arm telescoping and a body outrunning itself at
+periapsis, every drag and arrow key reporting, and `NaN` on every numeric prop never reaching the
+DOM. The `views.test.tsx` fixture suite covers all four cameras for each of the six new machines.
+
+`tsc --noEmit`, `eslint`, `pnpm registry:build` and `next build` clean. Driven in a browser on
+desktop and at 390px: every docs page, every behaviour, all four variants and all four views,
+each machine grabbed with a mouse and with touch emulation, and reduced motion forced on to
+confirm the loops park.
+
+## The oil field
+
+Ten machines and one solver covering the chain a barrel travels: a well pumped, a hole
+drilled, mud circulated, pressure controlled at the head, product stored, shipped by sea and
+by road, gas burned off, crude split into cuts, and the offshore hull that carries the upstream
+package out. Design note: [oil-field.md](oil-field.md).
+
+`linkage-geometry` is the first **closed** loop in the set. Everything solved so far has been
+an open chain — a shoulder reaching for a target, a spine integrating a tangent, legs hung off
+a body. A four-bar is closed: the crank does not choose where the beam goes, the loop does, and
+at some geometries it cannot be assembled at all. The coupler pin is the intersection of two
+circles, so both link lengths are the construction rather than an approximation that drifts;
+where the circles do not meet the coupler keeps its length, points straight at the ground
+pivot, and reports `assembled: false` instead of returning `NaN`. The slider-crank is the
+degenerate case with one link at infinity, and the block and tackle is the same idea with a
+constant *rope* length instead of a constant link length — which is why stringing more lines
+makes the same drum turn lift less, visibly, as rope rather than as a number.
+
+Two things unify the family beyond the solver. `accent` is the product everywhere — crude
+under a floating roof, mud in a fluid end, the live cut leaving a column, flow through a choke,
+the plume — so a card tells you how full a thing is at a glance. And four of the ten are driven
+by *how much liquid is in them* rather than by an angle: the tank roof floats on it, the
+tanker's waterline climbs the hull, the truck's compartments empty from the rear, the column's
+flash zone moves. That is the axis this family adds.
+
+Two view helpers came out of it and live in `robot-style`, since every machine projects the
+same way: `elevationDraft`, which gives a machine drawn in one vertical plane every solid,
+disc, member and polyline it needs already pushed through the camera; and `fitTransform`, which
+lays a *fixed* envelope of motion into the frame, so a machine drawn to fit its native view
+stays inside its own frame from every other camera and the framing never breathes as the
+machine works.
+
+What is solved: the pumpjack's four-bar and the rod stroke that falls out of it (the horsehead
+face is an arc about the saddle bearing, which is why the rod stays vertical and travels
+exactly radius × beam angle); the mud pump's three slider-cranks and the discharge differenced
+from them; the derrick's block travel and its reeved falls; the tanker's and the jack-up's
+waterline against a modelled hull; the tank roof's height and the rolling ladder's constant
+length; the truck's hitch as a real world-space yaw; every projection. What is illustrated, and
+says so in its docs `notes`: the flare plume, the flow arrows, the column's temperature banding,
+the drill string below the floor, the seabed under a spudcan. What is absent: there is no
+fluid, thermal, combustion, pressure, buoyancy, stability, mass or torque model anywhere in the
+family, and nothing reports a physical quantity it did not compute — the wellhead's gauge is a
+reading the caller supplies and the component only points a needle at.
+
+Verified with `vitest` (the solver's invariants directly — link lengths exact at every crank
+angle, the rocker swinging between the two collinear dead centres, a chosen branch that cannot
+flip, a non-assemblable loop clamping rather than producing `NaN`, an analytic slider-crank
+stroke, payout shared between lines, one fall per line; then 67 component tests: every
+controlled axis moving its named `data-*` mechanism, the drum turning three times as far on
+twelve lines as on four for the same block height, a triplex rippling less than a duplex and a
+duplex less than a simplex, the master valve shutting everything above it, the ladder holding
+its length across the stroke, the boot top going under while the sea line stays put, the
+trailer yawing without moving the tractor, the legs not moving while the hull climbs them, each
+behaviour sampler inside its own limits and neutral for a non-finite clock, `NaN` on every
+numeric axis never reaching the DOM, a colour override landing, and all four cameras producing
+four different drawings for all ten machines), plus the `views.test.tsx` snapshot suite over
+all four cameras for each of the ten. `tsc --noEmit` and `eslint` clean over every file the
+family touches, `pnpm registry:build` clean, and `next build` compiling clean.
+
+Driven in a browser against `next dev`, in an isolated headless Chrome rather than a shared
+one: all eleven docs pages render, animate on their own clock, expose `role="slider"` and a
+real label, and never put `NaN` in the DOM; all four views, all four variants and every
+behaviour and option switched through the demo's own controls; a pointer press-drag-release
+and four arrow keys moving each machine and reporting through its `on…Change`; reduced motion
+forced on, which parks every loop while leaving all ten still controllable from the keyboard;
+390px with no horizontal overflow the rest of the site does not already have; and the landing
+grid in both themes, where all eleven cards resolve and every one of them moves.
+
+
+## Bouncing machines
+
+Two machines that leave the ground, on one new solver. The set jumps — `robot-frog`'s own docs
+say the arc is scripted and there is no ballistics in it — and the gait solvers never leave the
+floor at all. A bounce is the one motion where **the ground is part of the mechanism**, and the
+whole claim of `hopper-dynamics` is that the split between its two regimes is not a control:
+flight is a projectile and stance is a mass on a linear spring, so given a drop height and a
+spring rate, the flight time, the contact time and therefore the duty factor all fall out.
+Stiffen the spring and contact gets shorter and harder without the hop changing — 0.46 duty at
+`stiffness` 12 against 0.15 at 120, at the same height, and neither number was typed. Design
+note: [bouncing-machines.md](bouncing-machines.md).
+
+Every export carries an invariant the tests hold it to: contact ends when the spring force
+returns to zero, which is *past* a half period because gravity biases the oscillation
+(`(2/ω)(π − atan(vω/g))`, exact); flight is `2v` and apex `v²/2g`, so the ballistic half cannot
+see the spring at all; a drop loses the square of its restitution every bounce and the sequence
+ends when the rebound can no longer lift the machine clear, because contact time does *not* go
+to zero as the landing speed does and an ideal Zeno bounce would never finish; `springCoils`
+keeps its coil count and radius at every length and clamps at its own solid height rather than
+drawing coils through each other; and `squashRadii` holds `rx² ry = r³`.
+
+`spring-hopper` wears the solver as a leg — the only spring in the set drawn as a real spring,
+and the only part anywhere that can be crushed onto itself. `ball-hopper` wears it as a shell:
+the orthographic projection of a constant-volume spheroid is exactly an axis-aligned ellipse,
+so one geometry gives a flatter ball in the elevations and a wider one in plan, with no artwork
+per angle. It earns its place beside `orb-droid`, which rolls, never leaves the ground and has a
+rigid shell.
+
+Neither is dynamics beyond that: no damping inside the stance (the loss is taken at take-off as
+a restitution coefficient, which is how a bounce is measured), no horizontal travel, no
+friction, no spin-up from contact, no material, no motor and no energy budget — so the steady
+hop is the ideal lossless case. The leg swing, the reaction wheel, the contact patch and the
+yaw are drawn rather than solved, and both docs pages say which is which.
+
+Verified with `vitest` (the solver invariants above plus nonsense input on every argument; one
+number loading the spring and dropping the body; the coil count surviving a crush and reporting
+`bottomedOut`; the leg swinging only in the air and the wheel answering it; the shell widening
+as it flattens; the optic, vents and seam drawn only where a camera can see them; the slider
+contract, keyboard and accessible label on both; the behaviour samplers at fixed phases, whole
+cycles repeating in both directions, and a non-finite clock giving a neutral pose; four cameras
+producing four drawings), `tsc --noEmit`, `eslint`, `pnpm registry:build`, `pnpm build`, and
+rendered headless through all four views, all four variants, both contact regimes and the
+150px catalogue card for each.
+
+## Vehicle robots
+
+Seven machines that carry something along a path, and one solver. `robot-rover` and
+`robot-drone` already did "a machine that goes somewhere" as a heading and a drift; this family
+solves the *constraint* underneath instead. A rover's front wheels are turned by heading error;
+both of a car's are turned by the same rack through different angles, because they run on
+different circles. Design note: [vehicle-robots.md](vehicle-robots.md).
+
+`vehicle-geometry` is exact where it claims to be — Ackermann steering, the steady-state
+articulation angle of a towed section, `atan(v²/rg)`, the least-squares line a rigid body on N
+axles settles to, `vₑ ln(mr)` summed over the stages still attached, and the `1/v²` equilibrium
+of a surface-piercing foil. Two functions are stated shapes rather than simulations and say so
+in their own docs: the gravity-turn `pitchProgram` and the illustrative `roadProfile`. Nothing
+here integrates a path, a force or a mass: no machine in the family travels anywhere, and a
+steering angle is a pose.
+
+Three consequences are worth naming because they are what the solver buys. The bus comes out of
+a roundabout straight, because the articulation is a steady state with no history rather than an
+integrated manoeuvre. The plane's ailerons return to neutral once a turn is established, because
+they carry the roll still to be done rather than a second animation. And the booster's Δv drops
+at staging, because the readout is the equation over what is still attached — the only honest
+way to draw throwing half a vehicle away.
+
+Verified with `vitest` (32 solver assertions — the inner wheel always turning harder, a straight
+rack giving an infinite radius, articulation signed with the steer and zero straight ahead, a
+body level on a level surface and taking a bump between its axles as travel, Δv adding across
+stages and monotonic pitch from 0 to 90, lift going as the square of speed and rise as its
+inverse, a steered wheel keeping its radius, a roll that preserves every length; and 41 over the
+machines — each controlled axis moving the mechanism it names, the labels, the keyboard
+controls, each behaviour sampler inside its own limits and neutral for a non-finite clock, and
+`NaN` on every numeric axis of every machine never reaching the DOM). That last one caught the
+real bug in the family: a non-finite `phase` parks the motion clock at `NaN`, and everything
+derived from the clock rather than from the eased value — a wheel's rolling angle, a propeller's
+blade angle, a hull's heave — went to the DOM as `NaN` until each machine guarded it.
+
+`tsc --noEmit`, `eslint`, `pnpm registry:build` and `pnpm build` clean, and driven in a browser:
+every docs page, all four variants and all four views of each machine, grabbed with a pointer,
+at 390px, and with reduced motion forced on.
+
+## The battle station
+
+Two machines and one new solver on the mechanism nothing else in the set had: **a solid that
+comes apart into the parts it was made of, and goes back together exactly**. Design note:
+[battle-station.md](battle-station.md).
+
+`hull-geometry` is the solver, and every export has an invariant the tests hold it to. The
+tiling cuts the sphere into equal-area courses and each course into equal longitudes, so the
+plate areas sum to exactly 1 at every course and plate count — a hull with a gap in it is not a
+hull, and equal *angles* would have made that nearly right rather than right. The breakup is a
+**fracture front**: a plate's release is zero until the front sweeping out from the rupture
+reaches it, and after that it travels in a straight line, so the hull peels open from one point
+instead of inflating. Two more invariants fall out and are tested directly: `progress = 0`
+returns every plate to its own `plateNormal` to the last bit, which is why the intact station is
+not a second drawing of itself; and the distance from the centre is monotone in `progress` for
+every focus blend, because both candidate travel directions have a non-negative component along
+the plate's own normal. The dish is a paraboloid carrying `r²/(4d)`, and an axial ray reflected
+about `dishNormal` at *any* point on the bowl passes through that focus — which is what lets the
+emitter rays be solved rather than aimed.
+
+`battle-station` reads the same tiling two ways. `breakup` runs it apart; `plating` takes courses
+off pole-first and shows the ribs and girdle rings underneath, and the equatorial trench is a
+course carrying nothing rather than a stripe painted over one. `debris-field` is the aftermath
+and earns its own item on a mechanism nothing else here has: it is a **population**, so it has to
+decide what is in front of what, and it sorts by `camera.depth` and paints back to front — an
+order that changes with the camera rather than being redrawn per angle. Its fragments keep
+turning after they have flown, because nothing stopped them.
+
+None of it is simulated: no mass, no energy, no structural model, no gravity and no collision.
+Pieces pass through each other's paths, and both axes run backwards as happily as forwards, which
+is the honest framing — a tiling coming apart, not a thing failing. Each docs page says which
+parts are solved and which are drawn. The archetypes are generic, the dish position is a prop
+rather than a signature, and nothing reproduces a craft, crest or paint scheme from anywhere.
+
+Verified with `vitest` (the solver invariants above plus nonsense on every argument; the hull
+reassembling plate-for-plate after a full breakup; the near side releasing before the far side;
+no plate ever drawn closer in than it sat; the trench and the dish bore removing plating rather
+than covering it; `plating` taking courses without taking the frame; every emitter ray landing on
+the focus; the beam appearing only above its charge; the depth order changing with the camera but
+culling nothing; the trails being two-point straight lines and only for pieces that have let go;
+the behaviour samplers' limits and their cycles repeating in both directions; the drag and
+keyboard contracts; `NaN` on every numeric axis; and the four views through the snapshot suite),
+`tsc --noEmit`, `eslint`, `pnpm registry:build`, `pnpm build`, and driven in Chrome: every docs
+page, all four views, all four variants, every behaviour, the breakup dragged with a mouse and
+with a touch pointer, reduced motion parking the loops, the 150px catalogue cards, and the pages
+at 390px with no horizontal overflow.
+
+## The bears
+
+Six quadrupeds in this set already answer *what moves a leg root*. None of them could stand up,
+because all of them stand on points: a pad at the end of each chain, four dots on a line, nothing
+with edges. `bear-kinematics` is the other half — a **plantigrade** sole, a rigid heel-to-toe
+segment placed on the floor with the leg solved to the ankle that placement produces. A foot is
+then an interval, feet union into a base of support, and a base has edges a centre of mass can be
+inside or outside of. That distance is the **margin**, and the three machines spend it three ways:
+`robot-bear` rears and has to keep it; `robot-polar-bear` gives the whole base away to the water;
+`robot-panda` buys one back with a third contact so both forepaws come free. Design note:
+`docs/ursine-robots.md`.
+
+The loads are a static distribution — the minimum-norm solution of loads that sum to one body and
+whose weighted mean is the centre of mass, which for two contacts is exactly the lever rule — and
+not a dynamics solve. No acceleration, no ground reaction, no centre of pressure, no impulse at
+footfall, no hydrodynamics, no grasp forces. The balance rule is proportional, has no gain and no
+lag, and both halves of it are bounded by the hind limb's own reach; when the margin cannot be
+kept the machine reports it and draws it rather than saving itself.
+
+### Verification for these four items
+
+`vitest` — 40 tests across the solver and the three machines. The solver: the sole exactly
+`heel + toe` long at every pitch and pivot, neither end ever below the floor, the contact read off
+the geometry rather than copied from the pivot, an unreachable floor reported as airborne rather
+than faked, the two-contact loads matching the schoolbook lever rule, the loads summing to one
+whenever anything is down and never going negative, the margin's sign at the centre, on an edge
+and outside, a third contact widening the hull, and the step rolling heel → flat → toe → swing in
+that order with the contact carried backwards through the stance. The machines: rearing lifting
+the forelimbs and cutting the base to under half, the balance rule never making the margin worse
+at any point in the rise and the mid-rise toppling without it, the hump swelling with the forelimb
+load and going flat in a rear, the swim handover emptying the contacts and drawing the waterline,
+the two strokes running half a cycle apart with the hind pair trailing, the seat landing and
+buying a base where two heels in one place had left none, the thumb opening further around a
+fatter stalk at the same grip, both forepaws solved to the stalk, the behaviour samplers' limits
+and their neutral pose for a non-finite clock, the slider contracts, and `NaN` on every numeric
+axis.
+
+`tsc --noEmit`, `eslint` and `pnpm registry:build` clean over these files, and `pnpm build` green
+(173 static pages). Driven in Chrome: the four docs pages, every behaviour, all four variants and
+all four views, the rear and the swim dragged with a mouse and stepped with Home/End and the
+arrows, reduced motion parking the loops (frame-identical over a second, against a frame that
+changes without it), the 150px catalogue cards, and the pages at 390px.

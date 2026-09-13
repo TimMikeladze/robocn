@@ -1065,6 +1065,58 @@
       ]
     },
     {
+      "name": "robot-polar-bear",
+      "type": "registry:ui",
+      "title": "Robot polar bear",
+      "description": "One body with two ways of holding itself up. Swim is the handover: the plantigrade soles unload as the water takes the weight, the hull settles to a waterline, the hind limbs stop stepping and trail, and the forelimbs paddle on a stroke path the shoulder and elbow are solved to. Long body, long neck, small head \u2014 the silhouette does the rest.",
+      "categories": [
+        "robotics",
+        "robots",
+        "animals"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/bear-kinematics.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/spine-kinematics.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/robot-polar-bear.tsx",
+          "type": "registry:ui",
+          "target": "@ui/robot-polar-bear.tsx"
+        }
+      ]
+    },
+    {
+      "name": "robot-panda",
+      "type": "registry:ui",
+      "title": "Robot panda",
+      "description": "The bear that sits down to use its hands. Sitting puts a third contact on the floor \u2014 the pelvis, with a span of its own \u2014 which is what buys back a base of support once both forepaws have left it. The sixth digit opposes the other five and the pad gap is an output: a fatter stalk rides the thumb further open at the same grip, and both forelimbs are solved to the stalk itself.",
+      "categories": [
+        "robotics",
+        "robots",
+        "animals"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/bear-kinematics.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/spine-kinematics.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/robot-panda.tsx",
+          "type": "registry:ui",
+          "target": "@ui/robot-panda.tsx"
+        }
+      ]
+    },
+    {
       "name": "robot-horse",
       "type": "registry:ui",
       "title": "Robot horse",
@@ -1087,6 +1139,58 @@
           "path": "src/components/ui/robot-horse.tsx",
           "type": "registry:ui",
           "target": "@ui/robot-horse.tsx"
+        }
+      ]
+    },
+    {
+      "name": "robot-pegasus",
+      "type": "registry:ui",
+      "title": "Robot pegasus",
+      "description": "A winged quadruped that hands its own weight across: lift is one number splitting the body between the legs and the wings, so the fetlocks recoil as they unload, the legs run out of reach and fold, the stride fades out and the wingbeat fades in. Each wing is three bones solved to a wingtip tracing a real figure of eight, so folding it is only the path closing.",
+      "categories": [
+        "robotics",
+        "robots",
+        "animals"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/gait-kinematics.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/spine-kinematics.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/robot-pegasus.tsx",
+          "type": "registry:ui",
+          "target": "@ui/robot-pegasus.tsx"
+        }
+      ]
+    },
+    {
+      "name": "robot-camel",
+      "type": "registry:ui",
+      "title": "Robot camel",
+      "description": "The one machine here whose floor is not a line: its ground is a medium with a depth, and the feet go into it. The pad opens under load, that spread drops its pressure, and the pressure is what takes it into the sand \u2014 so an opening foot keeps the animal higher up. The hump is a store that slumps as it empties, and the roll is the gait: a pace throws the body right over and a trot barely moves it.",
+      "categories": [
+        "robotics",
+        "robots",
+        "animals"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/gait-kinematics.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/spine-kinematics.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/robot-camel.tsx",
+          "type": "registry:ui",
+          "target": "@ui/robot-camel.tsx"
         }
       ]
     },
@@ -1941,6 +2045,120 @@
           "path": "src/lib/robocn/device.ts",
           "type": "registry:lib",
           "target": "@lib/robocn/device.ts"
+        }
+      ]
+    },
+    {
+      "name": "keyboard-geometry",
+      "type": "registry:lib",
+      "title": "Keyboard geometry",
+      "description": "The mechanisms under a machine a person types on: key travel with real hysteresis, an asymmetric keystroke curve, unit-pitch deck layout with a stagger, sculpted row profiles, matrix scan order, typing schedules, and a raked deck frame that keycaps stand on as solids.",
+      "categories": [
+        "robotics",
+        "geometry"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/device-geometry.json"
+      ],
+      "files": [
+        {
+          "path": "src/lib/robocn/keyboard.ts",
+          "type": "registry:lib",
+          "target": "@lib/robocn/keyboard.ts"
+        }
+      ]
+    },
+    {
+      "name": "key-switch",
+      "type": "registry:ui",
+      "title": "Key switch",
+      "description": "One mechanical keyswitch, sectioned: a stem on a coil spring whose contact closes partway down the travel rather than at the bottom, and opens again higher than it closed. Linear, tactile and clicky legs, and the travel is an axis you can set.",
+      "categories": [
+        "robotics",
+        "input"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/keyboard-geometry.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/key-switch.tsx",
+          "type": "registry:ui",
+          "target": "@ui/key-switch.tsx"
+        }
+      ]
+    },
+    {
+      "name": "robot-keypad",
+      "type": "registry:ui",
+      "title": "Robot keypad",
+      "description": "A raked bench entry pad on a scanned matrix: keys that stand on the face as solids and press along its normal, an entry readout that fills a digit at a time, and the cell the scan is reading drawn separately from the key that is down.",
+      "categories": [
+        "robotics",
+        "input"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/keyboard-geometry.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/robot-keypad.tsx",
+          "type": "registry:ui",
+          "target": "@ui/robot-keypad.tsx"
+        }
+      ]
+    },
+    {
+      "name": "robot-keyboard",
+      "type": "registry:ui",
+      "title": "Robot keyboard",
+      "description": "A whole key deck placed by a unit grid: rows specified in 1u, 1.25u and 6.25u widths on one pitch, sculpted caps that give the board a real profile in elevation, three layouts including a split deck whose halves are turned apart, and a matrix scan.",
+      "categories": [
+        "robotics",
+        "input"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/keyboard-geometry.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/robot-keyboard.tsx",
+          "type": "registry:ui",
+          "target": "@ui/robot-keyboard.tsx"
+        }
+      ]
+    },
+    {
+      "name": "input-terminal",
+      "type": "registry:ui",
+      "title": "Input terminal",
+      "description": "A bench console with two coupled mechanisms: a display head canted on a hinge up a column, and a key deck whose strokes are what put glyphs on the screen under a blinking block cursor.",
+      "categories": [
+        "robotics",
+        "input"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/keyboard-geometry.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/input-terminal.tsx",
+          "type": "registry:ui",
+          "target": "@ui/input-terminal.tsx"
         }
       ]
     },
@@ -3070,6 +3288,76 @@
       ]
     },
     {
+      "name": "hull-geometry",
+      "type": "registry:lib",
+      "title": "Hull geometry",
+      "description": "Dependency-free geometry for a plated body that comes apart: an equal-area tiling of a sphere into armour plates whose areas sum to exactly one, a fracture front and the straight-line travel behind it, a shock ring as a real circle in a stated plane, and a paraboloid dish that focuses because of its shape.",
+      "categories": [
+        "robotics",
+        "math"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json"
+      ],
+      "files": [
+        {
+          "path": "src/lib/robocn/hull.ts",
+          "type": "registry:lib",
+          "target": "@lib/robocn/hull.ts"
+        }
+      ]
+    },
+    {
+      "name": "battle-station",
+      "type": "registry:ui",
+      "title": "Battle station",
+      "description": "An armoured orbital battle station whose hull is a real tiling: breakup launches every plate down its own straight line behind a fracture front, and putting it back reassembles the sphere exactly. Carries a girdle trench, a plating axis and a paraboloid focusing dish.",
+      "categories": [
+        "robotics",
+        "space",
+        "machines"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/celestial-geometry.json",
+        "{REGISTRY_URL}/r/hull-geometry.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/battle-station.tsx",
+          "type": "registry:ui",
+          "target": "@ui/battle-station.tsx"
+        }
+      ]
+    },
+    {
+      "name": "debris-field",
+      "type": "registry:ui",
+      "title": "Debris field",
+      "description": "What is left of a plated body: a population of hull fragments on straight trajectories from one rupture, each released at its own moment and turning at its own rate, drawn back to front so a near fragment genuinely occludes a far one.",
+      "categories": [
+        "robotics",
+        "space",
+        "bodies"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/celestial-geometry.json",
+        "{REGISTRY_URL}/r/hull-geometry.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/debris-field.tsx",
+          "type": "registry:ui",
+          "target": "@ui/debris-field.tsx"
+        }
+      ]
+    },
+    {
       "name": "linkage-geometry",
       "type": "registry:lib",
       "title": "Linkage geometry",
@@ -3311,6 +3599,251 @@
           "path": "src/components/ui/jackup-rig.tsx",
           "type": "registry:ui",
           "target": "@ui/jackup-rig.tsx"
+        }
+      ]
+    },
+    {
+      "name": "hopper-dynamics",
+      "type": "registry:lib",
+      "title": "Hopper dynamics",
+      "description": "Bounce dynamics for machines that leave the ground: an exact ballistic flight, an exact spring-mass stance, contact and flight times derived from the drop height and spring rate, a decaying drop that comes to rest, plus a coil helix that cannot pass its solid height and a constant-volume shell squash.",
+      "categories": [
+        "robotics",
+        "math"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json"
+      ],
+      "files": [
+        {
+          "path": "src/lib/robocn/hopper.ts",
+          "type": "registry:lib",
+          "target": "@lib/robocn/hopper.ts"
+        }
+      ]
+    },
+    {
+      "name": "spring-hopper",
+      "type": "registry:ui",
+      "title": "Spring hopper",
+      "description": "A single-legged hopping rig whose helical spring really compresses: the stance and the flight are solved from the drop height and the spring rate, the coil count never changes, and it cannot be crushed past its own solid height. Drag it down to load it and let go.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/hopper-dynamics.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/spring-hopper.tsx",
+          "type": "registry:ui",
+          "target": "@ui/spring-hopper.tsx"
+        }
+      ]
+    },
+    {
+      "name": "ball-hopper",
+      "type": "registry:ui",
+      "title": "Ball hopper",
+      "description": "A bounding sensor ball whose shell is its own compliance: it flattens on impact at constant volume, so it has to get exactly that much wider, and dropped with a restitution below one it bounces lower each time and comes to rest. Drawn from any of four camera angles.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/hopper-dynamics.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/ball-hopper.tsx",
+          "type": "registry:ui",
+          "target": "@ui/ball-hopper.tsx"
+        }
+      ]
+    },
+    {
+      "name": "vehicle-geometry",
+      "type": "registry:lib",
+      "title": "Vehicle geometry",
+      "description": "Ackermann steering, steady-state articulation, coordinated bank, a rigid body sitting on N axles, the rocket equation and surface-piercing foil lift \u2014 the constraints a vehicle works against.",
+      "categories": [
+        "robotics",
+        "math"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json"
+      ],
+      "files": [
+        {
+          "path": "src/lib/robocn/vehicle.ts",
+          "type": "registry:lib",
+          "target": "@lib/robocn/vehicle.ts"
+        }
+      ]
+    },
+    {
+      "name": "robot-car",
+      "type": "registry:ui",
+      "title": "Robot car",
+      "description": "An autonomous road car whose two front wheels are solved from one steering angle by true Ackermann geometry, with body roll from the turn radius and a body that rides the road on its axles.",
+      "categories": [
+        "robotics",
+        "vehicles"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/vehicle-geometry.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/robot-car.tsx",
+          "type": "registry:ui",
+          "target": "@ui/robot-car.tsx"
+        }
+      ]
+    },
+    {
+      "name": "transit-bus",
+      "type": "registry:ui",
+      "title": "Transit bus",
+      "description": "An articulated city bus whose rear section angle is solved from the tractor turn, with plug doors, a concertina at the joint and a kneel that rides on the doors own number.",
+      "categories": [
+        "robotics",
+        "vehicles"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/vehicle-geometry.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/transit-bus.tsx",
+          "type": "registry:ui",
+          "target": "@ui/transit-bus.tsx"
+        }
+      ]
+    },
+    {
+      "name": "cargo-plane",
+      "type": "registry:ui",
+      "title": "Cargo plane",
+      "description": "A high-wing freighter that banks because it was asked to turn: the angle comes from airspeed and rate of turn, and the ailerons carry the roll the autopilot has not finished.",
+      "categories": [
+        "robotics",
+        "vehicles"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/vehicle-geometry.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/cargo-plane.tsx",
+          "type": "registry:ui",
+          "target": "@ui/cargo-plane.tsx"
+        }
+      ]
+    },
+    {
+      "name": "hydrofoil-craft",
+      "type": "registry:ui",
+      "title": "Hydrofoil craft",
+      "description": "A foilborne ferry that climbs out of its own ground plane: lift goes as the square of speed, so the surface-piercing V sheds immersed area and the hull rises clear of the water.",
+      "categories": [
+        "robotics",
+        "vehicles"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/vehicle-geometry.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/hydrofoil-craft.tsx",
+          "type": "registry:ui",
+          "target": "@ui/hydrofoil-craft.tsx"
+        }
+      ]
+    },
+    {
+      "name": "launch-vehicle",
+      "type": "registry:ui",
+      "title": "Launch vehicle",
+      "description": "A two-stage orbital booster that flies a pitch program, gimbals its engine cluster against it, stages, and reports the ideal delta-v left from the rocket equation.",
+      "categories": [
+        "robotics",
+        "vehicles"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/vehicle-geometry.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/launch-vehicle.tsx",
+          "type": "registry:ui",
+          "target": "@ui/launch-vehicle.tsx"
+        }
+      ]
+    },
+    {
+      "name": "strike-starfighter",
+      "type": "registry:ui",
+      "title": "Strike starfighter",
+      "description": "A split-foil attack fighter: four wings on two fore-aft hinges that open from a cruise plane into an X, carrying their own engines and tip cannons with them.",
+      "categories": [
+        "robotics",
+        "vehicles"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/strike-starfighter.tsx",
+          "type": "registry:ui",
+          "target": "@ui/strike-starfighter.tsx"
+        }
+      ]
+    },
+    {
+      "name": "ion-interceptor",
+      "type": "registry:ui",
+      "title": "Ion interceptor",
+      "description": "A twin ion-drive interceptor: hexagonal panels pitching on lateral pylons around a pod that yaws inside them, carrying its viewport and emitters round with it.",
+      "categories": [
+        "robotics",
+        "vehicles"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/ion-interceptor.tsx",
+          "type": "registry:ui",
+          "target": "@ui/ion-interceptor.tsx"
         }
       ]
     }
