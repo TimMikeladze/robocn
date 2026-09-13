@@ -96,7 +96,7 @@ function ProbeDroid({
         <path d="M -54 -10 Q -45 -42 0 -48 Q 45 -42 54 -10 L 42 30 Q 0 48 -42 30 Z" {...cast} />
         <path d="M -47 -9 Q -37 -33 0 -37 Q 37 -33 47 -9 L 36 20 Q 0 34 -36 20 Z" {...shell} />
         <ellipse cx={0} cy={-8} rx={43} ry={23} {...machined} />
-        <g transform={`rotate(${px(scan)} 0 -10)`}>
+        <g data-scanner transform={`rotate(${px(scan)} 0 -10)`}>
           <circle cx={0} cy={-10} r={15} {...cast} />
           <circle cx={0} cy={-10} r={9} fill={palette.accent} />
           <circle cx={2} cy={-12} r={3.5} fill={palette.dark} />
@@ -123,6 +123,6 @@ function ProbeDroid({
 }
 
 const finiteClamp = (value: number, min: number, max: number) =>
-  Number.isFinite(value) ? clamp(value, min, max) : min
+  Number.isFinite(value) ? clamp(value, min, max) : 0
 
 export { ProbeDroid }

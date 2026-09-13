@@ -172,6 +172,6 @@ function UtilityDroid({
 }
 
 const finiteClamp = (value: number, min: number, max: number) =>
-  Number.isFinite(value) ? clamp(value, min, max) : min
+  Number.isFinite(value) ? clamp(value, min, max) : 0
 
 export { UtilityDroid }

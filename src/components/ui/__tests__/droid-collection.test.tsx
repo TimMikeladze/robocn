@@ -127,4 +127,17 @@ describe("droid collection", () => {
     expect(getByRole("img", { name: "Outer rim survey unit" }).getAttribute("width")).toBe("280")
     expect(container.innerHTML).toContain("#abcdef")
   })
+
+  it("falls back to neutral angles for non-finite sensor input", () => {
+    const utility = render(<UtilityDroid headAngle={Number.NaN} />)
+    expect(utility.container.querySelector("[data-dome]")!.getAttribute("transform")).toContain("rotate(0)")
+    utility.unmount()
+
+    const medical = render(<MedicalDroid headAngle={Number.POSITIVE_INFINITY} />)
+    expect(medical.container.querySelector("[data-head]")!.getAttribute("transform")).toBe("translate(0 -120) rotate(0)")
+    medical.unmount()
+
+    const probe = render(<ProbeDroid scanAngle={Number.NaN} />)
+    expect(probe.container.querySelector("[data-scanner]")!.getAttribute("transform")).toBe("rotate(0 0 -10)")
+  })
 })
