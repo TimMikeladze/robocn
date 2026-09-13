@@ -2,15 +2,58 @@
   "name": "robocn",
   "version": "0.1.0",
   "private": true,
+  "description": "A shadcn-compatible registry of robot components: articulated arms in SVG and WebGL, SCARA, delta and gantry cells, mobile robots, robotic animals and sensor displays — all solving their own kinematics, themed with CSS variables, installed as source.",
+  "keywords": [
+    "shadcn",
+    "shadcn-ui",
+    "shadcn-registry",
+    "registry",
+    "react",
+    "nextjs",
+    "typescript",
+    "tailwindcss",
+    "svg",
+    "three",
+    "react-three-fiber",
+    "webgl",
+    "robot",
+    "robotics",
+    "kinematics",
+    "inverse-kinematics",
+    "fabrik",
+    "robot-arm",
+    "animation",
+    "components",
+    "ui",
+    "design-system"
+  ],
+  "homepage": "https://robocn.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TimMikeladze/robocn.git"
+  },
+  "bugs": {
+    "url": "https://github.com/TimMikeladze/robocn/issues"
+  },
+  "author": "Tim Mikeladze <tim.mikeladze@gmail.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "dev": "next dev",
-    "build": "pnpm registry:build && next build",
+    "dev": "pnpm generate && next dev",
+    "build": "pnpm generate && pnpm registry:build && next build",
+    "generate": "pnpm builder:prepare && pnpm gallery:prepare",
+    "builder:prepare": "node scripts/build-builder.mjs",
+    "gallery:prepare": "node scripts/build-gallery.mjs",
     "start": "next start",
     "lint": "eslint",
     "registry:build": "node scripts/build-registry.mjs",
-    "test": "vitest run",
+    "og": "node scripts/build-og.mjs",
+    "shots": "node scripts/build-shots.mjs",
+    "test": "pnpm generate && vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "pnpm generate && tsc --noEmit"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
@@ -18,6 +61,7 @@
     "@react-three/fiber": "^9.7.0",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.2.6",
+    "esbuild": "^0.28.2",
     "lucide-react": "^1.45.0",
     "next": "16.3.5",
     "next-themes": "^0.4.6",
@@ -40,6 +84,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
     "jsdom": "^30.0.1",
+    "postcss": "^8.5.28",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^5.0.0"

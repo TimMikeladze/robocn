@@ -1,23 +1,40 @@
 "use client"
 
-/** Live demos for the docs pages. One per registry item, keyed by doc slug. */
+/**
+ * Live demos for the docs pages. One per registry item, keyed by doc slug.
+ *
+ * `demos` below is an override, not a prerequisite: read it through `demoFor`,
+ * which falls back to the machine itself with a variant and view switch when
+ * nobody has written a bench for it. An item that ships without a demo is then
+ * still demonstrable the day it lands. Notes: `docs/gallery-coverage.md`.
+ */
 
 import * as React from "react"
 
 import { AstromechDroid, type AstromechAntenna, type AstromechBehavior, type AstromechDome, type AstromechFeet, type AstromechLivery, type AstromechTool } from "@/components/ui/astromech-droid"
 import { AttendantDroid, type AttendantDroidBehavior, type AttendantDroidBuild, type AttendantDroidFace, type AttendantDroidHands, type AttendantDroidPlating, type AttendantDroidPose } from "@/components/ui/attendant-droid"
+import { BellowsDroid, type BellowsAperture, type BellowsBehavior, type BellowsOptics } from "@/components/ui/bellows-droid"
+import { RobotAvocado, type AvocadoBehavior, type AvocadoStone } from "@/components/ui/robot-avocado"
+import { RobotStrawberry, type StrawberryBehavior } from "@/components/ui/robot-strawberry"
+import { RobotTomato, type TomatoBehavior } from "@/components/ui/robot-tomato"
 import { CasingDroid, type CasingDroidBehavior, type CasingDroidCollar, type CasingDroidDome, type CasingDroidEmitter, type CasingDroidLamps, type CasingDroidManipulator, type CasingDroidSkirt } from "@/components/ui/casing-droid"
 import { CyberTrooper, type CyberTrooperBehavior, type CyberTrooperBuild, type CyberTrooperChest, type CyberTrooperHelmet, type CyberTrooperPose, type CyberTrooperVisor } from "@/components/ui/cyber-trooper"
 import { CourierDroid, type CourierDroidCargo , type CourierDroidBehavior} from "@/components/ui/courier-droid"
+import { CustodianDroid, type CustodianDroidBehavior } from "@/components/ui/custodian-droid"
+import { GuideDroid, type GuideDroidBehavior, type GuideDroidLimbs } from "@/components/ui/guide-droid"
+import { RobotHound, type RobotHoundBehavior, type RobotHoundEars, type RobotHoundProbe } from "@/components/ui/robot-hound"
+import { MonolithDroid, type MonolithDroidBehavior } from "@/components/ui/monolith-droid"
+import { PylonDroid, type PylonDroidBehavior, type PylonDroidStance } from "@/components/ui/pylon-droid"
+import { SentinelConsole, type SentinelBehavior } from "@/components/ui/sentinel-console"
 import { InfantryDroid, type InfantryDroidEquipment, type InfantryDroidFrame, type InfantryDroidPose , type InfantryDroidBehavior} from "@/components/ui/infantry-droid"
 import { MedicalDroid, type MedicalDroidTool , type MedicalDroidBehavior} from "@/components/ui/medical-droid"
 import { MicroDuck, type DuckBehavior } from "@/components/ui/micro-duck"
-import { OrbDroid } from "@/components/ui/orb-droid"
+import { OrbDroid, type OrbDroidBehavior } from "@/components/ui/orb-droid"
 import { ProbeDroid , type ProbeDroidBehavior} from "@/components/ui/probe-droid"
 import { ProtocolDroid, type ProtocolDroidGesture, type ProtocolDroidPose , type ProtocolDroidBehavior} from "@/components/ui/protocol-droid"
 import type { DuckGait } from "@/lib/robocn/duck"
 import { ReachyMini, type ReachyBehavior } from "@/components/ui/reachy-mini"
-import { SecurityDroid, type SecurityDroidPose } from "@/components/ui/security-droid"
+import { SecurityDroid, type SecurityDroidBehavior, type SecurityDroidPose } from "@/components/ui/security-droid"
 import { UtilityDroid, type UtilityDroidSeries, type UtilityDroidTool , type UtilityDroidBehavior} from "@/components/ui/utility-droid"
 import { defaultStewartGeometry, solveStewart } from "@/lib/robocn/stewart"
 import { RobotQuadruped, type QuadrupedBehavior } from "@/components/ui/robot-quadruped"
@@ -26,21 +43,66 @@ import { RobotCrab, type CrabBehavior } from "@/components/ui/robot-crab"
 import { RobotFish, type FishBehavior } from "@/components/ui/robot-fish"
 import { RobotSnake, type SnakeBehavior } from "@/components/ui/robot-snake"
 import { RobotSpider, type SpiderBehavior } from "@/components/ui/robot-spider"
+import { RobotAnt, type AntBehavior, type AntCargo } from "@/components/ui/robot-ant"
+import { RobotBat, type BatBehavior } from "@/components/ui/robot-bat"
+import { RobotDragonfly, type DragonflyBehavior } from "@/components/ui/robot-dragonfly"
+import { RobotFrog, type FrogBehavior } from "@/components/ui/robot-frog"
+import { RobotCat, type CatBehavior } from "@/components/ui/robot-cat"
+import { RobotDog, type DogBehavior } from "@/components/ui/robot-dog"
+import { RobotFox, type FoxBehavior } from "@/components/ui/robot-fox"
+import { RobotBear, type BearBehavior } from "@/components/ui/robot-bear"
+import { RobotHorse, type HorseBehavior } from "@/components/ui/robot-horse"
+import type { EquineGait, GaitLead } from "@/lib/robocn/gait"
+import { RobotInchworm, type InchwormBehavior } from "@/components/ui/robot-inchworm"
+import { RobotJellyfish, type JellyfishBehavior } from "@/components/ui/robot-jellyfish"
+import { RobotManta, type MantaBehavior } from "@/components/ui/robot-manta"
+import { RobotMantis, type MantisBehavior } from "@/components/ui/robot-mantis"
+import { RobotOctopus, type OctopusBehavior } from "@/components/ui/robot-octopus"
+import { RobotScorpion, type ScorpionBehavior } from "@/components/ui/robot-scorpion"
+import { RobotSeahorse, type SeahorseBehavior } from "@/components/ui/robot-seahorse"
+import { RobotTurtle, type TurtleBehavior } from "@/components/ui/robot-turtle"
 import type { HexapodGait } from "@/lib/robocn/hexapod"
 import type { QuadrupedGait } from "@/lib/robocn/quadruped"
 import { LinearActuator, type ActuatorBehavior } from "@/components/ui/linear-actuator"
 import { ServoMotor, type ServoBehavior, type ServoHorn } from "@/components/ui/servo-motor"
+import { SolenoidValve, type SolenoidValveBehavior } from "@/components/ui/solenoid-valve"
+import { ElectromagneticRelay, type ElectromagneticRelayBehavior } from "@/components/ui/electromagnetic-relay"
+import { InductionMotor, type InductionMotorBehavior } from "@/components/ui/induction-motor"
+import { StepperMotor, type StepperMotorBehavior } from "@/components/ui/stepper-motor"
+import { VoiceCoilActuator, type VoiceCoilBehavior } from "@/components/ui/voice-coil-actuator"
+import { MagneticBearing, type MagneticBearingBehavior } from "@/components/ui/magnetic-bearing"
+import { EddyCurrentBrake, type EddyCurrentBrakeBehavior } from "@/components/ui/eddy-current-brake"
+import { MaglevCarriage, type MaglevCarriageBehavior, type MaglevPayload } from "@/components/ui/maglev-carriage"
+import { MagneticGripper, type MagneticGripperBehavior, type MagneticWorkpiece } from "@/components/ui/magnetic-gripper"
+import { InductiveSensor, type InductiveSensorBehavior, type InductiveTarget } from "@/components/ui/inductive-sensor"
+import { Resolver, type ResolverBehavior } from "@/components/ui/resolver"
+import { TransformerCore, type TransformerBehavior, type TransformerCoreShape, type TransformerTurns } from "@/components/ui/transformer-core"
 import { RotaryTable, type RotaryBehavior } from "@/components/ui/rotary-table"
 import { RobotRover, type RoverBehavior } from "@/components/ui/robot-rover"
 import { RobotDrone, type DroneBehavior } from "@/components/ui/robot-drone"
 import { LidarScan, type LidarBehavior, type LidarSample } from "@/components/ui/lidar-scan"
 
+import { ClamshellLaptop, type LaptopBehavior, type LaptopScreen } from "@/components/ui/clamshell-laptop"
+import { SlateTablet, type TabletBehavior, type TabletScreen } from "@/components/ui/slate-tablet"
+import { WheelPlayer, type PlayerBehavior, type PlayerScreen } from "@/components/ui/wheel-player"
+import { TurntableDeck, type DeckRpm, type TurntableBehavior, type TurntableCue } from "@/components/ui/turntable-deck"
+import { GramophoneHorn, type GramophoneBehavior } from "@/components/ui/gramophone-horn"
+import { MusicBoxDrum, type MusicBoxBehavior } from "@/components/ui/music-box-drum"
+import { BuskerDroid, type BuskerBehavior } from "@/components/ui/busker-droid"
+import { SlabHandset, type HandsetBehavior, type HandsetOrientation, type HandsetScreen } from "@/components/ui/slab-handset"
+import { WristTerminal, type TerminalBehavior, type TerminalScreen } from "@/components/ui/wrist-terminal"
 import { ArmFabricator } from "@/components/ui/arm-fabricator"
 import { DroneFabricator } from "@/components/ui/drone-fabricator"
 import { Fabricator } from "@/components/ui/fabricator"
 import { VoxelForm } from "@/components/ui/voxel-form"
 import type { VoxelBehavior, VoxelShape } from "@/lib/robocn/voxel"
 
+import { RobotSunflower, type SunflowerBehavior } from "@/components/ui/robot-sunflower"
+import { CelestialPlanet, type PlanetBehavior, type PlanetSurface } from "@/components/ui/celestial-planet"
+import { CelestialMoon, type MoonBehavior } from "@/components/ui/celestial-moon"
+import { CelestialStar, type StarBehavior, type StarClass } from "@/components/ui/celestial-star"
+import { CelestialAsteroid, type AsteroidBehavior, type AsteroidBody } from "@/components/ui/celestial-asteroid"
+import { Orrery, type OrreryBehavior } from "@/components/ui/orrery"
 import { RobotGripper, type GripperBehavior } from "@/components/ui/robot-gripper"
 import { ConveyorBelt } from "@/components/ui/conveyor-belt"
 
@@ -53,6 +115,30 @@ import { RobotFace, type FaceBehavior, type RobotMood } from "@/components/ui/ro
 import { RobotLoader } from "@/components/ui/robot-loader"
 import { RobotStage } from "@/components/ui/robot-stage"
 import { ScaraArm } from "@/components/ui/scara-arm"
+import { PlanetaryGearbox, type GearboxBehavior } from "@/components/ui/planetary-gearbox"
+import { BeltDrive, type BeltDriveBehavior } from "@/components/ui/belt-drive"
+import { CableCarrier, type CableCarrierBehavior } from "@/components/ui/cable-carrier"
+import { MecanumWheel, type MecanumBehavior, type MecanumHand } from "@/components/ui/mecanum-wheel"
+import { ToolChanger, type ToolChangerBehavior, type ToolChangerTool } from "@/components/ui/tool-changer"
+import { SuctionGripper, type SuctionBehavior } from "@/components/ui/suction-gripper"
+import { RobotHand, type HandBehavior, type HandGrasp } from "@/components/ui/robot-hand"
+import { RobotFoot, type FootBehavior } from "@/components/ui/robot-foot"
+import { RobotLeg, type LegBehavior } from "@/components/ui/robot-leg"
+import { RobotTorso, type TorsoBehavior } from "@/components/ui/robot-torso"
+import { RobotSkeleton, type SkeletonBehavior } from "@/components/ui/robot-skeleton"
+import type { SkeletonGait } from "@/lib/robocn/skeleton"
+import { MotionPlatform, type MotionPlatformBehavior, type MotionPlatformPayload } from "@/components/ui/motion-platform"
+import { Pumpjack, type PumpjackBalance, type PumpjackBehavior } from "@/components/ui/pumpjack"
+import { DrillingDerrick, type DerrickBehavior, type DerrickLines } from "@/components/ui/drilling-derrick"
+import { MudPump, type MudPumpBehavior, type MudPumpCylinders } from "@/components/ui/mud-pump"
+import { WellheadTree, type WellheadBehavior, type WellheadService } from "@/components/ui/wellhead-tree"
+import { StorageTank, type StorageTankBehavior, type StorageTankRoof } from "@/components/ui/storage-tank"
+import { OilTanker, type OilTankerBehavior } from "@/components/ui/oil-tanker"
+import { TankerTruck, type TankerTruckBehavior } from "@/components/ui/tanker-truck"
+import { FlareStack, type FlareStackBehavior } from "@/components/ui/flare-stack"
+import { FractionatingColumn, type ColumnBehavior } from "@/components/ui/fractionating-column"
+import { JackupRig, type JackupBehavior } from "@/components/ui/jackup-rig"
+import { galleryEntries } from "@/components/site/gallery.generated"
 import { Segmented } from "@/components/site/segmented"
 import { Slider } from "@/components/ui/slider"
 import { oklchToHex } from "@/lib/robocn/color"
@@ -72,6 +158,7 @@ import type {
 
 const variants: RobotVariant[] = ["solid", "outline", "blueprint", "wire"]
 const views: RobotView[] = ["plan", "front", "profile", "iso"]
+const GRASPS = ["open", "pinch", "tripod", "power", "hook", "point", "lateral"] as const
 const behaviors: RobotBehavior[] = ["idle", "pointer", "orbit", "sweep", "static"]
 const tools: RobotTool[] = [
   "gripper",
@@ -533,6 +620,78 @@ function ArmControlsDemo() {
       />
     </div>
   )
+}
+
+function ResolverDemo() {
+  const [view, setView] = React.useState<RobotView>("front"); const [variant, setVariant] = React.useState<RobotVariant>("solid"); const [behavior, setBehavior] = React.useState<ResolverBehavior>("turn"); const [channels, setChannels] = React.useState<"on" | "off">("on")
+  return <Bench controls={<><Segmented label="view" value={view} options={views} onChange={setView} /><Segmented label="variant" value={variant} options={variants} onChange={setVariant} /><Segmented label="motion" value={behavior} options={["turn", "sweep", "static"]} onChange={setBehavior} /><Segmented label="channels" value={channels} options={["on", "off"]} onChange={setChannels} /><Hint>Wind the transformer rotor; the bars below are ideal sine and cosine channels.</Hint></>}><Resolver size={340} view={view} variant={variant} behavior={behavior} showChannels={channels === "on"} interactive label="RS-01" /></Bench>
+}
+
+function TransformerCoreDemo() {
+  const [view, setView] = React.useState<RobotView>("iso"); const [variant, setVariant] = React.useState<RobotVariant>("solid"); const [behavior, setBehavior] = React.useState<TransformerBehavior>("alternate"); const [core, setCore] = React.useState<TransformerCoreShape>("ei"); const [turns, setTurns] = React.useState<TransformerTurns>("step-down")
+  return <Bench controls={<><Segmented label="view" value={view} options={views} onChange={setView} /><Segmented label="variant" value={variant} options={variants} onChange={setVariant} /><Segmented label="motion" value={behavior} options={["alternate", "pulse", "static"]} onChange={setBehavior} /><Segmented label="core" value={core} options={["ei", "toroid"]} onChange={setCore} /><Segmented label="ratio" value={turns} options={["step-down", "equal", "step-up"]} onChange={setTurns} /><Hint>Scrub electrical phase to reverse the qualitative flux arrow; winding density shows the selected ratio.</Hint></>}><TransformerCore size={360} view={view} variant={variant} behavior={behavior} core={core} turns={turns} interactive label="TX-01" /></Bench>
+}
+
+function MagneticGripperDemo() {
+  const [view, setView] = React.useState<RobotView>("front"); const [variant, setVariant] = React.useState<RobotVariant>("solid"); const [behavior, setBehavior] = React.useState<MagneticGripperBehavior>("pick"); const [workpiece, setWorkpiece] = React.useState<MagneticWorkpiece>("plate")
+  return <Bench controls={<><Segmented label="view" value={view} options={views} onChange={setView} /><Segmented label="variant" value={variant} options={variants} onChange={setVariant} /><Segmented label="motion" value={behavior} options={["pick", "hold", "static"]} onChange={setBehavior} /><Segmented label="part" value={workpiece} options={["plate", "bar", "none"]} onChange={setWorkpiece} /><Hint>Drag through field strength; the workpiece stays parked until the pole shoes capture it.</Hint></>}><MagneticGripper size={340} view={view} variant={variant} behavior={behavior} workpiece={workpiece} interactive label="MAG-02" /></Bench>
+}
+
+function InductiveSensorDemo() {
+  const [view, setView] = React.useState<RobotView>("profile"); const [variant, setVariant] = React.useState<RobotVariant>("solid"); const [behavior, setBehavior] = React.useState<InductiveSensorBehavior>("approach"); const [target, setTarget] = React.useState<InductiveTarget>("tooth")
+  return <Bench controls={<><Segmented label="view" value={view} options={views} onChange={setView} /><Segmented label="variant" value={variant} options={variants} onChange={setVariant} /><Segmented label="motion" value={behavior} options={["approach", "inspect", "static"]} onChange={setBehavior} /><Segmented label="target" value={target} options={["plate", "tooth", "none"]} onChange={setTarget} /><Hint>Drag the target through the lobe. Choosing none always reports clear.</Hint></>}><InductiveSensor size={370} view={view} variant={variant} behavior={behavior} target={target} interactive label="IS-18" /></Bench>
+}
+
+function EddyCurrentBrakeDemo() {
+  const [view, setView] = React.useState<RobotView>("iso"); const [variant, setVariant] = React.useState<RobotVariant>("solid"); const [behavior, setBehavior] = React.useState<EddyCurrentBrakeBehavior>("brake"); const [slots, setSlots] = React.useState<"0" | "6" | "12">("6")
+  return <Bench controls={<><Segmented label="view" value={view} options={views} onChange={setView} /><Segmented label="variant" value={variant} options={variants} onChange={setVariant} /><Segmented label="motion" value={behavior} options={["brake", "feather", "static"]} onChange={setBehavior} /><Segmented label="slots" value={slots} options={["0", "6", "12"]} onChange={setSlots} /><Hint>Drag the magnet array across the spinning disc; the marks identify the overlap without claiming torque or heat.</Hint></>}><EddyCurrentBrake size={340} view={view} variant={variant} behavior={behavior} slots={Number(slots) as 0 | 6 | 12} interactive label="ECB-06" /></Bench>
+}
+
+function MaglevCarriageDemo() {
+  const [view, setView] = React.useState<RobotView>("profile"); const [variant, setVariant] = React.useState<RobotVariant>("solid"); const [behavior, setBehavior] = React.useState<MaglevCarriageBehavior>("shuttle"); const [payload, setPayload] = React.useState<MaglevPayload>("bin")
+  return <Bench controls={<><Segmented label="view" value={view} options={views} onChange={setView} /><Segmented label="variant" value={variant} options={variants} onChange={setVariant} /><Segmented label="motion" value={behavior} options={["shuttle", "hover", "static"]} onChange={setBehavior} /><Segmented label="payload" value={payload} options={["deck", "bin", "robot"]} onChange={setPayload} /><Hint>Drag the payload along the segmented stator; the air gap stays fixed.</Hint></>}><MaglevCarriage size={390} view={view} variant={variant} behavior={behavior} payload={payload} interactive label="ML-01" /></Bench>
+}
+
+function VoiceCoilActuatorDemo() {
+  const [view, setView] = React.useState<RobotView>("profile"); const [variant, setVariant] = React.useState<RobotVariant>("solid"); const [behavior, setBehavior] = React.useState<VoiceCoilBehavior>("oscillate"); const [travel, setTravel] = React.useState(42)
+  return <Bench controls={<><Segmented label="view" value={view} options={views} onChange={setView} /><Segmented label="variant" value={variant} options={variants} onChange={setVariant} /><Segmented label="motion" value={behavior} options={["oscillate", "pulse", "static"]} onChange={setBehavior} /><NumberControl label="travel" value={travel} min={20} max={60} onChange={setTravel} /><Hint>Drag the carriage through the fixed annular gap; arrow keys move it in tenths.</Hint></>}><VoiceCoilActuator size={360} view={view} variant={variant} behavior={behavior} travel={travel} interactive label="VC-42" /></Bench>
+}
+
+function MagneticBearingDemo() {
+  const [view, setView] = React.useState<RobotView>("front"); const [variant, setVariant] = React.useState<RobotVariant>("solid"); const [behavior, setBehavior] = React.useState<MagneticBearingBehavior>("balance"); const [axis, setAxis] = React.useState<"x" | "y">("x")
+  return <Bench controls={<><Segmented label="view" value={view} options={views} onChange={setView} /><Segmented label="variant" value={variant} options={variants} onChange={setVariant} /><Segmented label="motion" value={behavior} options={["balance", "disturb", "static"]} onChange={setBehavior} /><Segmented label="axis" value={axis} options={["x", "y"]} onChange={setAxis} /><Hint>Displace the rotor and watch the opposing coils exchange correction emphasis.</Hint></>}><MagneticBearing size={340} view={view} variant={variant} behavior={behavior} axis={axis} interactive label="MB-04" /></Bench>
+}
+
+function InductionMotorDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [behavior, setBehavior] = React.useState<InductionMotorBehavior>("slip")
+  const [poles, setPoles] = React.useState<"2" | "4" | "6">("4")
+  return <Bench controls={<><Segmented label="view" value={view} options={views} onChange={setView} /><Segmented label="variant" value={variant} options={variants} onChange={setVariant} /><Segmented label="motion" value={behavior} options={["run", "slip", "static"]} onChange={setBehavior} /><Segmented label="poles" value={poles} options={["2", "4", "6"]} onChange={setPoles} /><Hint>Wind the squirrel cage directly; the field marker shows the ideal three-phase resultant.</Hint></>}><InductionMotor size={340} view={view} variant={variant} behavior={behavior} poles={Number(poles) as 2 | 4 | 6} interactive label="IM-3Φ" /></Bench>
+}
+
+function StepperMotorDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [behavior, setBehavior] = React.useState<StepperMotorBehavior>("step")
+  const [steps, setSteps] = React.useState<"4" | "6" | "8" | "12">("8")
+  return <Bench controls={<><Segmented label="view" value={view} options={views} onChange={setView} /><Segmented label="variant" value={variant} options={variants} onChange={setVariant} /><Segmented label="motion" value={behavior} options={["step", "run", "static"]} onChange={setBehavior} /><Segmented label="steps" value={steps} options={["4", "6", "8", "12"]} onChange={setSteps} /><Hint>Drag around the hub or use arrow keys; the rotor always lands on an integer tooth index.</Hint></>}><StepperMotor size={340} view={view} variant={variant} behavior={behavior} steps={Number(steps) as 4 | 6 | 8 | 12} interactive label="STP-08" /></Bench>
+}
+
+function SolenoidValveDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [behavior, setBehavior] = React.useState<SolenoidValveBehavior>("cycle")
+  const [ports, setPorts] = React.useState<"2" | "3">("3")
+  return <Bench controls={<><Segmented label="view" value={view} options={views} onChange={setView} /><Segmented label="variant" value={variant} options={variants} onChange={setVariant} /><Segmented label="motion" value={behavior} options={["cycle", "pulse", "static"]} onChange={setBehavior} /><Segmented label="ports" value={ports} options={["2", "3"]} onChange={setPorts} /><Hint>Drag the plunger or use the arrow keys; release it and the valve returns to its duty cycle.</Hint></>}><SolenoidValve size={360} view={view} variant={variant} behavior={behavior} ports={Number(ports) as 2 | 3} interactive label="SV-24" /></Bench>
+}
+
+function ElectromagneticRelayDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [behavior, setBehavior] = React.useState<ElectromagneticRelayBehavior>("switch")
+  const [poles, setPoles] = React.useState<"1" | "2">("2")
+  return <Bench controls={<><Segmented label="view" value={view} options={views} onChange={setView} /><Segmented label="variant" value={variant} options={variants} onChange={setVariant} /><Segmented label="motion" value={behavior} options={["switch", "pulse", "static"]} onChange={setBehavior} /><Segmented label="poles" value={poles} options={["1", "2"]} onChange={setPoles} /><Hint>Drag, arrow-key, or press Enter to pull the armature and watch both contacts switch.</Hint></>}><ElectromagneticRelay size={360} view={view} variant={variant} behavior={behavior} poles={Number(poles) as 1 | 2} interactive label="K1" /></Bench>
 }
 
 function KinematicsDemo() {
@@ -1013,6 +1172,7 @@ function UtilityDroidDemo() {
 
 function OrbDroidDemo() {
   const [view, setView] = React.useState<RobotView>("front")
+  const [drive, setDrive] = React.useState<OrbDroidBehavior | "manual">("roll")
   const [bodyAngle, setBodyAngle] = React.useState(35)
   const [headAngle, setHeadAngle] = React.useState(-12)
   const [antenna, setAntenna] = React.useState<"single" | "twin" | "none">("twin")
@@ -1022,11 +1182,123 @@ function OrbDroidDemo() {
       <Segmented label="view" value={view} options={views} onChange={setView} />
       <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
       <Segmented label="antenna" value={antenna} options={["single", "twin", "none"] as const} onChange={setAntenna} />
-      <NumberControl label="body" value={bodyAngle} min={-180} max={180} onChange={setBodyAngle} format={value => `${value}°`} />
-      <NumberControl label="head" value={headAngle} min={-65} max={65} onChange={setHeadAngle} format={value => `${value}°`} />
-      <p className="text-[11px] text-muted-foreground">The drive sphere turns independently while the cap stays upright. Move the pointer to aim the optic.</p>
+      <Segmented label="drive" value={drive} options={["roll", "rock", "survey", "static", "manual"] as const} onChange={setDrive} />
+      {drive === "manual" ? <>
+        <NumberControl label="body" value={bodyAngle} min={-180} max={180} onChange={setBodyAngle} format={value => `${value}°`} />
+        <NumberControl label="head" value={headAngle} min={-65} max={65} onChange={setHeadAngle} format={value => `${value}°`} />
+      </> : <Hint>The drive sphere turns and the cap stays upright. Move the pointer to aim the optic.</Hint>}
+      <p className="text-[11px] text-muted-foreground">Rolling is the mechanism: one clock drives the shell continuously and the head only as far as a real gimbal would let it sway.</p>
     </>}>
-      <OrbDroid view={view} size={330} bodyAngle={bodyAngle} headAngle={headAngle} antenna={antenna} variant={variant} label="ORB / 15" />
+      <OrbDroid view={view} size={330} antenna={antenna} variant={variant} label="ORB / 15"
+        {...(drive === "manual" ? { bodyAngle, headAngle } : { behavior: drive })} />
+    </Bench>
+  )
+}
+
+function BellowsDroidDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<BellowsBehavior | "manual">("breathe")
+  const [inflation, setInflation] = React.useState(0.7)
+  const [pleats, setPleats] = React.useState(7)
+  const [optics, setOptics] = React.useState<BellowsOptics>("pair")
+  const [aperture, setAperture] = React.useState<BellowsAperture>("grille")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="optics" value={optics} options={["pair", "single", "none"] as const} onChange={setOptics} />
+      <Segmented label="vent" value={aperture} options={["grille", "iris", "none"] as const} onChange={setAperture} />
+      <NumberControl label="pleats" value={pleats} min={4} max={12} onChange={setPleats} />
+      <Segmented label="drive" value={drive} options={["breathe", "settle", "startle", "static", "manual"] as const} onChange={setDrive} />
+      {drive === "manual"
+        ? <NumberControl label="fill" value={inflation} min={0} max={1} step={0.01} onChange={setInflation} format={value => `${Math.round(value * 100)}%`} />
+        : <Hint>Drag the shell up and down to fill it, or focus it and use the arrow keys. Let go and it eases back into the cycle.</Hint>}
+      <Readout rows={[["fill", `${Math.round(inflation * 100)}%`]]} />
+    </>}>
+      <BellowsDroid view={view} size={320} pleats={pleats} optics={optics} aperture={aperture} variant={variant} label="BELLOWS / 01"
+        {...(drive === "manual" ? { inflation } : { behavior: drive })}
+        interactive onInflationChange={setInflation} />
+    </Bench>
+  )
+}
+
+function RobotAvocadoDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<AvocadoBehavior | "manual">("present")
+  const [open, setOpen] = React.useState(0.7)
+  const [bearing, setBearing] = React.useState(24)
+  const [stone, setStone] = React.useState<AvocadoStone>("optic")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="stone" value={stone} options={["optic", "core", "none"] as const} onChange={setStone} />
+      <NumberControl label="bearing" value={bearing} min={-180} max={180} onChange={setBearing} format={value => `${value}°`} />
+      <Segmented label="drive" value={drive} options={["present", "ajar", "scan", "static", "manual"] as const} onChange={setDrive} />
+      {drive === "manual"
+        ? <NumberControl label="open" value={open} min={0} max={1} step={0.01} onChange={setOpen} format={value => `${Math.round(value * 100)}%`} />
+        : <Hint>Drag either way out of the middle to part the shell, or focus it and use the arrows. Let go and it eases back into the cycle.</Hint>}
+      <Readout rows={[["open", `${Math.round(open * 100)}%`]]} />
+    </>}>
+      <RobotAvocado view={view} size={320} variant={variant} stone={stone} bearing={bearing} label="AVOCADO / 01"
+        interactive onOpenChange={setOpen}
+        {...(drive === "manual" ? { open, behavior: "static" as const } : { behavior: drive })} />
+    </Bench>
+  )
+}
+
+function RobotStrawberryDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<StrawberryBehavior | "manual">("unfurl")
+  const [bloom, setBloom] = React.useState(0.65)
+  const [seeds, setSeeds] = React.useState(26)
+  const [blades, setBlades] = React.useState(6)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <NumberControl label="seeds" value={seeds} min={10} max={48} onChange={setSeeds} />
+      <NumberControl label="blades" value={blades} min={3} max={9} onChange={setBlades} />
+      <Segmented label="drive" value={drive} options={["unfurl", "probe", "furl", "static", "manual"] as const} onChange={setDrive} />
+      {drive === "manual"
+        ? <NumberControl label="bloom" value={bloom} min={0} max={1} step={0.01} onChange={setBloom} format={value => `${Math.round(value * 100)}%`} />
+        : <Hint>Drag up and down to work the calyx — the blades come down and the studs run out together — or focus it and use the arrows.</Hint>}
+      <Readout rows={[["bloom", `${Math.round(bloom * 100)}%`]]} />
+    </>}>
+      <RobotStrawberry view={view} size={320} variant={variant} seeds={seeds} blades={blades} label="BERRY / 02"
+        interactive onBloomChange={setBloom}
+        {...(drive === "manual" ? { bloom, behavior: "static" as const } : { behavior: drive })} />
+    </Bench>
+  )
+}
+
+function RobotTomatoDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<TomatoBehavior | "manual">("sway")
+  const [swing, setSwing] = React.useState(14)
+  const [ripeness, setRipeness] = React.useState(0.72)
+  const [lobes, setLobes] = React.useState(6)
+  const [sepals, setSepals] = React.useState(5)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <NumberControl label="ripeness" value={ripeness} min={0} max={1} step={0.01} onChange={setRipeness} format={value => `${Math.round(value * 100)}%`} />
+      <NumberControl label="lobes" value={lobes} min={4} max={9} onChange={setLobes} />
+      <NumberControl label="sepals" value={sepals} min={0} max={8} onChange={setSepals} />
+      <Segmented label="drive" value={drive} options={["sway", "settle", "sort", "static", "manual"] as const} onChange={setDrive} />
+      {drive === "manual"
+        ? <NumberControl label="swing" value={swing} min={-34} max={34} onChange={setSwing} format={value => `${value}°`} />
+        : <Hint>Drag across to swing it under its clamp — it follows the pointer from every camera — or focus it and use the arrows.</Hint>}
+      <Readout rows={[["swing", `${Math.round(swing)}°`], ["ripe", `${Math.round(ripeness * 100)}%`]]} />
+    </>}>
+      <RobotTomato view={view} size={320} variant={variant} ripeness={ripeness} lobes={lobes} sepals={sepals} label="TOMATO / 03"
+        interactive onSwingChange={setSwing}
+        {...(drive === "manual" ? { swing, behavior: "static" as const } : { behavior: drive })} />
     </Bench>
   )
 }
@@ -1059,6 +1331,7 @@ function ProtocolDroidDemo() {
 
 function SecurityDroidDemo() {
   const [view, setView] = React.useState<RobotView>("front")
+  const [drive, setDrive] = React.useState<SecurityDroidBehavior | "manual">("patrol")
   const [pose, setPose] = React.useState<SecurityDroidPose>("guard")
   const [headAngle, setHeadAngle] = React.useState(-8)
   const [alert, setAlert] = React.useState<"clear" | "alert">("clear")
@@ -1067,12 +1340,16 @@ function SecurityDroidDemo() {
     <Bench controls={<>
       <Segmented label="view" value={view} options={views} onChange={setView} />
       <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
-      <Segmented label="pose" value={pose} options={["stand", "patrol", "guard"] as const} onChange={setPose} />
+      <Segmented label="drive" value={drive} options={["patrol", "alert", "idle", "static", "manual"] as const} onChange={setDrive} />
       <Segmented label="state" value={alert} options={["clear", "alert"] as const} onChange={setAlert} />
-      <NumberControl label="head" value={headAngle} min={-70} max={70} onChange={setHeadAngle} format={value => `${value}°`} />
-      <p className="text-[11px] text-muted-foreground">The sensor bar tracks the pointer unless a controlled look is supplied.</p>
+      {drive === "manual" ? <>
+        <Segmented label="pose" value={pose} options={["stand", "patrol", "guard"] as const} onChange={setPose} />
+        <NumberControl label="head" value={headAngle} min={-70} max={70} onChange={setHeadAngle} format={value => `${value}°`} />
+      </> : <Hint>The sensor bar tracks the pointer unless a controlled look is supplied.</Hint>}
+      <p className="text-[11px] text-muted-foreground">Alert overrides the behaviour: it stands the frame to guard and shortens the scan, whatever the drive says.</p>
     </>}>
-      <SecurityDroid view={view} size={300} pose={pose} headAngle={headAngle} alert={alert === "alert"} variant={variant} label="SECURITY / 17" />
+      <SecurityDroid view={view} size={300} alert={alert === "alert"} variant={variant} label="SECURITY / 17"
+        {...(drive === "manual" ? { pose, headAngle } : { behavior: drive })} />
     </Bench>
   )
 }
@@ -1325,6 +1602,165 @@ function CyberTrooperDemo() {
     </Bench>
   )
 }
+function RobotHoundDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<RobotHoundBehavior | "manual">("seek")
+  const [attention, setAttention] = React.useState(0.6)
+  const [ears, setEars] = React.useState<RobotHoundEars>("dish")
+  const [probe, setProbe] = React.useState<RobotHoundProbe>("whip")
+  const [skirt, setSkirt] = React.useState<"flared" | "straight">("flared")
+  const [keys, setKeys] = React.useState(4)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="ears" value={ears} options={["dish", "vane", "none"] as const} onChange={setEars} />
+      <Segmented label="probe" value={probe} options={["whip", "mast", "none"] as const} onChange={setProbe} />
+      <Segmented label="skirt" value={skirt} options={["flared", "straight"] as const} onChange={setSkirt} />
+      <NumberControl label="keys" value={keys} min={3} max={8} onChange={setKeys} />
+      <Segmented label="drive" value={drive} options={["seek", "alert", "idle", "static", "manual"] as const} onChange={setDrive} />
+      {drive === "manual"
+        ? <NumberControl label="attention" value={attention} min={0} max={1} step={0.01} onChange={setAttention} format={value => `${Math.round(value * 100)}%`} />
+        : <Hint>Drag up and down to bring its head up — the collar runs out, the ears prick and the probe rises with it, and it eases back into the behaviour when you let go. It watches you the whole time.</Hint>}
+      <Readout rows={[["attention", `${Math.round(attention * 100)}%`]]} />
+    </>}>
+      <RobotHound view={view} size={320} variant={variant} ears={ears} probe={probe} skirt={skirt} keys={keys} label="HOUND / 09"
+        interactive onAttentionChange={setAttention}
+        {...(drive === "manual" ? { attention, behavior: "static" as const } : { behavior: drive })} />
+    </Bench>
+  )
+}
+function GuideDroidDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [drive, setDrive] = React.useState<GuideDroidBehavior | "manual">("hover")
+  const [height, setHeight] = React.useState(0.6)
+  const [limbs, setLimbs] = React.useState<GuideDroidLimbs>("coil")
+  const [blades, setBlades] = React.useState(2)
+  const [voice, setVoice] = React.useState(0)
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="limbs" value={limbs} options={["coil", "strut"] as const} onChange={setLimbs} />
+      <NumberControl label="blades" value={blades} min={2} max={6} onChange={setBlades} />
+      <NumberControl label="voice" value={voice} min={0} max={1} step={0.05} onChange={setVoice} format={value => `${Math.round(value * 100)}%`} />
+      <Segmented label="drive" value={drive} options={["hover", "beckon", "settle", "manual"] as const} onChange={setDrive} />
+      {drive === "manual"
+        ? <NumberControl label="height" value={height} min={0} max={1} step={0.01} onChange={setHeight} format={value => `${Math.round(value * 100)}%`} />
+        : <Hint>Drag it up and down to fly it — the springs stretch as it climbs and it eases back into the behaviour when you let go.</Hint>}
+    </>}>
+      <GuideDroid view={view} size={300} blades={blades} limbs={limbs} voice={voice} variant={variant} label="GUIDE / 07"
+        interactive onHeightChange={setHeight}
+        {...(drive === "manual" ? { height, behavior: "static" as const } : { behavior: drive })} />
+    </Bench>
+  )
+}
+function MonolithDroidDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<MonolithDroidBehavior | "manual">("walk")
+  const [splay, setSplay] = React.useState(0.62)
+  const [slabs, setSlabs] = React.useState(4)
+  const [stride, setStride] = React.useState(0.25)
+  const [panel, setPanel] = React.useState(0)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <NumberControl label="slabs" value={slabs} min={3} max={6} onChange={setSlabs} />
+      <NumberControl label="panel" value={panel} min={0} max={1} step={0.05} onChange={setPanel} format={value => `${Math.round(value * 100)}%`} />
+      <Segmented label="drive" value={drive} options={["walk", "unfold", "brief", "static", "manual"] as const} onChange={setDrive} />
+      {drive === "manual"
+        ? <>
+            <NumberControl label="splay" value={splay} min={0} max={1} step={0.01} onChange={setSplay} format={value => `${Math.round(value * 100)}%`} />
+            <NumberControl label="stride" value={stride} min={0} max={1} step={0.01} onChange={setStride} format={value => `${Math.round(value * 100)}%`} />
+          </>
+        : <Hint>Drag across it to pull the column open, or focus it and use the arrow keys. It eases back into the behaviour when you let go.</Hint>}
+      <Readout rows={[["splay", `${Math.round(splay * 100)}%`]]} />
+    </>}>
+      <MonolithDroid view={view} size={300} slabs={slabs} panel={panel} variant={variant} label="MONOLITH / 04"
+        interactive onSplayChange={setSplay}
+        {...(drive === "manual" ? { splay, stride, behavior: "static" as const } : { behavior: drive })} />
+    </Bench>
+  )
+}
+function CustodianDroidDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<CustodianDroidBehavior | "manual">("watch")
+  const [open, setOpen] = React.useState(0.35)
+  const [plates, setPlates] = React.useState(6)
+  const [voice, setVoice] = React.useState(0)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <NumberControl label="plates" value={plates} min={4} max={10} onChange={setPlates} />
+      <NumberControl label="voice" value={voice} min={0} max={1} step={0.05} onChange={setVoice} format={value => `${Math.round(value * 100)}%`} />
+      <Segmented label="drive" value={drive} options={["watch", "survey", "alert", "static", "manual"] as const} onChange={setDrive} />
+      {drive === "manual"
+        ? <NumberControl label="open" value={open} min={0} max={1} step={0.01} onChange={setOpen} format={value => `${Math.round(value * 100)}%`} />
+        : <Hint>Drag across it to run the armour out on its rails, or focus it and use the arrow keys. The optic watches you the whole time, and the shell eases back into the behaviour when you let go.</Hint>}
+      <Readout rows={[["shell", `${Math.round(open * 100)}%`]]} />
+    </>}>
+      <CustodianDroid view={view} size={300} plates={plates} voice={voice} variant={variant} label="CUSTODIAN / 11"
+        interactive onOpenChange={setOpen}
+        {...(drive === "manual" ? { open, behavior: "static" as const } : { behavior: drive })} />
+    </Bench>
+  )
+}
+function SentinelConsoleDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<SentinelBehavior | "manual">("watch")
+  const [aperture, setAperture] = React.useState(0.55)
+  const [blades, setBlades] = React.useState(8)
+  const [voice, setVoice] = React.useState(0)
+  const [bulkhead, setBulkhead] = React.useState<"set in" | "bare">("set in")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <NumberControl label="blades" value={blades} min={4} max={10} onChange={setBlades} />
+      <NumberControl label="voice" value={voice} min={0} max={1} step={0.05} onChange={setVoice} format={value => `${Math.round(value * 100)}%`} />
+      <Segmented label="wall" value={bulkhead} options={["set in", "bare"] as const} onChange={setBulkhead} />
+      <Segmented label="drive" value={drive} options={["watch", "listen", "speak", "alert", "static", "manual"] as const} onChange={setDrive} />
+      {drive === "manual"
+        ? <NumberControl label="aperture" value={aperture} min={0} max={1} step={0.01} onChange={setAperture} format={value => `${Math.round(value * 100)}%`} />
+        : <Hint>Drag across the lens to work the iris, or focus it and use the arrow keys. It watches you the whole time, and eases back into the behaviour when you let go.</Hint>}
+      <Readout rows={[["aperture", `${Math.round(aperture * 100)}%`]]} />
+    </>}>
+      <SentinelConsole view={view} size={260} blades={blades} voice={voice} variant={variant}
+        showBulkhead={bulkhead === "set in"} plate="SENTINEL 7" label="SENTINEL / 09"
+        interactive onApertureChange={setAperture}
+        {...(drive === "manual" ? { aperture, behavior: "static" as const } : { behavior: drive })} />
+    </Bench>
+  )
+}
+function PylonDroidDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [drive, setDrive] = React.useState<PylonDroidBehavior | "manual">("deploy")
+  const [deploy, setDeploy] = React.useState(0.6)
+  const [stance, setStance] = React.useState<PylonDroidStance>("narrow")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="stance" value={stance} options={["narrow", "wide"] as const} onChange={setStance} />
+      <Segmented label="drive" value={drive} options={["deploy", "survey", "stow", "manual"] as const} onChange={setDrive} />
+      {drive === "manual"
+        ? <NumberControl label="deploy" value={deploy} min={0} max={1} step={0.01} onChange={setDeploy} format={value => `${Math.round(value * 100)}%`} />
+        : <Hint>Drag it up and down to stand it up — at zero every limb is folded inside the triangle, and it eases back into the behaviour when you let go.</Hint>}
+    </>}>
+      <PylonDroid view={view} size={300} stance={stance} variant={variant} label="PYLON / 11"
+        interactive onDeployChange={setDeploy}
+        {...(drive === "manual" ? { deploy, behavior: "static" as const } : { behavior: drive })} />
+    </Bench>
+  )
+}
 function RobotFishDemo() {
   const [view, setView] = React.useState<RobotView>("profile")
   const [drive, setDrive] = React.useState<FishBehavior | "manual">("cruise")
@@ -1548,7 +1984,1340 @@ function DroneFabricatorDemo() {
   )
 }
 
-export const demos: Record<string, React.ComponentType> = {
+function RobotDragonflyDemo() {
+  const [view, setView] = React.useState<RobotView>("plan")
+  const [drive, setDrive] = React.useState<DragonflyBehavior | "manual">("hover")
+  const [phase, setPhase] = React.useState(0.2)
+  const [swing, setSwing] = React.useState(0.9)
+  const [curl, setCurl] = React.useState(0.2)
+  const [heading, setHeading] = React.useState(0)
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["hover", "dart", "perch", "manual"] as const} onChange={setDrive} />
+      {drive === "manual" ? <>
+        <NumberControl label="beat" value={phase} min={0} max={1} step={0.01} onChange={setPhase} format={value => `${Math.round(value * 100)}%`} />
+        <NumberControl label="swing" value={swing} min={0} max={1} step={0.01} onChange={setSwing} format={value => `${Math.round(value * 68)}°`} />
+        <NumberControl label="curl" value={curl} min={0} max={1} step={0.01} onChange={setCurl} format={value => `${Math.round(value * 100)}%`} />
+        <NumberControl label="yaw" value={heading} min={-70} max={70} step={1} onChange={setHeading} format={value => `${value}°`} />
+      </> : <Hint>It yaws toward your pointer. Click and it darts.</Hint>}
+      <p className="text-[11px] text-muted-foreground">Fore and hind wings beat half a cycle apart. A wing loses span to the cosine of its own stroke angle.</p>
+    </>}>
+      <RobotDragonfly view={view} size={340} variant={variant} label="ODONATA / 04"
+        {...(drive === "manual" ? { phase, swing, curl, heading } : { behavior: drive })} />
+    </Bench>
+  )
+}
+
+function RobotBatDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [drive, setDrive] = React.useState<BatBehavior | "manual">("roost")
+  const [phase, setPhase] = React.useState(0.25)
+  const [spread, setSpread] = React.useState(1)
+  const [flight, setFlight] = React.useState(1)
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["roost", "flap", "glide", "manual"] as const} onChange={setDrive} />
+      {drive === "manual" ? <>
+        <NumberControl label="beat" value={phase} min={0} max={1} step={0.01} onChange={setPhase} format={value => `${Math.round(value * 100)}%`} />
+        <NumberControl label="spread" value={spread} min={0} max={1} step={0.01} onChange={setSpread} format={value => `${Math.round(value * 100)}%`} />
+        <NumberControl label="flight" value={flight} min={0} max={1} step={0.01} onChange={setFlight} format={value => (value < 0.5 ? "hanging" : "airborne")} />
+      </> : <Hint>The head tracks your pointer. Click and it drops off the beam.</Hint>}
+      <p className="text-[11px] text-muted-foreground">The membrane is drawn through the finger-strut tips, so furling deforms one surface.</p>
+    </>}>
+      <RobotBat view={view} size={340} variant={variant} label="CHIRO / 02"
+        {...(drive === "manual" ? { phase, spread, flight } : { behavior: drive })} />
+    </Bench>
+  )
+}
+
+function RobotJellyfishDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [drive, setDrive] = React.useState<JellyfishBehavior | "manual">("pulse")
+  const [phase, setPhase] = React.useState(0.15)
+  const [contraction, setContraction] = React.useState(0.7)
+  const [arms, setArms] = React.useState(9)
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["pulse", "drift", "bloom", "manual"] as const} onChange={setDrive} />
+      <NumberControl label="arms" value={arms} min={3} max={16} step={1} onChange={setArms} />
+      {drive === "manual" ? <>
+        <NumberControl label="cycle" value={phase} min={0} max={1} step={0.01} onChange={setPhase} format={value => `${Math.round(value * 100)}%`} />
+        <NumberControl label="squeeze" value={contraction} min={0} max={1} step={0.01} onChange={setContraction} format={value => `${Math.round(value * 100)}%`} />
+      </> : <Hint>The curtain leans toward your pointer. Click and the bell contracts hard.</Hint>}
+      <p className="text-[11px] text-muted-foreground">One number narrows, deepens and flares the whole bell. It squeezes fast and relaxes slow.</p>
+    </>}>
+      <RobotJellyfish view={view} size={330} variant={variant} arms={arms} label="MEDUSA / 09"
+        {...(drive === "manual" ? { phase, contraction } : { behavior: drive })} />
+    </Bench>
+  )
+}
+
+function RobotMantaDemo() {
+  const [view, setView] = React.useState<RobotView>("plan")
+  const [drive, setDrive] = React.useState<MantaBehavior | "manual">("cruise")
+  const [phase, setPhase] = React.useState(0.3)
+  const [amplitude, setAmplitude] = React.useState(0.6)
+  const [bank, setBank] = React.useState(0)
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["cruise", "soar", "bank", "manual"] as const} onChange={setDrive} />
+      {drive === "manual" ? <>
+        <NumberControl label="beat" value={phase} min={0} max={1} step={0.01} onChange={setPhase} format={value => `${Math.round(value * 100)}%`} />
+        <NumberControl label="swing" value={amplitude} min={0} max={1} step={0.01} onChange={setAmplitude} format={value => `${Math.round(value * 100)}%`} />
+        <NumberControl label="roll" value={bank} min={-1} max={1} step={0.05} onChange={setBank} format={value => `${Math.round(value * 34)}°`} />
+      </> : <Hint>It banks toward your pointer. Click and it surges.</Hint>}
+      <p className="text-[11px] text-muted-foreground">The wave runs root to tip across the span, not nose to tail. Rolling foreshortens the span for real.</p>
+    </>}>
+      <RobotManta view={view} size={350} variant={variant} label="MOBULA / 11"
+        {...(drive === "manual" ? { phase, amplitude, bank } : { behavior: drive })} />
+    </Bench>
+  )
+}
+
+function RobotOctopusDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [drive, setDrive] = React.useState<OctopusBehavior | "manual">("crawl")
+  const [phase, setPhase] = React.useState(0.25)
+  const [curl, setCurl] = React.useState(0.45)
+  const [jet, setJet] = React.useState(0.2)
+  const [arms, setArms] = React.useState(8)
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["crawl", "jet", "furl", "manual"] as const} onChange={setDrive} />
+      <NumberControl label="arms" value={arms} min={4} max={10} step={1} onChange={setArms} />
+      {drive === "manual" ? <>
+        <NumberControl label="cycle" value={phase} min={0} max={1} step={0.01} onChange={setPhase} format={value => `${Math.round(value * 100)}%`} />
+        <NumberControl label="curl" value={curl} min={0} max={1} step={0.01} onChange={setCurl} format={value => `${Math.round(value * 100)}%`} />
+        <NumberControl label="jet" value={jet} min={0} max={1} step={0.01} onChange={setJet} format={value => `${Math.round(value * 100)}%`} />
+      </> : <Hint>The arms nearest your pointer straighten toward it. Click and it jets.</Hint>}
+      <p className="text-[11px] text-muted-foreground">Eight spines, each on its own phase, mounted on a ring — turn the camera and the ring shows.</p>
+    </>}>
+      <RobotOctopus view={view} size={330} variant={variant} arms={arms} label="CEPHALO / 08"
+        {...(drive === "manual" ? { phase, curl, jet } : { behavior: drive })} />
+    </Bench>
+  )
+}
+
+function RobotSeahorseDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [drive, setDrive] = React.useState<SeahorseBehavior | "manual">("hold")
+  const [phase, setPhase] = React.useState(0.2)
+  const [grip, setGrip] = React.useState(0.9)
+  const [sway, setSway] = React.useState(0.2)
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["hold", "hover", "drift", "manual"] as const} onChange={setDrive} />
+      {drive === "manual" ? <>
+        <NumberControl label="cycle" value={phase} min={0} max={1} step={0.01} onChange={setPhase} format={value => `${Math.round(value * 100)}%`} />
+        <NumberControl label="grip" value={grip} min={0} max={1} step={0.01} onChange={setGrip} format={value => `${Math.round(value * 100)}%`} />
+        <NumberControl label="sway" value={sway} min={0} max={1} step={0.01} onChange={setSway} format={value => `${Math.round(value * 100)}%`} />
+      </> : <Hint>The head tilts to your pointer. Click and it lets go of the holdfast.</Hint>}
+      <p className="text-[11px] text-muted-foreground">Grip and steer are one control: the tail is the rudder taken to the stop.</p>
+    </>}>
+      <RobotSeahorse view={view} size={300} variant={variant} label="HIPPO / 03"
+        {...(drive === "manual" ? { phase, grip, sway } : { behavior: drive })} />
+    </Bench>
+  )
+}
+
+function RobotAntDemo() {
+  const [view, setView] = React.useState<RobotView>("plan")
+  const [drive, setDrive] = React.useState<AntBehavior | "manual">("forage")
+  const [phase, setPhase] = React.useState(0.3)
+  const [heading, setHeading] = React.useState(0)
+  const [bite, setBite] = React.useState(0.4)
+  const [cargo, setCargo] = React.useState<AntCargo>("none")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["forage", "haul", "idle", "manual"] as const} onChange={setDrive} />
+      <Segmented label="cargo" value={cargo} options={["none", "crumb", "leaf"] as const} onChange={setCargo} />
+      {drive === "manual" ? <>
+        <NumberControl label="phase" value={phase} min={0} max={1} step={0.01} onChange={setPhase} format={value => `${Math.round(value * 100)}%`} />
+        <NumberControl label="course" value={heading} min={-90} max={90} step={1} onChange={setHeading} format={value => `${value}°`} />
+        <NumberControl label="jaws" value={bite} min={0} max={1} step={0.05} onChange={setBite} format={value => `${Math.round(value * 34)}°`} />
+      </> : <Hint>The antennae track your pointer. Click and the mandibles work.</Hint>}
+      <p className="text-[11px] text-muted-foreground">The course bends the body chain, so the head turns before the gaster follows.</p>
+    </>}>
+      <RobotAnt view={view} size={340} variant={variant} cargo={cargo} label="FORMICA / 06"
+        {...(drive === "manual" ? { phase, heading, bite, gait: "tripod" as HexapodGait } : { behavior: drive })} />
+    </Bench>
+  )
+}
+
+function RobotScorpionDemo() {
+  const [view, setView] = React.useState<RobotView>("plan")
+  const [drive, setDrive] = React.useState<ScorpionBehavior | "manual">("stalk")
+  const [phase, setPhase] = React.useState(0.3)
+  const [arch, setArch] = React.useState(0.7)
+  const [claw, setClaw] = React.useState(0.6)
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["stalk", "guard", "strike", "manual"] as const} onChange={setDrive} />
+      {drive === "manual" ? <>
+        <NumberControl label="phase" value={phase} min={0} max={1} step={0.01} onChange={setPhase} format={value => `${Math.round(value * 100)}%`} />
+        <NumberControl label="arch" value={arch} min={0} max={1} step={0.01} onChange={setArch} format={value => `${Math.round(value * 100)}%`} />
+        <NumberControl label="claw" value={claw} min={0} max={1} step={0.05} onChange={setClaw} format={value => `${Math.round(value * 26)}°`} />
+      </> : <Hint>It turns toward your pointer. Click and the tail whips over.</Hint>}
+      <p className="text-[11px] text-muted-foreground">The tail is solved in the sagittal plane: arching it raises the real height, so the plan footprint curls forward.</p>
+    </>}>
+      <RobotScorpion view={view} size={350} variant={variant} label="SCORPIO / 07"
+        {...(drive === "manual" ? { phase, arch, claw, heading: 0, gait: "tripod" as HexapodGait } : { behavior: drive })} />
+    </Bench>
+  )
+}
+
+function RobotMantisDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [drive, setDrive] = React.useState<MantisBehavior | "manual">("stalk")
+  const [reach, setReach] = React.useState(40)
+  const [rise, setRise] = React.useState(-10)
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["stalk", "strike", "groom", "manual"] as const} onChange={setDrive} />
+      {drive === "manual" ? <>
+        <NumberControl label="reach" value={reach} min={-20} max={80} step={1} onChange={setReach} />
+        <NumberControl label="rise" value={rise} min={-40} max={50} step={1} onChange={setRise} />
+      </> : <Hint>The forelimbs reach for your pointer. Click and they snap out past it.</Hint>}
+      <p className="text-[11px] text-muted-foreground">A two-link chain solved to a real target. Out of reach clamps onto the circle rather than failing.</p>
+    </>}>
+      <RobotMantis view={view} size={350} variant={variant} label="MANTIS / 01"
+        {...(drive === "manual" ? { target: { x: reach, y: rise } } : { behavior: drive })} />
+    </Bench>
+  )
+}
+
+function RobotCatDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [drive, setDrive] = React.useState<CatBehavior | "manual">("prowl")
+  const [arch, setArch] = React.useState(0.6)
+  const [crouch, setCrouch] = React.useState(0.3)
+  const [tail, setTail] = React.useState(0.7)
+  const [ears, setEars] = React.useState(0.8)
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["prowl", "pounce", "arch", "sit", "manual"] as const} onChange={setDrive} />
+      {drive === "manual" ? <>
+        <NumberControl label="arch" value={arch} min={-1} max={1} step={0.01} onChange={setArch} format={value => value.toFixed(2)} />
+        <NumberControl label="crouch" value={crouch} min={0} max={1} step={0.01} onChange={setCrouch} format={value => `${Math.round(value * 100)}%`} />
+        <NumberControl label="tail" value={tail} min={-1} max={1} step={0.01} onChange={setTail} format={value => value.toFixed(2)} />
+        <NumberControl label="ears" value={ears} min={-1} max={1} step={0.01} onChange={setEars} format={value => value.toFixed(2)} />
+      </> : <Hint>The head, ears and eyes follow your pointer. Click and it pounces.</Hint>}
+      <p className="text-[11px] text-muted-foreground">The shoulder and the hip are the two ends of one solved spine, so the arch moves the leg roots and the legs are solved from wherever it puts them.</p>
+    </>}>
+      <RobotCat view={view} size={360} variant={variant} label="FELIS / 13"
+        {...(drive === "manual" ? { arch, crouch, tail, ears } : { behavior: drive })} />
+    </Bench>
+  )
+}
+
+function RobotDogDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [drive, setDrive] = React.useState<DogBehavior | "manual">("trot")
+  const [arch, setArch] = React.useState(0)
+  const [crouch, setCrouch] = React.useState(0.25)
+  const [tail, setTail] = React.useState(0.5)
+  const [wag, setWag] = React.useState(-0.7)
+  const [nose, setNose] = React.useState(0.2)
+  const [ears, setEars] = React.useState(0.8)
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["trot", "sniff", "sit", "alert", "manual"] as const} onChange={setDrive} />
+      {drive === "manual" ? <>
+        <NumberControl label="arch" value={arch} min={-1} max={1} step={0.01} onChange={setArch} format={value => value.toFixed(2)} />
+        <NumberControl label="crouch" value={crouch} min={0} max={1} step={0.01} onChange={setCrouch} format={value => `${Math.round(value * 100)}%`} />
+        <NumberControl label="nose" value={nose} min={0} max={1} step={0.01} onChange={setNose} format={value => `${Math.round(value * 100)}%`} />
+        <NumberControl label="tail" value={tail} min={-1} max={1} step={0.01} onChange={setTail} format={value => value.toFixed(2)} />
+        <NumberControl label="wag" value={wag} min={-1} max={1} step={0.01} onChange={setWag} format={value => value.toFixed(2)} />
+        <NumberControl label="ears" value={ears} min={-1} max={1} step={0.01} onChange={setEars} format={value => value.toFixed(2)} />
+      </> : <Hint>The head, ears and eyes follow your pointer, and the wag picks up. Click and it barks.</Hint>}
+      <p className="text-[11px] text-muted-foreground">The hip is a spine joint; the shoulder is the far end of a scapula that swings on the ribcage. The tail is solved across the centre plane, so turn the camera to plan and the wag opens out.</p>
+    </>}>
+      <RobotDog view={view} size={360} variant={variant} label="CANIS / 07"
+        {...(drive === "manual" ? { arch, crouch, tail, wag, nose, ears } : { behavior: drive })} />
+    </Bench>
+  )
+}
+
+function RobotBearDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [drive, setDrive] = React.useState<BearBehavior | "manual">("rear")
+  const [rear, setRear] = React.useState(0.8)
+  const [balance, setBalance] = React.useState(1)
+  const [crouch, setCrouch] = React.useState(0.2)
+  const [arch, setArch] = React.useState(0)
+  const [dig, setDig] = React.useState(0)
+  const [support, setSupport] = React.useState(true)
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["amble", "rear", "forage", "static", "manual"] as const} onChange={setDrive} />
+      {drive === "manual" ? <>
+        <NumberControl label="rear" value={rear} min={0} max={1} step={0.01} onChange={setRear} format={value => `${Math.round(value * 100)}%`} />
+        <NumberControl label="balance" value={balance} min={0} max={1} step={0.01} onChange={setBalance} format={value => `${Math.round(value * 100)}%`} />
+        <NumberControl label="crouch" value={crouch} min={0} max={1} step={0.01} onChange={setCrouch} format={value => `${Math.round(value * 100)}%`} />
+        <NumberControl label="arch" value={arch} min={-1} max={1} step={0.01} onChange={setArch} format={value => value.toFixed(2)} />
+        <NumberControl label="dig" value={dig} min={0} max={1} step={0.01} onChange={setDig} format={value => `${Math.round(value * 100)}%`} />
+      </> : <Hint>Drag up and down to rear it — arrows step 10%, Home and End are the floor and full height. The head follows your pointer.</Hint>}
+      <Segmented label="support" value={support ? "on" : "off"} options={["on", "off"] as const} onChange={value => setSupport(value === "on")} />
+      <p className="text-[11px] text-muted-foreground">Rearing takes the base of support from four soles to two. Take balance to 0 at a full rear and the centre of mass leaves the base: the marker goes red, because that pose falls over.</p>
+    </>}>
+      <RobotBear view={view} size={360} variant={variant} showSupport={support} label="URSUS / 01"
+        {...(drive === "manual" ? { rear, balance, crouch, arch, dig, behavior: "static" as const } : { behavior: drive })} />
+    </Bench>
+  )
+}
+
+function RobotFoxDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [drive, setDrive] = React.useState<FoxBehavior | "manual">("mouse")
+  const [pitch, setPitch] = React.useState(0.6)
+  const [crouch, setCrouch] = React.useState(0.22)
+  const [tail, setTail] = React.useState(0.4)
+  const [counterweight, setCounterweight] = React.useState(1)
+  const [bearing, setBearing] = React.useState(-0.4)
+  const [range, setRange] = React.useState(0.8)
+  const [ears, setEars] = React.useState(0.9)
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["mouse", "trot", "listen", "curl", "manual"] as const} onChange={setDrive} />
+      {drive === "manual" ? <>
+        <NumberControl label="pitch" value={pitch} min={-1} max={1} step={0.01} onChange={setPitch} format={value => value.toFixed(2)} />
+        <NumberControl label="crouch" value={crouch} min={0} max={1} step={0.01} onChange={setCrouch} format={value => `${Math.round(value * 100)}%`} />
+        <NumberControl label="tail" value={tail} min={-1} max={1} step={0.01} onChange={setTail} format={value => value.toFixed(2)} />
+        <NumberControl label="counterweight" value={counterweight} min={0} max={1} step={0.01} onChange={setCounterweight} format={value => `${Math.round(value * 100)}%`} />
+        <NumberControl label="bearing" value={bearing} min={-1} max={1} step={0.01} onChange={setBearing} format={value => `${Math.round(value * 75)}\u00b0`} />
+        <NumberControl label="range" value={range} min={0} max={1} step={0.01} onChange={setRange} format={value => `${Math.round(value * 100)}%`} />
+        <NumberControl label="ears" value={ears} min={-1} max={1} step={0.01} onChange={setEars} format={value => value.toFixed(2)} />
+      </> : <Hint>Your pointer is the quarry: both ears pan onto it, and they converge as it comes down the frame. Click and it dives.</Hint>}
+      <p className="text-[11px] text-muted-foreground">The hip is the one joint the pitch does not move. Take the counterweight to 100% and the brush stops being something you set and becomes something the body does.</p>
+    </>}>
+      <RobotFox view={view} size={360} variant={variant} label="VULPES / 09"
+        {...(drive === "manual" ? { pitch, crouch, tail, counterweight, bearing, range, ears } : { behavior: drive })} />
+    </Bench>
+  )
+}
+
+function RobotHorseDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [drive, setDrive] = React.useState<HorseBehavior>("walk")
+  const [gait, setGait] = React.useState<EquineGait | "behavior">("behavior")
+  const [lead, setLead] = React.useState<GaitLead>("right")
+  const [balance, setBalance] = React.useState(1)
+  const [neck, setNeck] = React.useState(0.62)
+  const [tail, setTail] = React.useState(0.3)
+  const [crouch, setCrouch] = React.useState(0.14)
+  const [contacts, setContacts] = React.useState<"on" | "off">("on")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="behavior" value={drive} options={["walk", "trot", "canter", "gallop", "graze", "static"] as const} onChange={setDrive} />
+      <Segmented label="gait" value={gait} options={["behavior", "halt", "walk", "trot", "pace", "canter", "gallop"] as const} onChange={setGait} />
+      <Segmented label="lead" value={lead} options={["right", "left"] as const} onChange={setLead} />
+      <NumberControl label="balance" value={balance} min={0} max={1} step={0.01} onChange={setBalance} format={value => `${Math.round(value * 100)}%`} />
+      <NumberControl label="neck" value={neck} min={-1} max={1} step={0.01} onChange={setNeck} format={value => value.toFixed(2)} />
+      <NumberControl label="tail" value={tail} min={-1} max={1} step={0.01} onChange={setTail} format={value => value.toFixed(2)} />
+      <NumberControl label="crouch" value={crouch} min={0} max={1} step={0.01} onChange={setCrouch} format={value => `${Math.round(value * 100)}%`} />
+      <Segmented label="contacts" value={contacts} options={["on", "off"] as const} onChange={setContacts} />
+      <Hint>Drag across it to scrub the stride one footfall at a time; arrows step it, End hands it back. The head follows your pointer.</Hint>
+      <p className="text-[11px] text-muted-foreground">A gait here is a set of touchdown instants, and the beat is counted off them — a pace is a trot&apos;s two beats on the other diagonal. Watch a fetlock: nobody sets that joint, it sits where the load puts it. Take the balance to 0 and the nod stops, because the nod is the forehand loading.</p>
+    </>}>
+      <RobotHorse view={view} size={380} variant={variant} behavior={drive} lead={lead}
+        balance={balance} neck={neck} tail={tail} crouch={crouch} showContacts={contacts === "on"}
+        label="EQUUS / 01" {...(gait === "behavior" ? {} : { gait })} />
+    </Bench>
+  )
+}
+
+function RobotFrogDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [drive, setDrive] = React.useState<FrogBehavior | "manual">("crouch")
+  const [extend, setExtend] = React.useState(0.6)
+  const [altitude, setAltitude] = React.useState(0.4)
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["crouch", "hop", "swim", "manual"] as const} onChange={setDrive} />
+      {drive === "manual" ? <>
+        <NumberControl label="extend" value={extend} min={0} max={1} step={0.01} onChange={setExtend} format={value => `${Math.round(value * 100)}%`} />
+        <NumberControl label="height" value={altitude} min={0} max={1} step={0.01} onChange={setAltitude} format={value => `${Math.round(value * 100)}%`} />
+      </> : <Hint>The eyes track your pointer. Click and it jumps.</Hint>}
+      <p className="text-[11px] text-muted-foreground">Two numbers are the whole animal: the knee is solved from the hip and the ankle at every point of the jump.</p>
+    </>}>
+      <RobotFrog view={view} size={340} variant={variant} label="ANURA / 05"
+        {...(drive === "manual" ? { extend, altitude } : { behavior: drive })} />
+    </Bench>
+  )
+}
+
+function RobotTurtleDemo() {
+  const [view, setView] = React.useState<RobotView>("plan")
+  const [drive, setDrive] = React.useState<TurtleBehavior | "manual">("plod")
+  const [phase, setPhase] = React.useState(0.3)
+  const [retract, setRetract] = React.useState(0)
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["plod", "bask", "retract", "manual"] as const} onChange={setDrive} />
+      {drive === "manual" ? <>
+        <NumberControl label="phase" value={phase} min={0} max={1} step={0.01} onChange={setPhase} format={value => `${Math.round(value * 100)}%`} />
+        <NumberControl label="retract" value={retract} min={0} max={1} step={0.01} onChange={setRetract} format={value => `${Math.round(value * 100)}%`} />
+      </> : <Hint>The head tracks your pointer. Click and everything comes in.</Hint>}
+      <p className="text-[11px] text-muted-foreground">The shell is drawn after the limbs, so withdrawing is geometry rather than a fade.</p>
+    </>}>
+      <RobotTurtle view={view} size={340} variant={variant} label="TESTUDO / 12"
+        {...(drive === "manual" ? { phase, retract, gait: "wave" as HexapodGait } : { behavior: drive })} />
+    </Bench>
+  )
+}
+
+function RobotInchwormDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [drive, setDrive] = React.useState<InchwormBehavior | "manual">("loop")
+  const [span, setSpan] = React.useState(0.3)
+  const [reach, setReach] = React.useState(0)
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["loop", "rear", "measure", "manual"] as const} onChange={setDrive} />
+      {drive === "manual" ? <>
+        <NumberControl label="span" value={span} min={0} max={1} step={0.01} onChange={setSpan} format={value => `${Math.round(78 + value * 30)}u`} />
+        <NumberControl label="reach" value={reach} min={0} max={1} step={0.01} onChange={setReach} format={value => `${Math.round(value * 100)}%`} />
+      </> : <Hint>The front end lifts toward your pointer. Click and it rears right up.</Hint>}
+      <p className="text-[11px] text-muted-foreground">Close the span and the loop rises: the body is a fixed length, and the arch is solved from the chord.</p>
+    </>}>
+      <RobotInchworm view={view} size={340} variant={variant} label="GEOMETRA / 10"
+        {...(drive === "manual" ? { span, reach } : { behavior: drive })} />
+    </Bench>
+  )
+}
+
+
+function PlanetaryGearboxDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<GearboxBehavior | "manual">("run")
+  const [angle, setAngle] = React.useState(60)
+  const [sun, setSun] = React.useState(16)
+  const [planet, setPlanet] = React.useState(12)
+  const [planets, setPlanets] = React.useState(3)
+  const [housing, setHousing] = React.useState<"on" | "off">("on")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["run", "jog", "static", "manual"] as const} onChange={setDrive} />
+      <Segmented label="housing" value={housing} options={["on", "off"] as const} onChange={setHousing} />
+      <NumberControl label="sun" value={sun} min={8} max={40} onChange={setSun} format={v => `${v}T`} />
+      <NumberControl label="planet" value={planet} min={6} max={40} onChange={setPlanet} format={v => `${v}T`} />
+      <NumberControl label="planets" value={planets} min={3} max={5} onChange={setPlanets} />
+      {drive === "manual"
+        ? <NumberControl label="input" value={angle} min={0} max={720} onChange={setAngle} format={v => `${v}°`} />
+        : <Hint>Drag round the centre to wind the input shaft. The ring never moves.</Hint>}
+    </>}>
+      <PlanetaryGearbox view={view} size={320} variant={variant} sunTeeth={sun} planetTeeth={planet}
+        planets={planets} showHousing={housing === "on"} label="STAGE / 01"
+        {...(drive === "manual" ? { angle } : { behavior: drive })} interactive />
+    </Bench>
+  )
+}
+
+function BeltDriveDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<BeltDriveBehavior | "manual">("run")
+  const [travel, setTravel] = React.useState(0.5)
+  const [driveTeeth, setDriveTeeth] = React.useState(18)
+  const [drivenTeeth, setDrivenTeeth] = React.useState(30)
+  const [tension, setTension] = React.useState(45)
+  const [idler, setIdler] = React.useState<"on" | "off">("on")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["run", "shuttle", "static", "manual"] as const} onChange={setDrive} />
+      <Segmented label="idler" value={idler} options={["on", "off"] as const} onChange={setIdler} />
+      <NumberControl label="drive" value={driveTeeth} min={10} max={48} onChange={setDriveTeeth} format={v => `${v}T`} />
+      <NumberControl label="driven" value={drivenTeeth} min={10} max={48} onChange={setDrivenTeeth} format={v => `${v}T`} />
+      <NumberControl label="tension" value={tension} min={0} max={100} onChange={setTension} format={v => `${v}%`} />
+      {drive === "manual"
+        ? <NumberControl label="travel" value={travel} min={-3} max={3} step={0.05} onChange={setTravel} format={v => `${v.toFixed(2)} turns`} />
+        : <Hint>Drag the belt along its run. Wind the idler down and the belt gets longer.</Hint>}
+    </>}>
+      <BeltDrive view={view} size={340} variant={variant} driveTeeth={driveTeeth} drivenTeeth={drivenTeeth}
+        tension={tension / 100} showIdler={idler === "on"} label="DRIVE / 02"
+        {...(drive === "manual" ? { travel } : { behavior: drive })} interactive />
+    </Bench>
+  )
+}
+
+function CableCarrierDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<CableCarrierBehavior | "manual">("cycle")
+  const [travel, setTravel] = React.useState(40)
+  const [links, setLinks] = React.useState(26)
+  const [cables, setCables] = React.useState(3)
+  const [rail, setRail] = React.useState<"on" | "off">("on")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["cycle", "creep", "static", "manual"] as const} onChange={setDrive} />
+      <Segmented label="rail" value={rail} options={["on", "off"] as const} onChange={setRail} />
+      <NumberControl label="links" value={links} min={8} max={40} onChange={setLinks} />
+      <NumberControl label="cables" value={cables} min={0} max={4} onChange={setCables} />
+      {drive === "manual"
+        ? <NumberControl label="travel" value={travel} min={0} max={100} onChange={setTravel} format={v => `${v}%`} />
+        : <Hint>Drag the carriage. The fold follows at exactly half its speed.</Hint>}
+    </>}>
+      <CableCarrier view={view} size={360} variant={variant} links={links} cables={cables}
+        showRail={rail === "on"} label="AXIS / 03"
+        {...(drive === "manual" ? { travel: travel / 100 } : { behavior: drive })} interactive />
+    </Bench>
+  )
+}
+
+function MecanumWheelDemo() {
+  const [view, setView] = React.useState<RobotView>("iso")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<MecanumBehavior | "manual">("roll")
+  const [angle, setAngle] = React.useState(30)
+  const [hand, setHand] = React.useState<MecanumHand>("right")
+  const [rollers, setRollers] = React.useState(9)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="hand" value={hand} options={["left", "right"] as const} onChange={setHand} />
+      <Segmented label="drive" value={drive} options={["roll", "crab", "static", "manual"] as const} onChange={setDrive} />
+      <NumberControl label="rollers" value={rollers} min={6} max={14} onChange={setRollers} />
+      {drive === "manual"
+        ? <NumberControl label="hub" value={angle} min={0} max={360} onChange={setAngle} format={v => `${v}°`} />
+        : <Hint>Drag round the hub to spin it. Flip the hand and the roller skew reverses.</Hint>}
+    </>}>
+      <MecanumWheel view={view} size={320} variant={variant} hand={hand} rollers={rollers} label="CORNER / 04"
+        {...(drive === "manual" ? { angle } : { behavior: drive })} interactive />
+    </Bench>
+  )
+}
+
+function ToolChangerDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<ToolChangerBehavior | "manual">("dock")
+  const [engagement, setEngagement] = React.useState(100)
+  const [tool, setTool] = React.useState<ToolChangerTool>("gripper")
+  const [balls, setBalls] = React.useState(6)
+  const [dock, setDock] = React.useState<"on" | "off">("on")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="tool" value={tool} options={["gripper", "spindle", "vacuum", "none"] as const} onChange={setTool} />
+      <Segmented label="drive" value={drive} options={["dock", "latch", "static", "manual"] as const} onChange={setDrive} />
+      <Segmented label="dock" value={dock} options={["on", "off"] as const} onChange={setDock} />
+      <NumberControl label="balls" value={balls} min={3} max={8} onChange={setBalls} />
+      {drive === "manual"
+        ? <NumberControl label="engage" value={engagement} min={0} max={100} onChange={setEngagement} format={v => `${v}%`} />
+        : <Hint>Drag the tool half up to the coupler. Past 60% the piston drives the lock.</Hint>}
+    </>}>
+      <ToolChanger view={view} size={280} variant={variant} tool={tool} balls={balls}
+        showDock={dock === "on"} label="CHANGER / 05"
+        {...(drive === "manual" ? { engagement: engagement / 100 } : { behavior: drive })} interactive />
+    </Bench>
+  )
+}
+
+function SuctionGripperDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<SuctionBehavior | "manual">("cycle")
+  const [descent, setDescent] = React.useState(90)
+  const [cups, setCups] = React.useState(5)
+  const [vacuum, setVacuum] = React.useState<"on" | "off">("on")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["cycle", "breathe", "static", "manual"] as const} onChange={setDrive} />
+      <Segmented label="vacuum" value={vacuum} options={["on", "off"] as const} onChange={setVacuum} />
+      <NumberControl label="cups" value={cups} min={2} max={8} onChange={setCups} />
+      {drive === "manual"
+        ? <NumberControl label="descent" value={descent} min={0} max={100} onChange={setDescent} format={v => `${v}%`} />
+        : <Hint>Drag the bar down. Past contact the stroke goes into the bellows, not the axis.</Hint>}
+    </>}>
+      <SuctionGripper view={view} size={340} variant={variant} cups={cups} vacuum={vacuum === "on"}
+        label="PICK / 06"
+        {...(drive === "manual" ? { descent: descent / 100 } : { behavior: drive })} interactive />
+    </Bench>
+  )
+}
+
+function RobotHandDemo() {
+  const [view, setView] = React.useState<RobotView>("iso")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<HandBehavior | "manual">("grip")
+  const [curl, setCurl] = React.useState(75)
+  const [grasp, setGrasp] = React.useState<HandGrasp>("pinch")
+  const [side, setSide] = React.useState<"left" | "right">("right")
+  const [spread, setSpread] = React.useState(0)
+  const [wristPitch, setWristPitch] = React.useState(0)
+  const [wrist, setWrist] = React.useState<"on" | "off">("on")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="grasp" value={grasp} options={GRASPS} onChange={setGrasp} />
+      <Segmented label="hand" value={side} options={["left", "right"] as const} onChange={setSide} />
+      <Segmented label="drive" value={drive} options={["grip", "wave", "static", "manual"] as const} onChange={setDrive} />
+      <Segmented label="cuff" value={wrist} options={["on", "off"] as const} onChange={setWrist} />
+      <NumberControl label="spread" value={spread} min={-100} max={100} onChange={setSpread} format={v => `${v}%`} />
+      <NumberControl label="wrist" value={wristPitch} min={-70} max={70} onChange={setWristPitch} format={v => `${v}\u00B0`} />
+      {drive === "manual"
+        ? <NumberControl label="curl" value={curl} min={0} max={100} onChange={setCurl} format={v => `${v}%`} />
+        : <Hint>Drag up and down to close the hand; click to step to the next grasp. A curled hand reads best from iso or profile — pointed at the camera it foreshortens into stubs, which is what a real one does.</Hint>}
+      <Readout rows={[["grasp", grasp], ["hand", side]]} />
+    </>}>
+      <RobotHand view={view} size={300} variant={variant} grasp={grasp} side={side}
+        spread={spread / 100} wristPitch={wristPitch} showWrist={wrist === "on"}
+        label="HAND / 07"
+        {...(drive === "manual" ? { curl: curl / 100 } : { behavior: drive })}
+        interactive onGraspChange={setGrasp} />
+    </Bench>
+  )
+}
+
+function RobotFootDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<FootBehavior | "manual">("step")
+  const [roll, setRoll] = React.useState(45)
+  const [side, setSide] = React.useState<"left" | "right">("right")
+  const [load, setLoad] = React.useState<"on" | "off">("on")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="foot" value={side} options={["left", "right"] as const} onChange={setSide} />
+      <Segmented label="drive" value={drive} options={["step", "rock", "static", "manual"] as const} onChange={setDrive} />
+      <Segmented label="load" value={load} options={["on", "off"] as const} onChange={setLoad} />
+      {drive === "manual"
+        ? <NumberControl label="roll" value={roll} min={0} max={100} onChange={setRoll} format={v => `${v}%`} />
+        : <Hint>Drag left and right to roll the foot from heel strike to toe-off. The toe plate is hinged at the ball, so pushing off lifts the heel rather than burying the toe.</Hint>}
+    </>}>
+      <RobotFoot view={view} size={320} variant={variant} side={side} showLoad={load === "on"}
+        label="FOOT / 01"
+        {...(drive === "manual" ? { roll: roll / 100 } : { behavior: drive })}
+        interactive />
+    </Bench>
+  )
+}
+
+function RobotLegDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [behavior, setBehavior] = React.useState<LegBehavior>("stride")
+  const [side, setSide] = React.useState<"left" | "right">("right")
+  const [stride, setStride] = React.useState(70)
+  const [lift, setLift] = React.useState(60)
+  const [target, setTarget] = React.useState({ x: 0, y: 7 })
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="leg" value={side} options={["left", "right"] as const} onChange={setSide} />
+      <Segmented label="drive" value={behavior} options={["stride", "squat", "kick", "static"] as const} onChange={setBehavior} />
+      <NumberControl label="stride" value={stride} min={0} max={100} onChange={setStride} format={v => `${v}%`} />
+      <NumberControl label="lift" value={lift} min={0} max={100} onChange={setLift} format={v => `${v}%`} />
+      <Hint>Drag anywhere in the frame and the foot follows your pointer; the hip and knee solve to it, and letting go eases the leg back into its cycle.</Hint>
+      <Readout rows={[["foot", `${Math.round(target.x)}, ${Math.round(target.y)}`]]} />
+    </>}>
+      <RobotLeg view={view} size={300} variant={variant} side={side} behavior={behavior}
+        stride={stride / 100} lift={lift / 100} label="LEG / 02"
+        interactive onTargetChange={setTarget} />
+    </Bench>
+  )
+}
+
+function RobotTorsoDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<TorsoBehavior | "manual">("breathe")
+  const [lean, setLean] = React.useState(8)
+  const [twist, setTwist] = React.useState(0)
+  const [sway, setSway] = React.useState(0)
+  const [breath, setBreath] = React.useState(60)
+  const [ribs, setRibs] = React.useState(7)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["breathe", "twist", "static", "manual"] as const} onChange={setDrive} />
+      <NumberControl label="ribs" value={ribs} min={3} max={10} onChange={setRibs} />
+      <NumberControl label="sway" value={sway} min={-25} max={25} onChange={setSway} format={v => `${v}\u00B0`} />
+      {drive === "manual" ? <>
+        <NumberControl label="lean" value={lean} min={-35} max={45} onChange={setLean} format={v => `${v}\u00B0`} />
+        <NumberControl label="twist" value={twist} min={-40} max={40} onChange={setTwist} format={v => `${v}\u00B0`} />
+        <NumberControl label="breath" value={breath} min={0} max={100} onChange={setBreath} format={v => `${v}%`} />
+      </> : <Hint>Drag across the frame to twist the shoulders against the hips and up and down to lean. Every vertebra keeps its length whatever you do to it.</Hint>}
+    </>}>
+      <RobotTorso view={view} size={300} variant={variant} ribs={ribs} sway={sway}
+        label="TORSO / 03"
+        {...(drive === "manual"
+          ? { lean, twist, breath: breath / 100 }
+          : { behavior: drive })}
+        interactive />
+    </Bench>
+  )
+}
+
+function RobotSkeletonDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<SkeletonBehavior | "manual">("walk")
+  const [gait, setGait] = React.useState<SkeletonGait>("walk")
+  const [phase, setPhase] = React.useState(20)
+  const [stance, setStance] = React.useState(100)
+  const [stride, setStride] = React.useState(70)
+  const [grasp, setGrasp] = React.useState<HandGrasp>("open")
+  const [grip, setGrip] = React.useState(25)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["walk", "run", "march", "idle", "static", "manual"] as const} onChange={setDrive} />
+      {drive === "manual" && <Segmented label="gait" value={gait} options={["stand", "walk", "run", "march"] as const} onChange={setGait} />}
+      <Segmented label="grasp" value={grasp} options={GRASPS} onChange={setGrasp} />
+      <NumberControl label="stance" value={stance} min={0} max={100} onChange={setStance} format={v => `${v}%`} />
+      <NumberControl label="stride" value={stride} min={0} max={100} onChange={setStride} format={v => `${v}%`} />
+      <NumberControl label="grip" value={grip} min={0} max={100} onChange={setGrip} format={v => `${v}%`} />
+      {drive === "manual"
+        ? <NumberControl label="phase" value={phase} min={0} max={99} onChange={setPhase} format={v => `${v}%`} />
+        : <Hint>Drag across the frame to scrub the gait by hand. Run drops the duty factor under a half, which is what puts both feet in the air — the readout says so when it happens.</Hint>}
+    </>}>
+      <RobotSkeleton view={view} size={300} variant={variant} stance={stance / 100}
+        stride={stride / 100} grasp={grasp} grip={grip / 100} label="FRAME / 05"
+        {...(drive === "manual" ? { gait, phase: phase / 100 } : { behavior: drive })}
+        interactive />
+    </Bench>
+  )
+}
+function MotionPlatformDemo() {
+  const [view, setView] = React.useState<RobotView>("iso")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<MotionPlatformBehavior | "manual">("sway")
+  const [roll, setRoll] = React.useState(12)
+  const [pitch, setPitch] = React.useState(-6)
+  const [heave, setHeave] = React.useState(6)
+  const [payload, setPayload] = React.useState<MotionPlatformPayload>("deck")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="payload" value={payload} options={["deck", "camera", "none"] as const} onChange={setPayload} />
+      <Segmented label="drive" value={drive} options={["settle", "sway", "static", "manual"] as const} onChange={setDrive} />
+      {drive === "manual" ? <>
+        <NumberControl label="roll" value={roll} min={-24} max={24} onChange={setRoll} format={v => `${v}°`} />
+        <NumberControl label="pitch" value={pitch} min={-24} max={24} onChange={setPitch} format={v => `${v}°`} />
+        <NumberControl label="heave" value={heave} min={-16} max={16} onChange={setHeave} />
+      </> : <Hint>Drag the deck to tip it. Ask for more than the legs have and it says so.</Hint>}
+    </>}>
+      <MotionPlatform view={view} size={340} variant={variant} payload={payload} label="BASE / 08"
+        {...(drive === "manual" ? { roll, pitch, heave } : { behavior: drive })} interactive />
+    </Bench>
+  )
+}
+
+function ClamshellLaptopDemo() {
+  const [view, setView] = React.useState<RobotView>("iso")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<LaptopBehavior | "manual">("open")
+  const [lid, setLid] = React.useState(105)
+  const [travel, setTravel] = React.useState(135)
+  const [screen, setScreen] = React.useState<LaptopScreen>("desktop")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="screen" value={screen} options={["desktop", "code", "media", "off"] as const} onChange={setScreen} />
+      <Segmented label="drive" value={drive} options={["open", "adjust", "static", "manual"] as const} onChange={setDrive} />
+      <NumberControl label="travel" value={travel} min={90} max={150} onChange={setTravel} format={v => `${v}°`} />
+      {drive === "manual"
+        ? <NumberControl label="lid" value={lid} min={0} max={150} onChange={setLid} format={v => `${v}°`} />
+        : <Hint>Drag up inside the frame to lift the lid. It stops at the travel the hinge has, and the screen only draws from a camera that can see it.</Hint>}
+    </>}>
+      <ClamshellLaptop view={view} size={330} variant={variant} screen={screen} travel={travel}
+        label="CLAMSHELL / 01"
+        {...(drive === "manual" ? { lid } : { behavior: drive })} interactive />
+    </Bench>
+  )
+}
+
+function SlateTabletDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<TabletBehavior | "manual">("prop")
+  const [recline, setRecline] = React.useState(70)
+  const [leg, setLeg] = React.useState(46)
+  const [screen, setScreen] = React.useState<TabletScreen>("sketch")
+  const [stylus, setStylus] = React.useState<"on" | "off">("on")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="screen" value={screen} options={["home", "sketch", "off"] as const} onChange={setScreen} />
+      <Segmented label="drive" value={drive} options={["prop", "sketch", "static", "manual"] as const} onChange={setDrive} />
+      <Segmented label="stylus" value={stylus} options={["on", "off"] as const} onChange={setStylus} />
+      <NumberControl label="leg" value={leg} min={20} max={80} onChange={setLeg} />
+      {drive === "manual"
+        ? <NumberControl label="recline" value={recline} min={0} max={100} onChange={setRecline} format={v => `${v}%`} />
+        : <Hint>Drag the slate back. Wind the leg down past what the tilt needs and the stand folds instead of stretching.</Hint>}
+    </>}>
+      <SlateTablet view={view} size={320} variant={variant} screen={screen} leg={leg} stylus={stylus === "on"}
+        label="SLATE / 02"
+        {...(drive === "manual" ? { recline: recline / 100 } : { behavior: drive })} interactive />
+    </Bench>
+  )
+}
+
+function WheelPlayerDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<PlayerBehavior | "manual">("seek")
+  const [rotation, setRotation] = React.useState(110)
+  const [rows, setRows] = React.useState(8)
+  const [screen, setScreen] = React.useState<PlayerScreen>("list")
+  const [hold, setHold] = React.useState<"off" | "on">("off")
+  const [row, setRow] = React.useState(2)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="screen" value={screen} options={["list", "now-playing", "off"] as const} onChange={setScreen} />
+      <Segmented label="drive" value={drive} options={["scroll", "seek", "static", "manual"] as const} onChange={setDrive} />
+      <Segmented label="hold" value={hold} options={["off", "on"] as const} onChange={setHold} />
+      <NumberControl label="rows" value={rows} min={3} max={12} onChange={setRows} />
+      {drive === "manual"
+        ? <NumberControl label="wheel" value={rotation} min={-360} max={360} onChange={setRotation} format={v => `${v}°`} />
+        : <Hint>Drag round the wheel with a thumb. One turn is one pass of the list, and hold takes the wheel away from everything at once.</Hint>}
+      <Readout rows={[["row", `${row + 1} / ${rows}`]]} />
+    </>}>
+      <WheelPlayer view={view} size={230} variant={variant} screen={screen} rows={rows} locked={hold === "on"}
+        label="PLAYER / 03" onRowChange={setRow}
+        {...(drive === "manual" ? { rotation } : { behavior: drive })} interactive />
+    </Bench>
+  )
+}
+
+function SlabHandsetDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<HandsetBehavior | "manual">("nudge")
+  const [turn, setTurn] = React.useState(0)
+  const [orientation, setOrientation] = React.useState<HandsetOrientation>("portrait")
+  const [screen, setScreen] = React.useState<HandsetScreen>("home")
+  const [lenses, setLenses] = React.useState(3)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="hold" value={orientation} options={["portrait", "landscape"] as const} onChange={setOrientation} />
+      <Segmented label="screen" value={screen} options={["home", "call", "map", "off"] as const} onChange={setScreen} />
+      <Segmented label="drive" value={drive} options={["turn", "nudge", "static", "manual"] as const} onChange={setDrive} />
+      <NumberControl label="lenses" value={lenses} min={1} max={4} onChange={setLenses} />
+      {drive === "manual"
+        ? <NumberControl label="turn" value={turn} min={-180} max={180} onChange={setTurn} format={v => `${v}°`} />
+        : <Hint>Drag across the frame to turn it over — the whole width is one revolution. Edge on at a quarter, back toward you at a half.</Hint>}
+    </>}>
+      <SlabHandset view={view} size={250} variant={variant} screen={screen} orientation={orientation} lenses={lenses}
+        label="HANDSET / 04"
+        {...(drive === "manual" ? { turn } : { behavior: drive })} interactive />
+    </Bench>
+  )
+}
+
+function WristTerminalDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<TerminalBehavior | "manual">("pulse")
+  const [crown, setCrown] = React.useState(90)
+  const [ticks, setTicks] = React.useState(12)
+  const [closure, setClosure] = React.useState(75)
+  const [links, setLinks] = React.useState(7)
+  const [screen, setScreen] = React.useState<TerminalScreen>("dial")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="screen" value={screen} options={["dial", "rings", "off"] as const} onChange={setScreen} />
+      <Segmented label="drive" value={drive} options={["dial", "pulse", "static", "manual"] as const} onChange={setDrive} />
+      <NumberControl label="ticks" value={ticks} min={4} max={24} onChange={setTicks} />
+      <NumberControl label="links" value={links} min={4} max={12} onChange={setLinks} />
+      <NumberControl label="band" value={closure} min={0} max={100} onChange={setClosure} format={v => `${v}%`} />
+      {drive === "manual"
+        ? <NumberControl label="crown" value={crown} min={-360} max={360} onChange={setCrown} format={v => `${v}°`} />
+        : <Hint>Drag round the face to work the crown. Open the band right up: it keeps its links and its length, it only straightens out.</Hint>}
+    </>}>
+      <WristTerminal view={view} size={230} variant={variant} screen={screen} ticks={ticks} links={links}
+        closure={closure / 100} label="TERMINAL / 05"
+        {...(drive === "manual" ? { crown } : { behavior: drive })} interactive />
+    </Bench>
+  )
+}
+
+
+function TurntableDeckDemo() {
+  const [view, setView] = React.useState<RobotView>("plan")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<TurntableBehavior | "manual">("play")
+  const [progress, setProgress] = React.useState(0.25)
+  const [cue, setCue] = React.useState<TurntableCue>("play")
+  const [rpm, setRpm] = React.useState<"33" | "45" | "78">("33")
+  const [at, setAt] = React.useState(0.25)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["play", "scratch", "static", "manual"] as const} onChange={setDrive} />
+      <Segmented label="cue" value={cue} options={["play", "lift", "rest"] as const} onChange={setCue} />
+      <Segmented label="rpm" value={rpm} options={["33", "45", "78"] as const} onChange={setRpm} />
+      {drive === "manual"
+        ? <NumberControl label="side" value={progress} min={0} max={1} step={0.01} onChange={setProgress} format={v => `${Math.round(v * 100)}%`} />
+        : <Hint>Drag the platter to scrub. The stylus walks back out up the spiral, because the groove gears the arm to the platter.</Hint>}
+      <Readout rows={[["side", `${Math.round(at * 100)}%`]]} />
+    </>}>
+      <TurntableDeck view={view} size={300} variant={variant} cue={cue} rpm={Number(rpm) as DeckRpm}
+        label="DECK / 01" onProgressChange={setAt}
+        {...(drive === "manual" ? { progress } : { behavior: drive })} interactive />
+    </Bench>
+  )
+}
+
+function GramophoneHornDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<GramophoneBehavior | "manual">("play")
+  const [wind, setWind] = React.useState(0.7)
+  const [progress, setProgress] = React.useState(0.3)
+  const [mechanism, setMechanism] = React.useState<"on" | "off">("on")
+  const [wound, setWound] = React.useState(0.7)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["play", "crank", "static", "manual"] as const} onChange={setDrive} />
+      <Segmented label="mechanism" value={mechanism} options={["on", "off"] as const} onChange={setMechanism} />
+      <NumberControl label="side" value={progress} min={0} max={1} step={0.05} onChange={setProgress} format={v => `${Math.round(v * 100)}%`} />
+      {drive === "manual"
+        ? <NumberControl label="wind" value={wind} min={0} max={1} step={0.02} onChange={setWind} format={v => `${Math.round(v * 100)}%`} />
+        : <Hint>Drag round the crank to wind it — three turns is a full wind. Let it run down and the governor stops holding the speed up.</Hint>}
+      <Readout rows={[["wind", `${Math.round(wound * 100)}%`]]} />
+    </>}>
+      <GramophoneHorn view={view} size={280} variant={variant} progress={progress}
+        showMechanism={mechanism === "on"} label="HORN / 01" onWindChange={setWound}
+        {...(drive === "manual" ? { wind } : { behavior: drive })} interactive />
+    </Bench>
+  )
+}
+
+function MusicBoxDrumDemo() {
+  const [view, setView] = React.useState<RobotView>("plan")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<MusicBoxBehavior | "manual">("play")
+  const [turn, setTurn] = React.useState(90)
+  const [tines, setTines] = React.useState(12)
+  const [fly, setFly] = React.useState<"on" | "off">("on")
+  const [step, setStep] = React.useState(0)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["play", "cadence", "static", "manual"] as const} onChange={setDrive} />
+      <Segmented label="fly" value={fly} options={["on", "off"] as const} onChange={setFly} />
+      <NumberControl label="tines" value={tines} min={4} max={20} onChange={setTines} />
+      {drive === "manual"
+        ? <NumberControl label="barrel" value={turn} min={0} max={360} onChange={setTurn} format={v => `${v}°`} />
+        : <Hint>Drag across to crank the barrel by hand. A pin bends its tine right up to the step and lets go on it — that is the pluck.</Hint>}
+      <Readout rows={[["step", `${step + 1}`]]} />
+    </>}>
+      <MusicBoxDrum view={view} size={300} variant={variant} tines={tines}
+        showFly={fly === "on"} label="BOX / 01" onStepChange={setStep}
+        {...(drive === "manual" ? { turn } : { behavior: drive })} interactive />
+    </Bench>
+  )
+}
+
+/** Plain alternating figures, written for this bench. */
+const buskerPatterns = {
+  four: ["x...x...x...x...", "....x.......x...", "..x...x...x...x."],
+  shuffle: ["x..x..x..x..x...", "......x.......x.", "x.x.x.x.x.x.x.x."],
+  sparse: ["x.......x.......", "........x.......", "....x.......x..."],
+} as const
+
+function BuskerDroidDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<BuskerBehavior | "manual">("groove")
+  const [beat, setBeat] = React.useState(0)
+  const [figure, setFigure] = React.useState<keyof typeof buskerPatterns>("four")
+  const [step, setStep] = React.useState(0)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["groove", "fill", "static", "manual"] as const} onChange={setDrive} />
+      <Segmented label="figure" value={figure} options={["four", "shuffle", "sparse"] as const} onChange={setFigure} />
+      {drive === "manual"
+        ? <NumberControl label="beat" value={beat} min={0} max={16} step={0.25} onChange={setBeat} />
+        : <Hint>Drag across to scrub the bar. The beaters come up slowly and drop on the step, which is the same curve that plucks a music box.</Hint>}
+      <Readout rows={[["step", `${step + 1} / 16`]]} />
+    </>}>
+      <BuskerDroid view={view} size={300} variant={variant} pattern={buskerPatterns[figure]}
+        label="BUSKER / 01" onStepChange={setStep}
+        {...(drive === "manual" ? { beat } : { behavior: drive })} interactive />
+    </Bench>
+  )
+}
+
+/** Written benches ignore it; the generated one needs it to know what to draw. */
+/* -------------------------------------------------------------------------- */
+/* the oil field                                                               */
+/* -------------------------------------------------------------------------- */
+
+function PumpjackDemo() {
+  const [view, setView] = React.useState<RobotView>("profile"); const [variant, setVariant] = React.useState<RobotVariant>("solid"); const [behavior, setBehavior] = React.useState<PumpjackBehavior>("pump"); const [balance, setBalance] = React.useState<PumpjackBalance>("crank")
+  return <Bench controls={<><Segmented label="view" value={view} options={views} onChange={setView} /><Segmented label="variant" value={variant} options={variants} onChange={setVariant} /><Segmented label="motion" value={behavior} options={["pump", "slow", "static"]} onChange={setBehavior} /><Segmented label="balance" value={balance} options={["crank", "beam", "air"]} onChange={setBalance} /><Hint>Drag anywhere round the gearbox to turn the crank by hand. The beam and the rod stroke are what the four-bar produces.</Hint></>}><Pumpjack size={360} view={view} variant={variant} behavior={behavior} balance={balance} interactive label="BP-04" /></Bench>
+}
+
+function DrillingDerrickDemo() {
+  const [view, setView] = React.useState<RobotView>("front"); const [variant, setVariant] = React.useState<RobotVariant>("solid"); const [behavior, setBehavior] = React.useState<DerrickBehavior>("trip"); const [lines, setLines] = React.useState<"4" | "6" | "8" | "12">("6")
+  return <Bench controls={<><Segmented label="view" value={view} options={views} onChange={setView} /><Segmented label="variant" value={variant} options={variants} onChange={setVariant} /><Segmented label="motion" value={behavior} options={["trip", "drill", "static"]} onChange={setBehavior} /><Segmented label="lines" value={lines} options={["4", "6", "8", "12"]} onChange={setLines} /><Hint>Drag the block up and down the mast. More lines means more drum turns for the same lift — watch the drum.</Hint></>}><DrillingDerrick size={300} view={view} variant={variant} behavior={behavior} lines={Number(lines) as DerrickLines} interactive label="RIG-11" /></Bench>
+}
+
+function MudPumpDemo() {
+  const [view, setView] = React.useState<RobotView>("iso"); const [variant, setVariant] = React.useState<RobotVariant>("solid"); const [behavior, setBehavior] = React.useState<MudPumpBehavior>("stroke"); const [cylinders, setCylinders] = React.useState<"1" | "2" | "3">("3")
+  return <Bench controls={<><Segmented label="view" value={view} options={views} onChange={setView} /><Segmented label="variant" value={variant} options={variants} onChange={setVariant} /><Segmented label="motion" value={behavior} options={["stroke", "surge", "static"]} onChange={setBehavior} /><Segmented label="cylinders" value={cylinders} options={["1", "2", "3"]} onChange={setCylinders} /><Hint>Turn the crankshaft by hand. The discharge mark is the sum of the solved piston velocities, not a hydraulic model.</Hint></>}><MudPump size={380} view={view} variant={variant} behavior={behavior} cylinders={Number(cylinders) as MudPumpCylinders} interactive label="MP-07" /></Bench>
+}
+
+function WellheadTreeDemo() {
+  const [view, setView] = React.useState<RobotView>("front"); const [variant, setVariant] = React.useState<RobotVariant>("solid"); const [behavior, setBehavior] = React.useState<WellheadBehavior>("throttle"); const [service, setService] = React.useState<WellheadService>("production"); const [pressure, setPressure] = React.useState(58)
+  return <Bench controls={<><Segmented label="view" value={view} options={views} onChange={setView} /><Segmented label="variant" value={variant} options={variants} onChange={setVariant} /><Segmented label="motion" value={behavior} options={["throttle", "shut-in", "static"]} onChange={setBehavior} /><Segmented label="service" value={service} options={["production", "shut-in", "kill"]} onChange={setService} /><NumberControl label="gauge" value={pressure} min={0} max={100} onChange={setPressure} format={(v) => `${v}%`} /><Hint>Drag the choke open and shut. The gauge is a reading you supply — the tree never infers pressure from anything.</Hint></>}><WellheadTree size={280} view={view} variant={variant} behavior={behavior} service={service} pressure={pressure / 100} interactive label="XT-02" /></Bench>
+}
+
+function StorageTankDemo() {
+  const [view, setView] = React.useState<RobotView>("front"); const [variant, setVariant] = React.useState<RobotVariant>("solid"); const [behavior, setBehavior] = React.useState<StorageTankBehavior>("fill"); const [roof, setRoof] = React.useState<StorageTankRoof>("floating"); const [courses, setCourses] = React.useState(4)
+  return <Bench controls={<><Segmented label="view" value={view} options={views} onChange={setView} /><Segmented label="variant" value={variant} options={variants} onChange={setVariant} /><Segmented label="motion" value={behavior} options={["fill", "draw", "static"]} onChange={setBehavior} /><Segmented label="roof" value={roof} options={["floating", "fixed"]} onChange={setRoof} /><NumberControl label="courses" value={courses} min={2} max={8} onChange={setCourses} /><Hint>Drag the level. The rolling ladder keeps its length, so its angle is solved from wherever the roof is.</Hint></>}><StorageTank size={340} view={view} variant={variant} behavior={behavior} roof={roof} courses={courses} interactive label="TK-114" /></Bench>
+}
+
+function OilTankerDemo() {
+  const [view, setView] = React.useState<RobotView>("profile"); const [variant, setVariant] = React.useState<RobotVariant>("solid"); const [behavior, setBehavior] = React.useState<OilTankerBehavior>("laden"); const [tanks, setTanks] = React.useState(6)
+  return <Bench controls={<><Segmented label="view" value={view} options={views} onChange={setView} /><Segmented label="variant" value={variant} options={variants} onChange={setVariant} /><Segmented label="motion" value={behavior} options={["laden", "swell", "static"]} onChange={setBehavior} /><NumberControl label="tanks" value={tanks} min={2} max={10} onChange={setTanks} /><Hint>Drag her down through the waterline. The boot top and the load line are painted on the hull, so they go under with her.</Hint></>}><OilTanker size={400} view={view} variant={variant} behavior={behavior} tanks={tanks} interactive label="CRUDE CARRIER" /></Bench>
+}
+
+function TankerTruckDemo() {
+  const [view, setView] = React.useState<RobotView>("profile"); const [variant, setVariant] = React.useState<RobotVariant>("solid"); const [behavior, setBehavior] = React.useState<TankerTruckBehavior>("haul"); const [compartments, setCompartments] = React.useState(4); const [hitch, setHitch] = React.useState(0)
+  return <Bench controls={<><Segmented label="view" value={view} options={views} onChange={setView} /><Segmented label="variant" value={variant} options={variants} onChange={setVariant} /><Segmented label="motion" value={behavior} options={["haul", "discharge", "static"]} onChange={setBehavior} /><NumberControl label="pots" value={compartments} min={2} max={6} onChange={setCompartments} /><NumberControl label="hitch" value={hitch} min={-60} max={60} onChange={setHitch} format={(v) => `${v}°`} /><Hint>Turn the hitch and switch to plan: the trailer yaws about the kingpin in world space, so both cameras agree.</Hint></>}><TankerTruck size={400} view={view} variant={variant} behavior={behavior} compartments={compartments} hitch={hitch} interactive label="RT-26" /></Bench>
+}
+
+function FlareStackDemo() {
+  const [view, setView] = React.useState<RobotView>("front"); const [variant, setVariant] = React.useState<RobotVariant>("solid"); const [behavior, setBehavior] = React.useState<FlareStackBehavior>("flare"); const [wind, setWind] = React.useState(14)
+  return <Bench controls={<><Segmented label="view" value={view} options={views} onChange={setView} /><Segmented label="variant" value={variant} options={variants} onChange={setVariant} /><Segmented label="motion" value={behavior} options={["flare", "pilot", "static"]} onChange={setBehavior} /><NumberControl label="wind" value={wind} min={-50} max={50} onChange={setWind} format={(v) => `${v}°`} /><Hint>Drag the flow to the tip. The plume is drawn, not burned: its length is a proportion, never a rate.</Hint></>}><FlareStack size={300} view={view} variant={variant} behavior={behavior} wind={wind} interactive label="FL-01" /></Bench>
+}
+
+function FractionatingColumnDemo() {
+  const [view, setView] = React.useState<RobotView>("front"); const [variant, setVariant] = React.useState<RobotVariant>("solid"); const [behavior, setBehavior] = React.useState<ColumnBehavior>("run"); const [trays, setTrays] = React.useState(14); const [cut, setCut] = React.useState<"0" | "1" | "2" | "3">("1")
+  return <Bench controls={<><Segmented label="view" value={view} options={views} onChange={setView} /><Segmented label="variant" value={variant} options={variants} onChange={setVariant} /><Segmented label="motion" value={behavior} options={["run", "swing", "static"]} onChange={setBehavior} /><NumberControl label="trays" value={trays} min={6} max={24} onChange={setTrays} /><Segmented label="cut" value={cut} options={["0", "1", "2", "3"]} onChange={setCut} /><Hint>Raise the tray count and the whole column rebuilds at a closer spacing. Drag the heat and the flash zone moves.</Hint></>}><FractionatingColumn size={300} view={view} variant={variant} behavior={behavior} trays={trays} cut={Number(cut)} interactive label="CDU-1" /></Bench>
+}
+
+function JackupRigDemo() {
+  const [view, setView] = React.useState<RobotView>("front"); const [variant, setVariant] = React.useState<RobotVariant>("solid"); const [behavior, setBehavior] = React.useState<JackupBehavior>("jack"); const [legs, setLegs] = React.useState<"3" | "4">("3")
+  return <Bench controls={<><Segmented label="view" value={view} options={views} onChange={setView} /><Segmented label="variant" value={variant} options={variants} onChange={setVariant} /><Segmented label="motion" value={behavior} options={["jack", "preload", "static"]} onChange={setBehavior} /><Segmented label="legs" value={legs} options={["3", "4"]} onChange={setLegs} /><Hint>Drag the hull up its legs. The stick-up above the deck is whatever the air gap has not used — one number, both halves.</Hint></>}><JackupRig size={320} view={view} variant={variant} behavior={behavior} legs={Number(legs) as 3 | 4} interactive label="JU-70" /></Bench>
+}
+
+function RobotSunflowerDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<SunflowerBehavior | "manual">("sweep")
+  const [daylight, setDaylight] = React.useState(0.5)
+  const [florets, setFlorets] = React.useState(120)
+  const [rays, setRays] = React.useState(21)
+  const [arms, setArms] = React.useState(8)
+  const [light, setLight] = React.useState<"pointer" | "arc">("arc")
+  const hour = `${String(Math.floor(daylight * 24)).padStart(2, "0")}:${String(
+    Math.floor(((daylight * 24) % 1) * 60),
+  ).padStart(2, "0")}`
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <NumberControl label="florets" value={florets} min={12} max={320} onChange={setFlorets} />
+      <NumberControl label="rays" value={rays} min={0} max={48} onChange={setRays} />
+      <NumberControl label="arms" value={arms} min={0} max={24} onChange={setArms} />
+      <Segmented label="light" value={light} options={["arc", "pointer"] as const} onChange={setLight} />
+      <Segmented label="drive" value={drive} options={["sweep", "day", "nod", "static", "manual"] as const} onChange={setDrive} />
+      {drive === "manual"
+        ? <NumberControl label="daylight" value={daylight} min={0} max={1} step={0.01} onChange={setDaylight} format={value => `${Math.round(value * 100)}%`} />
+        : <Hint>Drag across it to scrub the day, or focus it and use the arrow keys. With the light on the pointer, the head, the mast and the leaf panels all come round to wherever you are.</Hint>}
+      <Readout rows={[["clock", hour], ["spiral", `${arms} arms`]]} />
+    </>}>
+      <RobotSunflower view={view} size={320} variant={variant} florets={florets} rays={rays} arms={arms}
+        track={light === "pointer"} label="SUNFLOWER / 01"
+        interactive onDaylightChange={setDaylight}
+        {...(drive === "manual" ? { daylight, behavior: "static" as const } : { behavior: drive })} />
+    </Bench>
+  )
+}
+
+function CelestialPlanetDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<PlanetBehavior | "manual">("rotate")
+  const [spin, setSpin] = React.useState(40)
+  const [surface, setSurface] = React.useState<PlanetSurface>("banded")
+  const [tilt, setTilt] = React.useState(24)
+  const [sun, setSun] = React.useState(28)
+  const [moons, setMoons] = React.useState(1)
+  const [rings, setRings] = React.useState<"on" | "off">("on")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="world" value={surface} options={["terrestrial", "banded", "ice", "molten"] as const} onChange={setSurface} />
+      <Segmented label="rings" value={rings} options={["on", "off"] as const} onChange={setRings} />
+      <NumberControl label="tilt" value={tilt} min={-90} max={90} onChange={setTilt} format={v => `${v}°`} />
+      <NumberControl label="sun" value={sun} min={-180} max={180} onChange={setSun} format={v => `${v}°`} />
+      <NumberControl label="moons" value={moons} min={0} max={3} onChange={setMoons} />
+      <Segmented label="drive" value={drive} options={["rotate", "orbit", "tumble", "static", "manual"] as const} onChange={setDrive} />
+      {drive === "manual"
+        ? <NumberControl label="spin" value={spin} min={-360} max={360} onChange={setSpin} format={v => `${v}°`} />
+        : <Hint>Drag across the globe to turn it. Watch a ring pass behind the body and come out the other side — it is cut where the silhouette crosses it, not painted over.</Hint>}
+    </>}>
+      <CelestialPlanet view={view} size={320} variant={variant} surface={surface} tilt={tilt} sun={sun}
+        moons={moons} rings={rings === "on"} label="PLANET / 01"
+        interactive onSpinChange={setSpin}
+        {...(drive === "manual" ? { spin, behavior: "static" as const } : { behavior: drive })} />
+    </Bench>
+  )
+}
+
+function CelestialMoonDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<MoonBehavior | "manual">("cycle")
+  const [phase, setPhase] = React.useState(0.25)
+  const [craters, setCraters] = React.useState(46)
+  const [maria, setMaria] = React.useState(3)
+  const [libration, setLibration] = React.useState(1)
+  const names = ["new", "waxing crescent", "first quarter", "waxing gibbous", "full", "waning gibbous", "last quarter", "waning crescent"]
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <NumberControl label="craters" value={craters} min={0} max={200} onChange={setCraters} />
+      <NumberControl label="maria" value={maria} min={0} max={6} onChange={setMaria} />
+      <NumberControl label="libration" value={libration} min={0} max={1} step={0.05} onChange={setLibration} format={v => `${Math.round(v * 100)}%`} />
+      <Segmented label="drive" value={drive} options={["cycle", "libration", "static", "manual"] as const} onChange={setDrive} />
+      {drive === "manual"
+        ? <NumberControl label="phase" value={phase} min={0} max={1} step={0.01} onChange={setPhase} format={v => `${Math.round(v * 100)}%`} />
+        : <Hint>Drag across it to scrub the lunation. Nothing draws a crescent here: it is the terminator circle, projected, which is why it flips the right way at quarter.</Hint>}
+      <Readout rows={[["phase", names[Math.round(phase * 8) % 8]]]} />
+    </>}>
+      <CelestialMoon view={view} size={320} variant={variant} craters={craters} maria={maria}
+        libration={libration} label="MOON / 02"
+        interactive onPhaseChange={setPhase}
+        {...(drive === "manual" ? { phase, behavior: "static" as const } : { behavior: drive })} />
+    </Bench>
+  )
+}
+
+function CelestialStarDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<StarBehavior | "manual">("flare")
+  const [activity, setActivity] = React.useState(0.5)
+  const [kind, setKind] = React.useState<StarClass>("main-sequence")
+  const [shells, setShells] = React.useState(8)
+  const [spots, setSpots] = React.useState(5)
+  const [prominences, setProminences] = React.useState(3)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="class" value={kind} options={["dwarf", "main-sequence", "giant"] as const} onChange={setKind} />
+      <NumberControl label="shells" value={shells} min={3} max={20} onChange={setShells} />
+      <NumberControl label="spots" value={spots} min={0} max={12} onChange={setSpots} />
+      <NumberControl label="loops" value={prominences} min={0} max={8} onChange={setProminences} />
+      <Segmented label="drive" value={drive} options={["flare", "rotate", "pulse", "static", "manual"] as const} onChange={setDrive} />
+      {drive === "manual"
+        ? <NumberControl label="activity" value={activity} min={0} max={1} step={0.01} onChange={setActivity} format={v => `${Math.round(v * 100)}%`} />
+        : <Hint>Drag across it to work the activity. Switch the class and watch the edge: a giant darkens toward the limb far harder than a dwarf, because the coefficient in the law is different.</Hint>}
+    </>}>
+      <CelestialStar view={view} size={320} variant={variant} kind={kind} shells={shells}
+        spots={spots} prominences={prominences} label="STAR / 03"
+        interactive onActivityChange={setActivity}
+        {...(drive === "manual" ? { activity, behavior: "static" as const } : { behavior: drive })} />
+    </Bench>
+  )
+}
+
+function CelestialAsteroidDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<AsteroidBehavior | "manual">("tumble")
+  const [tumble, setTumble] = React.useState(40)
+  const [body, setBody] = React.useState<AsteroidBody>("rubble")
+  const [seed, setSeed] = React.useState(9)
+  const [craters, setCraters] = React.useState(18)
+  const [moonlet, setMoonlet] = React.useState<"on" | "off">("off")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="body" value={body} options={["rubble", "monolith", "contact"] as const} onChange={setBody} />
+      <NumberControl label="seed" value={seed} min={1} max={24} onChange={setSeed} />
+      <NumberControl label="craters" value={craters} min={0} max={80} onChange={setCraters} />
+      <Segmented label="moonlet" value={moonlet} options={["off", "on"] as const} onChange={setMoonlet} />
+      <Segmented label="drive" value={drive} options={["tumble", "spin", "drift", "static", "manual"] as const} onChange={setDrive} />
+      {drive === "manual"
+        ? <NumberControl label="tumble" value={tumble} min={-360} max={360} onChange={setTumble} format={v => `${v}°`} />
+        : <Hint>Drag across it to turn it. This is the only body here whose outline changes as it goes round — the shape is a radius field, not a circle with a texture on it.</Hint>}
+    </>}>
+      <CelestialAsteroid view={view} size={320} variant={variant} body={body} seed={seed}
+        craters={craters} moonlet={moonlet === "on"} label="ASTEROID / 04"
+        interactive onTumbleChange={setTumble}
+        {...(drive === "manual" ? { tumble, behavior: "static" as const } : { behavior: drive })} />
+    </Bench>
+  )
+}
+
+function OrreryDemo() {
+  const [view, setView] = React.useState<RobotView>("plan")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<OrreryBehavior | "manual">("run")
+  const [epoch, setEpoch] = React.useState(0)
+  const [bodies, setBodies] = React.useState(4)
+  const [eccentricity, setEccentricity] = React.useState(45)
+  const [inclination, setInclination] = React.useState(7)
+  const [orbits, setOrbits] = React.useState<"on" | "off">("on")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <NumberControl label="bodies" value={bodies} min={1} max={6} onChange={setBodies} />
+      <NumberControl label="eccent." value={eccentricity} min={0} max={100} onChange={setEccentricity} format={v => `${v}%`} />
+      <NumberControl label="inclin." value={inclination} min={-60} max={60} onChange={setInclination} format={v => `${v}°`} />
+      <Segmented label="orbits" value={orbits} options={["on", "off"] as const} onChange={setOrbits} />
+      <Segmented label="drive" value={drive} options={["run", "jog", "static", "manual"] as const} onChange={setDrive} />
+      {drive === "manual"
+        ? <NumberControl label="year" value={epoch} min={-12} max={12} step={0.05} onChange={setEpoch} format={v => `${v.toFixed(1)}`} />
+        : <Hint>Drag across it to wind time on. Wind the eccentricity up and watch an arm telescope: its length is the orbital radius, and the body runs at periapsis and loiters at apoapsis.</Hint>}
+      <Readout rows={[["year", epoch.toFixed(2)]]} />
+    </>}>
+      <Orrery view={view} size={320} variant={variant} bodies={bodies}
+        eccentricity={eccentricity / 100} inclination={inclination} showOrbits={orbits === "on"}
+        label="ORRERY / 05"
+        interactive onEpochChange={setEpoch}
+        {...(drive === "manual" ? { epoch, behavior: "static" as const } : { behavior: drive })} />
+    </Bench>
+  )
+}
+
+export interface DemoProps {
+  slug: string
+}
+
+export const demos: Record<string, React.ComponentType<DemoProps>> = {
+  "robot-sunflower": RobotSunflowerDemo,
+  "phyllotaxis-geometry": RobotSunflowerDemo,
+  "celestial-planet": CelestialPlanetDemo,
+  "celestial-moon": CelestialMoonDemo,
+  "celestial-star": CelestialStarDemo,
+  "celestial-asteroid": CelestialAsteroidDemo,
+  orrery: OrreryDemo,
+  "celestial-geometry": OrreryDemo,
+  pumpjack: PumpjackDemo,
+  "drilling-derrick": DrillingDerrickDemo,
+  "mud-pump": MudPumpDemo,
+  "wellhead-tree": WellheadTreeDemo,
+  "storage-tank": StorageTankDemo,
+  "oil-tanker": OilTankerDemo,
+  "tanker-truck": TankerTruckDemo,
+  "flare-stack": FlareStackDemo,
+  "fractionating-column": FractionatingColumnDemo,
+  "jackup-rig": JackupRigDemo,
+  "linkage-geometry": PumpjackDemo,
+  "turntable-deck": TurntableDeckDemo,
+  "gramophone-horn": GramophoneHornDemo,
+  "music-box-drum": MusicBoxDrumDemo,
+  "busker-droid": BuskerDroidDemo,
+  "sound-geometry": TurntableDeckDemo,
+  "clamshell-laptop": ClamshellLaptopDemo,
+  "slate-tablet": SlateTabletDemo,
+  "wheel-player": WheelPlayerDemo,
+  "slab-handset": SlabHandsetDemo,
+  "wrist-terminal": WristTerminalDemo,
+  "device-geometry": ClamshellLaptopDemo,
+  "planetary-gearbox": PlanetaryGearboxDemo,
+  "belt-drive": BeltDriveDemo,
+  "cable-carrier": CableCarrierDemo,
+  "mecanum-wheel": MecanumWheelDemo,
+  "tool-changer": ToolChangerDemo,
+  "suction-gripper": SuctionGripperDemo,
+  "robot-hand": RobotHandDemo,
+  "hand-kinematics": RobotHandDemo,
+  "robot-foot": RobotFootDemo,
+  "robot-leg": RobotLegDemo,
+  "robot-torso": RobotTorsoDemo,
+  "robot-skeleton": RobotSkeletonDemo,
+  "skeleton-kinematics": RobotSkeletonDemo,
+  "motion-platform": MotionPlatformDemo,
+  "transmission-geometry": PlanetaryGearboxDemo,
   fabricator: FabricatorDemo,
   "voxel-form": VoxelFormDemo,
   "arm-fabricator": ArmFabricatorDemo,
@@ -1556,6 +3325,11 @@ export const demos: Record<string, React.ComponentType> = {
   "voxel-geometry": VoxelFormDemo,
   "utility-droid": UtilityDroidDemo,
   "orb-droid": OrbDroidDemo,
+  "bellows-droid": BellowsDroidDemo,
+  "robot-avocado": RobotAvocadoDemo,
+  "robot-strawberry": RobotStrawberryDemo,
+  "robot-tomato": RobotTomatoDemo,
+  "produce-geometry": RobotStrawberryDemo,
   "protocol-droid": ProtocolDroidDemo,
   "security-droid": SecurityDroidDemo,
   "medical-droid": MedicalDroidDemo,
@@ -1566,6 +3340,12 @@ export const demos: Record<string, React.ComponentType> = {
   "astromech-droid": AstromechDroidDemo,
   "attendant-droid": AttendantDroidDemo,
   "cyber-trooper": CyberTrooperDemo,
+  "robot-hound": RobotHoundDemo,
+  "guide-droid": GuideDroidDemo,
+  "monolith-droid": MonolithDroidDemo,
+  "pylon-droid": PylonDroidDemo,
+  "custodian-droid": CustodianDroidDemo,
+  "sentinel-console": SentinelConsoleDemo,
   "robot-fish": RobotFishDemo,
   "robot-snake": RobotSnakeDemo,
   "spine-kinematics": RobotSnakeDemo,
@@ -1573,6 +3353,25 @@ export const demos: Record<string, React.ComponentType> = {
   "robot-crab": RobotCrabDemo,
   "hexapod-kinematics": RobotSpiderDemo,
   "robot-bird": RobotBirdDemo,
+  "robot-dragonfly": RobotDragonflyDemo,
+  "robot-bat": RobotBatDemo,
+  "robot-jellyfish": RobotJellyfishDemo,
+  "robot-manta": RobotMantaDemo,
+  "robot-octopus": RobotOctopusDemo,
+  "robot-seahorse": RobotSeahorseDemo,
+  "robot-ant": RobotAntDemo,
+  "robot-scorpion": RobotScorpionDemo,
+  "robot-mantis": RobotMantisDemo,
+  "robot-frog": RobotFrogDemo,
+  "robot-cat": RobotCatDemo,
+  "robot-dog": RobotDogDemo,
+  "robot-fox": RobotFoxDemo,
+  "robot-bear": RobotBearDemo,
+  "bear-kinematics": RobotBearDemo,
+  "robot-horse": RobotHorseDemo,
+  "gait-kinematics": RobotHorseDemo,
+  "robot-turtle": RobotTurtleDemo,
+  "robot-inchworm": RobotInchwormDemo,
   "micro-duck": MicroDuckDemo,
   "duck-kinematics": MicroDuckDemo,
   "reachy-mini": ReachyMiniDemo,
@@ -1597,8 +3396,76 @@ export const demos: Record<string, React.ComponentType> = {
   "robot-loader": RobotLoaderDemo,
   "arm-controls": ArmControlsDemo,
   "robot-kinematics": KinematicsDemo,
+  "electromagnetism-geometry": ServoMotorDemo,
+  "induction-motor": InductionMotorDemo,
+  "stepper-motor": StepperMotorDemo,
+  "voice-coil-actuator": VoiceCoilActuatorDemo,
+  "magnetic-bearing": MagneticBearingDemo,
+  "eddy-current-brake": EddyCurrentBrakeDemo,
+  "maglev-carriage": MaglevCarriageDemo,
+  "magnetic-gripper": MagneticGripperDemo,
+  "inductive-sensor": InductiveSensorDemo,
+  "resolver": ResolverDemo,
+  "transformer-core": TransformerCoreDemo,
+  "solenoid-valve": SolenoidValveDemo,
+  "electromagnetic-relay": ElectromagneticRelayDemo,
   "robot-style": StyleDemo,
   "robot-color": ColorDemo,
   "use-robot-arm": UseRobotArmDemo,
   "use-pointer-target": UsePointerTargetDemo,
+}
+
+/**
+ * The bench an item gets when nobody has written one: the machine at size, its
+ * own behaviour running, and the two switches every machine in the registry
+ * answers to. Deliberately plain — a written demo beats it, and it beats the
+ * empty panel that used to be there.
+ */
+function AutoDemo({ slug }: DemoProps) {
+  const entry = galleryEntries[slug]
+  const [variant, setVariant] = React.useState<RobotVariant>(
+    entry?.blueprint ? "blueprint" : "solid",
+  )
+  const [view, setView] = React.useState<RobotView>("front")
+  const Machine = entry?.component
+  if (!Machine) return null
+  return (
+    <Bench controls={<>
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Hint>
+        {entry.draws === slug
+          ? "Running its own cycle. Every prop it takes is on the props table below."
+          : "Drawn by the machine this file solves for, so you can see the maths move."}
+      </Hint>
+    </>}>
+      {/* `view` is not universal — a machine drawn in one projection ignores
+          it rather than failing, which is the same contract the props table
+          documents. */}
+      <Machine size={320} variant={variant} {...({ view } as { view?: RobotView })} />
+    </Bench>
+  )
+}
+
+/**
+ * Every registry item, mapped to the bench that demonstrates it: the written
+ * one where there is one, and the generated one everywhere else.
+ *
+ * A record rather than a function on purpose. Manufacturing a component per
+ * slug would reset the bench's state on every render, and the React Compiler
+ * rule refuses the call site outright — so both branches are module-level
+ * components and the lookup is an index.
+ */
+export const demoBySlug: Record<string, React.ComponentType<DemoProps>> = {
+  ...Object.fromEntries(
+    Object.entries(galleryEntries)
+      .filter(([, entry]) => entry.component)
+      .map(([slug]) => [slug, AutoDemo]),
+  ),
+  ...demos,
+}
+
+/** The bench for a doc slug, or null for a page that demonstrates nothing. */
+export function demoFor(slug: string): React.ComponentType<DemoProps> | null {
+  return demoBySlug[slug] ?? null
 }

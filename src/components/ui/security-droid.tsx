@@ -1,8 +1,17 @@
 "use client"
 
+/**
+ * security-droid — a guard frame that walks its beat.
+ *
+ * Three stances and a head that turns. Uncontrolled it patrols, and going
+ * `alert` stands it to guard and shortens its scan. Supply `pose` or
+ * `headAngle` and that channel is yours.
+ */
+
 import * as React from "react"
 
 import { usePointerTarget } from "@/hooks/use-pointer-target"
+import { useRobotClock } from "@/hooks/use-robot-motion"
 import { clamp, toRadians, type Vec2 } from "@/lib/robocn/kinematics"
 import {
   aboutPoint,
@@ -22,6 +31,7 @@ import {
 import { cn } from "@/lib/utils"
 
 export type SecurityDroidPose = "stand" | "patrol" | "guard"
+export type SecurityDroidBehavior = "patrol" | "alert" | "idle" | "static"
 
 export interface SecurityDroidProps
   extends Omit<React.ComponentProps<"svg">, "color">,
@@ -30,10 +40,20 @@ export interface SecurityDroidProps
   variant?: RobotVariant
   /** Where the camera stands. One droid, four projections. */
   view?: RobotView
+  /** Stance. Omit and `behavior` picks one. */
   pose?: SecurityDroidPose
+  /** Controlled head rotation in degrees. Omit to run `behavior`. */
   headAngle?: number
+  /** What the droid does when it is not posed. */
+  behavior?: SecurityDroidBehavior
+  /** Cycles per second: one sweep of the head. */
+  speed?: number
+  animate?: boolean
+  paused?: boolean
+  phase?: number
   look?: Vec2 | null
   track?: boolean
+  /** Stands it to guard and shortens the scan, whatever `behavior` says. */
   alert?: boolean
   signal?: "idle" | "ready" | "warning"
   showGround?: boolean
@@ -66,8 +86,13 @@ function SecurityDroid({
   size = "md",
   variant = "solid",
   view = NATIVE_VIEW,
-  pose = "stand",
-  headAngle = 0,
+  pose,
+  headAngle,
+  behavior = "patrol",
+  speed = 0.35,
+  animate = true,
+  paused = false,
+  phase = 0,
   look = null,
   track = true,
   alert = false,
@@ -87,8 +112,16 @@ function SecurityDroid({
 }: SecurityDroidProps) {
   const palette = resolveRobotPalette({ color, accent, metal, dark, glow, grid, palette: paletteOverride })
   const width = resolveRobotSize(size)
-  const stance = poses[pose] ?? poses.stand
-  const turn = finiteClamp(headAngle, -70, 70)
+  const clock = useRobotClock({
+    speed,
+    animate: animate && behavior !== "static",
+    paused,
+    phase,
+  })
+  const scripted = securityDroidPose(alert ? "alert" : behavior, clock)
+  const stanceName = pose ?? scripted.pose
+  const stance = poses[stanceName] ?? poses.stand
+  const turn = finiteClamp(headAngle ?? scripted.head, -70, 70)
   const svgRef = React.useRef<SVGSVGElement>(null)
   const pointer = usePointerTarget(svgRef, {
     enabled: track && !look,
@@ -159,7 +192,7 @@ function SecurityDroid({
     <svg
       ref={svgRef}
       role="img"
-      aria-label={`Security droid, ${pose} pose${alert ? ", alert" : ""}, ${viewNames[view] ?? viewNames.front}`}
+      aria-label={`Security droid, ${stanceName} pose${alert ? ", alert" : ""}, ${viewNames[view] ?? viewNames.front}`}
       viewBox="0 0 180 240"
       width={width}
       height={px(width * 1.33)}
@@ -244,6 +277,25 @@ function SecurityDroid({
       {label && <text x={90} y={234} textAnchor="middle" fontFamily="ui-monospace, monospace" fontSize={6} fill={palette.foreground}>{label}</text>}
     </svg>
   )
+}
+
+/**
+ * The beat it walks when nobody is posing it. A patrol paces and sweeps wide;
+ * an alert stands to guard and scans in short, quick turns; idle stands easy
+ * and barely moves.
+ */
+export function securityDroidPose(behavior: SecurityDroidBehavior, clock: number) {
+  const t = Number.isFinite(clock) ? clock : 0
+  switch (behavior) {
+    case "alert":
+      return { pose: "guard" as SecurityDroidPose, head: Math.sin(t * Math.PI * 4) * 58 }
+    case "idle":
+      return { pose: "stand" as SecurityDroidPose, head: Math.sin(t * Math.PI * 0.5) * 10 }
+    case "static":
+      return { pose: "stand" as SecurityDroidPose, head: 0 }
+    default:
+      return { pose: "patrol" as SecurityDroidPose, head: Math.sin(t * Math.PI * 2) * 44 }
+  }
 }
 
 const finiteClamp = (value: number, min: number, max: number) =>

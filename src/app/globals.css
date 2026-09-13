@@ -130,7 +130,10 @@
 }
 /* robocn ------------------------------------------------------------------ */
 
-:root {
+/* `.light` is how `/og` pins the card to the light register even when the
+   visitor's system — or a headless Chrome — resolves to dark. */
+:root,
+.light {
   --robot-shell: oklch(0.72 0.17 47);
   --robot-metal: oklch(0.85 0.012 250);
   --robot-dark: oklch(0.32 0.02 250);
@@ -239,18 +242,22 @@
 }
 
 /* Site theme: a machine shop rather than a product page. Cool steel ground,
-   ink type, one teal signal colour. The only orange on the page comes from the
-   robots themselves. */
+   ink type, one teal signal colour for the chrome. The orange belongs to the
+   machines — the robots on the page, and the mark in the header, which is one
+   of them. */
 
 @theme inline {
   --color-panel: var(--panel);
   --color-signal: var(--signal);
+  --color-shell: var(--shell);
+  --color-shell-hot: var(--shell-hot);
   --color-datum: var(--datum);
   --font-sans: var(--font-plex-sans);
   --font-mono: var(--font-plex-mono);
 }
 
-:root {
+:root,
+.light {
   --background: oklch(0.966 0.003 240);
   --foreground: oklch(0.23 0.014 250);
   --panel: oklch(0.995 0.001 240);
@@ -270,6 +277,10 @@
   --input: oklch(0.885 0.006 245);
   --ring: oklch(0.62 0.12 176);
   --signal: oklch(0.56 0.11 176);
+  /* The machines' orange, pulled a shade darker than `--robot-shell` so a 28 px
+     mark still holds its own against a near-white ground. */
+  --shell: oklch(0.63 0.18 44);
+  --shell-hot: oklch(0.70 0.20 50);
   --datum: oklch(0.78 0.01 245);
 }
 
@@ -293,6 +304,8 @@
   --input: oklch(0.30 0.013 252);
   --ring: oklch(0.78 0.14 176);
   --signal: oklch(0.8 0.14 176);
+  --shell: oklch(0.73 0.19 46);
+  --shell-hot: oklch(0.82 0.19 56);
   --datum: oklch(0.38 0.013 252);
 }
 

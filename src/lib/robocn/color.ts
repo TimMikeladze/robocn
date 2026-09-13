@@ -116,3 +116,36 @@ export function resolveCssColor(
 
   return oklchToHex(raw) ?? paintToHex(raw) ?? raw
 }
+
+/**
+ * Calls `onChange` whenever something that could move a CSS variable changes:
+ * the theme class on `<html>`, or a stylesheet added, removed or rewritten in
+ * `<head>` — which is how a theme switcher usually works. Coalesced to one
+ * call per frame. Returns a disposer.
+ */
+export function watchCssColors(onChange: () => void): () => void {
+  if (typeof document === "undefined") return () => {}
+
+  let frame = 0
+  const schedule = () => {
+    if (frame) return
+    frame = requestAnimationFrame(() => {
+      frame = 0
+      onChange()
+    })
+  }
+
+  const root = new MutationObserver(schedule)
+  root.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["class", "style", "data-theme"],
+  })
+  const head = new MutationObserver(schedule)
+  head.observe(document.head, { childList: true, subtree: true, characterData: true })
+
+  return () => {
+    if (frame) cancelAnimationFrame(frame)
+    root.disconnect()
+    head.disconnect()
+  }
+}

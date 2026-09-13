@@ -4,6 +4,7 @@ import { docGroups, docs } from "@/lib/docs"
 export const metadata = {
   title: "Components",
   description: "Browse and search robotic components for shadcn: articulated arms, production machines, mobile robots, sensor displays, and shared foundations.",
+  alternates: { canonical: "/docs" },
 }
 
 export default function DocsIndex() {

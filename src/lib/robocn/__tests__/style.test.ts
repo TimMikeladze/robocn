@@ -1,7 +1,18 @@
 import { describe, expect, it } from "vitest"
 
 import { convexHull2 } from "@/lib/robocn/kinematics"
-import { circleFootprint, extrudedPath, robotCamera, roundedFootprint } from "@/lib/robocn/style"
+import {
+  boxCorners,
+  circleFootprint,
+  elevationDisc,
+  elevationDraft,
+  elevationSolid,
+  extrudedPath,
+  fitTransform,
+  frustumPath,
+  robotCamera,
+  roundedFootprint,
+} from "@/lib/robocn/style"
 
 describe("robot camera", () => {
   it("draws plan view as the identity projection", () => {
@@ -59,6 +70,37 @@ describe("extruded parts", () => {
   })
 })
 
+describe("tapered parts", () => {
+  it("takes its width from the wider footprint and matches an extrusion when both are equal", () => {
+    const wide = roundedFootprint(32, 40, 8)
+    const narrow = roundedFootprint(21, 32, 6)
+    const camera = robotCamera("plan")
+    // In plan a frustum is the hull of both footprints, which is the wider one.
+    expect(bounds(frustumPath(wide, narrow, camera, 6, 44)).width).toBeCloseTo(64, 0)
+    expect(bounds(frustumPath(narrow, wide, camera, 6, 44)).width).toBeCloseTo(64, 0)
+    // And with one footprint it is exactly the prism `extrudedPath` draws.
+    expect(frustumPath(wide, wide, robotCamera("iso"), 6, 44)).toBe(
+      extrudedPath(wide, robotCamera("iso"), 44, 6),
+    )
+  })
+
+  it("leans the flank in as it rises", () => {
+    const camera = robotCamera("front")
+    const wide = roundedFootprint(32, 40, 8)
+    const narrow = roundedFootprint(21, 32, 6)
+    const taper = bounds(frustumPath(wide, narrow, camera, 0, 40))
+    const prism = bounds(frustumPath(wide, wide, camera, 0, 40))
+    expect(taper.width).toBeCloseTo(prism.width, 0)
+    // Same footprint at the floor, but the top is drawn in, so the far top
+    // corner does not reach as high up the drawing as the prism's does.
+    expect(taper.height).toBeLessThan(prism.height)
+    expect(taper.height).toBeGreaterThan(prism.height - 4)
+    expect(frustumPath(wide, narrow, camera, 0, 40)).not.toBe(
+      frustumPath(wide, wide, camera, 0, 40),
+    )
+  })
+})
+
 describe("footprints", () => {
   it("samples a circle as a ring that extrudes into a cylinder", () => {
     const footprint = circleFootprint(0, 0, 10, 16)
@@ -89,3 +131,70 @@ function bounds(path: string) {
     height: Math.max(...ys) - Math.min(...ys),
   }
 }
+
+describe("elevation drawings", () => {
+  it("lifts a link into a box of the right size", () => {
+    const corners = elevationSolid({ x: 0, y: 0 }, { x: 20, y: 0 }, 3, 5)
+    expect(corners).toHaveLength(8)
+    const xs = corners.map((corner) => corner.x)
+    const ys = corners.map((corner) => corner.y)
+    const zs = corners.map((corner) => corner.z)
+    // Depth out of a profile drawing is the world's starboard axis; the
+    // drawing's own x runs fore-and-aft, and its y is the world's height.
+    expect(Math.max(...xs) - Math.min(...xs)).toBeCloseTo(10, 6)
+    expect(Math.max(...ys) - Math.min(...ys)).toBeCloseTo(6, 6)
+    expect(Math.max(...zs) - Math.min(...zs)).toBeCloseTo(26, 6)
+  })
+
+  it("puts depth on the other horizontal axis for a front elevation", () => {
+    const corners = elevationSolid({ x: 0, y: 0 }, { x: 20, y: 0 }, 3, 5, "front")
+    const xs = corners.map((corner) => corner.x)
+    const zs = corners.map((corner) => corner.z)
+    expect(Math.max(...xs) - Math.min(...xs)).toBeCloseTo(26, 6)
+    expect(Math.max(...zs) - Math.min(...zs)).toBeCloseTo(10, 6)
+  })
+
+  it("keeps a zero-length link finite", () => {
+    const corners = elevationSolid({ x: 4, y: 4 }, { x: 4, y: 4 }, 2, 2)
+    expect(corners.every((corner) => Number.isFinite(corner.x + corner.y + corner.z))).toBe(true)
+  })
+
+  it("samples a disc as a cylinder of the right diameter", () => {
+    const corners = elevationDisc({ x: 0, y: 0 }, 12, 4, "profile", 24)
+    expect(corners).toHaveLength(48)
+    const zs = corners.map((corner) => corner.z)
+    expect(Math.max(...zs) - Math.min(...zs)).toBeCloseTo(24, 4)
+    expect(Math.max(...corners.map((corner) => corner.x))).toBeCloseTo(4, 6)
+  })
+
+  it("draws a drafting board that is the identity in its own view", () => {
+    const draft = elevationDraft(robotCamera("profile"), "profile")
+    const screen = draft.point({ x: 30, y: 40 })
+    expect(screen.x).toBeCloseTo(30, 6)
+    expect(screen.y).toBeCloseTo(-40, 6)
+    expect(draft.path([{ x: 0, y: 0 }, { x: 10, y: 0 }])).toBe("M 0 0 L 10 0")
+    expect(bounds(draft.box(0, 0, 20, 10, 4)).width).toBeCloseTo(20, 4)
+  })
+
+  it("offsets a member across the machine without changing its size", () => {
+    const draft = elevationDraft(robotCamera("plan"), "profile")
+    const centre = draft.bar({ x: 0, y: 0 }, { x: 20, y: 0 }, 2, 3)
+    const outboard = draft.bar({ x: 0, y: 0 }, { x: 20, y: 0 }, 2, 3, 18)
+    expect(outboard).not.toBe(centre)
+    expect(bounds(outboard).width).toBeCloseTo(bounds(centre).width, 4)
+  })
+})
+
+describe("fitTransform", () => {
+  it("never enlarges a machine that already fits", () => {
+    const corners = boxCorners({ x: -10, y: 0, z: -10 }, { x: 10, y: 20, z: 10 })
+    expect(fitTransform(corners, robotCamera("profile"), 200, 200)).toContain("scale(1)")
+  })
+
+  it("shrinks one that does not, and centres it either way", () => {
+    const corners = boxCorners({ x: -400, y: 0, z: -400 }, { x: 400, y: 600, z: 400 })
+    const transform = fitTransform(corners, robotCamera("iso"), 200, 200)
+    expect(transform).toMatch(/scale\(0\.\d+\)/)
+    expect(transform.startsWith("translate(")).toBe(true)
+  })
+})

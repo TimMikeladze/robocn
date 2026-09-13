@@ -94,7 +94,10 @@ function HeroArm() {
 
     let previous = performance.now()
     const step = (now: number) => {
-      const dt = Math.min(0.05, (now - previous) / 1000)
+      // A frame already queued when the loop starts carries a timestamp from
+      // before it, so the first delta can be negative: clamp both ends or the
+      // machine takes one step backwards at mount.
+      const dt = Math.min(0.05, Math.max(0, (now - previous) / 1000))
       previous = now
       const direction = goal - progress.current
       const next = clamp01(progress.current + Math.sign(direction) * (dt / DURATION))

@@ -11,6 +11,15 @@ function SiteFooter() {
           <a href={site.repository} className="hover:text-foreground" target="_blank" rel="noreferrer">
             Source
           </a>
+          <a href={site.author.portfolio} className="hover:text-foreground" target="_blank" rel="noreferrer">
+            linesofcode.dev
+          </a>
+          <a href={site.author.twitter} className="hover:text-foreground" target="_blank" rel="noreferrer">
+            Twitter
+          </a>
+          <a href={site.author.linkedin} className="hover:text-foreground" target="_blank" rel="noreferrer">
+            LinkedIn
+          </a>
           <a href="https://ui.shadcn.com/docs/registry" className="hover:text-foreground" target="_blank" rel="noreferrer">
             shadcn registry
           </a>

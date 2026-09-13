@@ -24,8 +24,126 @@ const registry = JSON.parse(readFileSync("registry.json", "utf8")) as {
 }
 
 const names = new Set(registry.items.map((item) => item.name))
+const droidCollection = [
+  "utility-droid",
+  "orb-droid",
+  "bellows-droid",
+  "protocol-droid",
+  "security-droid",
+  "medical-droid",
+  "infantry-droid",
+  "probe-droid",
+  "courier-droid",
+  "casing-droid",
+  "astromech-droid",
+  "attendant-droid",
+  "cyber-trooper",
+  "robot-hound",
+  "guide-droid",
+  "pylon-droid",
+  "custodian-droid",
+  "sentinel-console",
+  "monolith-droid",
+  "busker-droid",
+] as const
+
+/** The equine pair and the footfall solver under them. */
+const equineCollection = [
+  "robot-horse",
+] as const
+
+const produceCollection = [
+  "robot-avocado",
+  "robot-strawberry",
+  "robot-tomato",
+] as const
+
+/** The bears: plantigrade machines on one support solver. */
+const ursineCollection = ["robot-bear"] as const
+
+const electromagneticMachines = [
+  "solenoid-valve",
+  "electromagnetic-relay",
+  "induction-motor",
+  "stepper-motor",
+  "voice-coil-actuator",
+  "magnetic-bearing",
+  "eddy-current-brake",
+  "maglev-carriage",
+  "magnetic-gripper",
+  "inductive-sensor",
+  "resolver",
+  "transformer-core",
+] as const
+
+/** The mechanical music machines, on one sound-geometry solver. */
+const soundMachines = [
+  "turntable-deck",
+  "gramophone-horn",
+  "music-box-drum",
+  "busker-droid",
+] as const
+
+/** The personal devices: five machines you carry, on one geometry solver. */
+const deviceCollection = [
+  "clamshell-laptop",
+  "slate-tablet",
+  "wheel-player",
+  "slab-handset",
+  "wrist-terminal",
+] as const
 
 describe("registry.json", () => {
+  it.each(soundMachines)("publishes %s as one UI source file", (name) => {
+    const item = registry.items.find((candidate) => candidate.name === name)
+    expect(item?.type).toBe("registry:ui")
+    expect(item?.files).toHaveLength(1)
+    expect(item?.files[0]?.path).toBe(`src/components/ui/${name}.tsx`)
+    expect(item?.registryDependencies).toContain("{REGISTRY_URL}/r/sound-geometry.json")
+  })
+
+  it.each(deviceCollection)("publishes %s as one UI source file", (name) => {
+    const item = registry.items.find((candidate) => candidate.name === name)
+    expect(item?.type).toBe("registry:ui")
+    expect(item?.files).toHaveLength(1)
+    expect(item?.files[0]?.path).toBe(`src/components/ui/${name}.tsx`)
+  })
+
+  it.each(droidCollection)("publishes %s as one UI source file", (name) => {
+    const item = registry.items.find((candidate) => candidate.name === name)
+    expect(item?.type).toBe("registry:ui")
+    expect(item?.files).toHaveLength(1)
+    expect(item?.files[0]?.path).toBe(`src/components/ui/${name}.tsx`)
+  })
+
+  it.each(equineCollection)("publishes %s as one UI source file", (name) => {
+    const item = registry.items.find((candidate) => candidate.name === name)
+    expect(item?.type).toBe("registry:ui")
+    expect(item?.files).toHaveLength(1)
+    expect(item?.files[0]?.path).toBe(`src/components/ui/${name}.tsx`)
+  })
+
+  it.each(produceCollection)("publishes %s as one UI source file", (name) => {
+    const item = registry.items.find((candidate) => candidate.name === name)
+    expect(item?.type).toBe("registry:ui")
+    expect(item?.files).toHaveLength(1)
+    expect(item?.files[0]?.path).toBe(`src/components/ui/${name}.tsx`)
+  })
+
+  it.each(ursineCollection)("publishes %s as one UI source file", (name) => {
+    const item = registry.items.find((candidate) => candidate.name === name)
+    expect(item?.type).toBe("registry:ui")
+    expect(item?.files).toHaveLength(1)
+    expect(item?.files[0]?.path).toBe(`src/components/ui/${name}.tsx`)
+  })
+
+  it.each(electromagneticMachines)("publishes %s as one UI source file", (name) => {
+    const item = registry.items.find((candidate) => candidate.name === name)
+    expect(item?.type).toBe("registry:ui")
+    expect(item?.files).toHaveLength(1)
+    expect(item?.files[0]?.path).toBe(`src/components/ui/${name}.tsx`)
+  })
+
   it("has unique names and a documentation page for every published item", () => {
     expect(names.size).toBe(registry.items.length)
     const documented = docs.filter(entry => entry.item !== null)

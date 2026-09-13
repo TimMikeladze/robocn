@@ -16,6 +16,7 @@ import {
   sub2,
   toRadians,
   type Vec2,
+  type Vec3,
 } from "@/lib/robocn/kinematics"
 
 export type RobotSize = "xs" | "sm" | "md" | "lg" | "xl"
@@ -385,9 +386,69 @@ export function extrudedPath(
       ? [{ x: rise.x, y: -rise.y }, { x: fall.x, y: -fall.y }]
       : [rise, fall]
   })
+  return hullPath(corners)
+}
+
+/** The closed outline round a set of projected corners. */
+function hullPath(corners: readonly Vec2[]): string {
   const hull = convexHull2(corners)
   if (hull.length < 3) return ""
   return `${hull.map((p, i) => `${i ? "L" : "M"} ${px(p.x)} ${px(p.y)}`).join(" ")} Z`
+}
+
+/**
+ * The outline a *tapered* solid makes: two different footprints, one at each
+ * height, wrapped in one hull. `extrudedPath` is the special case where both
+ * are the same, and this is the general one — a chassis wider at the floor
+ * than at the deck, a wedge head, a truncated cone. Exact for any pair of
+ * convex footprints, since a height offset projects to a pure vertical screen
+ * offset, and it collapses to the hull of the two footprints in plan view.
+ */
+export function frustumPath(
+  bottom: readonly Vec2[],
+  top: readonly Vec2[],
+  camera: RobotCamera,
+  bottomY: number,
+  topY: number,
+  spin = 0,
+  /** For a group already mirrored to draw with `y` pointing up. */
+  up = false,
+): string {
+  const turn = toRadians(spin)
+  const cs = Math.cos(turn)
+  const sn = Math.sin(turn)
+  const corner = (point: Vec2, height: number) => {
+    // Footprint coordinates are plan-view: x starboard, y toward the tail.
+    const x = point.x * cs - point.y * sn
+    const z = point.x * sn + point.y * cs
+    const screen = camera.project(x, height, z)
+    return up ? { x: screen.x, y: -screen.y } : screen
+  }
+  return hullPath([
+    ...bottom.map((point) => corner(point, bottomY)),
+    ...top.map((point) => corner(point, topY)),
+  ])
+}
+
+/**
+ * The silhouette of a solid given its own corners in world space.
+ * `extrudedPath` and `frustumPath` are the special cases where the corners come
+ * from a plan-view footprint at two heights; this is the general one, for parts
+ * that stand in any plane at all — a palm slab, a sole plate, a pitched rib
+ * hoop. Exact for a convex solid, which is what these parts are.
+ */
+export function slabPath(
+  corners: readonly Vec3[],
+  camera: RobotCamera,
+  /** For a group already mirrored to draw with `y` pointing up. */
+  up = false,
+): string {
+  return hullPath(
+    corners.map((corner) => {
+      const point = camera.project(corner.x, corner.y, corner.z)
+      return up ? { x: point.x, y: -point.y } : point
+    }),
+  )
 }
 
 /**
@@ -431,4 +492,223 @@ export function roundedFootprint(
       return { x: corner.x + Math.cos(angle) * r, y: corner.y + Math.sin(angle) * r }
     }),
   )
+}
+
+/**
+ * The transform that lays a projected envelope into a drawing frame: the
+ * largest uniform scale that fits, centred, never enlarging past `maxScale`.
+ *
+ * Feed it a *fixed* envelope — the whole box the machine moves inside, not its
+ * pose this frame — so the framing cannot breathe as the machine works. A
+ * machine drawn to fit its native view then stays inside its own frame from
+ * every other camera, which is otherwise the first thing a new view breaks.
+ */
+export function fitTransform(
+  corners: readonly Vec3[],
+  camera: RobotCamera,
+  width: number,
+  height: number,
+  margin = 8,
+  maxScale = 1,
+): string {
+  if (corners.length === 0) return ""
+  const points = corners.map((corner) => camera.project(corner.x, corner.y, corner.z))
+  const xs = points.map((point) => point.x)
+  const ys = points.map((point) => point.y)
+  const minX = Math.min(...xs)
+  const maxX = Math.max(...xs)
+  const minY = Math.min(...ys)
+  const maxY = Math.max(...ys)
+  const scale = Math.min(
+    maxScale,
+    (width - margin * 2) / Math.max(1e-6, maxX - minX),
+    (height - margin * 2) / Math.max(1e-6, maxY - minY),
+  )
+  const dx = width / 2 - ((minX + maxX) / 2) * scale
+  const dy = height / 2 - ((minY + maxY) / 2) * scale
+  return `translate(${px(dx)} ${px(dy)}) scale(${px(scale)})`
+}
+
+/** The eight corners of a world-space box, ready for {@link fitTransform}. */
+export function boxCorners(
+  min: Vec3,
+  max: Vec3,
+): Vec3[] {
+  return [min.x, max.x].flatMap((x) =>
+    [min.y, max.y].flatMap((y) => [min.z, max.z].map((z) => ({ x, y, z }))),
+  )
+}
+
+/* -------------------------------------------------------------------------- */
+/* elevation drawings                                                          */
+/* -------------------------------------------------------------------------- */
+
+const finite = (value: number, fallback = 0) =>
+  Number.isFinite(value) ? value : fallback
+
+/** A length: finite, and never negative. */
+const span = (value: number, fallback: number) => Math.abs(finite(value, fallback))
+
+/**
+ * Which elevation a drawing is, in world axes (x starboard, y up, z aft).
+ * `profile` lays the drawing's x along the fore-aft axis, `front` across the
+ * machine. Depth is then the remaining horizontal axis in both cases.
+ */
+export type ElevationPlane = "profile" | "front"
+
+/**
+ * One drawing point of an elevation, at `depth` out of its plane. Drawing
+ * coordinates are the ones the rest of the set uses — x along the drawing, y
+ * up from the ground — and positive `depth` is toward the camera.
+ */
+export function elevationPoint(
+  point: Vec2,
+  depth: number,
+  plane: ElevationPlane = "profile",
+): Vec3 {
+  const x = finite(point.x, 0)
+  const y = finite(point.y, 0)
+  const out = finite(depth, 0)
+  return plane === "front"
+    ? { x: -x, y, z: -out }
+    : { x: out, y, z: -x }
+}
+
+/**
+ * A link solved in an elevation, lifted into the world as the box it really
+ * is: `halfWidth` across the link inside the drawing plane, `halfDepth` out of
+ * it. Feed the corners to `slabPath` and one geometry serves all four cameras,
+ * so a walking beam seen from above is the beam foreshortened by its own tilt
+ * rather than a second piece of artwork.
+ */
+export function elevationSolid(
+  a: Vec2,
+  b: Vec2,
+  halfWidth: number,
+  halfDepth: number,
+  plane: ElevationPlane = "profile",
+): Vec3[] {
+  const ax = finite(a.x, 0)
+  const ay = finite(a.y, 0)
+  const bx = finite(b.x, 0)
+  const by = finite(b.y, 0)
+  const width = span(halfWidth, 1)
+  const depth = span(halfDepth, 1)
+  const length = Math.hypot(bx - ax, by - ay)
+  // A zero-length link has no direction to take a perpendicular from; give it
+  // the drawing's own axes so it still comes out as a square rather than NaN.
+  const ux = length === 0 ? 1 : (bx - ax) / length
+  const uy = length === 0 ? 0 : (by - ay) / length
+  const corners: Vec2[] = [
+    { x: ax - uy * width - ux * width, y: ay + ux * width - uy * width },
+    { x: ax + uy * width - ux * width, y: ay - ux * width - uy * width },
+    { x: bx + uy * width + ux * width, y: by - ux * width + uy * width },
+    { x: bx - uy * width + ux * width, y: by + ux * width + uy * width },
+  ]
+  return corners.flatMap((corner) => [
+    elevationPoint(corner, depth, plane),
+    elevationPoint(corner, -depth, plane),
+  ])
+}
+
+/**
+ * A disc standing in an elevation — a crank web, a sheave, a drum, a wheel —
+ * as the cylinder it is, its axis out of the drawing plane.
+ */
+export function elevationDisc(
+  center: Vec2,
+  radius: number,
+  halfDepth: number,
+  plane: ElevationPlane = "profile",
+  steps = 16,
+): Vec3[] {
+  const cx = finite(center.x, 0)
+  const cy = finite(center.y, 0)
+  const r = span(radius, 1)
+  const depth = span(halfDepth, 1)
+  const count = Math.max(3, Math.round(finite(steps, 16)))
+  return Array.from({ length: count }, (_, index) => {
+    const angle = (index / count) * Math.PI * 2
+    return { x: cx + Math.cos(angle) * r, y: cy + Math.sin(angle) * r }
+  }).flatMap((point) => [
+    elevationPoint(point, depth, plane),
+    elevationPoint(point, -depth, plane),
+  ])
+}
+
+/**
+ * The drafting board for one elevation: every helper a machine drawn in a
+ * vertical plane needs, already pushed through the camera.
+ *
+ * Drawing coordinates are the plane's own — x along the drawing, y up from the
+ * ground — and `depth` is out of it, toward the camera. So the whole machine is
+ * written once, in the elevation it was designed in, and comes out correct from
+ * all four cameras: what has real depth is a solid, what is flat detail is a
+ * polyline that foreshortens and finally collapses when seen edge-on, which is
+ * what a line drawn on a face does.
+ */
+export interface ElevationDraft {
+  /** Screen point of one drawing point. */
+  point(point: Vec2, depth?: number): Vec2
+  /** A polyline through drawing points, all at the same depth. */
+  path(points: readonly Vec2[], depth?: number, close?: boolean): string
+  /** The silhouette of an outline swept `±halfDepth` out of the plane. */
+  solid(outline: readonly Vec2[], halfDepth: number, offset?: number): string
+  /** The same for an axis-aligned rectangle. */
+  box(x0: number, y0: number, x1: number, y1: number, halfDepth: number, offset?: number): string
+  /** A member between two drawing points, `halfWidth` across it in the plane. */
+  bar(a: Vec2, b: Vec2, halfWidth: number, halfDepth: number, offset?: number): string
+  /** A disc standing in the drawing plane: a wheel, a sheave, a drum. */
+  disc(centre: Vec2, radius: number, halfDepth: number, offset?: number, steps?: number): string
+}
+
+export function elevationDraft(
+  camera: RobotCamera,
+  plane: ElevationPlane = "profile",
+): ElevationDraft {
+  const project = (corner: Vec3) => camera.project(corner.x, corner.y, corner.z)
+  const nudge = (corners: Vec3[], offset: number) =>
+    offset === 0
+      ? corners
+      : corners.map((corner) =>
+          plane === "front"
+            ? { ...corner, z: corner.z - offset }
+            : { ...corner, x: corner.x + offset },
+        )
+  const point = (value: Vec2, depth = 0) => project(elevationPoint(value, depth, plane))
+  return {
+    point,
+    path: (points, depth = 0, close = false) =>
+      `${points
+        .map((value, index) => {
+          const screen = point(value, depth)
+          return `${index ? "L" : "M"} ${px(screen.x)} ${px(screen.y)}`
+        })
+        .join(" ")}${close ? " Z" : ""}`,
+    solid: (outline, halfDepth, offset = 0) =>
+      slabPath(
+        outline.flatMap((value) => [
+          elevationPoint(value, offset + halfDepth, plane),
+          elevationPoint(value, offset - halfDepth, plane),
+        ]),
+        camera,
+      ),
+    box: (x0, y0, x1, y1, halfDepth, offset = 0) =>
+      slabPath(
+        [
+          { x: x0, y: y0 },
+          { x: x1, y: y0 },
+          { x: x1, y: y1 },
+          { x: x0, y: y1 },
+        ].flatMap((value) => [
+          elevationPoint(value, offset + halfDepth, plane),
+          elevationPoint(value, offset - halfDepth, plane),
+        ]),
+        camera,
+      ),
+    bar: (a, b, halfWidth, halfDepth, offset = 0) =>
+      slabPath(nudge(elevationSolid(a, b, halfWidth, halfDepth, plane), offset), camera),
+    disc: (centre, radius, halfDepth, offset = 0, steps = 20) =>
+      slabPath(nudge(elevationDisc(centre, radius, halfDepth, plane, steps), offset), camera),
+  }
 }

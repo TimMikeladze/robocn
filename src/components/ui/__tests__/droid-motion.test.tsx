@@ -6,6 +6,8 @@ import { InfantryDroid, infantryDroidPose } from "@/components/ui/infantry-droid
 import { MedicalDroid, medicalDroidPose } from "@/components/ui/medical-droid"
 import { ProbeDroid, probeDroidPose } from "@/components/ui/probe-droid"
 import { ProtocolDroid, protocolDroidPose } from "@/components/ui/protocol-droid"
+import { OrbDroid, orbDroidPose } from "@/components/ui/orb-droid"
+import { SecurityDroid, securityDroidPose } from "@/components/ui/security-droid"
 import { UtilityDroid, utilityDroidPose } from "@/components/ui/utility-droid"
 
 /** Each droid's routine is a pure function of the clock, so it samples directly. */
@@ -59,6 +61,35 @@ describe("droid behaviours", () => {
     expect(protocolDroidPose("idle", 9).gesture).toBe("none")
   })
 
+  it("rolls the orb droid's shell without carrying its head round", () => {
+    // A full turn of the shell per cycle is the mechanism; the head only sways.
+    expect(orbDroidPose("roll", 0).body).toBe(0)
+    expect(orbDroidPose("roll", 1).body).toBe(360)
+    expect(Math.abs(orbDroidPose("roll", 0.25).head)).toBeLessThan(10)
+    // Rocking is the same machine going nowhere, so the shell comes back.
+    expect(orbDroidPose("rock", 0).body).toBeCloseTo(0, 5)
+    expect(orbDroidPose("rock", 0.25).body).toBeCloseTo(30, 5)
+    expect(orbDroidPose("rock", 0.5).body).toBeCloseTo(0, 5)
+    // A survey sweeps the optic to both stops and barely turns the ball.
+    const sweep = [0, 0.5, 1, 1.5].map((t) => orbDroidPose("survey", t).head)
+    expect(Math.max(...sweep)).toBeGreaterThan(50)
+    expect(Math.min(...sweep)).toBeLessThan(-50)
+    expect(Math.abs(orbDroidPose("survey", 0.5).body)).toBeLessThan(10)
+    expect(orbDroidPose("static", 7)).toEqual({ body: 0, head: 0 })
+    expect(orbDroidPose("roll", NaN)).toEqual({ body: 0, head: 0 })
+  })
+
+  it("walks the security droid's beat and stands it to guard when alert", () => {
+    expect(securityDroidPose("patrol", 0.3).pose).toBe("patrol")
+    expect(securityDroidPose("alert", 0.3).pose).toBe("guard")
+    expect(securityDroidPose("idle", 0.3).pose).toBe("stand")
+    // An alert scan turns faster than a patrol sweep of the same length.
+    expect(Math.abs(securityDroidPose("alert", 0.125).head)).toBeGreaterThan(
+      Math.abs(securityDroidPose("patrol", 0.125).head),
+    )
+    expect(securityDroidPose("static", 4)).toEqual({ pose: "stand", head: 0 })
+  })
+
   it("drives the courier droid in legs and corners", () => {
     expect(courierDroidPose("deliver", 0, null).heading).toBe(0)
     // Mid-leg it holds its bearing; at the corner it is part-way round.
@@ -70,6 +101,29 @@ describe("droid behaviours", () => {
     expect(courierDroidPose("deliver", 0.9, null).steer).toBeGreaterThan(0)
     expect(courierDroidPose("pointer", 2, 143).heading).toBe(143)
     expect(courierDroidPose("static", 5, null)).toEqual({ heading: 0, steer: 0, travel: 0 })
+  })
+})
+
+describe("posing overrides the beat", () => {
+  it("lets the orb droid's channels be taken one at a time", () => {
+    // Pinning the shell leaves the head on the clock, which is the whole point
+    // of two channels: a controlled ball can still look around.
+    const { container, rerender } = render(<OrbDroid animate={false} bodyAngle={72} />)
+    expect(container.querySelector("[data-body]")?.getAttribute("transform")).toContain("72")
+    rerender(<OrbDroid animate={false} bodyAngle={72} headAngle={40} />)
+    expect(container.querySelector("[data-head]")?.getAttribute("transform")).toContain(
+      String(Math.round(40 * 0.16 * 100) / 100),
+    )
+  })
+
+  it("keeps the security droid's stance when one is supplied", () => {
+    const { getByRole } = render(<SecurityDroid animate={false} pose="stand" />)
+    expect(getByRole("img").getAttribute("aria-label")).toContain("stand pose")
+  })
+
+  it("takes its stance from the behaviour when none is", () => {
+    const { getByRole } = render(<SecurityDroid animate={false} behavior="alert" />)
+    expect(getByRole("img").getAttribute("aria-label")).toContain("guard pose")
   })
 })
 

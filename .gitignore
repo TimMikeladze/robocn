@@ -41,3 +41,7 @@ yarn-error.log*
 next-env.d.ts
 /public/r
 registry.build.json
+/public/builder-runtime.js
+/public/builder-runtime.css
+/src/lib/builder/generated.json
+/src/components/site/gallery.generated.tsx

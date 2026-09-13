@@ -5,6 +5,7 @@ import * as React from "react"
 import {
   chainAngles2,
   chainReach,
+  clamp,
   distance2,
   lerp2,
   solveChain2,
@@ -175,7 +176,10 @@ export function useRobotArm({
     let clock = phase
     let last = performance.now()
     let frame = requestAnimationFrame(function step(now) {
-      const dt = Math.min(0.05, (now - last) / 1000)
+      // A frame already queued when the loop starts carries a timestamp from
+      // before it, so the first delta can be negative: clamp both ends or the
+      // machine takes one step backwards at mount.
+      const dt = clamp((now - last) / 1000, 0, 0.05)
       last = now
       if (running) clock += dt
 
@@ -295,7 +299,10 @@ export function useEasedPoint(
     let clock = phase
     let last = performance.now()
     let frame = requestAnimationFrame(function step(now) {
-      const dt = Math.min(0.05, (now - last) / 1000)
+      // A frame already queued when the loop starts carries a timestamp from
+      // before it, so the first delta can be negative: clamp both ends or the
+      // machine takes one step backwards at mount.
+      const dt = clamp((now - last) / 1000, 0, 0.05)
       last = now
       if (running) clock += dt
       const held = targetRef.current

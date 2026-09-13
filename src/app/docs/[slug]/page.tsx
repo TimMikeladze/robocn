@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises"
 import path from "node:path"
+import Link from "next/link"
 import { notFound } from "next/navigation"
 
 import { CodeBlock } from "@/components/site/code-block"
@@ -7,6 +8,8 @@ import { DemoPanel } from "@/components/site/demo-panel"
 import { InstallCommand } from "@/components/site/install-command"
 import { PropsTable } from "@/components/site/props-table"
 import { docBySlug, docs } from "@/lib/docs"
+import { libraryComponents } from "@/lib/builder/library"
+import { site } from "@/lib/site"
 
 export function generateStaticParams() {
   return docs.map((entry) => ({ slug: entry.slug }))
@@ -20,7 +23,19 @@ export async function generateMetadata({
   const { slug } = await params
   const entry = docBySlug(slug)
   if (!entry) return {}
-  return { title: entry.title, description: entry.summary }
+  return {
+    title: entry.title,
+    description: entry.summary,
+    // Without this the page would inherit the root layout's canonical, which
+    // points every route at `/`.
+    alternates: { canonical: `/docs/${slug}` },
+    openGraph: {
+      title: `${entry.title} — ${site.name}`,
+      description: entry.summary,
+      url: `${site.url}/docs/${slug}`,
+      type: "article",
+    },
+  }
 }
 
 export default async function DocPage({
@@ -48,6 +63,11 @@ export default async function DocPage({
         <p className="max-w-[64ch] text-[15px] leading-relaxed text-muted-foreground">
           {entry.summary}
         </p>
+        {libraryComponents.some(component => component.id === entry.item) && (
+          <Link href={`/builder?component=${entry.item}`} className="inline-flex items-center gap-2 rounded border border-border px-3 py-2 text-[13px] transition-colors hover:bg-muted">
+            Open in builder <span aria-hidden>↗</span>
+          </Link>
+        )}
       </header>
 
       {entry.item && demoExists(entry.slug) ? <DemoPanel slug={entry.slug} /> : null}

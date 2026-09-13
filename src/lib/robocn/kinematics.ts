@@ -534,3 +534,30 @@ export function isometricDepth(v: Vec3, options: IsometricOptions = {}) {
   const radians = toRadians(options.spin ?? 35)
   return v.z * Math.cos(radians) - v.x * Math.sin(radians)
 }
+
+/**
+ * Smallest convex outline containing the points, as a closed ring. Used to find
+ * the silhouette of a solid part once it is projected — the shape a footprint
+ * and its own extruded copy make together.
+ */
+export function convexHull2(points: readonly Vec2[]): Vec2[] {
+  const sorted = [...points]
+    .filter((p) => Number.isFinite(p.x) && Number.isFinite(p.y))
+    .sort((a, b) => a.x - b.x || a.y - b.y)
+  if (sorted.length < 3) return sorted
+  const turn = (o: Vec2, a: Vec2, b: Vec2) =>
+    (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x)
+  const chain = (input: Vec2[]) => {
+    const out: Vec2[] = []
+    for (const p of input) {
+      while (out.length >= 2 && turn(out[out.length - 2], out[out.length - 1], p) <= 0) {
+        out.pop()
+      }
+      out.push(p)
+    }
+    return out
+  }
+  const lower = chain(sorted)
+  const upper = chain([...sorted].reverse())
+  return [...lower.slice(0, -1), ...upper.slice(0, -1)]
+}

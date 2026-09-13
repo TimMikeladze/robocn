@@ -1,15 +1,28 @@
 import Link from "next/link"
 
-import { Catalogue } from "@/components/site/catalogue"
+import { Catalogue, type CatalogueCard } from "@/components/site/catalogue"
 import { HeroArm } from "@/components/site/hero-arm"
 import { InstallCommand } from "@/components/site/install-command"
 import { Panel } from "@/components/site/panel"
 import { VariantStrip } from "@/components/site/variant-strip"
 import { Button } from "@/components/ui/button"
-import { docs } from "@/lib/docs"
+import { docGroups, docs } from "@/lib/docs"
+
+/**
+ * Only what a card needs. The props tables in `docs.ts` stay on the server.
+ *
+ * `docs` is the registry joined onto the written pages, so this is every
+ * installable item — including one that shipped this morning and has no page
+ * written for it yet. `summary` is what its card line falls back to.
+ */
+const cards: CatalogueCard[] = docGroups.flatMap((group) =>
+  docs
+    .filter((entry) => entry.item && entry.group === group)
+    .map(({ slug, title, summary }) => ({ slug, title, group, summary })),
+)
 
 const facts = [
-  { value: String(docs.filter((entry) => entry.item).length), label: "registry items" },
+  { value: String(cards.length), label: "registry items" },
   { value: "0", label: "dependencies in the solver" },
   { value: "8", label: "end effectors" },
   { value: "2D + 3D", label: "same kinematics" },
@@ -41,6 +54,9 @@ export default function Home() {
             >
               How installing works
             </Button>
+            <Button size="sm" variant="outline" nativeButton={false} render={<Link href="/builder" />}>
+              Build your own robot ↗
+            </Button>
           </div>
         </div>
         <Panel className="p-4">
@@ -57,20 +73,26 @@ export default function Home() {
         ))}
       </section>
 
-      <section className="space-y-4 py-14">
+      {/* Anchored: the docs link here, and `pnpm shots` scrolls to it. */}
+      <section id="catalogue" className="scroll-mt-20 space-y-4 py-14">
         <div className="flex items-end justify-between gap-4">
-          <h2 className="text-2xl font-semibold tracking-tight">The machines</h2>
+          <h2 className="text-2xl font-semibold tracking-tight">Every machine</h2>
           <Link
             href="/docs"
             className="text-[13px] text-muted-foreground hover:text-foreground"
           >
-            All components
+            Search and filter
           </Link>
         </div>
-        <Catalogue />
+        <p className="max-w-[62ch] text-[15px] leading-relaxed text-muted-foreground">
+          All {cards.length} registry items, including the solvers and hooks
+          underneath them. Foundations are drawn as blueprints, because what you
+          install there is the maths, not the machine.
+        </p>
+        <Catalogue entries={cards} />
       </section>
 
-      <section className="space-y-4 pb-14">
+      <section id="variants" className="scroll-mt-20 space-y-4 pb-14">
         <h2 className="text-2xl font-semibold tracking-tight">Four ways to draw one</h2>
         <p className="max-w-[62ch] text-[15px] leading-relaxed text-muted-foreground">
           <code className="font-mono text-[13.5px]">variant</code> changes how a
@@ -100,10 +122,12 @@ export default function Home() {
           </p>
         </div>
         <div>
-          <h3 className="text-[15px] font-medium">Quiet when nothing moves</h3>
+          <h3 className="text-[15px] font-medium">Moving, and worth grabbing</h3>
           <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">
-            The animation loop stops once a pose settles, so a parked arm costs
-            no renders. Reduced-motion settings skip the easing entirely.
+            Every machine runs its own cycle until you supply its value, and{" "}
+            <code className="font-mono text-[13px]">interactive</code> turns one
+            into a control you can drag or arrow-key. Let go and it eases back
+            into the cycle. Reduced-motion settings park all of it.
           </p>
         </div>
       </section>

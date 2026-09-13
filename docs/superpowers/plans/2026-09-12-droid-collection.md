@@ -32,7 +32,7 @@
 - Consumes: `resolveRobotPalette`, `resolveRobotSize`, `robotSurface`, and palette/style types from `@/lib/robocn/style`; `usePointerTarget` and `Vec2` for orb gaze.
 - Produces: `UtilityDroidProps`, `UtilityDroid`, `OrbDroidProps`, and `OrbDroid`.
 
-- [ ] **Step 1: Write the failing behavior tests**
+- [x] **Step 1: Write the failing behavior tests**
 
 ```tsx
 it("changes the utility dome and deployed tool from controlled props", () => {
@@ -53,11 +53,11 @@ it("rotates the orb shell independently from its stabilized head", () => {
 })
 ```
 
-- [ ] **Step 2: Run tests and verify missing-module failures**
+- [x] **Step 2: Run tests and verify missing-module failures**
 
 Run: `pnpm vitest run src/components/ui/__tests__/droid-collection.test.tsx`
 
-- [ ] **Step 3: Implement the two component APIs**
+- [x] **Step 3: Implement the two component APIs**
 
 ```ts
 type UtilityDroidSeries = "workshop" | "navigator" | "rescue"
@@ -94,7 +94,7 @@ interface OrbDroidProps extends Omit<React.ComponentProps<"svg">, "color">, Robo
 
 Draw a cylindrical utility body with `data-dome`, two/three leg layouts, and `data-tool`; draw a segmented `data-body` orb with an independently transformed `data-head` and controlled/tracked eye.
 
-- [ ] **Step 4: Run focused tests and commit**
+- [x] **Step 4: Run focused tests and commit**
 
 Run: `pnpm vitest run src/components/ui/__tests__/droid-collection.test.tsx`
 
@@ -114,7 +114,7 @@ git commit -m "feat: add utility and orb droids"
 - Consumes: existing style helpers; `usePointerTarget` and `Vec2` for security gaze.
 - Produces: `ProtocolDroidProps`, `ProtocolDroid`, `SecurityDroidProps`, and `SecurityDroid`.
 
-- [ ] **Step 1: Add failing humanoid behavior tests**
+- [x] **Step 1: Add failing humanoid behavior tests**
 
 ```tsx
 it("poses the protocol droid and exposes its articulated joints", () => {
@@ -134,11 +134,11 @@ it("changes security posture and alert sensor state", () => {
 })
 ```
 
-- [ ] **Step 2: Run tests and verify missing-module failures**
+- [x] **Step 2: Run tests and verify missing-module failures**
 
 Run: `pnpm vitest run src/components/ui/__tests__/droid-collection.test.tsx`
 
-- [ ] **Step 3: Implement the two humanoid APIs**
+- [x] **Step 3: Implement the two humanoid APIs**
 
 ```ts
 interface ProtocolDroidProps extends SharedDroidSvgProps {
@@ -161,7 +161,7 @@ interface SecurityDroidProps extends SharedDroidSvgProps {
 
 Keep the protocol silhouette narrow and jointed with optional `data-wiring`; make security taller and angular with a tracked sensor bar, `data-frame`, and `data-alert`.
 
-- [ ] **Step 4: Run focused tests and commit**
+- [x] **Step 4: Run focused tests and commit**
 
 Run: `pnpm vitest run src/components/ui/__tests__/droid-collection.test.tsx`
 
@@ -181,7 +181,7 @@ git commit -m "feat: add protocol and security droids"
 - Consumes: existing style helpers and shared SVG prop conventions.
 - Produces: `MedicalDroidProps`, `MedicalDroid`, `InfantryDroidProps`, and `InfantryDroid`.
 
-- [ ] **Step 1: Add failing specialist behavior tests**
+- [x] **Step 1: Add failing specialist behavior tests**
 
 ```tsx
 it("renders selected medical tools and diagnostic level", () => {
@@ -201,11 +201,11 @@ it("supports light and heavy infantry frames with controlled poses", () => {
 })
 ```
 
-- [ ] **Step 2: Run tests and verify missing-module failures**
+- [x] **Step 2: Run tests and verify missing-module failures**
 
 Run: `pnpm vitest run src/components/ui/__tests__/droid-collection.test.tsx`
 
-- [ ] **Step 3: Implement the specialist APIs**
+- [x] **Step 3: Implement the specialist APIs**
 
 ```ts
 type MedicalTool = "none" | "scanner" | "injector" | "clamp" | "probe"
@@ -229,7 +229,7 @@ interface InfantryDroidProps extends SharedDroidSvgProps {
 
 Render medical modular instrument ends and a bounded `data-diagnostic` meter. Render skeletal and armored infantry frames with semantic equipment and no projectile effects.
 
-- [ ] **Step 4: Run focused tests and commit**
+- [x] **Step 4: Run focused tests and commit**
 
 Run: `pnpm vitest run src/components/ui/__tests__/droid-collection.test.tsx`
 
@@ -249,7 +249,7 @@ git commit -m "feat: add medical and infantry droids"
 - Consumes: existing style helpers and shared SVG prop conventions.
 - Produces: `ProbeDroidProps`, `ProbeDroid`, `CourierDroidProps`, and `CourierDroid`.
 
-- [ ] **Step 1: Add failing mobile behavior tests**
+- [x] **Step 1: Add failing mobile behavior tests**
 
 ```tsx
 it("controls probe hover, scanner, and appendage count", () => {
@@ -270,11 +270,11 @@ it("steers the courier wheels and carries an optional pod", () => {
 })
 ```
 
-- [ ] **Step 2: Run tests and verify missing-module failures**
+- [x] **Step 2: Run tests and verify missing-module failures**
 
 Run: `pnpm vitest run src/components/ui/__tests__/droid-collection.test.tsx`
 
-- [ ] **Step 3: Implement the mobile APIs**
+- [x] **Step 3: Implement the mobile APIs**
 
 ```ts
 interface ProbeDroidProps extends SharedDroidSvgProps {
@@ -297,7 +297,7 @@ interface CourierDroidProps extends SharedDroidSvgProps {
 
 Render a bounded-height probe with three to six `data-appendage` chains and controlled scan mast. Render a low courier chassis with `data-wheel` steering, wrapped travel marks, and optional `data-cargo`.
 
-- [ ] **Step 4: Run focused tests and commit**
+- [x] **Step 4: Run focused tests and commit**
 
 Run: `pnpm vitest run src/components/ui/__tests__/droid-collection.test.tsx`
 
@@ -317,7 +317,7 @@ git commit -m "feat: add probe and courier droids"
 - Consumes: all eight component files and their direct robocn imports.
 - Produces: eight installable registry items and generated payloads.
 
-- [ ] **Step 1: Add a failing table-driven registry test**
+- [x] **Step 1: Add a failing table-driven registry test**
 
 ```ts
 it.each(["utility-droid", "orb-droid", "protocol-droid", "security-droid", "medical-droid", "infantry-droid", "probe-droid", "courier-droid"])(
@@ -330,15 +330,15 @@ it.each(["utility-droid", "orb-droid", "protocol-droid", "security-droid", "medi
 )
 ```
 
-- [ ] **Step 2: Run the registry test and verify all eight lookups fail**
+- [x] **Step 2: Run the registry test and verify all eight lookups fail**
 
 Run: `pnpm vitest run scripts/__tests__/registry.test.ts`
 
-- [ ] **Step 3: Add exact entries and build payloads**
+- [x] **Step 3: Add exact entries and build payloads**
 
 Each entry depends on `robot-style`; `orb-droid` and `security-droid` also depend on `robot-kinematics` and `use-pointer-target`. Set each target to `@ui/<name>.tsx`.
 
-- [ ] **Step 4: Verify and commit registry integration**
+- [x] **Step 4: Verify and commit registry integration**
 
 Run: `pnpm registry:build && pnpm vitest run scripts/__tests__/registry.test.ts`
 
@@ -360,7 +360,7 @@ git commit -m "feat: publish droid registry items"
 - Consumes: all eight public component APIs.
 - Produces: docs routes, live demos, catalogue cards, and README discovery rows.
 
-- [ ] **Step 1: Extend the existing site test with all eight slugs**
+- [x] **Step 1: Extend the existing site test with all eight slugs**
 
 ```ts
 const droidSlugs = ["utility-droid", "orb-droid", "protocol-droid", "security-droid", "medical-droid", "infantry-droid", "probe-droid", "courier-droid"]
@@ -372,19 +372,19 @@ it.each(droidSlugs)("documents and previews %s", (slug) => {
 })
 ```
 
-- [ ] **Step 2: Run the site test and verify the missing-entry failures**
+- [x] **Step 2: Run the site test and verify the missing-entry failures**
 
 Run: `pnpm vitest run src/components/site/__tests__/docs-catalogue.test.tsx`
 
-- [ ] **Step 3: Add complete docs records and demos**
+- [x] **Step 3: Add complete docs records and demos**
 
 Document every public prop and controlled-motion invariant. Map each slug to a demo that uses `Segmented` for enums and `NumberControl` for numeric ranges.
 
-- [ ] **Step 4: Add catalogue cards and README rows**
+- [x] **Step 4: Add catalogue cards and README rows**
 
 Render one distinctive static pose per component and add a concise “What is in it” table row for every item.
 
-- [ ] **Step 5: Verify and commit site integration**
+- [x] **Step 5: Verify and commit site integration**
 
 Run: `pnpm vitest run src/components/site/__tests__/docs-catalogue.test.tsx`
 
@@ -402,23 +402,23 @@ git commit -m "docs: add the droid collection"
 - Consumes: complete collection and site integration.
 - Produces: verified source, generated registry payloads, and production site.
 
-- [ ] **Step 1: Run all tests**
+- [x] **Step 1: Run all tests**
 
 Run: `pnpm test`
 
-- [ ] **Step 2: Run static checks**
+- [x] **Step 2: Run static checks**
 
 Run: `pnpm typecheck && pnpm lint`
 
-- [ ] **Step 3: Rebuild install payloads and production site**
+- [x] **Step 3: Rebuild install payloads and production site**
 
 Run: `pnpm registry:build && pnpm build`
 
-- [ ] **Step 4: Inspect generated payloads**
+- [x] **Step 4: Inspect generated payloads**
 
 Confirm `public/r/{utility,orb,protocol,security,medical,infantry,probe,courier}-droid.json` each contains its component file and required registry dependencies.
 
-- [ ] **Step 5: Commit verification fixes when the previous steps required changes**
+- [x] **Step 5: Commit verification fixes when the previous steps required changes**
 
 ```bash
 git add registry.json public/r src README.md

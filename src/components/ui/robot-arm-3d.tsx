@@ -18,7 +18,7 @@ import {
   solveChain3,
   type Vec3,
 } from "@/lib/robocn/kinematics"
-import { resolveCssColor } from "@/lib/robocn/color"
+import { resolveCssColor, watchCssColors } from "@/lib/robocn/color"
 import {
   defaultRobotPalette,
   prefersReducedMotion,
@@ -499,8 +499,8 @@ function behaviorGoal(
 
 /**
  * Palette values three.js can use. Resolved on the client, and re-resolved
- * when the document's theme class changes, so a dark-mode toggle retints the
- * rig without a remount.
+ * whenever the theme moves — the mode class, or a themer rewriting the
+ * variables — so the rig retints without a remount.
  */
 function useThreeColors(palette: RobotPalette): RobotPalette {
   const fallback = React.useMemo(
@@ -519,8 +519,8 @@ function useThreeColors(palette: RobotPalette): RobotPalette {
   const [resolved, setResolved] = React.useState<RobotPalette>(fallback)
 
   React.useEffect(() => {
-    const read = () =>
-      setResolved({
+    const read = () => {
+      const next = {
         shell: resolveCssColor(palette.shell, fallback.shell),
         metal: resolveCssColor(palette.metal, fallback.metal),
         dark: resolveCssColor(palette.dark, fallback.dark),
@@ -533,14 +533,19 @@ function useThreeColors(palette: RobotPalette): RobotPalette {
             : palette.foreground,
           fallback.foreground,
         ),
-      })
+      }
+      // Materials are re-uploaded on every new object, so hand back the old one
+      // when nothing actually moved.
+      setResolved((previous) =>
+        (Object.keys(next) as (keyof RobotPalette)[]).every(
+          (role) => previous[role] === next[role],
+        )
+          ? previous
+          : next,
+      )
+    }
     read()
-    const observer = new MutationObserver(read)
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class", "style", "data-theme"],
-    })
-    return () => observer.disconnect()
+    return watchCssColors(read)
     // `key` stands in for the palette's contents, which is rebuilt every render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, fallback])

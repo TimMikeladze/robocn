@@ -1,8 +1,18 @@
 "use client"
 
+/**
+ * orb-droid — a ball with the drive inside it.
+ *
+ * The shell turns and the head does not: a stabilised platform on a rolling
+ * body is the whole mechanism, so the two are separate channels driven from
+ * one clock. Supply `bodyAngle` or `headAngle` and that channel is yours;
+ * leave both and it runs `behavior`.
+ */
+
 import * as React from "react"
 
 import { usePointerTarget } from "@/hooks/use-pointer-target"
+import { useRobotClock } from "@/hooks/use-robot-motion"
 import { clamp, type Vec2 } from "@/lib/robocn/kinematics"
 import {
   aboutPoint,
@@ -42,6 +52,8 @@ const viewNames: Record<RobotView, string> = {
   iso: "isometric view",
 }
 
+export type OrbDroidBehavior = "roll" | "rock" | "survey" | "static"
+
 export interface OrbDroidProps
   extends Omit<React.ComponentProps<"svg">, "color">,
     RobotPaletteProps {
@@ -49,8 +61,17 @@ export interface OrbDroidProps
   variant?: RobotVariant
   /** Where the camera stands. One droid, four projections. */
   view?: RobotView
+  /** Controlled head rotation in degrees. Omit to run `behavior`. */
   headAngle?: number
+  /** Controlled shell rotation in degrees. Omit to run `behavior`. */
   bodyAngle?: number
+  /** What the droid does when neither angle is supplied. */
+  behavior?: OrbDroidBehavior
+  /** Cycles per second: one revolution, one rock, one sweep. */
+  speed?: number
+  animate?: boolean
+  paused?: boolean
+  phase?: number
   look?: Vec2 | null
   track?: boolean
   antenna?: "single" | "twin" | "none"
@@ -63,8 +84,13 @@ function OrbDroid({
   size = "md",
   variant = "solid",
   view = NATIVE_VIEW,
-  headAngle = 0,
-  bodyAngle = 0,
+  headAngle,
+  bodyAngle,
+  behavior = "roll",
+  speed = 0.3,
+  animate = true,
+  paused = false,
+  phase = 0,
   look = null,
   track = true,
   antenna = "twin",
@@ -84,8 +110,17 @@ function OrbDroid({
 }: OrbDroidProps) {
   const palette = resolveRobotPalette({ color, accent, metal, dark, glow, grid, palette: paletteOverride })
   const width = resolveRobotSize(size)
-  const headTurn = finiteClamp(headAngle, -65, 65)
-  const bodyTurn = finite(bodyAngle)
+  // Both channels pinned means nothing reads the clock, so do not run one.
+  const controlled = headAngle !== undefined && bodyAngle !== undefined
+  const clock = useRobotClock({
+    speed,
+    animate: animate && !controlled && behavior !== "static",
+    paused,
+    phase,
+  })
+  const scripted = orbDroidPose(behavior, clock)
+  const headTurn = finiteClamp(headAngle ?? scripted.head, -65, 65)
+  const bodyTurn = finite(bodyAngle ?? scripted.body)
   const svgRef = React.useRef<SVGSVGElement>(null)
   const pointer = usePointerTarget(svgRef, {
     enabled: track && !look,
@@ -192,6 +227,29 @@ function OrbDroid({
       {label && <text x={95} y={184} textAnchor="middle" fontFamily="ui-monospace, monospace" fontSize={6} fill={palette.foreground}>{label}</text>}
     </svg>
   )
+}
+
+/**
+ * What the shell and the head are doing at `clock`, in degrees. Rolling turns
+ * the shell continuously while the head holds level but for the sway a real
+ * gimbal would not quite take out; rocking is the same machine stationary; a
+ * survey barely moves the shell and sweeps the optic across the room.
+ */
+export function orbDroidPose(behavior: OrbDroidBehavior, clock: number) {
+  const t = Number.isFinite(clock) ? clock : 0
+  const turn = Math.PI * 2 * t
+  switch (behavior) {
+    case "rock":
+      return { body: Math.sin(turn) * 30, head: Math.sin(turn + 0.7) * -11 }
+    case "survey":
+      // Triangle rather than sine: a scan holds its rate across the sweep and
+      // only slows at the two ends, which is what a search pattern looks like.
+      return { body: Math.sin(turn * 0.5) * 7, head: (Math.abs(((t * 0.5) % 1) * 4 - 2) - 1) * 58 }
+    case "static":
+      return { body: 0, head: 0 }
+    default:
+      return { body: t * 360, head: Math.sin(turn) * 7 }
+  }
 }
 
 const finite = (value: number) => Number.isFinite(value) ? value : 0
