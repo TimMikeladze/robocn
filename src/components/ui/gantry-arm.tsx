@@ -11,19 +11,25 @@
 import * as React from "react"
 
 import { usePointerTarget } from "@/hooks/use-pointer-target"
+import { useRobotDrag } from "@/hooks/use-robot-motion"
 import { useEasedPoint, type RobotTarget } from "@/hooks/use-robot-arm"
 import { clamp, type Vec2 } from "@/lib/robocn/kinematics"
 import {
   capsulePath,
+  circleFootprint,
+  extrudedPath,
   px,
   resolveRobotPalette,
   resolveRobotSize,
+  robotCamera,
   robotSurface,
+  roundedFootprint,
   type RobotBehavior,
   type RobotPaletteProps,
   type RobotSize,
   type RobotTool,
   type RobotVariant,
+  type RobotView,
 } from "@/lib/robocn/style"
 import { cn } from "@/lib/utils"
 
@@ -33,6 +39,19 @@ const FLOOR = 14
 const SPAN = 52
 const TOP = 88
 const HEAD_DROP = 11
+/** The machine is drawn straight on; that is the camera it defaults to. */
+const NATIVE_VIEW: RobotView = "front"
+/** Half the depth of the bed, and of the frame standing on it. The front
+ *  elevation never had to say how deep the machine is. */
+const BED_DEEP = 26
+const FRAME_DEEP = 5
+
+const viewNames: Record<RobotView, string> = {
+  plan: "plan view",
+  front: "front elevation",
+  profile: "side elevation",
+  iso: "isometric view",
+}
 
 export interface GantryArmProps
   extends Omit<React.ComponentProps<"svg">, "color" | "target">,
@@ -41,6 +60,8 @@ export interface GantryArmProps
   target?: RobotTarget
   behavior?: RobotBehavior
   tool?: RobotTool
+  /** Where the camera stands. One machine, four projections. */
+  view?: RobotView
   active?: boolean
   variant?: RobotVariant
   size?: RobotSize | number
@@ -57,12 +78,20 @@ export interface GantryArmProps
   trailLength?: number
   showBed?: boolean
   showRulers?: boolean
+  /**
+   * Press and drag the frame to send the head there; release and it goes back
+   * to its behaviour. Touch devices have no hover, so this is how they drive it.
+   */
+  interactive?: boolean
+  /** The dragged goal in world units, and null on release. */
+  onTargetChange?: (target: Vec2 | null) => void
 }
 
 function GantryArm({
   target = null,
   behavior = "sweep",
   tool = "painter",
+  view = NATIVE_VIEW,
   active,
   variant = "solid",
   size = "md",
@@ -76,6 +105,8 @@ function GantryArm({
   trailLength = 90,
   showBed = true,
   showRulers,
+  interactive = false,
+  onTargetChange,
   color,
   accent,
   metal,
@@ -102,18 +133,36 @@ function GantryArm({
   const rulers = showRulers ?? variant === "blueprint"
 
   const svgRef = React.useRef<SVGSVGElement>(null)
+  const toWorld = React.useCallback(
+    (unit: Vec2) => ({
+      x: clamp(unit.x * VIEW_WIDTH - VIEW_WIDTH / 2, -SPAN + 6, SPAN - 6),
+      y: clamp(VIEW_HEIGHT - FLOOR - unit.y * VIEW_HEIGHT, 8, TOP - HEAD_DROP - 6),
+    }),
+    [],
+  )
   const pointer = usePointerTarget(svgRef, {
     enabled: behavior === "pointer" && !paused,
-    toWorld: React.useCallback(
-      (unit: Vec2) => ({
-        x: clamp(unit.x * VIEW_WIDTH - VIEW_WIDTH / 2, -SPAN + 6, SPAN - 6),
-        y: clamp(VIEW_HEIGHT - FLOOR - unit.y * VIEW_HEIGHT, 8, TOP - HEAD_DROP - 6),
-      }),
-      [],
-    ),
+    toWorld,
+  })
+
+  // Dragging the head is a jog: each axis still travels at the feed rate, so
+  // the head dog-legs to the pointer the way a gantry has to.
+  const [held, setHeld] = React.useState<Vec2 | null>(null)
+  const dragging = useRobotDrag(svgRef, {
+    enabled: interactive,
+    onDrag: React.useCallback((unit) => {
+      const to = toWorld(unit)
+      setHeld(to)
+      onTargetChange?.(to)
+    }, [toWorld, onTargetChange, setHeld]),
+    onDragEnd: React.useCallback(() => {
+      setHeld(null)
+      onTargetChange?.(null)
+    }, [onTargetChange, setHeld]),
   })
 
   const goal: RobotTarget = (() => {
+    if (held) return held
     if (target) return target
     if (behavior === "pointer") return pointer.target
     if (behavior === "static") return { x: 0, y: 34 }
@@ -166,19 +215,71 @@ function GantryArm({
   const metalSurface = robotSurface("metal", variant, palette, weight)
   const darkSurface = robotSurface("dark", variant, palette, weight)
 
+  // The drawing is a front elevation, so it goes through `wall` and comes out
+  // untouched there. The depth of the bed and the section of the columns and
+  // beam are what the elevation never had to draw.
+  const camera = robotCamera(view)
+  const offAxis = view !== NATIVE_VIEW
+  const face = camera.wall(0, 0, true)
+  /** Elevation coordinates: x right, y up, and `z` toward the reader. */
+  const at = (x: number, y: number, z = 0) => {
+    const point = camera.project(-x, y, -z)
+    return { x: point.x, y: -point.y }
+  }
+  const solid = (footprint: Vec2[], top: number, bottom: number) =>
+    extrudedPath(footprint, camera, top, bottom, 0, true)
+  /** A footprint in elevation coordinates: x right, z toward the reader. */
+  const post = (x: number, radius: number) => circleFootprint(-x, 0, radius, 10)
+
   return (
     <svg
       ref={svgRef}
       role="img"
-      aria-label={`Cartesian gantry machine with a ${tool} head`}
+      aria-label={`Cartesian gantry machine with a ${tool} head, ${viewNames[view] ?? viewNames.front}`}
       viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}
       width={width}
       height={height}
-      className={cn("select-none overflow-hidden", className)}
+      className={cn(
+        "select-none overflow-hidden",
+        interactive && "cursor-grab touch-none",
+        dragging && "cursor-grabbing",
+        className,
+      )}
       style={{ color: palette.foreground, ...style }}
       {...props}
     >
-      <g transform={`translate(${VIEW_WIDTH / 2} ${VIEW_HEIGHT - FLOOR}) scale(1 -1)`}>
+      {offAxis ? (
+        <g data-solids transform={`translate(${VIEW_WIDTH / 2} ${VIEW_HEIGHT - FLOOR}) scale(1 -1)`}>
+          {showBed ? (
+            <path
+              d={solid(roundedFootprint(SPAN + 6, BED_DEEP, 3, 4), 2, -6)}
+              {...darkSurface}
+            />
+          ) : null}
+          {[-1, 1].map((side) => (
+            <path
+              key={side}
+              d={solid(post(side * SPAN, 2.4 * weight), TOP, 4)}
+              {...metalSurface}
+            />
+          ))}
+          <path
+            d={capsulePath(at(-SPAN, beamY), at(SPAN, beamY), px(3.2 * weight))}
+            {...shell}
+          />
+          <path
+            d={solid(roundedFootprint(6, FRAME_DEEP, 2, 4).map((point) => ({ x: point.x - head.x, y: point.y })), beamY + 4.6, beamY - HEAD_DROP - 4.2)}
+            {...darkSurface}
+          />
+        </g>
+      ) : null}
+
+      <g
+        data-view={view}
+        transform={[`translate(${VIEW_WIDTH / 2} ${VIEW_HEIGHT - FLOOR}) scale(1 -1)`, face]
+          .filter(Boolean)
+          .join(" ")}
+      >
         {showBed ? (
           <g>
             <rect

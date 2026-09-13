@@ -11,6 +11,7 @@
 import * as React from "react"
 
 import { usePointerTarget } from "@/hooks/use-pointer-target"
+import { useRobotDrag } from "@/hooks/use-robot-motion"
 import {
   useRobotArm,
   type RobotArmPose,
@@ -24,10 +25,13 @@ import {
 } from "@/lib/robocn/kinematics"
 import {
   capsulePath,
+  circleFootprint,
+  extrudedPath,
   linkRole,
   px,
   resolveRobotPalette,
   resolveRobotSize,
+  robotCamera,
   robotSurface,
   type RobotBehavior,
   type RobotPaletteProps,
@@ -35,12 +39,30 @@ import {
   type RobotSize,
   type RobotTool,
   type RobotVariant,
+  type RobotView,
 } from "@/lib/robocn/style"
 import { cn } from "@/lib/utils"
 
 const VIEW_WIDTH = 132
 const VIEW_HEIGHT = 118
 const DEFAULT_REACH = 46
+/** The cell is drawn from straight above; that is the camera it defaults to. */
+const NATIVE_VIEW: RobotView = "plan"
+/**
+ * Heights the plan view never had to name: the column the arm turns on, and
+ * the two link decks stacked under it. The spindle hangs below the second.
+ */
+const COLUMN_TOP = 30
+const UPPER_DECK = 29
+const MID_DECK = 22
+const LOWER_DECK = 15
+
+const viewNames: Record<RobotView, string> = {
+  plan: "plan view",
+  front: "front elevation",
+  profile: "side elevation",
+  iso: "isometric view",
+}
 
 export interface ScaraArmProps
   extends Omit<React.ComponentProps<"svg">, "color" | "target">,
@@ -56,6 +78,8 @@ export interface ScaraArmProps
   /** Spindle extension, 0 fully retracted to 1 fully down. */
   z?: number
   tool?: RobotTool
+  /** Where the camera stands. One cell, four projections. */
+  view?: RobotView
   active?: boolean
   variant?: RobotVariant
   size?: RobotSize | number
@@ -71,6 +95,13 @@ export interface ScaraArmProps
   showShadow?: boolean
   showAngles?: boolean
   onPose?: (pose: RobotArmPose) => void
+  /**
+   * Press and drag the frame to send the tool there; release and it goes back
+   * to its behaviour. Touch devices have no hover, so this is how they drive it.
+   */
+  interactive?: boolean
+  /** The dragged goal in world units, and null on release. */
+  onTargetChange?: (target: Vec2 | null) => void
 }
 
 function ScaraArm({
@@ -81,6 +112,7 @@ function ScaraArm({
   bend = "up",
   z = 0.35,
   tool = "vacuum",
+  view = NATIVE_VIEW,
   active,
   variant = "solid",
   size = "md",
@@ -94,6 +126,8 @@ function ScaraArm({
   showShadow = true,
   showAngles,
   onPose,
+  interactive = false,
+  onTargetChange,
   color,
   accent,
   metal,
@@ -124,20 +158,37 @@ function ScaraArm({
   }, [links, reach])
 
   const svgRef = React.useRef<SVGSVGElement>(null)
+  const toWorld = React.useCallback(
+    (unit: Vec2) => ({
+      x: unit.x * VIEW_WIDTH - VIEW_WIDTH / 2,
+      y: VIEW_HEIGHT / 2 - unit.y * VIEW_HEIGHT,
+    }),
+    [],
+  )
   const pointer = usePointerTarget(svgRef, {
     enabled: behavior === "pointer" && !paused,
-    toWorld: React.useCallback(
-      (unit: Vec2) => ({
-        x: unit.x * VIEW_WIDTH - VIEW_WIDTH / 2,
-        y: VIEW_HEIGHT / 2 - unit.y * VIEW_HEIGHT,
-      }),
-      [],
-    ),
+    toWorld,
+  })
+
+  // Press and drag places the tool in plan view — the same gesture a touch
+  // screen has to use, since it has no hover to follow.
+  const [held, setHeld] = React.useState<Vec2 | null>(null)
+  const dragging = useRobotDrag(svgRef, {
+    enabled: interactive,
+    onDrag: React.useCallback((unit) => {
+      const to = toWorld(unit)
+      setHeld(to)
+      onTargetChange?.(to)
+    }, [toWorld, onTargetChange, setHeld]),
+    onDragEnd: React.useCallback(() => {
+      setHeld(null)
+      onTargetChange?.(null)
+    }, [onTargetChange, setHeld]),
   })
 
   const pose = useRobotArm({
     links: scaled,
-    target: behavior === "pointer" ? (target ?? pointer.target) : target,
+    target: held ?? (behavior === "pointer" ? (target ?? pointer.target) : target),
     behavior,
     bend,
     speed,
@@ -154,6 +205,18 @@ function ScaraArm({
   const engaged = active ?? pose.moving
   const weight = thickness * (reach / DEFAULT_REACH)
   const drop = 3 + z * 7
+
+  // The drawing is the horizontal plane the arm works in, so it goes through
+  // `plane` and comes out untouched from above. What plan view never had to
+  // say is how tall any of it is: the column, the two link decks and the
+  // spindle are solids, and they only read once the camera comes down.
+  const camera = robotCamera(view)
+  const offAxis = view !== NATIVE_VIEW
+  const table = camera.plane(0, 0, true)
+  /** Drawing coordinates are y up and toward the nose; footprints are y aft. */
+  const foot = (p: Vec2, radius: number) => circleFootprint(p.x, -p.y, radius, 10)
+  const solid = (footprint: Vec2[], top: number, bottom: number) =>
+    extrudedPath(footprint, camera, top, bottom, 0, true)
 
   const limbs = (offset: number, override?: Partial<RobotSurface>) =>
     scaled.map((_, index) => {
@@ -179,15 +242,54 @@ function ScaraArm({
     <svg
       ref={svgRef}
       role="img"
-      aria-label={`SCARA robot arm seen from above, carrying a ${tool}`}
+      aria-label={`SCARA robot arm carrying a ${tool}, ${viewNames[view] ?? viewNames.plan}`}
       viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}
       width={width}
       height={height}
-      className={cn("select-none overflow-hidden", className)}
+      className={cn(
+        "select-none overflow-hidden",
+        interactive && "cursor-grab touch-none",
+        dragging && "cursor-grabbing",
+        className,
+      )}
       style={{ color: palette.foreground, ...style }}
       {...props}
     >
-      <g transform={`translate(${VIEW_WIDTH / 2} ${VIEW_HEIGHT / 2}) scale(1 -1)`}>
+      {offAxis ? (
+        <g data-solids transform={`translate(${VIEW_WIDTH / 2} ${VIEW_HEIGHT / 2}) scale(1 -1)`}>
+          <path
+            d={solid(circleFootprint(0, 0, 11 * weight, 14), COLUMN_TOP, 0)}
+            {...robotSurface("dark", variant, palette, weight)}
+          />
+          {scaled.map((_, index) => {
+            const a = pose.joints[index]
+            const b = pose.joints[index + 1]
+            const radius = (4.4 - index * 0.9) * weight
+            return (
+              <path
+                key={index}
+                d={solid(
+                  [...foot(a, radius), ...foot(b, radius)],
+                  index === 0 ? UPPER_DECK : MID_DECK,
+                  index === 0 ? MID_DECK : LOWER_DECK,
+                )}
+                {...robotSurface(linkRole(index), variant, palette, weight)}
+              />
+            )
+          })}
+          <path
+            d={solid(foot(tip, 5.4 * weight), LOWER_DECK + 3, LOWER_DECK - drop)}
+            {...robotSurface("metal", variant, palette, weight)}
+          />
+        </g>
+      ) : null}
+
+      <g
+        data-view={view}
+        transform={[`translate(${VIEW_WIDTH / 2} ${VIEW_HEIGHT / 2}) scale(1 -1)`, table]
+          .filter(Boolean)
+          .join(" ")}
+      >
         {showEnvelope ? (
           <g
             fill="none"

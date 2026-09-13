@@ -11,6 +11,7 @@
 import * as React from "react"
 
 import { usePointerTarget } from "@/hooks/use-pointer-target"
+import { useRobotDrag } from "@/hooks/use-robot-motion"
 import {
   useRobotArm,
   type RobotArmPose,
@@ -30,13 +31,17 @@ import {
 } from "@/lib/robocn/kinematics"
 import {
   capsulePath,
+  circleFootprint,
+  extrudedPath,
   labelTransform,
   linkRole,
   px,
   mountTransform,
   resolveRobotPalette,
   resolveRobotSize,
+  robotCamera,
   robotSurface,
+  roundedFootprint,
   type RobotBehavior,
   type RobotMount,
   type RobotPalette,
@@ -44,6 +49,7 @@ import {
   type RobotSize,
   type RobotTool,
   type RobotVariant,
+  type RobotView,
 } from "@/lib/robocn/style"
 import { cn } from "@/lib/utils"
 
@@ -53,6 +59,21 @@ const VIEW_HEIGHT = 118
 const FLOOR = 14
 const SHOULDER_LIFT = 13
 const DEFAULT_REACH = 64
+/** The arm is drawn in side elevation; that is the camera it defaults to. */
+const NATIVE_VIEW: RobotView = "profile"
+/** Half the width of the castings across the machine, which side elevation
+ *  never showed: the limbs are tubes and the shoulder is a can. */
+const ACROSS = 3.6
+/** Half the base plate and pedestal across the machine. */
+const PLATE_ACROSS = 13
+const PEDESTAL_ACROSS = 8.5
+
+const viewNames: Record<RobotView, string> = {
+  plan: "plan view",
+  front: "front elevation",
+  profile: "side elevation",
+  iso: "isometric view",
+}
 
 export interface RobotArmProps
   extends Omit<React.ComponentProps<"svg">, "color" | "target">,
@@ -76,6 +97,8 @@ export interface RobotArmProps
   /** Which way the elbow breaks. */
   bend?: Bend
   tool?: RobotTool
+  /** Where the camera stands. One arm, four projections. */
+  view?: RobotView
   /** Jaw opening, 0 closed to 1 wide. Defaults to reacting to `active`. */
   grip?: number
   /** Tool running: sparks, spray, a spinning blade. Defaults to "while moving". */
@@ -102,6 +125,14 @@ export interface RobotArmProps
   showGrid?: boolean
   /** Called whenever the pose changes — handy for wiring readouts. */
   onPose?: (pose: RobotArmPose) => void
+  /**
+   * Press and drag the frame to send the tip there; release and the arm goes
+   * back to its behaviour. This is also the only way an arm is reachable on a
+   * touch device, where there is no pointer to follow.
+   */
+  interactive?: boolean
+  /** The dragged goal in world units, and null on release. */
+  onTargetChange?: (target: Vec2 | null) => void
 }
 
 function RobotArm({
@@ -112,6 +143,7 @@ function RobotArm({
   behavior = "idle",
   bend = "up",
   tool = "gripper",
+  view = NATIVE_VIEW,
   grip,
   active,
   variant = "solid",
@@ -129,6 +161,8 @@ function RobotArm({
   showAngles,
   showGrid,
   onPose,
+  interactive = false,
+  onTargetChange,
   color,
   accent,
   metal,
@@ -166,15 +200,32 @@ function RobotArm({
   const root = React.useMemo<Vec2>(() => ({ x: 0, y: SHOULDER_LIFT }), [])
 
   const svgRef = React.useRef<SVGSVGElement>(null)
+  const toWorld = React.useCallback((unit: Vec2) => toWorldUnits(unit, mount), [mount])
   const pointer = usePointerTarget(svgRef, {
     enabled: behavior === "pointer" && !paused,
-    toWorld: React.useCallback((unit: Vec2) => toWorldUnits(unit, mount), [mount]),
+    toWorld,
+  })
+
+  // A press beats both the behaviour and the hover: whoever is touching the
+  // arm is driving it.
+  const [held, setHeld] = React.useState<Vec2 | null>(null)
+  const dragging = useRobotDrag(svgRef, {
+    enabled: interactive && !angles,
+    onDrag: React.useCallback((unit) => {
+      const to = toWorld(unit)
+      setHeld(to)
+      onTargetChange?.(to)
+    }, [toWorld, onTargetChange, setHeld]),
+    onDragEnd: React.useCallback(() => {
+      setHeld(null)
+      onTargetChange?.(null)
+    }, [onTargetChange, setHeld]),
   })
 
   const pose = useRobotArm({
     links: scaled,
     root,
-    target: behavior === "pointer" ? (target ?? pointer.target) : target,
+    target: held ?? (behavior === "pointer" ? (target ?? pointer.target) : target),
     behavior,
     bend,
     speed,
@@ -202,15 +253,37 @@ function RobotArm({
   const rootWeight = 3.1 * weight
   const tipWeight = 1.9 * weight
 
+  // One arm, four cameras. The drawing is a section through the machine's own
+  // vertical plane, so it goes through `wall` and comes out untouched in side
+  // elevation; the castings around it are solids that only read off-axis.
+  const camera = robotCamera(view)
+  const offAxis = view !== NATIVE_VIEW
+  const sagittal = camera.wall(0, 90, true)
+  /** A point in the drawing, `across` units out from the centre plane. */
+  const at = (p: Vec2, across = 0) => {
+    const point = camera.project(across, p.y, -p.x)
+    return { x: point.x, y: -point.y }
+  }
+  const limbRadius = (index: number) =>
+    rootWeight + ((tipWeight - rootWeight) * index) / Math.max(1, scaled.length - 1)
+  /** A cylinder lying across the machine: the hull of its two end circles. */
+  const can = (p: Vec2, radius: number, half = ACROSS) =>
+    capsulePath(at(p, -half), at(p, half), radius)
+
   return (
     <svg
       ref={svgRef}
       role="img"
-      aria-label={`Robotic arm with ${scaled.length} links and a ${tool} end effector`}
+      aria-label={`Robotic arm with ${scaled.length} links and a ${tool} end effector, ${viewNames[view] ?? viewNames.profile}`}
       viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}
       width={width}
       height={height}
-      className={cn("select-none overflow-hidden", className)}
+      className={cn(
+        "select-none overflow-hidden",
+        interactive && !angles && "cursor-grab touch-none",
+        dragging && "cursor-grabbing",
+        className,
+      )}
       style={{ color: palette.foreground, ...style }}
       {...props}
     >
@@ -246,7 +319,50 @@ function RobotArm({
         />
       ) : null}
 
-      <g transform={mountTransform(mount, VIEW_WIDTH, VIEW_HEIGHT, FLOOR)}>
+      {offAxis ? (
+        <g
+          data-solids
+          transform={mountTransform(mount, VIEW_WIDTH, VIEW_HEIGHT, FLOOR)}
+        >
+          {showBase ? (
+            <>
+              <path
+                d={extrudedPath(roundedFootprint(PLATE_ACROSS, 17, 4, 5), camera, 3.5, -2, 0, true)}
+                {...robotSurface("dark", variant, palette, weight)}
+              />
+              <path
+                d={extrudedPath(roundedFootprint(PEDESTAL_ACROSS, 10, 3, 4), camera, SHOULDER_LIFT, 3, 0, true)}
+                {...robotSurface("shell", variant, palette, weight)}
+              />
+            </>
+          ) : null}
+          {scaled.map((_, index) => (
+            <path
+              key={index}
+              d={capsulePath(at(joints[index]), at(joints[index + 1]), px(limbRadius(index)))}
+              {...robotSurface(linkRole(index), variant, palette, weight)}
+            />
+          ))}
+          {joints.map((joint, index) => (
+            <path
+              key={index}
+              d={can(joint, px((rootWeight + 1.2) * (index ? 1 - (index - 1) * 0.12 : 1.2)))}
+              {...robotSurface("dark", variant, palette, weight)}
+            />
+          ))}
+          <path
+            d={extrudedPath(circleFootprint(0, -tip.x, 2.6 * weight, 10), camera, tip.y + 2.2 * weight, tip.y - 2.2 * weight, 0, true)}
+            {...robotSurface("metal", variant, palette, weight)}
+          />
+        </g>
+      ) : null}
+
+      <g
+        data-view={view}
+        transform={[mountTransform(mount, VIEW_WIDTH, VIEW_HEIGHT, FLOOR), sagittal]
+          .filter(Boolean)
+          .join(" ")}
+      >
         {showEnvelope ? (
           <Envelope root={root} links={scaled} palette={palette} />
         ) : null}
@@ -743,4 +859,9 @@ function toWorldUnits(unit: Vec2, mount: RobotMount): Vec2 {
   }
 }
 
-export { RobotArm, VIEW_HEIGHT as ROBOT_ARM_VIEW_HEIGHT, VIEW_WIDTH as ROBOT_ARM_VIEW_WIDTH }
+export {
+  RobotArm,
+  FLOOR as ROBOT_ARM_FLOOR,
+  VIEW_HEIGHT as ROBOT_ARM_VIEW_HEIGHT,
+  VIEW_WIDTH as ROBOT_ARM_VIEW_WIDTH,
+}

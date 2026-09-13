@@ -1,6 +1,8 @@
 import { cleanup, render } from "@testing-library/react"
 import { afterEach, describe, expect, it } from "vitest"
 
+import type { RobotView } from "@/lib/robocn/style"
+
 import { AstromechDroid } from "@/components/ui/astromech-droid"
 import { AttendantDroid } from "@/components/ui/attendant-droid"
 import { CasingDroid } from "@/components/ui/casing-droid"
@@ -49,12 +51,14 @@ const drawing = (container: HTMLElement) =>
   container
     .querySelector("svg")!
     .innerHTML.replaceAll(/ data-view="[a-z]+"/g, "")
+    // React's generated ids count renders, and nothing here is about them.
+    .replaceAll(/«[^»]*»|:r[0-9a-z]+:|_r_[0-9a-z]+_/g, "id")
 
-const machines: Record<string, () => React.ReactElement> = {
-  "robot-arm": () => <RobotArm animate={false} angles={[38, -66, 30]} />,
-  "scara-arm": () => <ScaraArm animate={false} behavior="static" />,
-  "delta-arm": () => <DeltaArm animate={false} behavior="static" />,
-  "gantry-arm": () => <GantryArm animate={false} behavior="static" />,
+const machines: Record<string, (view?: RobotView) => React.ReactElement> = {
+  "robot-arm": (view) => <RobotArm animate={false} angles={[38, -66, 30]} view={view} />,
+  "scara-arm": (view) => <ScaraArm animate={false} behavior="static" view={view} />,
+  "delta-arm": (view) => <DeltaArm animate={false} behavior="static" view={view} />,
+  "gantry-arm": (view) => <GantryArm animate={false} behavior="static" view={view} />,
   "robot-gripper": () => <RobotGripper animate={false} opening={0.4} />,
   "conveyor-belt": () => <ConveyorBelt animate={false} position={0.3} />,
   "linear-actuator": () => <LinearActuator animate={false} extension={0.6} />,
@@ -83,6 +87,21 @@ const machines: Record<string, () => React.ReactElement> = {
   "reachy-mini": () => <ReachyMini animate={false} />,
 }
 
+/**
+ * The camera each machine is drawn in. Everything in here has the axis; the
+ * table grows a batch at a time, and the exemptions in docs/views-backfill.md
+ * never appear in it.
+ */
+const natives: Partial<Record<keyof typeof machines, RobotView>> = {
+  "robot-arm": "profile",
+  "scara-arm": "plan",
+  "delta-arm": "iso",
+  "gantry-arm": "front",
+}
+
+const tippedFrom = (native: RobotView): RobotView =>
+  native === "iso" ? "front" : "iso"
+
 afterEach(cleanup)
 
 describe("native views", () => {
@@ -91,6 +110,42 @@ describe("native views", () => {
       const { container } = render(machine())
       await expect(drawing(container)).toMatchFileSnapshot(
         `./__snapshots__/views/${name}.html`,
+      )
+    })
+  }
+})
+
+describe("the view axis", () => {
+  for (const [name, native] of Object.entries(natives) as [string, RobotView][]) {
+    it(`turns the camera on ${name} without moving the machine`, () => {
+      const machine = machines[name]
+      const asked = render(machine(native))
+      const still = drawing(asked.container)
+      // Asking for the native view explicitly is the same drawing as the default.
+      expect(still).toBe(drawing(render(machine()).container))
+      expect(asked.container.querySelector("[data-view]")!.getAttribute("data-view")).toBe(native)
+      cleanup()
+
+      for (const view of ["plan", "front", "profile", "iso"] as const) {
+        const { container } = render(machine(view))
+        expect(container.querySelector("[data-view]")!.getAttribute("data-view")).toBe(view)
+        expect(container.querySelector("svg")!.getAttribute("aria-label")).toMatch(
+          view === "plan" ? /plan/ : view === "iso" ? /isometric/ : /elevation/,
+        )
+        expect(container.innerHTML).not.toMatch(/NaN|Infinity/)
+        if (view !== native) expect(drawing(container)).not.toBe(still)
+        cleanup()
+      }
+    })
+  }
+})
+
+describe("the tipped view", () => {
+  for (const [name, native] of Object.entries(natives) as [string, RobotView][]) {
+    it(`gives ${name} parts that only exist off its own axis`, async () => {
+      const { container } = render(machines[name](tippedFrom(native)))
+      await expect(drawing(container)).toMatchFileSnapshot(
+        `./__snapshots__/views/${name}.${tippedFrom(native)}.html`,
       )
     })
   }

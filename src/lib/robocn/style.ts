@@ -369,6 +369,8 @@ export function extrudedPath(
   top: number,
   bottom: number,
   spin = 0,
+  /** For a group already mirrored to draw with `y` pointing up. */
+  up = false,
 ): string {
   const turn = toRadians(spin)
   const cs = Math.cos(turn)
@@ -377,7 +379,11 @@ export function extrudedPath(
     // Footprint coordinates are plan-view: x starboard, y toward the tail.
     const x = point.x * cs - point.y * sn
     const z = point.x * sn + point.y * cs
-    return [camera.project(x, top, z), camera.project(x, bottom, z)]
+    const rise = camera.project(x, top, z)
+    const fall = camera.project(x, bottom, z)
+    return up
+      ? [{ x: rise.x, y: -rise.y }, { x: fall.x, y: -fall.y }]
+      : [rise, fall]
   })
   const hull = convexHull2(corners)
   if (hull.length < 3) return ""

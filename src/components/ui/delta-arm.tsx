@@ -13,6 +13,7 @@ import * as React from "react"
 
 import { useEasedPoint, type RobotTarget } from "@/hooks/use-robot-arm"
 import { usePointerTarget } from "@/hooks/use-pointer-target"
+import { useRobotDrag } from "@/hooks/use-robot-motion"
 import {
   isometric,
   isometricDepth,
@@ -26,18 +27,29 @@ import {
   px,
   resolveRobotPalette,
   resolveRobotSize,
+  robotCamera,
   robotSurface,
   type RobotBehavior,
   type RobotPaletteProps,
   type RobotSize,
   type RobotTool,
   type RobotVariant,
+  type RobotView,
 } from "@/lib/robocn/style"
 import { cn } from "@/lib/utils"
 
 const VIEW_WIDTH = 132
 const VIEW_HEIGHT = 118
 const PLATE_Y = 30
+/** The machine is drawn in isometric, on its own free `spin` and `tilt`. */
+const NATIVE_VIEW: RobotView = "iso"
+
+const viewNames: Record<RobotView, string> = {
+  plan: "plan view",
+  front: "front elevation",
+  profile: "side elevation",
+  iso: "isometric view",
+}
 
 /**
  * Proportions of a printer-style delta: short biceps on a wide plate, long
@@ -65,6 +77,12 @@ export interface DeltaArmProps
   /** Height the platform holds when a behaviour drives it. */
   height?: number
   tool?: RobotTool
+  /**
+   * Where the camera stands. `iso` is the machine's own axonometric, which
+   * `spin` and `tilt` steer; the other three are the shared orthographic
+   * cameras, and ignore both.
+   */
+  view?: RobotView
   active?: boolean
   variant?: RobotVariant
   size?: RobotSize | number
@@ -80,6 +98,13 @@ export interface DeltaArmProps
   showPlate?: boolean
   /** Mark the platform centre with a crosshair and a readout. */
   showTarget?: boolean
+  /**
+   * Press and drag the frame to send the head there; release and it goes back
+   * to its behaviour. Touch devices have no hover, so this is how they drive it.
+   */
+  interactive?: boolean
+  /** The dragged goal in world units, and null on release. */
+  onTargetChange?: (target: Vec2 | null) => void
 }
 
 function DeltaArm({
@@ -88,6 +113,7 @@ function DeltaArm({
   behavior = "orbit",
   height,
   tool = "vacuum",
+  view = NATIVE_VIEW,
   active,
   variant = "solid",
   size = "md",
@@ -101,6 +127,8 @@ function DeltaArm({
   label,
   showPlate = true,
   showTarget,
+  interactive = false,
+  onTargetChange,
   color,
   accent,
   metal,
@@ -130,20 +158,38 @@ function DeltaArm({
   const annotate = showTarget ?? variant === "blueprint"
 
   const svgRef = React.useRef<SVGSVGElement>(null)
+  const toWorld = React.useCallback(
+    (unit: Vec2) => ({
+      x: (unit.x - 0.5) * VIEW_WIDTH * 0.6,
+      y: -(unit.y * VIEW_HEIGHT - PLATE_Y),
+    }),
+    [],
+  )
   const pointer = usePointerTarget(svgRef, {
     enabled: behavior === "pointer" && !paused,
-    toWorld: React.useCallback(
-      (unit: Vec2) => ({
-        x: (unit.x - 0.5) * VIEW_WIDTH * 0.6,
-        y: -(unit.y * VIEW_HEIGHT - PLATE_Y),
-      }),
-      [],
-    ),
+    toWorld,
+  })
+
+  // A press outranks the behaviour: the platform goes where it is put, and
+  // eases back into the cycle when it is let go.
+  const [held, setHeld] = React.useState<Vec2 | null>(null)
+  const dragging = useRobotDrag(svgRef, {
+    enabled: interactive,
+    onDrag: React.useCallback((unit) => {
+      const to = { x: toWorld(unit).x, y: Math.min(-8, toWorld(unit).y) }
+      setHeld(to)
+      onTargetChange?.(to)
+    }, [toWorld, onTargetChange, setHeld]),
+    onDragEnd: React.useCallback(() => {
+      setHeld(null)
+      onTargetChange?.(null)
+    }, [onTargetChange, setHeld]),
   })
 
   // The platform moves in a plane, so it eases like any other point; only the
   // depth axis is driven by the behaviour.
   const planar = React.useMemo<RobotTarget>(() => {
+    if (held) return held
     if (typeof target === "function") {
       return (clock: number) => {
         const point = target(clock)
@@ -161,7 +207,7 @@ function DeltaArm({
         rest +
         (behavior === "idle" ? Math.sin(clock * 0.8) * 2 : Math.sin(clock * 1.6) * 5),
     })
-  }, [target, behavior, pointer.target, rest, swing])
+  }, [held, target, behavior, pointer.target, rest, swing])
 
   const eased = useEasedPoint(
     planar,
@@ -179,16 +225,26 @@ function DeltaArm({
   const platform: Vec3 = { x: eased.point.x, y: eased.point.y, z: depth }
   const pose = solveDelta(platform, geometry)
   const engaged = active ?? eased.moving
-  const project = (v: Vec3) => isometric(v, { spin, tilt })
+  // Everything the machine has is already a world point, so a view is only a
+  // change of projection: `iso` keeps the free axonometric that `spin` and
+  // `tilt` drive, and the other three take the shared orthographic camera.
+  // Isometric coordinates run z toward the viewer and the group draws y up.
+  const camera = robotCamera(view)
+  const orthographic = view !== NATIVE_VIEW
+  const project = (v: Vec3): Vec2 => {
+    if (!orthographic) return isometric(v, { spin, tilt })
+    const point = camera.project(v.x, v.y, -v.z)
+    return { x: point.x, y: -point.y }
+  }
+  // Both report distance from the camera; the axonometric one counts the
+  // other way, so it is negated to give one "nearer draws later" ordering.
+  const toward = (v: Vec3) =>
+    orthographic ? camera.depth(v.x, v.y, -v.z) : -isometricDepth(v, { spin })
 
   // Far arms first: the plate and platform then overlap them correctly.
   const ordered = pose.arms
     .map((arm, index) => ({ arm, index }))
-    .sort(
-      (a, b) =>
-        isometricDepth(b.arm.anchor, { spin }) -
-        isometricDepth(a.arm.anchor, { spin }),
-    )
+    .sort((a, b) => toward(a.arm.anchor) - toward(b.arm.anchor))
 
   const shell = robotSurface("shell", variant, palette, weight)
   const metalSurface = robotSurface("metal", variant, palette, weight)
@@ -202,16 +258,21 @@ function DeltaArm({
   return (
     <svg
       role="img"
-      aria-label={`Delta robot with three arms holding a ${tool}`}
+      aria-label={`Delta robot with three arms holding a ${tool}, ${viewNames[view] ?? viewNames.iso}`}
       viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}
       width={width}
       height={viewHeight}
       ref={svgRef}
-      className={cn("select-none overflow-hidden", className)}
+      className={cn(
+        "select-none overflow-hidden",
+        interactive && "cursor-grab touch-none",
+        dragging && "cursor-grabbing",
+        className,
+      )}
       style={{ color: palette.foreground, ...style }}
       {...props}
     >
-      <g transform={`translate(${VIEW_WIDTH / 2} ${PLATE_Y}) scale(1 -1)`}>
+      <g data-view={view} transform={`translate(${VIEW_WIDTH / 2} ${PLATE_Y}) scale(1 -1)`}>
         {showPlate ? (
           <g>
             {/* Rim first, so the frame sits on a visible thickness. */}
