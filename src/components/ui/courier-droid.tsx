@@ -1,27 +1,68 @@
+"use client"
+
 import * as React from "react"
 
-import { clamp } from "@/lib/robocn/kinematics"
+import { usePointerTarget } from "@/hooks/use-pointer-target"
+import { useRobotClock } from "@/hooks/use-robot-motion"
+import { clamp, toRadians, type Vec2 } from "@/lib/robocn/kinematics"
 import {
+  capsulePath,
+  circleFootprint,
+  extrudedPath,
   px,
   resolveRobotPalette,
   resolveRobotSize,
+  robotCamera,
   robotSurface,
+  roundedFootprint,
   type RobotPaletteProps,
   type RobotSize,
   type RobotVariant,
+  type RobotView,
 } from "@/lib/robocn/style"
 import { cn } from "@/lib/utils"
 
 export type CourierDroidCargo = "none" | "pod" | "crate" | "tools"
+export type CourierDroidBehavior = "deliver" | "patrol" | "pointer" | "static"
+
+/** The droid is drawn from straight above; that is the camera it defaults to. */
+const NATIVE_VIEW: RobotView = "plan"
+/** Heights the plan view never had to name. */
+const WHEEL_RADIUS = 17
+const HALF_TRACK = 10
+const BODY_FLOOR = 10
+const BODY_TOP = 40
+const CARGO_TOP = 62
+
+const viewNames: Record<RobotView, string> = {
+  plan: "plan view",
+  front: "front elevation",
+  profile: "side elevation",
+  iso: "isometric view",
+}
 
 export interface CourierDroidProps
   extends Omit<React.ComponentProps<"svg">, "color">,
     RobotPaletteProps {
   size?: RobotSize | number
   variant?: RobotVariant
+  /** Clockwise heading in degrees. Omit and `behavior` drives it. */
+  /** Where the camera stands. One droid, four projections. */
+  view?: RobotView
   heading?: number
+  /** Front-wheel steering, −45..45 degrees. Omit and it steers into its own turns. */
   steering?: number
+  /** Wheel travel in turns. Omit and the wheels roll as it drives. */
   travel?: number
+  /** What it does when nobody is driving: a delivery run, a beat, or you. */
+  behavior?: CourierDroidBehavior
+  /** Legs of the route per second. */
+  speed?: number
+  animate?: boolean
+  paused?: boolean
+  phase?: number
+  /** It comes round to face the pointer. */
+  interactive?: boolean
   cargo?: CourierDroidCargo
   antenna?: "whip" | "dish" | "none"
   signal?: "idle" | "ready" | "warning"
@@ -32,9 +73,16 @@ export interface CourierDroidProps
 function CourierDroid({
   size = "md",
   variant = "solid",
-  heading = 0,
-  steering = 0,
-  travel = 0,
+  view = NATIVE_VIEW,
+  heading,
+  steering,
+  travel,
+  behavior = "deliver",
+  speed = 0.25,
+  animate = true,
+  paused = false,
+  phase = 0,
+  interactive = true,
   cargo = "none",
   antenna = "whip",
   signal = "ready",
@@ -53,19 +101,48 @@ function CourierDroid({
 }: CourierDroidProps) {
   const palette = resolveRobotPalette({ color, accent, metal, dark, glow, grid, palette: paletteOverride })
   const width = resolveRobotSize(size)
-  const turn = finite(heading)
-  const steer = finiteClamp(steering, -45, 45)
-  const tread = wrap(travel)
+  const svgRef = React.useRef<SVGSVGElement>(null)
+  const clock = useRobotClock({ speed, animate: animate && behavior !== "static", paused, phase })
+  const pointer = usePointerTarget(svgRef, {
+    enabled: (interactive || behavior === "pointer") && heading === undefined && !paused,
+    toWorld: React.useCallback((unit: { x: number; y: number }) => ({
+      x: (unit.x - 0.5) * 2,
+      y: (unit.y - 0.5) * 2,
+    }), []),
+  })
+  const bearing = pointer.target
+    ? (Math.atan2(pointer.target.x, -pointer.target.y) * 180) / Math.PI
+    : null
+  const scripted = courierDroidPose(behavior, clock, bearing)
+  const turn = finite(heading ?? scripted.heading)
+  // Steering is the turn it is part-way through, not a second animation.
+  const steer = finiteClamp(steering ?? scripted.steer, -45, 45)
+  const tread = wrap(travel ?? scripted.travel)
   const shell = robotSurface("shell", variant, palette)
   const machined = robotSurface("metal", variant, palette)
   const cast = robotSurface("dark", variant, palette)
   const signalColor = signal === "warning" ? palette.shell : signal === "ready" ? palette.accent : palette.metal
   const clipId = `courier-${React.useId().replace(/:/g, "")}`
 
+  // The drawing is the ground plane the droid runs on, so it goes through
+  // `plane` and comes out untouched from above — heading included. The wheels
+  // are cylinders and the body a box, neither of which plan view ever had.
+  const camera = robotCamera(view)
+  const offAxis = view !== NATIVE_VIEW
+  const ground = camera.plane(0, turn)
+  const spin = toRadians(turn)
+  const cos = Math.cos(spin)
+  const sin = Math.sin(spin)
+  const at = (x: number, z: number, y: number) =>
+    camera.project(x * cos - z * sin, y, x * sin + z * cos)
+  const solid = (footprint: Vec2[], top: number, bottom: number) =>
+    extrudedPath(footprint, camera, top, bottom, turn)
+
   return (
     <svg
+      ref={svgRef}
       role="img"
-      aria-label={`Courier droid, heading ${Math.round(((turn % 360) + 360) % 360)} degrees`}
+      aria-label={`Courier droid, heading ${Math.round(((turn % 360) + 360) % 360)} degrees, ${viewNames[view] ?? viewNames.plan}`}
       viewBox="0 0 210 170"
       width={width}
       height={px(width * 0.81)}
@@ -81,7 +158,28 @@ function CourierDroid({
         </g>
       )}
       {showGround && <ellipse cx={105} cy={138} rx={70} ry={7} fill={palette.dark} opacity={0.14} />}
-      <g data-chassis transform={`translate(105 91) rotate(${px(turn)})`}>
+      {offAxis && <g data-solids transform="translate(105 91)">
+        {[-1, 1].flatMap((side) => [-1, 1].map((axle) => (
+          <path
+            key={`${side}-${axle}`}
+            d={capsulePath(
+              at(side * 48 - HALF_TRACK, axle * 28, WHEEL_RADIUS),
+              at(side * 48 + HALF_TRACK, axle * 28, WHEEL_RADIUS),
+              WHEEL_RADIUS,
+            )}
+            {...cast}
+          />
+        )))}
+        <path d={solid(roundedFootprint(47, 48, 13, 5), BODY_TOP, BODY_FLOOR)} {...shell} />
+        <path d={solid(roundedFootprint(29, 11, 5, 4).map(p => ({ x: p.x, y: p.y - 7 })), BODY_TOP + 6, BODY_TOP)} {...cast} />
+        {cargo !== "none" && (
+          <path d={solid(roundedFootprint(24, 20, 4, 4).map(p => ({ x: p.x, y: p.y + 9 })), CARGO_TOP, BODY_TOP)} {...shell} />
+        )}
+        {antenna !== "none" && (
+          <path d={capsulePath(at(31, -40, BODY_TOP), at(31, -40, CARGO_TOP + 14), 1.6)} stroke="none" fill={palette.dark} />
+        )}
+      </g>}
+      <g data-chassis data-view={view} transform={`translate(105 91) ${ground}`}>
         {[-1, 1].flatMap((side) => [-1, 1].map((axle) => {
           const front = axle < 0
           const x = side * 48
@@ -136,3 +234,34 @@ const finiteClamp = (value: number, min: number, max: number) => clamp(finite(va
 const wrap = (value: number) => ((finite(value) % 1) + 1) % 1
 
 export { CourierDroid }
+
+/**
+ * The route. A delivery run is straight legs and square corners with the
+ * wheels turning the whole way; a patrol is the same idea, tighter; pointing
+ * is it coming round to face you. The steer is whatever is left of the turn,
+ * which is what makes it read as steering rather than sliding.
+ */
+export function courierDroidPose(
+  behavior: CourierDroidBehavior,
+  clock: number,
+  bearing: number | null,
+) {
+  const t = Number.isFinite(clock) ? clock : 0
+  if (behavior === "static") return { heading: 0, steer: 0, travel: 0 }
+  if (behavior === "pointer") {
+    const goal = bearing ?? 0
+    return { heading: goal, steer: 0, travel: t * 1.2 }
+  }
+  const leg = behavior === "patrol" ? 0.5 : 1
+  const cycle = t / leg
+  const corner = Math.floor(cycle)
+  const into = cycle - corner
+  // The last fifth of each leg is the corner itself.
+  const turning = Math.max(0, (into - 0.8) / 0.2)
+  const quarter = behavior === "patrol" ? 90 : 90
+  return {
+    heading: corner * quarter + turning * quarter,
+    steer: turning > 0 ? 38 : bearing !== null ? 0 : 0,
+    travel: t * 1.35,
+  }
+}

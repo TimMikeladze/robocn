@@ -35,7 +35,10 @@ import { RobotRover, type RoverBehavior } from "@/components/ui/robot-rover"
 import { RobotDrone, type DroneBehavior } from "@/components/ui/robot-drone"
 import { LidarScan, type LidarBehavior, type LidarSample } from "@/components/ui/lidar-scan"
 
+import { ArmFabricator } from "@/components/ui/arm-fabricator"
+import { DroneFabricator } from "@/components/ui/drone-fabricator"
 import { Fabricator } from "@/components/ui/fabricator"
+import { VoxelForm } from "@/components/ui/voxel-form"
 import type { VoxelBehavior, VoxelShape } from "@/lib/robocn/voxel"
 
 import { RobotGripper, type GripperBehavior } from "@/components/ui/robot-gripper"
@@ -721,6 +724,7 @@ function ConveyorBeltDemo() {
 }
 
 function RobotRoverDemo() {
+  const [view, setView] = React.useState<RobotView>("plan")
   const [drive, setDrive] = React.useState<RoverBehavior | "manual">("patrol")
   const [heading, setHeading] = React.useState(25)
   const [steering, setSteering] = React.useState(15)
@@ -729,6 +733,7 @@ function RobotRoverDemo() {
   const [variant, setVariant] = React.useState<RobotVariant>("solid")
   return (
     <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
       <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
       <Segmented label="wheels" value={wheels} options={["4", "6"] as const} onChange={setWheels} />
       <Segmented label="drive" value={drive} options={["patrol", "wander", "pointer", "manual"] as const} onChange={setDrive} />
@@ -738,7 +743,7 @@ function RobotRoverDemo() {
         <NumberControl label="travel" value={travel} min={0} max={1} step={0.01} onChange={setTravel} format={value => value.toFixed(2)} />
       </> : <Hint>Press anywhere in the frame to send it a bearing. The front wheels steer by how far it still has to turn.</Hint>}
     </>}>
-      <RobotRover size={340} wheels={wheels === "4" ? 4 : 6} variant={variant} label="ROVER / 06"
+      <RobotRover view={view} size={340} wheels={wheels === "4" ? 4 : 6} variant={variant} label="ROVER / 06"
         {...(drive === "manual"
           ? { heading, steering, wheelTravel: travel, active: true }
           : { behavior: drive })}
@@ -999,19 +1004,21 @@ function UtilityDroidDemo() {
 }
 
 function OrbDroidDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
   const [bodyAngle, setBodyAngle] = React.useState(35)
   const [headAngle, setHeadAngle] = React.useState(-12)
   const [antenna, setAntenna] = React.useState<"single" | "twin" | "none">("twin")
   const [variant, setVariant] = React.useState<RobotVariant>("solid")
   return (
     <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
       <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
       <Segmented label="antenna" value={antenna} options={["single", "twin", "none"] as const} onChange={setAntenna} />
       <NumberControl label="body" value={bodyAngle} min={-180} max={180} onChange={setBodyAngle} format={value => `${value}°`} />
       <NumberControl label="head" value={headAngle} min={-65} max={65} onChange={setHeadAngle} format={value => `${value}°`} />
       <p className="text-[11px] text-muted-foreground">The drive sphere turns independently while the cap stays upright. Move the pointer to aim the optic.</p>
     </>}>
-      <OrbDroid size={330} bodyAngle={bodyAngle} headAngle={headAngle} antenna={antenna} variant={variant} label="ORB / 15" />
+      <OrbDroid view={view} size={330} bodyAngle={bodyAngle} headAngle={headAngle} antenna={antenna} variant={variant} label="ORB / 15" />
     </Bench>
   )
 }
@@ -1104,6 +1111,7 @@ function InfantryDroidDemo() {
 }
 
 function ProbeDroidDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
   const [hover, setHover] = React.useState(0.65)
   const [scanAngle, setScanAngle] = React.useState(16)
   const [appendages, setAppendages] = React.useState(5)
@@ -1112,6 +1120,7 @@ function ProbeDroidDemo() {
   const [variant, setVariant] = React.useState<RobotVariant>("solid")
   return (
     <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
       <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
       <Segmented label="sensor" value={active} options={["idle", "scan"] as const} onChange={setActive} />
       <Segmented label="drive" value={drive} options={["hover", "scan", "pointer", "manual"] as const} onChange={setDrive} />
@@ -1121,13 +1130,14 @@ function ProbeDroidDemo() {
       </> : <Hint>Move the pointer across it and the sensor comes round.</Hint>}
       <NumberControl label="arms" value={appendages} min={3} max={6} onChange={setAppendages} />
     </>}>
-      <ProbeDroid size={340} appendages={appendages} active={active === "scan"} variant={variant} label="PROBE / 20"
+      <ProbeDroid view={view} size={340} appendages={appendages} active={active === "scan"} variant={variant} label="PROBE / 20"
         {...(drive === "manual" ? { hover, scanAngle, behavior: "static" as const } : { behavior: drive })} />
     </Bench>
   )
 }
 
 function CourierDroidDemo() {
+  const [view, setView] = React.useState<RobotView>("plan")
   const [heading, setHeading] = React.useState(18)
   const [steering, setSteering] = React.useState(12)
   const [travel, setTravel] = React.useState(0.35)
@@ -1136,6 +1146,7 @@ function CourierDroidDemo() {
   const [variant, setVariant] = React.useState<RobotVariant>("solid")
   return (
     <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
       <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
       <Segmented label="cargo" value={cargo} options={["none", "pod", "crate", "tools"] as const} onChange={setCargo} />
       <Segmented label="drive" value={drive} options={["deliver", "patrol", "pointer", "manual"] as const} onChange={setDrive} />
@@ -1145,7 +1156,7 @@ function CourierDroidDemo() {
         <NumberControl label="travel" value={travel} min={0} max={1} step={0.01} onChange={setTravel} format={value => `${Math.round(value * 100)}%`} />
       </> : <Hint>It comes round to face the pointer when it is over the frame.</Hint>}
     </>}>
-      <CourierDroid size={360} cargo={cargo} variant={variant} label="COURIER / 21"
+      <CourierDroid view={view} size={360} cargo={cargo} variant={variant} label="COURIER / 21"
         {...(drive === "manual" ? { heading, steering, travel, behavior: "static" as const } : { behavior: drive })} />
     </Bench>
   )
@@ -1418,39 +1429,97 @@ function RobotBirdDemo() {
 
 const voxelShapes: VoxelShape[] = ["sphere", "block", "pyramid", "gear", "vessel", "lattice"]
 
-function FabricatorDemo() {
+/** Every fabricator shares one set of axes, so they share one control panel. */
+function useVoxelBench(defaults: { shape: VoxelShape; view?: RobotView }) {
   const [drive, setDrive] = React.useState<VoxelBehavior | "manual">("build")
-  const [shape, setShape] = React.useState<VoxelShape>("lattice")
-  const [view, setView] = React.useState<RobotView>("iso")
+  const [shape, setShape] = React.useState<VoxelShape>(defaults.shape)
+  const [view, setView] = React.useState<RobotView>(defaults.view ?? "iso")
   const [variant, setVariant] = React.useState<RobotVariant>("solid")
   const [resolution, setResolution] = React.useState(6)
   const [progress, setProgress] = React.useState(0.55)
-  const [enclosure, setEnclosure] = React.useState<"on" | "off">("on")
-  return (
-    <Bench controls={<>
+  const controls = (
+    <>
       <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
       <Segmented label="view" value={view} options={views} onChange={setView} />
       <Segmented label="shape" value={shape} options={voxelShapes} onChange={setShape} />
       <Segmented label="drive" value={drive} options={["build", "layer", "refine", "idle", "static", "manual"] as const} onChange={setDrive} />
-      <Segmented label="frame" value={enclosure} options={["on", "off"] as const} onChange={setEnclosure} />
       {drive === "manual"
         ? <NumberControl label="build" value={progress} min={0} max={1} step={0.01} onChange={setProgress} format={value => `${Math.round(value * 100)}%`} />
-        : <Hint>Press and drag up and down to lay or strip material; let go and the cell carries on from there. Arrow keys step one layer.</Hint>}
+        : <Hint>Press and drag up and down to lay or strip material; let go and it carries on from there. Arrow keys step one layer.</Hint>}
       <NumberControl label="voxels" value={resolution} min={2} max={14} onChange={setResolution} format={value => `${value}³`} />
-      {drive === "refine" && <p className="text-[11px] text-muted-foreground">Refine drives the resolution itself — set voxels back to take it over.</p>}
+      {drive === "refine" && <p className="text-[11px] text-muted-foreground">Refine drives the resolution itself — move the voxels slider to take it over.</p>}
+    </>
+  )
+  const machine = {
+    variant, view, shape, interactive: true,
+    ...(drive === "manual" ? { progress, resolution } : { behavior: drive }),
+    ...(drive === "refine" ? null : { resolution }),
+  } as const
+  return { controls, machine }
+}
+
+function FabricatorDemo() {
+  const [enclosure, setEnclosure] = React.useState<"on" | "off">("on")
+  const { controls, machine } = useVoxelBench({ shape: "lattice" })
+  return (
+    <Bench controls={<>
+      {controls}
+      <Segmented label="frame" value={enclosure} options={["on", "off"] as const} onChange={setEnclosure} />
       <p className="text-[11px] text-muted-foreground">The object is a field sampled at this resolution, not a stored model: the same solid is rebuilt out of smaller cells. High resolutions draw a lot of paths.</p>
     </>}>
-      <Fabricator size={360} variant={variant} view={view} shape={shape} interactive
-        showEnclosure={enclosure === "on"} label="FABRICATOR / 27"
-        {...(drive === "manual" ? { progress, resolution } : { behavior: drive })}
-        {...(drive === "refine" ? null : { resolution })} />
+      <Fabricator size={360} showEnclosure={enclosure === "on"} label="FABRICATOR / 27" {...machine} />
+    </Bench>
+  )
+}
+
+function VoxelFormDemo() {
+  const [plate, setPlate] = React.useState<"on" | "off">("on")
+  const { controls, machine } = useVoxelBench({ shape: "gear" })
+  return (
+    <Bench controls={<>
+      {controls}
+      <Segmented label="plate" value={plate} options={["on", "off"] as const} onChange={setPlate} />
+      <p className="text-[11px] text-muted-foreground">The workpiece with no machine around it — the same solid every fabricator in the set builds.</p>
+    </>}>
+      <VoxelForm size={330} showPlate={plate === "on"} label="FORM / 28" {...machine} />
+    </Bench>
+  )
+}
+
+function ArmFabricatorDemo() {
+  const [elbow, setElbow] = React.useState<"up" | "down">("up")
+  const { controls, machine } = useVoxelBench({ shape: "gear" })
+  return (
+    <Bench controls={<>
+      {controls}
+      <Segmented label="elbow" value={elbow} options={["up", "down"] as const} onChange={setElbow} />
+      <p className="text-[11px] text-muted-foreground">The turret yaws at the cell being laid; the shoulder and elbow are solved for it. Both elbow sides reach the same tip.</p>
+    </>}>
+      <ArmFabricator size={380} elbow={elbow} label="ARM FAB / 29" {...machine} />
+    </Bench>
+  )
+}
+
+function DroneFabricatorDemo() {
+  const [pods, setPods] = React.useState(4)
+  const { controls, machine } = useVoxelBench({ shape: "vessel" })
+  return (
+    <Bench controls={<>
+      {controls}
+      <NumberControl label="pods" value={pods} min={3} max={6} onChange={setPods} />
+      <p className="text-[11px] text-muted-foreground">No rails and no reach envelope: the platform flies to each cell and banks toward the next one.</p>
+    </>}>
+      <DroneFabricator size={360} pods={pods} label="FLY FAB / 30" {...machine} />
     </Bench>
   )
 }
 
 export const demos: Record<string, React.ComponentType> = {
   fabricator: FabricatorDemo,
-  "voxel-geometry": FabricatorDemo,
+  "voxel-form": VoxelFormDemo,
+  "arm-fabricator": ArmFabricatorDemo,
+  "drone-fabricator": DroneFabricatorDemo,
+  "voxel-geometry": VoxelFormDemo,
   "utility-droid": UtilityDroidDemo,
   "orb-droid": OrbDroidDemo,
   "protocol-droid": ProtocolDroidDemo,

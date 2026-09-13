@@ -5,21 +5,46 @@ import * as React from "react"
 import { usePointerTarget } from "@/hooks/use-pointer-target"
 import { clamp, type Vec2 } from "@/lib/robocn/kinematics"
 import {
+  aboutPoint,
+  capsulePath,
+  circleFootprint,
+  extrudedPath,
   px,
   resolveRobotPalette,
   resolveRobotSize,
+  robotCamera,
   robotSurface,
   type RobotPaletteProps,
   type RobotSize,
   type RobotVariant,
+  type RobotView,
 } from "@/lib/robocn/style"
 import { cn } from "@/lib/utils"
+
+/** The droid is drawn straight on; that is the camera it defaults to. */
+const NATIVE_VIEW: RobotView = "front"
+/** Where it stands in the frame, and the heights the elevation implied. */
+const CENTRE = 95
+const GROUND = 164
+const BODY_RADIUS = 53
+const HEAD_TOP = 126
+const HEAD_FLOOR = 84
+const HEAD_RADIUS = 36
+
+const viewNames: Record<RobotView, string> = {
+  plan: "plan view",
+  front: "front elevation",
+  profile: "side elevation",
+  iso: "isometric view",
+}
 
 export interface OrbDroidProps
   extends Omit<React.ComponentProps<"svg">, "color">,
     RobotPaletteProps {
   size?: RobotSize | number
   variant?: RobotVariant
+  /** Where the camera stands. One droid, four projections. */
+  view?: RobotView
   headAngle?: number
   bodyAngle?: number
   look?: Vec2 | null
@@ -33,6 +58,7 @@ export interface OrbDroidProps
 function OrbDroid({
   size = "md",
   variant = "solid",
+  view = NATIVE_VIEW,
   headAngle = 0,
   bodyAngle = 0,
   look = null,
@@ -74,11 +100,26 @@ function OrbDroid({
   const signalColor = signal === "warning" ? palette.shell : signal === "ready" ? palette.accent : palette.metal
   const clipId = `orb-${React.useId().replace(/:/g, "")}`
 
+  // A ball is the same circle from every angle, so the body needs no second
+  // drawing; everything painted on it is elevation artwork and goes through
+  // `wall`. The head is a dome, which only reads as one off the front.
+  const camera = robotCamera(view)
+  const offAxis = view !== NATIVE_VIEW
+  const face = aboutPoint(camera.wall(), CENTRE, GROUND)
+  const Frame = (face ? "g" : React.Fragment) as React.FC<{
+    transform?: string
+    children?: React.ReactNode
+  }>
+  const frame = face ? { transform: face } : {}
+  const rise = (y: number) => GROUND - y
+  const at = (x: number, y: number, deep = 0) =>
+    camera.project(-x, rise(y), -deep)
+
   return (
     <svg
       ref={svgRef}
       role="img"
-      aria-label={`Orb droid, body rotation ${Math.round(bodyTurn)} degrees`}
+      aria-label={`Orb droid, body rotation ${Math.round(bodyTurn)} degrees, ${viewNames[view] ?? viewNames.front}`}
       viewBox="0 0 190 190"
       width={width}
       height={width}
@@ -95,7 +136,18 @@ function OrbDroid({
       )}
       {showGround && <ellipse cx={95} cy={166} rx={57} ry={7} fill={palette.dark} opacity={0.14} />}
 
-      <g data-body transform={`rotate(${px(bodyTurn)} 95 111)`}>
+      {offAxis && <g data-solids transform={`translate(${CENTRE} ${GROUND})`}>
+        <circle cx={px(at(0, 111).x)} cy={px(at(0, 111).y)} r={BODY_RADIUS} {...shell} />
+        <path
+          d={extrudedPath(circleFootprint(0, 0, HEAD_RADIUS, 14), camera, HEAD_TOP, HEAD_FLOOR)}
+          {...machined}
+        />
+        {antenna !== "none" && (
+          <path d={capsulePath(at(22, 48), at(27, 24), 1.5)} fill={palette.dark} stroke="none" />
+        )}
+      </g>}
+      <Frame {...frame}>
+      <g data-body data-view={view} transform={`rotate(${px(bodyTurn)} 95 111)`}>
         <circle cx={95} cy={111} r={53} {...shell} />
         <g clipPath={`url(#${clipId})`} fill="none" stroke={palette.dark} strokeWidth={1.4} opacity={0.75}>
           <path d="M 42 111 H 148 M 95 58 V 164" />
@@ -115,9 +167,13 @@ function OrbDroid({
         <path d="M 59 75 Q 60 43 95 38 Q 130 43 131 75 Q 95 88 59 75 Z" {...machined} />
         <path d="M 61 72 Q 95 82 129 72" fill="none" stroke={palette.dark} strokeWidth={2} />
         <rect x={75} y={51} width={40} height={19} rx={7} {...cast} />
-        <circle cx={px(95 + eye.x)} cy={px(60 + eye.y)} r={7.5} fill={palette.accent} />
-        <circle data-eye cx={px(95 + eye.x)} cy={px(60 + eye.y)} r={3.5} fill={palette.dark} />
-        <circle cx={px(97 + eye.x)} cy={px(58 + eye.y)} r={1.4} fill={palette.metal} />
+        {/* One node over the whole optic, so a caller driving gaze from an
+            animation loop writes one transform instead of six attributes. */}
+        <g data-optic>
+          <circle cx={px(95 + eye.x)} cy={px(60 + eye.y)} r={7.5} fill={palette.accent} />
+          <circle data-eye cx={px(95 + eye.x)} cy={px(60 + eye.y)} r={3.5} fill={palette.dark} />
+          <circle cx={px(97 + eye.x)} cy={px(58 + eye.y)} r={1.4} fill={palette.metal} />
+        </g>
         <circle cx={68} cy={66} r={4} fill={signalColor} className={signal === "ready" ? "robocn-pulse" : undefined} />
         {antenna !== "none" && (
           <g data-antenna={antenna} stroke={palette.dark} strokeLinecap="round">
@@ -127,6 +183,7 @@ function OrbDroid({
           </g>
         )}
       </g>
+      </Frame>
       {label && <text x={95} y={184} textAnchor="middle" fontFamily="ui-monospace, monospace" fontSize={6} fill={palette.foreground}>{label}</text>}
     </svg>
   )

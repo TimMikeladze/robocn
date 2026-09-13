@@ -482,7 +482,7 @@
       "name": "robot-rover",
       "type": "registry:ui",
       "title": "Robot rover",
-      "description": "A top-down four- or six-wheel ground robot with controlled heading, front-wheel steering, tread travel, and a sensor turret.",
+      "description": "A top-down four- or six-wheel ground robot with controlled heading, front-wheel steering, tread travel, and a sensor turret. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
         "robots"
@@ -641,7 +641,7 @@
       "name": "orb-droid",
       "type": "registry:ui",
       "title": "Orb droid",
-      "description": "A rolling spherical companion with an independently stabilized head, segmented shell, pointer-tracking eye, and configurable antennas.",
+      "description": "A rolling spherical companion with an independently stabilized head, segmented shell, pointer-tracking eye, and configurable antennas. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
         "robots"
@@ -754,7 +754,7 @@
       "name": "probe-droid",
       "type": "registry:ui",
       "title": "Probe droid",
-      "description": "A hovering survey probe with a steerable sensor mast, controlled altitude, active scan cone, and three to six appendages.",
+      "description": "A hovering survey probe with a steerable sensor mast, controlled altitude, active scan cone, and three to six appendages. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
         "robots",
@@ -778,7 +778,7 @@
       "name": "courier-droid",
       "type": "registry:ui",
       "title": "Courier droid",
-      "description": "A compact floor-running courier with controlled heading, front-wheel steering, tread travel, antenna options, and cargo modules.",
+      "description": "A compact floor-running courier with controlled heading, front-wheel steering, tread travel, antenna options, and cargo modules. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
         "robots"
@@ -1188,13 +1188,14 @@
       "name": "voxel-geometry",
       "type": "registry:lib",
       "title": "Voxel geometry",
-      "description": "Continuous occupancy fields over the unit cube, sampled into buildable voxels: six shapes, a serpentine deposition order, and surface extraction that drops every cell buried inside the solid.",
+      "description": "Continuous occupancy fields over the unit cube, sampled into buildable voxels: six shapes, a serpentine deposition order, surface extraction that drops every cell buried inside the solid, and the projected paths every fabricator draws them with.",
       "categories": [
         "robotics",
         "geometry"
       ],
       "registryDependencies": [
-        "{REGISTRY_URL}/r/robot-kinematics.json"
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json"
       ],
       "files": [
         {
@@ -1224,6 +1225,75 @@
           "path": "src/components/ui/fabricator.tsx",
           "type": "registry:ui",
           "target": "@ui/fabricator.tsx"
+        }
+      ]
+    },
+    {
+      "name": "voxel-form",
+      "type": "registry:ui",
+      "title": "Voxel form",
+      "description": "The workpiece on its own: a continuous field sampled into vector voxels and laid cell by cell, with no machine around it \u2014 a resolution axis, a build line you can scrub, and four camera angles.",
+      "categories": [
+        "robotics",
+        "machines"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json",
+        "{REGISTRY_URL}/r/voxel-geometry.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/voxel-form.tsx",
+          "type": "registry:ui",
+          "target": "@ui/voxel-form.tsx"
+        }
+      ]
+    },
+    {
+      "name": "arm-fabricator",
+      "type": "registry:ui",
+      "title": "Arm fabricator",
+      "description": "An articulated fabricator that reaches for the work: the turret yaws toward the cell being laid and the shoulder and elbow are solved with the analytic two-link elbow, laying the same sampled solid the gantry cell builds.",
+      "categories": [
+        "robotics",
+        "machines"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json",
+        "{REGISTRY_URL}/r/voxel-geometry.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/arm-fabricator.tsx",
+          "type": "registry:ui",
+          "target": "@ui/arm-fabricator.tsx"
+        }
+      ]
+    },
+    {
+      "name": "drone-fabricator",
+      "type": "registry:ui",
+      "title": "Drone fabricator",
+      "description": "A free-flying fabricator with no envelope: a repulsor platform that flies to each cell, rides a fixed standoff above the build line, and banks into its own travel while it lays a sampled solid.",
+      "categories": [
+        "robotics",
+        "machines"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json",
+        "{REGISTRY_URL}/r/voxel-geometry.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/drone-fabricator.tsx",
+          "type": "registry:ui",
+          "target": "@ui/drone-fabricator.tsx"
         }
       ]
     }

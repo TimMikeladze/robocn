@@ -64,10 +64,10 @@ const machines: Record<string, (view?: RobotView) => React.ReactElement> = {
   "linear-actuator": (view) => <LinearActuator animate={false} extension={0.6} view={view} />,
   "servo-motor": (view) => <ServoMotor animate={false} angle={35} view={view} />,
   "rotary-table": (view) => <RotaryTable animate={false} angle={24} view={view} />,
-  "robot-rover": () => <RobotRover animate={false} heading={20} steering={12} wheelTravel={0.2} />,
-  "courier-droid": () => <CourierDroid animate={false} heading={20} steering={12} />,
-  "orb-droid": () => <OrbDroid look={{ x: 0.3, y: -0.2 }} track={false} />,
-  "probe-droid": () => <ProbeDroid animate={false} hover={0.5} />,
+  "robot-rover": (view) => <RobotRover animate={false} heading={20} steering={12} wheelTravel={0.2} view={view} />,
+  "courier-droid": (view) => <CourierDroid animate={false} heading={20} steering={12} view={view} />,
+  "orb-droid": (view) => <OrbDroid look={{ x: 0.3, y: -0.2 }} track={false} view={view} />,
+  "probe-droid": (view) => <ProbeDroid animate={false} hover={0.5} view={view} />,
   "robot-quadruped": () => <RobotQuadruped animate={false} phase={0.25} />,
   "micro-duck": () => <MicroDuck animate={false} phase={0.25} />,
   "robot-spider": () => <RobotSpider animate={false} phase={0.25} />,
@@ -102,6 +102,10 @@ const natives: Partial<Record<keyof typeof machines, RobotView>> = {
   "linear-actuator": "profile",
   "servo-motor": "front",
   "rotary-table": "plan",
+  "robot-rover": "plan",
+  "courier-droid": "plan",
+  "orb-droid": "front",
+  "probe-droid": "front",
 }
 
 const tippedFrom = (native: RobotView): RobotView =>

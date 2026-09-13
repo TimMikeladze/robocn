@@ -1,24 +1,65 @@
-import type * as React from "react"
+"use client"
 
-import { clamp } from "@/lib/robocn/kinematics"
+import * as React from "react"
+
+import { usePointerTarget } from "@/hooks/use-pointer-target"
+import { useRobotClock } from "@/hooks/use-robot-motion"
+
+import { clamp, toRadians } from "@/lib/robocn/kinematics"
 import {
+  aboutPoint,
+  capsulePath,
+  circleFootprint,
+  extrudedPath,
   px,
   resolveRobotPalette,
   resolveRobotSize,
+  robotCamera,
   robotSurface,
   type RobotPaletteProps,
   type RobotSize,
   type RobotVariant,
+  type RobotView,
 } from "@/lib/robocn/style"
 import { cn } from "@/lib/utils"
+
+export type ProbeDroidBehavior = "hover" | "scan" | "pointer" | "static"
+
+/** The droid is drawn straight on; that is the camera it defaults to. */
+const NATIVE_VIEW: RobotView = "front"
+/** Where the pod hangs in the frame, and how far out the appendages are
+ *  socketed — the front elevation spread them across the picture, but they
+ *  are really set round the pod. */
+const CENTRE = 100
+const ARM_RING = 30
+
+const viewNames: Record<RobotView, string> = {
+  plan: "plan view",
+  front: "front elevation",
+  profile: "side elevation",
+  iso: "isometric view",
+}
 
 export interface ProbeDroidProps
   extends Omit<React.ComponentProps<"svg">, "color">,
     RobotPaletteProps {
+  /** Where the camera stands. One droid, four projections. */
+  view?: RobotView
   size?: RobotSize | number
   variant?: RobotVariant
+  /** Height above its own shadow, 0 to 1. Omit and it flies itself. */
   hover?: number
+  /** Sensor bearing in degrees, clamped to −65..65. Omit and `behavior` aims it. */
   scanAngle?: number
+  /** What it does when it is not being flown. */
+  behavior?: ProbeDroidBehavior
+  /** Bob and sweep cycles per second. */
+  speed?: number
+  animate?: boolean
+  paused?: boolean
+  phase?: number
+  /** The sensor comes round to the pointer. */
+  interactive?: boolean
   appendages?: number
   active?: boolean
   signal?: "idle" | "ready" | "warning"
@@ -27,10 +68,17 @@ export interface ProbeDroidProps
 }
 
 function ProbeDroid({
+  view = NATIVE_VIEW,
   size = "md",
   variant = "solid",
-  hover = 0.5,
-  scanAngle = 0,
+  hover,
+  scanAngle,
+  behavior = "hover",
+  speed = 0.3,
+  animate = true,
+  paused = false,
+  phase = 0,
+  interactive = true,
   appendages = 5,
   active = false,
   signal = "idle",
@@ -49,8 +97,22 @@ function ProbeDroid({
 }: ProbeDroidProps) {
   const palette = resolveRobotPalette({ color, accent, metal, dark, glow, grid, palette: paletteOverride })
   const width = resolveRobotSize(size)
-  const lift = finiteClamp(hover, 0, 1)
-  const scan = finiteClamp(scanAngle, -65, 65)
+  const svgRef = React.useRef<SVGSVGElement>(null)
+  const clock = useRobotClock({ speed, animate: animate && behavior !== "static", paused, phase })
+  const pointer = usePointerTarget(svgRef, {
+    enabled: (interactive || behavior === "pointer") && scanAngle === undefined && !paused,
+    toWorld: React.useCallback((unit: { x: number; y: number }) => ({
+      x: (unit.x - 0.5) * 2,
+      y: (unit.y - 0.5) * 2,
+    }), []),
+  })
+  const scripted = probeDroidPose(behavior, clock)
+  const lift = finiteClamp(hover ?? scripted.lift, 0, 1)
+  const scan = finiteClamp(
+    scanAngle ?? (pointer.target ? clamp(pointer.target.x, -1, 1) * 65 : scripted.scan),
+    -65,
+    65,
+  )
   const armCount = Number.isFinite(appendages) ? Math.round(clamp(appendages, 3, 6)) : 5
   const y = 87 - lift * 18
   const shell = robotSurface("shell", variant, palette)
@@ -58,10 +120,31 @@ function ProbeDroid({
   const cast = robotSurface("dark", variant, palette)
   const signalColor = signal === "warning" ? palette.shell : signal === "ready" ? palette.accent : palette.metal
 
+  // The drawing is a front elevation of the pod, so it goes through `wall` and
+  // comes out untouched straight on. A probe is a body of revolution with its
+  // appendages set round it rather than side by side, which is the thing the
+  // one elevation could not say: off the front they are tubes on a ring.
+  const camera = robotCamera(view)
+  const offAxis = view !== NATIVE_VIEW
+  const face = aboutPoint(camera.wall(), CENTRE, y)
+  const Frame = (face ? "g" : React.Fragment) as React.FC<{
+    transform?: string
+    children?: React.ReactNode
+  }>
+  const frame = face ? { transform: face } : {}
+  /** A point in the pod's own frame: x right, y down, and `deep` at the reader. */
+  const at = (x: number, py: number, deep = 0) => camera.project(-x, -py, -deep)
+  /** Where an appendage is socketed, given the angle it is set at. */
+  const socket = (degrees: number, radius: number, py: number) => {
+    const azimuth = toRadians(degrees)
+    return at(Math.sin(azimuth) * radius, py, -Math.cos(azimuth) * radius)
+  }
+
   return (
     <svg
+      ref={svgRef}
       role="img"
-      aria-label={`Probe droid, ${armCount} appendages, hover ${Math.round(lift * 100)} percent`}
+      aria-label={`Probe droid, ${armCount} appendages, hover ${Math.round(lift * 100)} percent, ${viewNames[view] ?? viewNames.front}`}
       viewBox="0 0 200 220"
       width={width}
       height={px(width * 1.1)}
@@ -76,7 +159,29 @@ function ProbeDroid({
         </g>
       )}
       {showGround && <ellipse cx={100} cy={193} rx={px(50 - lift * 8)} ry={px(7 - lift * 2)} fill={palette.dark} opacity={px(0.2 - lift * 0.07)} />}
-      <g data-pod transform={`translate(100 ${px(y)})`}>
+      {offAxis && <g data-solids transform={`translate(${CENTRE} ${px(y)})`}>
+        {Array.from({ length: armCount }, (_, index) => {
+          const spread = armCount === 1 ? 0 : -52 + (index * 104) / (armCount - 1)
+          const length = 55 + (index % 3) * 8
+          return (
+            <path
+              key={index}
+              d={capsulePath(
+                socket(spread * 1.7, ARM_RING, 26),
+                socket(spread * 1.7, ARM_RING + 6, 26 + length),
+                3.5,
+              )}
+              {...cast}
+            />
+          )
+        })}
+        <path d={extrudedPath(circleFootprint(0, 0, 54, 16), camera, 10, -30)} {...cast} />
+        <path d={extrudedPath(circleFootprint(0, 0, 45, 16), camera, 37, 4)} {...shell} />
+        <path d={capsulePath(at(0, -10), at(0, -10, 22), 15)} {...cast} />
+        <path d={capsulePath(at(0, -24), at(0, -50), 2.5)} fill={palette.dark} stroke="none" />
+      </g>}
+      <Frame {...frame}>
+      <g data-pod data-view={view} transform={`translate(100 ${px(y)})`}>
         {Array.from({ length: armCount }, (_, index) => {
           const spread = armCount === 1 ? 0 : -52 + (index * 104) / (armCount - 1)
           const side = spread < 0 ? -1 : 1
@@ -117,6 +222,7 @@ function ProbeDroid({
           />
         )}
       </g>
+      </Frame>
       {label && <text x={100} y={214} textAnchor="middle" fontFamily="ui-monospace, monospace" fontSize={6} fill={palette.foreground}>{label}</text>}
     </svg>
   )
@@ -126,3 +232,25 @@ const finiteClamp = (value: number, min: number, max: number) =>
   Number.isFinite(value) ? clamp(value, min, max) : 0
 
 export { ProbeDroid }
+
+/**
+ * Station-keeping. A hovering probe rides its repulsors up and down with the
+ * sensor barely moving; a scanning one sweeps the sensor across its arc and
+ * holds its height, the way something looking for you would.
+ */
+export function probeDroidPose(behavior: ProbeDroidBehavior, clock: number) {
+  const t = Number.isFinite(clock) ? clock : 0
+  switch (behavior) {
+    case "scan":
+      return { lift: 0.62, scan: Math.sin(t * Math.PI * 2) * 62 }
+    case "pointer":
+      return { lift: 0.5 + Math.sin(t * Math.PI * 2) * 0.14, scan: 0 }
+    case "static":
+      return { lift: 0.5, scan: 0 }
+    default:
+      return {
+        lift: 0.5 + Math.sin(t * Math.PI * 2) * 0.32,
+        scan: Math.sin(t * Math.PI * 0.9) * 12,
+      }
+  }
+}

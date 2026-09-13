@@ -181,6 +181,7 @@ export const docs: DocEntry[] = [
 
 <OrbDroid bodyAngle={72} headAngle={-18} look={{ x: 0.5, y: -0.2 }} antenna="twin" />`,
     props: [
+      view("front", "droid"),
       { name: "bodyAngle", type: "number", default: "0", description: "Controlled rotation of the segmented drive sphere in degrees." },
       { name: "headAngle", type: "number", default: "0", description: "Head steering in degrees, clamped to −65..65." },
       { name: "look", type: "Vec2 | null", default: "null", description: "Controlled optic aim in −1..1; overrides pointer tracking." },
@@ -188,7 +189,7 @@ export const docs: DocEntry[] = [
       { name: "antenna", type: '"single" | "twin" | "none"', default: '"twin"', description: "Communications mast configuration." },
       ...droidForm,
     ],
-    notes: ["Body and head transforms are independent, so a rolling shell does not drag the stabilized cap around with it.", "Pointer tracking is isolated to this client component and can be disabled or overridden.", "The shell, head and optic carry data-body, data-head and data-optic hooks, so an outer animation loop can drive all three through the DOM without re-rendering the component."],
+    notes: ["A ball is the same circle from every angle, so the body needs no second drawing; the panelling on it is elevation artwork that foreshortens with the camera. The head is a dome, which only reads as one off the front.", "Body and head transforms are independent, so a rolling shell does not drag the stabilized cap around with it.", "Pointer tracking is isolated to this client component and can be disabled or overridden.", "The shell, head and optic carry data-body, data-head and data-optic hooks, so an outer animation loop can drive all three through the DOM without re-rendering the component."],
   },
   {
     slug: "protocol-droid", item: "protocol-droid", title: "Protocol droid", group: "Robots",
@@ -277,6 +278,7 @@ export const docs: DocEntry[] = [
 
 <ProbeDroid hover={0.75} scanAngle={24} appendages={6} active />`,
     props: [
+      view("front", "droid"),
       { name: "hover", type: "number", default: "0.5", description: "Normalized 0–1 altitude offset and matching shadow cue." },
       { name: "scanAngle", type: "number", default: "0", description: "Sensor mast angle in degrees, clamped to −65..65." },
       { name: "appendages", type: "number", default: "5", description: "Manipulator count, rounded and clamped to 3–6." },
@@ -287,7 +289,7 @@ export const docs: DocEntry[] = [
       { name: "interactive", type: "boolean", default: "true", description: "The sensor turns to the pointer while it is over the drawing." },
       ...droidForm,
     ],
-    notes: ["Hover does not animate itself; pass telemetry or a timeline value from outside.", "Appendage tools rotate among claw, probe, and ring end shapes for a readable asymmetric silhouette."],
+    notes: ["The appendages are set round the pod rather than side by side \u2014 the thing one elevation could not say. Off the front they are tubes on a ring, and the pod is a body of revolution.", "Hover does not animate itself; pass telemetry or a timeline value from outside.", "Appendage tools rotate among claw, probe, and ring end shapes for a readable asymmetric silhouette."],
   },
   {
     slug: "courier-droid", item: "courier-droid", title: "Courier droid", group: "Robots",
@@ -297,6 +299,7 @@ export const docs: DocEntry[] = [
 
 <CourierDroid heading={28} steering={18} travel={0.4} cargo="pod" antenna="dish" />`,
     props: [
+      view("plan", "droid"),
       { name: "heading", type: "number", default: "0", description: "Controlled chassis heading in degrees; values may make multiple turns." },
       { name: "steering", type: "number", default: "0", description: "Front-wheel steering in degrees, clamped to −45..45." },
       { name: "travel", type: "number", default: "0", description: "Wrapped tread phase; whole-number turns render identically." },
@@ -308,7 +311,7 @@ export const docs: DocEntry[] = [
       { name: "interactive", type: "boolean", default: "true", description: "It turns to face the pointer while the pointer is over it." },
       ...droidForm,
     ],
-    notes: ["Heading rotates the complete chassis while steering affects only the front axle.", "Travel changes clipped tread marks without creating an internal animation loop."],
+    notes: ["Plan view is the identity projection, heading included. The four wheels become cylinders, and the body, cargo module and antenna gain their heights, as the camera comes down off the vertical.", "Heading rotates the complete chassis while steering affects only the front axle.", "Travel changes clipped tread marks without creating an internal animation loop."],
   },
   {
     slug: "casing-droid", item: "casing-droid", title: "Casing droid", group: "Robots",
@@ -745,6 +748,105 @@ pose.height // hip height in world units`,
     ],
   },
   {
+    slug: "voxel-form", item: "voxel-form", title: "Voxel form", group: "Machines",
+    summary: "The workpiece on its own, with no machine around it. A continuous field sampled at your resolution and drawn as vector cells, so it can sit in a hero, a card or a loading state without a gantry bolted to it.",
+    files: ["components/ui/voxel-form.tsx"],
+    usage: `import { VoxelForm } from "@/components/ui/voxel-form"
+
+<VoxelForm shape="gear" behavior="refine" showPlate={false} />
+
+// Controlled, or a control:
+<VoxelForm progress={0.6} resolution={9} />
+<VoxelForm interactive onProgressChange={setProgress} />`,
+    props: [
+      { name: "shape", type: '"sphere" | "block" | "pyramid" | "gear" | "vessel" | "lattice"', default: '"sphere"', description: "Which occupancy field to sample." },
+      { name: "resolution", type: "number", default: "6", description: "Voxels along one edge, rounded and clamped to 2–14. Omit it under behavior=\"refine\" and it animates." },
+      { name: "progress", type: "number", description: "Controlled build fraction, clamped to 0–1. A non-finite value empties the plate." },
+      { name: "behavior", type: '"build" | "layer" | "refine" | "idle" | "static"', default: '"build"', description: "The shared fabricator cycle: lay the object and clear, work one layer, walk the resolution coarse to fine, or stand complete." },
+      { name: "speed", type: "number", default: "0.14", description: "Build cycles per second." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Drag up and down to lay or strip material; arrow keys step one layer." },
+      { name: "onProgressChange", type: "(progress: number) => void", description: "The commanded build fraction, fired throughout a drag or a key press." },
+      { name: "view", type: '"plan" | "front" | "profile" | "iso"', default: '"iso"', description: "Where the camera stands. One model, four projections." },
+      { name: "showPlate", type: "boolean", default: "true", description: "The plate the form stands on. Off, and it floats." },
+      { name: "showGround", type: "boolean", default: "true", description: "Contact shadow underneath." },
+      { name: "label", type: "string", description: "Caption underneath the form." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "The same geometry every fabricator in the set builds — one field, one deposition order, one set of vector cells. Pick this when you want the object and not the machine.",
+      "Cells buried inside the solid are never drawn. Raising the resolution rebuilds the same object out of smaller cells rather than making it bigger.",
+    ],
+  },
+  {
+    slug: "arm-fabricator", item: "arm-fabricator", title: "Arm fabricator", group: "Machines",
+    summary: "An articulated fabricator that has to reach for its work. The turret yaws toward the cell being laid and the shoulder and elbow are solved with the analytic two-link elbow, in the arm's own vertical plane.",
+    files: ["components/ui/arm-fabricator.tsx"],
+    usage: `import { ArmFabricator } from "@/components/ui/arm-fabricator"
+
+<ArmFabricator shape="gear" behavior="build" elbow="up" />
+
+// Controlled, or a control:
+<ArmFabricator progress={0.45} resolution={7} view="profile" />`,
+    props: [
+      { name: "shape", type: '"sphere" | "block" | "pyramid" | "gear" | "vessel" | "lattice"', default: '"gear"', description: "Which occupancy field to sample." },
+      { name: "resolution", type: "number", default: "6", description: "Voxels along one edge, rounded and clamped to 2–14." },
+      { name: "progress", type: "number", description: "Controlled build fraction, clamped to 0–1." },
+      { name: "behavior", type: '"build" | "layer" | "refine" | "idle" | "static"', default: '"build"', description: "The shared fabricator cycle." },
+      { name: "speed", type: "number", default: "0.12", description: "Build cycles per second." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Drag up and down to lay or strip material; arrow keys step one layer." },
+      { name: "onProgressChange", type: "(progress: number) => void", description: "The commanded build fraction." },
+      { name: "view", type: '"plan" | "front" | "profile" | "iso"', default: '"iso"', description: "Where the camera stands." },
+      { name: "elbow", type: '"up" | "down"', default: '"up"', description: "Which way the elbow breaks. Both are valid solutions for the same tip position." },
+      { name: "showPlate", type: "boolean", default: "true", description: "The build plate and the volume printed on it." },
+      { name: "showReadout", type: "boolean", default: "true", description: "Build percentage and voxel resolution." },
+      { name: "showGround", type: "boolean", default: "true", description: "Contact shadow under the cell." },
+      { name: "signal", type: '"idle" | "ready" | "warning"', description: "Shoulder lamp. Omit it and it lights while material is landing." },
+      { name: "label", type: "string", description: "Caption under the readout." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "Solved: the yaw, the shoulder and the elbow. Illustrated: the wrist, which holds the nozzle vertical because that is how a deposition head works rather than being solved for an orientation.",
+      "The goal is clamped onto the reachable sphere before the elbow is solved, so both links always hold the lengths they claim. A cell the arm cannot get to shows as a longer beam, never as a stretched forearm — and the arm is placed so that, at the shipped link lengths, no cell in the volume is out of reach.",
+      "Same field, same deposition order and same build line as the rest of the family: only the body carrying the nozzle is different.",
+    ],
+  },
+  {
+    slug: "drone-fabricator", item: "drone-fabricator", title: "Drone fabricator", group: "Machines",
+    summary: "A free-flying fabricator with no envelope at all. A repulsor platform flies to each cell, rides a fixed standoff above the build line, and banks into its own travel.",
+    files: ["components/ui/drone-fabricator.tsx"],
+    usage: `import { DroneFabricator } from "@/components/ui/drone-fabricator"
+
+<DroneFabricator shape="vessel" pods={6} behavior="build" />
+
+// Controlled, or a control:
+<DroneFabricator progress={0.35} resolution={8} view="front" />`,
+    props: [
+      { name: "shape", type: '"sphere" | "block" | "pyramid" | "gear" | "vessel" | "lattice"', default: '"vessel"', description: "Which occupancy field to sample." },
+      { name: "resolution", type: "number", default: "6", description: "Voxels along one edge, rounded and clamped to 2–14." },
+      { name: "progress", type: "number", description: "Controlled build fraction, clamped to 0–1." },
+      { name: "behavior", type: '"build" | "layer" | "refine" | "idle" | "static"', default: '"build"', description: "The shared fabricator cycle." },
+      { name: "speed", type: "number", default: "0.12", description: "Build cycles per second." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Drag up and down to lay or strip material; arrow keys step one layer." },
+      { name: "onProgressChange", type: "(progress: number) => void", description: "The commanded build fraction." },
+      { name: "view", type: '"plan" | "front" | "profile" | "iso"', default: '"iso"', description: "Where the camera stands." },
+      { name: "pods", type: "number", default: "4", description: "Repulsor pods around the deck, rounded and clamped to 3–6. The deck tilts with the bank, so a pod on the low side really does sit lower." },
+      { name: "showPlate", type: "boolean", default: "true", description: "The plate the solid is built on." },
+      { name: "showReadout", type: "boolean", default: "true", description: "Build percentage and voxel resolution." },
+      { name: "showGround", type: "boolean", default: "true", description: "Contact shadow, plus the platform's own shadow tracking it across the plate." },
+      { name: "signal", type: '"idle" | "ready" | "warning"', description: "Pod and deck lamps. Omit them and they light while material is landing." },
+      { name: "label", type: "string", description: "Caption under the readout." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "Solved: the deposition order, the flight target and the bank, which is taken from how far the platform still has to travel to the next cell. Illustrated: the repulsors — there is no thrust or lift model behind them.",
+      "No frame and no rails, so the reachable volume is bounded by where the platform can fly rather than by an envelope.",
+      "Same field, same deposition order and same build line as the rest of the family.",
+    ],
+  },
+  {
     slug: "voxel-geometry", item: "voxel-geometry", title: "Voxel geometry", group: "Foundations",
     summary: "The sampler behind the fabricator: continuous occupancy fields over the unit cube, turned into buildable cells in deposition order, with the buried ones dropped.",
     files: ["lib/robocn/voxel.ts"],
@@ -897,6 +999,7 @@ pose.height // body height in world units`,
 <RobotRover behavior="pointer" interactive onHeadingChange={setHeading} />
 <RobotRover heading={25} steering={15} wheelTravel={0.4} active />`,
     props: [
+      view("plan", "rover"),
       { name: "wheels", type: "4 | 6", default: "4", description: "Two or three axles. Only the front axle steers." },
       { name: "behavior", type: '"patrol" | "wander" | "pointer" | "static"', default: '"patrol"', description: "Drive a square patrol, drift about, or come round to face the pointer." },
       { name: "heading", type: "number", description: "Clockwise degrees from the top. Omit it and the rover drives behavior." },
@@ -911,7 +1014,7 @@ pose.height // body height in world units`,
       { name: "label", type: "string", description: "Caption underneath the rover, independent of heading." },
       ...form.slice(0, 2), ...palette,
     ],
-    notes: ["Any axis you supply wins for that axis alone: a controlled heading still leaves the treads and the steering to the component unless you supply those too.", "Steering is not a second animation — it is the heading error, which is why the rover leans into a turn and straightens as it finishes one. It is still an illustration rather than a dynamics solver: nothing integrates a driving path."],
+    notes: ["Plan view is the identity projection, and the heading is carried by the camera rather than by turning the picture, so the rover faces the same way from every angle. The wheels are cylinders and the chassis a box \u2014 neither of which a plan view ever had to have.", "Any axis you supply wins for that axis alone: a controlled heading still leaves the treads and the steering to the component unless you supply those too.", "Steering is not a second animation — it is the heading error, which is why the rover leans into a turn and straightens as it finishes one. It is still an illustration rather than a dynamics solver: nothing integrates a driving path."],
   },
   {
     slug: "robot-drone", item: "robot-drone", title: "Robot drone", group: "Robots",
