@@ -61,11 +61,11 @@ function StepperMotor({
     const wrapped = wrapStep(next, steps)
     setHeld(wrapped)
     onStepChange?.(wrapped)
-  }, [onStepChange, steps])
+  }, [onStepChange, setHeld, steps])
   const dragging = useRobotDrag(ref, {
     enabled: interactive,
     onDrag: React.useCallback((unit) => apply(Math.atan2(unit.y * 200 - 100, unit.x * 220 - 110) * steps / (Math.PI * 2)), [apply, steps]),
-    onDragEnd: React.useCallback(() => setHeld(null), []),
+    onDragEnd: React.useCallback(() => setHeld(null), [setHeld]),
   })
   const shell = robotSurface("shell", variant, palette)
   const machined = robotSurface("metal", variant, palette)

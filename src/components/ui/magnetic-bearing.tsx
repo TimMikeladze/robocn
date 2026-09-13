@@ -19,8 +19,8 @@ function MagneticBearing({ offset, onOffsetChange, axis = "x", behavior = "balan
   const ref = React.useRef<SVGSVGElement>(null); const [held, setHeld] = React.useState<number | null>(null); const controlled = offset !== undefined
   const hold = controlled ? (Number.isFinite(offset) ? clamp(offset, -1, 1) : 0) : held
   const goal = React.useCallback((clock: number) => magneticBearingGoal(behavior, clock), [behavior]); const motion = useRobotScalar(goal, { hold, rate: 3, speed, phase, paused, animate: animate && !controlled && behavior !== "static" }); const value = clamp(motion.value, -1, 1)
-  const apply = React.useCallback((next: number) => { const bounded = Math.round(clamp(next, -1, 1) * 100) / 100; setHeld(bounded); onOffsetChange?.(bounded) }, [onOffsetChange])
-  const dragging = useRobotDrag(ref, { enabled: interactive, onDrag: React.useCallback((unit) => apply(axis === "x" ? (unit.x - 0.5) * 2.4 : (unit.y - 0.5) * 2.4), [apply, axis]), onDragEnd: React.useCallback(() => setHeld(null), []) })
+  const apply = React.useCallback((next: number) => { const bounded = Math.round(clamp(next, -1, 1) * 100) / 100; setHeld(bounded); onOffsetChange?.(bounded) }, [onOffsetChange, setHeld])
+  const dragging = useRobotDrag(ref, { enabled: interactive, onDrag: React.useCallback((unit) => apply(axis === "x" ? (unit.x - 0.5) * 2.4 : (unit.y - 0.5) * 2.4), [apply, axis]), onDragEnd: React.useCallback(() => setHeld(null), [setHeld]) })
   const shell = robotSurface("shell", variant, palette); const machined = robotSurface("metal", variant, palette); const cast = robotSurface("dark", variant, palette); const face = aboutPoint(robotCamera(view).wall(), 110, 100, view === "profile" ? 0.92 : 1)
   const dx = axis === "x" ? value * 12 : 0; const dy = axis === "y" ? value * 12 : 0
   const left = axis === "x" ? 0.3 + (value + 1) * 0.35 : 0.5; const right = axis === "x" ? 1 - value * 0.35 : 0.5; const top = axis === "y" ? 0.65 + value * 0.35 : 0.5; const bottom = axis === "y" ? 0.65 - value * 0.35 : 0.5

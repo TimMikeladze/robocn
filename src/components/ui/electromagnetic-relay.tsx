@@ -79,11 +79,11 @@ function ElectromagneticRelay({
     const bounded = Math.round(clamp(next, 0, 1) * 100) / 100
     setHeld(bounded)
     onEnergizedChange?.(bounded)
-  }, [onEnergizedChange])
+  }, [onEnergizedChange, setHeld])
   const dragging = useRobotDrag(svgRef, {
     enabled: interactive,
     onDrag: React.useCallback((unit) => apply(1 - unit.y), [apply]),
-    onDragEnd: React.useCallback(() => setHeld(null), []),
+    onDragEnd: React.useCallback(() => setHeld(null), [setHeld]),
   })
   const closed = normally === "closed" ? value < 0.5 : value >= 0.5
   const angle = -17 + value * 17
