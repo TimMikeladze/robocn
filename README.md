@@ -198,6 +198,12 @@ installs at.
 | `flare-stack` | A knockout drum, a derrick-supported riser and a lit tip, under a plume whose length is a proportion and whose lean is the wind. |
 | `fractionating-column` | A crude tower whose tray count rebuilds the column — spacing, seams and draw heights all come off it. Four named cuts. |
 | `jackup-rig` | Fixed-length legs and a hull that climbs them: one number is both the air gap above the water and the stick-up above the deck. |
+| `household-geometry` | The closures in the building you live in and the machines inside it: a leaf that keeps its width, sectional panels that keep their length round a bend, a drum whose regime is one Froude number, a resonant tub, a roped hoist, and tracking slats that report their stops. |
+| `gabled-house` | A dwelling drawn as a machine: the ridge height is the pitch you pass it, the garage door's rigid panels ride one track from vertical to horizontal, and the fins and the array turn to face a sun that is just the time of day. |
+| `tower-block` | A residential tower with the lift left visible: the storey count is the height and the travel at once, and the counterweight falls exactly as far as the car rises. |
+| `espresso-machine` | A spring-lever group drawn as the linkage it is — lever, rod, piston — where the declining shot pressure is the spring paying its force back rather than a curve anyone drew. |
+| `refrigerator` | A cabinet whose doors are solved leaves on vertical hinges, with an interior that is a second drawing revealed by the swing and a lamp thrown by a real door switch. |
+| `washing-machine` | One drum either side of a Froude number of one: thrown and falling below it, pinned to the wall above it — and a tub that is worse at its critical speed than at full spin. |
 
 Installing a component pulls in what it needs: `robot-arm` brings `robot-kinematics`,
 `robot-style` and both hooks, and the theme variables ride along with `robot-style`.

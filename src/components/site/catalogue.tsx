@@ -154,6 +154,11 @@ import { CelestialAsteroid } from "@/components/ui/celestial-asteroid"
 import { Orrery } from "@/components/ui/orrery"
 import { BattleStation } from "@/components/ui/battle-station"
 import { DebrisField } from "@/components/ui/debris-field"
+import { GabledHouse } from "@/components/ui/gabled-house"
+import { TowerBlock } from "@/components/ui/tower-block"
+import { EspressoMachine } from "@/components/ui/espresso-machine"
+import { Refrigerator } from "@/components/ui/refrigerator"
+import { WashingMachine } from "@/components/ui/washing-machine"
 import { CatalogueStage } from "@/components/site/catalogue-stage"
 import { useNearViewport } from "@/components/site/use-near-viewport"
 import { Pumpjack } from "@/components/ui/pumpjack"
@@ -339,7 +344,7 @@ const art: Record<string, Art> = {
   "celestial-star": { line: "Limb darkening as a law, not a gradient.", art: <CelestialStar size={168} kind="giant" prominences={4} /> },
   "celestial-asteroid": { line: "The one body whose outline changes as it turns.", art: <CelestialAsteroid size={168} body="contact" seed={4} moonlet /> },
   orrery: { line: "Arms whose length is the orbital radius.", art: <Orrery size={176} bodies={5} eccentricity={0.6} /> },
-  "battle-station": { line: "A hull that comes apart into the plates it was made of.", art: <BattleStation size={168} behavior="detonate" phase={0.18} courses={9} perCourse={12} /> },
+  "battle-station": { line: "A hull that comes apart into the plates it was made of.", art: <BattleStation size={168} behavior="detonate" phase={0.18} courses={9} perCourse={12} spread={0.5} /> },
   "debris-field": { line: "A population, depth-sorted: near covers far.", art: <DebrisField size={168} behavior="drift" showTrails /> },
   "robot-sunflower": { line: "A golden-angle head, aimed at the light by a solved tracker.", art: <RobotSunflower size={176} track={false} florets={140} arms={8} /> },
 
@@ -370,6 +375,14 @@ const art: Record<string, Art> = {
   "phyllotaxis-geometry": { line: "A golden angle, and the Fibonacci arms that fall out of it.", art: <RobotSunflower size={176} variant="blueprint" track={false} florets={150} arms={13} /> },
   "celestial-geometry": { line: "Kepler's equation, ellipses about a focus, and the light.", art: <Orrery size={176} variant="blueprint" bodies={4} inclination={18} /> },
   "hull-geometry": { line: "A tiling that sums to one sphere, and the front that opens it.", art: <BattleStation size={176} variant="blueprint" behavior="detonate" phase={0.3} /> },
+  // The household: the building you live in, and the machines inside it.
+  "gabled-house": { line: "The ridge is the pitch, and the garage door really runs its track.", art: <GabledHouse size={196} behavior="arrive" storeys={2} pitch={42} phase={0.12} /> },
+  "tower-block": { line: "One rope, one sheave: the weight falls as far as the car rises.", art: <TowerBlock size={172} storeys={14} occupancy={0.62} /> },
+  "espresso-machine": { line: "A lever, a rod, a piston — and a spring that is the pressure.", art: <EspressoMachine size={196} cups={2} /> },
+  "refrigerator": { line: "Solved leaves, and an inside the swing reveals.", art: <Refrigerator size={158} layout="side-by-side" /> },
+  "washing-machine": { line: "Thrown below a Froude number of one, pinned above it.", art: <WashingMachine size={172} load={6} /> },
+  "household-geometry": { line: "Swings, sectional panels, a tumbling drum and a resonant tub.", art: <WashingMachine size={172} variant="blueprint" behavior="spin" load={6} /> },
+
 }
 
 /** Exported for the coverage test — a card that exists nowhere else is a bug. */

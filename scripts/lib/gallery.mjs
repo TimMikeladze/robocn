@@ -34,11 +34,14 @@ export const exercises = {
   "electromagnetism-geometry": "induction-motor",
   "linkage-geometry": "pumpjack",
   "voxel-geometry": "voxel-form",
+  "household-geometry": "washing-machine",
+  "vehicle-geometry": "robot-car",
   "use-robot-arm": "robot-arm",
   "use-robot-motion": "robot-loader",
   "use-pointer-target": "robot-face",
   "phyllotaxis-geometry": "robot-sunflower",
   "celestial-geometry": "celestial-planet",
+  "hull-geometry": "battle-station",
 }
 
 /**

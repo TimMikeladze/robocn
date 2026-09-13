@@ -5301,6 +5301,218 @@ squashRadii(30, 0.25)  // { rx, ry }, at constant volume`,
       "No damping inside the stance, no horizontal travel, no friction, no spin-up from contact, no material and no actuator. The loss is taken at take-off as a restitution coefficient, which is how a bounce is actually measured.",
     ],
   },
+  {
+    slug: "gabled-house", item: "gabled-house", title: "Gabled house", group: "Machines",
+    summary: "A dwelling drawn as a machine: the ridge is the pitch you pass it, the garage door's rigid panels ride one track, and the fins and the array turn to face a sun that is just the time of day.",
+    files: ["components/ui/gabled-house.tsx"],
+    usage: `import { GabledHouse } from "@/components/ui/gabled-house"
+
+<GabledHouse behavior="arrive" storeys={2} pitch={38} />
+
+// Or drive the whole day yourself — everything else follows from it.
+<GabledHouse sun={0.72} garage={0.6} view="iso" />
+<GabledHouse interactive onSunChange={setSun} />`,
+    props: [
+      view("front", "house"),
+      { name: "sun", type: "number", description: "Controlled time of day, 0 midnight to 1 midnight. Supplying it stops the loop." },
+      { name: "behavior", type: '"day" | "arrive" | "static"', default: '"day"', description: "Run a day, or run the same day with the garage opening for the arrival home in the late afternoon." },
+      { name: "storeys", type: "number", default: "2", description: "Storeys in the main body, rounded and clamped to 1–3. The eaves, the windows and the ridge all follow." },
+      { name: "pitch", type: "number", default: "38", description: "Roof pitch in degrees, clamped to 10–55. The ridge height is a consequence of it, not a second number." },
+      { name: "garage", type: "number", description: "Controlled sectional door travel, 0 shut to 1 open. Omit it and the behaviour decides." },
+      { name: "panels", type: "number", default: "4", description: "Panels in the garage curtain, 2–6. Every one keeps its height at every travel." },
+      { name: "array", type: "boolean", default: "true", description: "The tracking array on its mast in the garden." },
+      { name: "showSun", type: "boolean", default: "true", description: "Draw the sun on its arc. It is the input, so it is worth drawing." },
+      { name: "speed", type: "number", default: "0.08", description: "Days per second." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Drag across to run the day by hand — the frame's width is one day — or arrow-key it." },
+      { name: "onSunChange", type: "(sun: number) => void", description: "Time of day throughout a drag or a key press." },
+      { name: "showGround", type: "boolean", default: "true", description: "Draw the cast shadow, which leans away from the sun and lengthens as it drops." },
+      { name: "label", type: "string", description: "Caption under the drawing." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "The garage door is the mechanism worth the file: rigid panels placed by arc length along a track that runs up the opening, round a quarter bend and back under the head. A panel straddling the bend is the chord between its two rollers, which is what a real one is, and no panel stretches at any travel.",
+      "The fins and the array are the same solver at different stops. Both turn to face the sun and both report when they have run out of travel — the array is drawn at its stop rather than pointed at a sun it cannot reach.",
+      "The sun is a direction in the world, not a sprite on the page, so it moves correctly from all four cameras and the shadow it casts is the house's own footprint displaced by it.",
+      "Brick, glazing and planting are drawing. Nothing computes a heat flow, a daylight factor, a wind load or a real solar position for a real latitude: the arc is symmetric about noon, and the lit windows are a threshold on the sun's altitude.",
+      "A generic gabled dwelling. No maker, plan book, estate or address is reproduced here or in the demo.",
+    ],
+  },
+  {
+    slug: "tower-block", item: "tower-block", title: "Tower block", group: "Machines",
+    summary: "A residential tower with the lift left visible: the car and the counterweight hang on one rope over one sheave, so the weight falls exactly as far as the car rises.",
+    files: ["components/ui/tower-block.tsx"],
+    usage: `import { TowerBlock } from "@/components/ui/tower-block"
+
+<TowerBlock storeys={14} behavior="service" />
+
+// Or take the car yourself; it reports the storey it is standing at.
+<TowerBlock carriage={0.6} onFloorChange={setFloor} />
+<TowerBlock interactive cutaway storeys={20} occupancy={0.8} />`,
+    props: [
+      view("front", "tower"),
+      { name: "carriage", type: "number", description: "Controlled lift position, 0 at the bottom stop to 1 at the top. Supplying it stops the loop." },
+      { name: "behavior", type: '"service" | "night" | "static"', default: '"service"', description: "Run the car up the building and back with a dwell at each end, or park it at the ground between two late calls while the building empties." },
+      { name: "storeys", type: "number", default: "12", description: "Storeys above the podium, rounded and clamped to 4–24. It is the height, the facade grid and the lift's travel at once." },
+      { name: "occupancy", type: "number", default: "0.55", description: "How much of the building is in, 0 to 1. It scales a fixed pattern of lit windows — it does not model anybody." },
+      { name: "cutaway", type: "boolean", default: "true", description: "Cut the shaft open so the car, the ropes, the sheave and the counterweight are visible." },
+      { name: "crown", type: '"mast" | "plant" | "none"', default: '"mast"', description: "What sits on the roof: a plant deck, or a plant deck with a mast and its aviation lamp." },
+      { name: "speed", type: "number", default: "0.16", description: "Round trips of the car per second." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Drag up and down to take the car, or arrow-key it a storey at a time." },
+      { name: "onCarriageChange", type: "(carriage: number) => void", description: "Car position throughout a drag or a key press." },
+      { name: "onFloorChange", type: "(floor: number) => void", description: "The storey the car is standing at, 0-based, whenever it changes — not every pixel it passes." },
+      { name: "showGround", type: "boolean", default: "true", description: "Draw the contact shadow beneath the podium." },
+      { name: "label", type: "string", description: "Caption under the drawing." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "The rope cannot stretch, so the counterweight mirrors the car about mid travel and `hoistPose` reports the total rope length — equal at every position, which is the invariant its test checks rather than believes.",
+      "The storey count is the only structural axis: the height, the facade grid, the landing doors and the travel all come off it, so a four-storey block and a twenty-four-storey one are the same machine.",
+      "The lit windows are a fixed deterministic pattern scaled by occupancy. The same flat lights at the same occupancy every render — there is no dispatching, no call queue, no traffic and no people.",
+      "The aviation lamp is the one thing here on a clock of its own, and it is a lamp rather than a light model.",
+      "A generic residential tower. No building, architect, city or address is reproduced here or in the demo.",
+    ],
+  },
+  {
+    slug: "espresso-machine", item: "espresso-machine", title: "Espresso machine", group: "Machines",
+    summary: "A spring-lever group drawn as the linkage it is: lever, connecting rod, piston. The declining shot pressure is the spring paying its force back, not a curve somebody drew.",
+    files: ["components/ui/espresso-machine.tsx"],
+    usage: `import { EspressoMachine } from "@/components/ui/espresso-machine"
+
+<EspressoMachine behavior="pull" cups={2} />
+
+// Or scrub the shot and read the gauge off it.
+<EspressoMachine shot={0.45} onPressureChange={setBar} />
+<EspressoMachine interactive cutaway />`,
+    props: [
+      view("front", "machine"),
+      { name: "shot", type: "number", description: "Controlled progress through one pull, 0 to 1: a fast charge, then the long extraction. Supplying it stops the loop." },
+      { name: "behavior", type: '"pull" | "steam" | "idle" | "static"', default: '"pull"', description: "Pull one shot per cycle, steam with the wand, or stand idle with the lever up." },
+      { name: "cups", type: "1 | 2", default: "1", description: "Cups under the spout. Two is one basket split, which is what a double is." },
+      { name: "wand", type: "number", default: "18", description: "Steam wand angle in degrees from vertical, clamped to ±40." },
+      { name: "cutaway", type: "boolean", default: "true", description: "Cut the group open so the piston, the spring, the rod and the water under the piston are visible." },
+      { name: "speed", type: "number", default: "0.22", description: "Shots per second." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Drag down the frame to pull the lever through a shot, or arrow-key it." },
+      { name: "onShotChange", type: "(shot: number) => void", description: "Progress through the pull throughout a drag or a key press." },
+      { name: "onPressureChange", type: "(bar: number) => void", description: "Group pressure in bar, to a tenth, whenever it changes." },
+      { name: "showGround", type: "boolean", default: "true", description: "Draw the contact shadow under the machine." },
+      { name: "label", type: "string", description: "Caption under the drawing." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "The lever is a crank, the link is a connecting rod and the piston is the slider, so the piston position comes from `solveSliderCrank` — the same closed-loop solver the mud pump runs on. Pulling the lever down raises the piston and compresses the spring; letting it go is the shot.",
+      "Pressure is the spring's force over the piston area and nothing else, which is why the gauge falls through the extraction. A lever machine's declining profile is a property of springs, not a shape anyone chose.",
+      "Flow is Darcy's law through the puck, with a threshold below which nothing comes through at all, and what is in the cup is that flow integrated over the part of the shot that has happened — sampled rather than accumulated, so the same `shot` always gives the same cup.",
+      "One number is the whole state, which is what lets the stream run because the piston is descending rather than because a timer said so.",
+      "No temperature, no crema, no dose, no grind, no acoustics. The steam plume, the sight glass and the meniscus are drawing.",
+      "A generic lever machine. No manufacturer, model, badge or café is reproduced here or in the demo.",
+    ],
+  },
+  {
+    slug: "refrigerator", item: "refrigerator", title: "Refrigerator", group: "Machines",
+    summary: "A cabinet whose doors are solved leaves on vertical hinges, with an interior that is a second drawing revealed by the swing and a lamp thrown by a real door switch.",
+    files: ["components/ui/refrigerator.tsx"],
+    usage: `import { Refrigerator } from "@/components/ui/refrigerator"
+
+<Refrigerator behavior="service" layout="top-freezer" />
+
+// Or open it yourself, either compartment.
+<Refrigerator door={0.7} freezer={0} view="iso" />
+<Refrigerator interactive layout="side-by-side" onDoorChange={setDoor} />`,
+    props: [
+      view("front", "cabinet"),
+      { name: "door", type: "number", description: "Controlled fresh-food door, 0 shut to 1 at its 110° stop. Supplying it stops the loop." },
+      { name: "freezer", type: "number", description: "Controlled freezer door, independent of the fresh one." },
+      { name: "behavior", type: '"service" | "idle" | "static"', default: '"service"', description: "Open the fresh door, stand open, shut it, then do the same for the freezer — never both at once. Idle keeps it shut and cycles the compressor." },
+      { name: "layout", type: '"top-freezer" | "side-by-side" | "single"', default: '"top-freezer"', description: "Which leaves the cabinet has, how wide each is and where it is hinged." },
+      { name: "shelves", type: "number", default: "3", description: "Shelves in the fresh compartment, 2–5, spaced across whatever height that compartment has." },
+      { name: "showPlant", type: "boolean", default: "true", description: "Draw the condenser coil and the compressor at the back." },
+      { name: "speed", type: "number", default: "0.18", description: "Service cycles per second." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Drag across to swing the fresh door, or arrow-key it." },
+      { name: "onDoorChange", type: "(door: number) => void", description: "Fresh door opening throughout a drag or a key press." },
+      { name: "showGround", type: "boolean", default: "true", description: "Draw the contact shadow under the cabinet." },
+      { name: "label", type: "string", description: "Caption under the drawing." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "A leaf is a flat panel at an attitude: `swingPose` puts its free edge on a circle about the hinge so the door keeps its width at every angle, and `panelTransform` carries the handle and the display on the leaf, foreshortening as it opens and disappearing when it is edge-on.",
+      "The door is a slab, not a sheet — the same face again along its own normal — which is what gives it an edge from any camera but square on.",
+      "The lamp is a real door switch: it makes at a stated opening, so the inside lights when the seal breaks. The interior is only drawn once a door is open far enough to see past the leaf, which is also why it costs nothing when the cabinet is shut.",
+      "No thermodynamics. The compressor's duty cycle is a pattern on the clock, the display is a label, and nothing computes a heat load, a defrost or a door-open penalty.",
+      "A generic two-door cabinet. No manufacturer, model, badge or livery is reproduced here or in the demo.",
+    ],
+  },
+  {
+    slug: "washing-machine", item: "washing-machine", title: "Washing machine", group: "Machines",
+    summary: "One drum, and one dimensionless number deciding what it is doing: below a Froude number of one the load is thrown, at or above it the load is pinned to the wall.",
+    files: ["components/ui/washing-machine.tsx"],
+    usage: `import { WashingMachine } from "@/components/ui/washing-machine"
+
+<WashingMachine behavior="cycle" load={6} />
+
+// Or take the drum by hand and run it up through resonance.
+<WashingMachine rpm={320} onRpmChange={setRpm} interactive />
+<WashingMachine loading="top" door={0.8} view="iso" />`,
+    props: [
+      view("front", "machine"),
+      { name: "rpm", type: "number", description: "Controlled drum speed, 0–1600. Supplying it stops the loop." },
+      { name: "behavior", type: '"cycle" | "spin" | "dry" | "static"', default: '"cycle"', description: "A whole programme — tumbling wash, pause, then the spin ramping through the critical speed — or that ramp on its own, or a dry tumble with no water." },
+      { name: "loading", type: '"front" | "top"', default: '"front"', description: "A horizontal axis with a glass door, or a vertical axis under a hinged lid with an agitator." },
+      { name: "load", type: "number", default: "5", description: "Items in the drum, 0–10. Front loading only: they are solved, so they are only drawn where the solve holds." },
+      { name: "water", type: "number", description: "Water in the drum, 0 to 1. Forced to nothing above 300 rpm, because the pump runs before a spin." },
+      { name: "door", type: "number", default: "0", description: "Door or lid opening, 0 shut to 1 at its stop." },
+      { name: "programme", type: "number", default: "2", description: "Position on the eight-place dial, which indexes in 30° detents." },
+      { name: "speed", type: "number", default: "0.14", description: "Programmes per second." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Drag across to take the drum through the whole speed range — the interesting part is the critical speed on the way up — or arrow-key it." },
+      { name: "onRpmChange", type: "(rpm: number) => void", description: "Drum speed throughout a drag or a key press." },
+      { name: "showGround", type: "boolean", default: "true", description: "Draw the contact shadow under the case." },
+      { name: "label", type: "string", description: "Caption under the drawing." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "A body on the drum wall leaves it where gravity can no longer supply the centripetal force: cos α = ω²r/g. Below a Froude number of one there is a release angle and the load falls on a ballistic arc that really does rejoin the drum; at or above one there is none and the load is pinned. Wash and spin are the same solver either side of one number.",
+      "The tub is hung on springs, so it answers an out-of-balance load the way a rotor on a flexible mount does — quiet below its critical speed, violent at it, and calm again above it. It is the only machine in the set that is worse at one input than at a larger one, and the case is cut away so you can see the suspension answer.",
+      "A top-loading machine has a vertical axis, where gravity never lifts the load at all: the agitator moves it and the tumble release does not apply, so the solved load is not drawn there. The mouth is only drawn for a camera that can see down it.",
+      "One approximation, stated: the drum's angle is the clock times its speed rather than the integral of it, so changing the speed changes the rate from that moment rather than replaying history. Water, suds, heat and the wash itself are drawing.",
+      "A generic domestic washer. No manufacturer, model, programme names or badge is reproduced here or in the demo.",
+    ],
+  },
+  {
+    slug: "household-geometry", item: "household-geometry", title: "Household geometry", group: "Foundations",
+    summary: "The closures in the building you live in and the machines inside it: hinged leaves, sectional panels, a tumbling drum, a resonant suspension, a roped hoist, tracking slats, and flow through a packed bed.",
+    files: ["lib/robocn/household.ts"],
+    usage: `import { swingPose, sectionalPanels, tumblePose, suspensionPose, hoistPose } from "@/lib/robocn/household"
+
+swingPose(0.5, { width: 80, maxAngle: 110 })     // the free edge stays 80 from the hinge
+sectionalPanels(0.4, { panels: 4, opening: 28 }) // every panel still 7 long
+
+tumblePose(48, { radius: 0.25 }).regime           // "cataracting"
+tumblePose(1200, { radius: 0.25 }).release        // null — it never leaves the wall
+suspensionPose(320, { critical: 320 }).resonant   // true
+hoistPose(0.8, { travel: 180, sheave: 220 }).length // the same at every position`,
+    api: [
+      { name: "swingPose", type: "(open, options) => SwingPose", description: "A leaf hinged on a vertical edge. The free edge lies on a circle about the hinge, so it keeps its width at every angle, and `facing` is how much of it a front camera still sees." },
+      { name: "sectionalPanels", type: "(travel, options) => SectionalPanel[]", description: "Rigid panels on a track that runs up an opening, round a quarter bend and back under the head. Placed by arc length, with each panel the chord between its two rollers, so no panel stretches at any travel." },
+      { name: "sectionalTrack", type: "(options, steps?) => Vec2[]", description: "The track itself, as a polyline: what the rollers actually run in." },
+      { name: "tumblePose", type: "(rpm, options?) => TumblePose", description: "What a drum at this speed does to what is in it: the Froude number, the release angle where gravity can no longer hold the load to the wall, and the regime either side of one." },
+      { name: "tumbleCycle", type: "(rpm, options?) => TumbleCycle | null", description: "One item's trip: up the wall to release, through the air, and back onto the wall. The landing is the root of the quadratic that puts the projectile back on the drum circle. Null when the drum is stopped or centrifuging." },
+      { name: "tumbleItems", type: "(clock, rpm, count, options?) => TumbleItem[]", description: "Where the load is at a moment, spread evenly round that one cycle." },
+      { name: "suspensionPose", type: "(speed, options?) => SuspensionPose", description: "A tub hung on springs with an out-of-balance load: the textbook rotor response, small below the critical speed, large at it, and settling to the imbalance itself above it." },
+      { name: "hoistPose", type: "(position, options) => HoistPose", description: "A car roped to a counterweight over one sheave. The weight falls exactly as far as the car rises, and the total rope length is reported so that can be checked." },
+      { name: "slatPose", type: "(sun, options?) => SlatPose", description: "Blades that turn to face the sun over one day, the shade that follows from how far they turned, and a `clamped` flag when they wanted to turn further than their stops allow." },
+      { name: "extractionFlow", type: "(pressure, options?) => number", description: "Darcy's law through a packed bed, and nothing at all below the threshold rather than a negative trickle." },
+      { name: "springPressure", type: "(compression, options?) => number", description: "The pressure a compressed spring puts behind a piston — the whole of a lever machine's declining shot." },
+    ],
+    notes: [
+      "Pure functions over plain objects. No React, no dependencies, and no thermodynamics: nothing here computes a heat flow, a pressure drop in a pipe, a wind load, a temperature or an occupancy.",
+      "The tumble is the piece that earns the file. One dimensionless number decides the whole regime, which is why a washing machine's wash and its spin are the same solver rather than two animations, and why `tumbleCycle` returns null rather than a fiction when there is no release.",
+      "Every closure here is checked against the thing a drawing would get wrong: a leaf that keeps its width, a panel that keeps its length round a bend, a rope that keeps its length, a projectile that rejoins the drum, and a tracker that says when it has run out of travel.",
+    ],
+  },
 ]
 
 /**

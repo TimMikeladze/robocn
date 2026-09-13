@@ -158,6 +158,11 @@ Consumers install with `npx shadcn@latest add https://<host>/r/robot-arm.json`, 
 | `wheel-player` | ui | A pocket player whose click wheel is geared to its list, with a hold switch that is a real interlock. |
 | `slab-handset` | ui | One slab turned about its own axis: screen, edge, then the back and its camera array. |
 | `wrist-terminal` | ui | A crown geared to a dial, on a link band that keeps its length. |
+| `keyboard-geometry` | lib | Key travel with hysteresis, an asymmetric keystroke, a unit-pitch deck, matrix scan order, and caps as solids on a raked face. |
+| `key-switch` | ui | One switch, sectioned: a contact that closes partway down the travel and opens again higher than it closed. |
+| `robot-keypad` | ui | A raked bench entry pad on a scanned matrix: the key down and the cell being read are two different things. |
+| `robot-keyboard` | ui | A whole deck placed by a unit grid, caps sculpted per row, and a split layout whose halves are turned apart. |
+| `input-terminal` | ui | A console whose key deck drives its own screen: the glyph count is the keystrokes it has taken. |
 | `vehicle-geometry` | lib | Ackermann steering, steady-state articulation, the coordinated bank, a rigid body on N axles, the rocket equation, surface-piercing foil lift. |
 | `robot-car` | ui | One steering number, two different wheel angles, and a body that rides the road on its own axles. |
 | `transit-bus` | ui | An articulated bus whose rear section angle is solved from the hitch, with plug doors and a kneel on the doors' own number. |
@@ -185,6 +190,29 @@ Consumers install with `npx shadcn@latest add https://<host>/r/robot-arm.json`, 
 | `flare-stack` | ui | A modelled stack under an illustrated plume, and it says which is which. |
 | `fractionating-column` | ui | Tray count as an axis: spacing, seams and draw heights all come off it. |
 | `jackup-rig` | ui | Fixed legs, a climbing hull: one number is the air gap and the stick-up. |
+| `household-geometry` | lib | Hinged leaves, sectional panels, a drum's Froude regime, a resonant suspension, a roped hoist, tracking slats, Darcy flow. |
+| `gabled-house` | ui | A dwelling as a machine: the ridge is the pitch, the garage door rides a real track, the fins track the sun. |
+| `tower-block` | ui | Storeys as height and travel at once, with a car and counterweight on one rope. |
+| `espresso-machine` | ui | A spring-lever group solved as a slider-crank: the declining pressure is the spring. |
+| `refrigerator` | ui | Solved leaves on vertical hinges, an interior the swing reveals, and a lamp on a real door switch. |
+| `washing-machine` | ui | Wash and spin either side of a Froude number of one, over a tub that resonates on the way up. |
+
+### The household
+
+`vitest` over the solver and the five machines: a leaf's free edge on a circle about its hinge
+at every angle; every sectional panel exactly its own height at every travel, vertical when
+shut and flat when open; a release angle below a Froude number of one and none at or above it;
+the whole load inside the drum at every sample of a wash, thrown at a wash speed and pinned at
+a spin; the suspension worse at its critical speed than at four times it and settling to the
+imbalance itself above it; a hoist rope the same length at every car position, with the
+counterweight falling exactly as far as the car rises; a tracker clamped at its stops and
+saying so. `tsc --noEmit`, `eslint`, `registry:build` and `next build` clean.
+
+Rendered headless through all four views and all four variants at each step, which is what
+caught the three a drawing only shows: window and door artwork modelled with the whole
+cabinet's depth, so it tunnelled through the house in the isometric view; a lid's tub mouth
+drawn from a camera that cannot see down it; and a cast shadow that fell toward the sun
+instead of away from it.
 
 ### Humanoid skeleton
 
@@ -979,10 +1007,11 @@ Verified with `vitest` (32 solver assertions — the inner wheel always turning 
 rack giving an infinite radius, articulation signed with the steer and zero straight ahead, a
 body level on a level surface and taking a bump between its axles as travel, Δv adding across
 stages and monotonic pitch from 0 to 90, lift going as the square of speed and rise as its
-inverse, a steered wheel keeping its radius, a roll that preserves every length; and 41 over the
-machines — each controlled axis moving the mechanism it names, the labels, the keyboard
-controls, each behaviour sampler inside its own limits and neutral for a non-finite clock, and
-`NaN` on every numeric axis of every machine never reaching the DOM). That last one caught the
+inverse, a steered wheel keeping its radius, a roll that preserves every length; and 45 over the
+machines — each controlled axis moving the mechanism it names, the labels, the keyboard and
+pointer controls, each behaviour sampler inside its own limits and neutral for a non-finite
+clock, reduced motion scheduling no frame at all while the controls keep working, and `NaN` on
+every numeric axis of every machine never reaching the DOM). That last one caught the
 real bug in the family: a non-finite `phase` parks the motion clock at `NaN`, and everything
 derived from the clock rather than from the eased value — a wheel's rolling angle, a propeller's
 blade angle, a hull's heave — went to the DOM as `NaN` until each machine guarded it.
@@ -1080,3 +1109,76 @@ axis.
 all four views, the rear and the swim dragged with a mouse and stepped with Home/End and the
 arrows, reduced motion parking the loops (frame-identical over a second, against a frame that
 changes without it), the 150px catalogue cards, and the pages at 390px.
+
+## Input devices
+
+Four machines a person operates by pressing, on one new solver. The set had machines that make
+something, machines that move something and the parts a machine is assembled from, and nothing
+worked by a finger — but a key is a mechanism in exactly the sense the rest of the set means it:
+one degree of freedom, a spring, and a contact that closes at a point in the travel rather than
+at the end of it. `clamshell-laptop` already drew a keyboard, as fifty-five flat rects with no
+height, no travel and no switch under them; that is the honest limit of a keyboard drawn as
+decoration on another machine, and it is why this family exists. Design note:
+[input-devices.md](input-devices.md).
+
+Each earns its place on something the set did not have. `key-switch` is the first machine whose
+output is **discrete** — a contact that is closed or not, tripping partway down a continuous
+travel with overtravel left after it, and reopening *higher* than it closed, which is the only
+hysteresis in the set. `robot-keypad` is the first with a **scanned matrix**: state spread over a
+grid read one row at a time, so the key that is down and the cell being looked at are two
+different things and both are drawn. `robot-keyboard` is the first whose parts are **placed by a
+unit grid** — 1u, 1.25u, 6.25u on one pitch, with the stagger falling out of the widths — and
+whose caps are sculpted per row, so the deck has a real profile in elevation; `split` cuts the
+same rows and turns the halves about the deck's own centre. `input-terminal` is the first where
+**one mechanism drives another**: the glyph count on its screen is the keystrokes its deck has
+taken, so scrubbing the passage moves both because they are the same number.
+
+`keyboard-geometry` is the solver, and each export has an invariant the tests hold it to: travel
+closes the contact at the actuation point and reopens it at the reset, holding its state in
+between; the keystroke curve falls fast, dwells and returns slower, so a key never reads as a
+sine; rows are laid on a fixed unit pitch with a per-row stagger and each row's own width is
+reported, so a short row is drawn short rather than stretched; the scan walks the cells in the
+real order and wraps in both directions; and the deck frame is orthonormal at every rake, with
+caps standing on it as boxes that press along its normal, carrying their own spin in the plane
+and tilt on the top face. The rake is the mechanism rather than the styling — a face flat on the
+bench presses straight into a front camera and shows nothing.
+
+None of it is dynamics: no force curve, no tactile bump force, no click leaf physics, no
+rollover, no debounce, no ghosting and no character encoding. The screens draw structure — a
+status band, filled lines, an entry dot, a block cursor — never text, and the caps of a keyboard
+are blank, so a passage is a rhythm across the deck rather than something typed. Each machine's
+docs `notes` say so, and nothing in the set reproduces a manufacturer, product line, wordmark,
+key set or paint scheme.
+
+### Verification for these five items
+
+`vitest` — 55 tests across the solver and the four machines. The solver: the contact closing
+partway down and never at a point past the end of the travel, the hysteresis band holding its
+state in both directions, the keystroke curve's asymmetry, one unit pitch whatever a cap's width,
+a stagger that moves a row without changing its pitch, rows reported short, the home row as the
+sculpt's low point with the ends tilting inward, the scan energizing one row at a time and
+wrapping, a schedule that strikes each key in turn inside the passage at both ends, strikes
+outside the deck dropped rather than clamped, an orthonormal deck frame at every rake with its
+normal leaning toward the operator, caps as boxes that move with a press and are unchanged by a
+quarter turn of their own square, and `NaN` on every input. The machines: the stem driving the
+spring, the contact closing at 0.55 and not at 0.4 of a travel whose actuation is at half, the
+leaf staying closed at 0.45 on the way back up and opening at 0.2, the contact reported once per
+event rather than once per frame, the leg changing for a tactile bump and the jacket appearing
+only for a clicky one, the drawn travel scaling with the travel given, the cutaway drawn only
+from a camera that can see its plane, the keypad striking one key at a time with the readout
+filling a dot per digit, the matrix laid out as asked and scanned a row at a time, the rake
+changing the body, the deck coming to sixty-one keys because that is what the rows add up to, the
+split halves turned apart, the sculpt changing a cap, the ripple crossing the deck rather than
+pressing everything at once, the terminal's head stopping where the hinge stops and its screen
+filling from the same passage its keys are struck through, a screen that is off drawing no lines
+at all, the slider contracts, the accessible labels, palette overrides, and the behaviour
+samplers at fixed phases.
+
+`tsc --noEmit`, `eslint` and `pnpm registry:build` clean over these files, and `pnpm build` green.
+Driven in Chrome: the four docs pages, every behaviour and every variant switched through, all
+four views, the keyboard's passage dragged with a pointer (the slider's `aria-valuenow` moving
+0.38 → 0.75 and back into the behaviour on release), each machine sampled across real animation
+frames to confirm it runs its own cycle — the switch's contact tripping and holding through the
+hysteresis, the keypad's scan walking its cells, the terminal's lines filling — reduced motion
+forced on to confirm the loops park frame-identical, the catalogue cards at 150–170px, and the
+four pages at 390px with no horizontal overflow.

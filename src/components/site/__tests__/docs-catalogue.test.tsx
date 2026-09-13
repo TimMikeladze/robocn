@@ -181,6 +181,16 @@ const celestialSlugs = [
   "hull-geometry",
 ] as const
 
+/** The household: five machines and the solver under them. */
+const householdSlugs = [
+  "gabled-house",
+  "tower-block",
+  "espresso-machine",
+  "refrigerator",
+  "washing-machine",
+  "household-geometry",
+] as const
+
 const entries: CatalogueEntry[] = [
   { slug: 'robot-arm', title: 'Robot arm', summary: 'Articulated chain with eight tools.', group: 'Arms', item: 'robot-arm' },
   { slug: 'robot-rover', title: 'Robot rover', summary: 'Ground vehicle with steering.', group: 'Robots', item: 'robot-rover' },
@@ -254,6 +264,11 @@ describe('docs catalogue', () => {
   })
 
   it.each(electromagneticSlugs)("documents and demos %s", (slug) => {
+    expect(docs.some((entry) => entry.slug === slug && entry.item === slug)).toBe(true)
+    expect(demoFor(slug)).toBeTruthy()
+  })
+
+  it.each(householdSlugs)("documents and demos %s", (slug) => {
     expect(docs.some((entry) => entry.slug === slug && entry.item === slug)).toBe(true)
     expect(demoFor(slug)).toBeTruthy()
   })

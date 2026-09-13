@@ -110,6 +110,15 @@ const soundMachines = [
   "busker-droid",
 ] as const
 
+/** The household: the building you live in, and the machines inside it. */
+const householdCollection = [
+  "gabled-house",
+  "tower-block",
+  "espresso-machine",
+  "refrigerator",
+  "washing-machine",
+] as const
+
 /** The personal devices: five machines you carry, on one geometry solver. */
 const deviceCollection = [
   "clamshell-laptop",
@@ -146,6 +155,14 @@ describe("registry.json", () => {
     expect(item?.files).toHaveLength(1)
     expect(item?.files[0]?.path).toBe(`src/components/ui/${name}.tsx`)
     expect(item?.registryDependencies).toContain("{REGISTRY_URL}/r/sound-geometry.json")
+  })
+
+  it.each(householdCollection)("publishes %s as one UI source file", (name) => {
+    const item = registry.items.find((candidate) => candidate.name === name)
+    expect(item?.type).toBe("registry:ui")
+    expect(item?.files).toHaveLength(1)
+    expect(item?.files[0]?.path).toBe(`src/components/ui/${name}.tsx`)
+    expect(item?.registryDependencies).toContain("{REGISTRY_URL}/r/household-geometry.json")
   })
 
   it.each(deviceCollection)("publishes %s as one UI source file", (name) => {

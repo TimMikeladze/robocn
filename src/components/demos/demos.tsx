@@ -165,6 +165,11 @@ import {
   pitchProgram,
   stackDeltaV,
 } from "@/lib/robocn/vehicle"
+import { GabledHouse, type GabledHouseBehavior } from "@/components/ui/gabled-house"
+import { TowerBlock, type TowerBlockBehavior, type TowerBlockCrown } from "@/components/ui/tower-block"
+import { EspressoMachine, type EspressoBehavior } from "@/components/ui/espresso-machine"
+import { Refrigerator, type RefrigeratorBehavior, type RefrigeratorLayout } from "@/components/ui/refrigerator"
+import { WashingMachine, type WashingBehavior, type WashingLoading } from "@/components/ui/washing-machine"
 import { galleryEntries } from "@/components/site/gallery.generated"
 import { Segmented } from "@/components/site/segmented"
 import { Slider } from "@/components/ui/slider"
@@ -4058,7 +4063,9 @@ function BattleStationDemo() {
             <NumberControl label="charge" value={charge} min={0} max={100} onChange={setCharge} format={v => `${v}%`} />
           </>
         : <Hint>Drag across it to take the breakup. Put it back at zero and the sphere reassembles exactly — the plates are a real tiling, and the intact hull is not a second drawing. Drop the plating to watch the courses come off and the ribs show.</Hint>}
-      <Readout rows={[["breakup", `${Math.round(breakup * 100)}%`], ["plates", `${courses} × ~${perCourse}`]]} />
+      <Readout rows={drive === "manual"
+        ? [["breakup", `${Math.round(breakup * 100)}%`], ["plates", `${courses} × ~${perCourse}`]]
+        : [["plates", `${courses} × ~${perCourse}`], ["areas", "sum to 1"]]} />
     </>}>
       <BattleStation view={view} size={320} variant={variant} courses={courses} perCourse={perCourse}
         plating={plating / 100} trench={trench === "on"} emitters={emitters} spread={spread / 100}
@@ -4108,7 +4115,162 @@ export interface DemoProps {
   slug: string
 }
 
+
+function GabledHouseDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<GabledHouseBehavior | "manual">("arrive")
+  const [sun, setSun] = React.useState(0.42)
+  const [storeys, setStoreys] = React.useState(2)
+  const [pitch, setPitch] = React.useState(38)
+  const [garage, setGarage] = React.useState(0.6)
+  const [at, setAt] = React.useState(0.42)
+  const hour = `${String(Math.floor(at * 24)).padStart(2, "0")}:${String(Math.floor(((at * 24) % 1) * 60)).padStart(2, "0")}`
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="day" value={drive} options={["day", "arrive", "static", "manual"] as const} onChange={setDrive} />
+      <NumberControl label="storeys" value={storeys} min={1} max={3} onChange={setStoreys} />
+      <NumberControl label="pitch" value={pitch} min={10} max={55} onChange={setPitch} format={v => `${v}°`} />
+      <NumberControl label="garage" value={garage} min={0} max={1} step={0.05} onChange={setGarage} format={v => `${Math.round(v * 100)}%`} />
+      {drive === "manual"
+        ? <NumberControl label="sun" value={sun} min={0} max={1} step={0.01} onChange={setSun} format={v => `${Math.round(v * 100)}%`} />
+        : <Hint>Drag across to run the day by hand — the frame&apos;s width is one day. The fins and the array face the sun, and say so when they hit their stops.</Hint>}
+      <Readout rows={[["time", hour]]} />
+    </>}>
+      <GabledHouse view={view} size={330} variant={variant} storeys={storeys} pitch={pitch}
+        garage={garage} label="HOUSE / 01" onSunChange={setAt}
+        {...(drive === "manual" ? { sun } : { behavior: drive })} interactive />
+    </Bench>
+  )
+}
+
+function TowerBlockDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<TowerBlockBehavior | "manual">("service")
+  const [carriage, setCarriage] = React.useState(0.5)
+  const [storeys, setStoreys] = React.useState(12)
+  const [occupancy, setOccupancy] = React.useState(0.55)
+  const [crown, setCrown] = React.useState<TowerBlockCrown>("mast")
+  const [cutaway, setCutaway] = React.useState<"on" | "off">("on")
+  const [floor, setFloor] = React.useState(0)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="lift" value={drive} options={["service", "night", "static", "manual"] as const} onChange={setDrive} />
+      <Segmented label="crown" value={crown} options={["mast", "plant", "none"] as const} onChange={setCrown} />
+      <Segmented label="shaft" value={cutaway} options={["on", "off"] as const} onChange={setCutaway} />
+      <NumberControl label="storeys" value={storeys} min={4} max={24} onChange={setStoreys} />
+      <NumberControl label="lived in" value={occupancy} min={0} max={1} step={0.05} onChange={setOccupancy} format={v => `${Math.round(v * 100)}%`} />
+      {drive === "manual"
+        ? <NumberControl label="car" value={carriage} min={0} max={1} step={0.01} onChange={setCarriage} format={v => `${Math.round(v * 100)}%`} />
+        : <Hint>Drag up and down to take the car. The counterweight falls exactly as far as it rises — the rope cannot stretch.</Hint>}
+      <Readout rows={[["storey", `${floor}`]]} />
+    </>}>
+      <TowerBlock view={view} size={300} variant={variant} storeys={storeys} occupancy={occupancy}
+        crown={crown} cutaway={cutaway === "on"} label="TOWER / 01" onFloorChange={setFloor}
+        {...(drive === "manual" ? { carriage } : { behavior: drive })} interactive />
+    </Bench>
+  )
+}
+
+function EspressoMachineDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<EspressoBehavior | "manual">("pull")
+  const [shot, setShot] = React.useState(0.4)
+  const [cups, setCups] = React.useState<"1" | "2">("1")
+  const [wand, setWand] = React.useState(18)
+  const [cutaway, setCutaway] = React.useState<"on" | "off">("on")
+  const [bar, setBar] = React.useState(0)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["pull", "steam", "idle", "static", "manual"] as const} onChange={setDrive} />
+      <Segmented label="cups" value={cups} options={["1", "2"] as const} onChange={setCups} />
+      <Segmented label="group" value={cutaway} options={["on", "off"] as const} onChange={setCutaway} />
+      <NumberControl label="wand" value={wand} min={-40} max={40} onChange={setWand} format={v => `${v}°`} />
+      {drive === "manual"
+        ? <NumberControl label="shot" value={shot} min={0} max={1} step={0.01} onChange={setShot} format={v => `${Math.round(v * 100)}%`} />
+        : <Hint>Drag down the frame to pull the lever. The gauge falls through the shot because the spring is paying its force back.</Hint>}
+      <Readout rows={[["group", `${bar.toFixed(1)} bar`]]} />
+    </>}>
+      <EspressoMachine view={view} size={320} variant={variant} cups={cups === "2" ? 2 : 1}
+        wand={wand} cutaway={cutaway === "on"} label="LEVER / 01" onPressureChange={setBar}
+        {...(drive === "manual" ? { shot } : { behavior: drive })} interactive />
+    </Bench>
+  )
+}
+
+function RefrigeratorDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<RefrigeratorBehavior | "manual">("service")
+  const [layout, setLayout] = React.useState<RefrigeratorLayout>("top-freezer")
+  const [door, setDoor] = React.useState(0.6)
+  const [freezer, setFreezer] = React.useState(0)
+  const [shelves, setShelves] = React.useState(3)
+  const [at, setAt] = React.useState(0)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="doors" value={drive} options={["service", "idle", "static", "manual"] as const} onChange={setDrive} />
+      <Segmented label="layout" value={layout} options={["top-freezer", "side-by-side", "single"] as const} onChange={setLayout} />
+      <NumberControl label="shelves" value={shelves} min={2} max={5} onChange={setShelves} />
+      <NumberControl label="freezer" value={freezer} min={0} max={1} step={0.05} onChange={setFreezer} format={v => `${Math.round(v * 100)}%`} />
+      {drive === "manual"
+        ? <NumberControl label="door" value={door} min={0} max={1} step={0.05} onChange={setDoor} format={v => `${Math.round(v * 100)}%`} />
+        : <Hint>Drag across to swing the fresh door. The lamp is a real switch: it makes the moment the seal breaks.</Hint>}
+      <Readout rows={[["door", `${Math.round(at * 110)}°`]]} />
+    </>}>
+      <Refrigerator view={view} size={290} variant={variant} layout={layout} shelves={shelves}
+        freezer={freezer} label="COLD / 01" onDoorChange={setAt}
+        {...(drive === "manual" ? { door } : { behavior: drive })} interactive />
+    </Bench>
+  )
+}
+
+function WashingMachineDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<WashingBehavior | "manual">("cycle")
+  const [loading, setLoading] = React.useState<WashingLoading>("front")
+  const [rpm, setRpm] = React.useState(320)
+  const [load, setLoad] = React.useState(6)
+  const [door, setDoor] = React.useState(0)
+  const [at, setAt] = React.useState(0)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="cycle" value={drive} options={["cycle", "spin", "dry", "static", "manual"] as const} onChange={setDrive} />
+      <Segmented label="loading" value={loading} options={["front", "top"] as const} onChange={setLoading} />
+      <NumberControl label="load" value={load} min={0} max={10} onChange={setLoad} />
+      <NumberControl label="door" value={door} min={0} max={1} step={0.05} onChange={setDoor} format={v => `${Math.round(v * 100)}%`} />
+      {drive === "manual"
+        ? <NumberControl label="rpm" value={rpm} min={0} max={1600} step={10} onChange={setRpm} />
+        : <Hint>Drag across to run the drum up through 320 rpm — that is where the suspension resonates, and it is calm again above it.</Hint>}
+      <Readout rows={[["drum", `${Math.round(at)} rpm`]]} />
+    </>}>
+      <WashingMachine view={view} size={300} variant={variant} loading={loading} load={load}
+        door={door} label="WASH / 01" onRpmChange={setAt}
+        {...(drive === "manual" ? { rpm } : { behavior: drive })} interactive />
+    </Bench>
+  )
+}
+
 export const demos: Record<string, React.ComponentType<DemoProps>> = {
+  "gabled-house": GabledHouseDemo,
+  "tower-block": TowerBlockDemo,
+  "espresso-machine": EspressoMachineDemo,
+  refrigerator: RefrigeratorDemo,
+  "washing-machine": WashingMachineDemo,
+  "household-geometry": WashingMachineDemo,
   "robot-sunflower": RobotSunflowerDemo,
   "phyllotaxis-geometry": RobotSunflowerDemo,
   "celestial-planet": CelestialPlanetDemo,
