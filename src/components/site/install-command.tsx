@@ -38,7 +38,8 @@ function InstallCommand({ item, className, ...props }: InstallCommandProps) {
         ))}
       </div>
       <div className="flex items-center gap-2 px-3 py-2.5">
-        <code className="min-w-0 flex-1 overflow-x-auto font-mono text-[12.5px] whitespace-nowrap">
+        {/* The command is the point of the page: wrap it rather than clip it. */}
+        <code className="min-w-0 flex-1 font-mono text-[12.5px] break-all">
           {command}
         </code>
         <Button
