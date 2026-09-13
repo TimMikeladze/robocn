@@ -5745,6 +5745,285 @@ turnoutGeometry(8, 20).crossingAngle   // atan(1/8) in degrees`,
       "Illustrated: rail sections, the check rails' own geometry and the point machine's internals. No locking, no interlocking, no forces, and nothing runs over it.",
     ],
   },
+  {
+    slug: "gridiron-geometry", item: "gridiron-geometry", title: "Gridiron geometry", group: "Foundations",
+    summary: "The football family's dependency-free maths: the ball as a real prolate spheroid, drag-free ballistics, counter-rotating wheel exit conditions, a route tree sampled by arc length, a sprung pad arm at equilibrium, and the column pitch a hand on the turf implies.",
+    files: ["lib/robocn/gridiron.ts"],
+    usage: `import { ballSilhouette, kickFlight, launcherExit, sampleRoute } from "@/lib/robocn/gridiron"
+
+// The outline of an ellipsoid is a central section, not its equator.
+ballSilhouette(ballFrame({ pitch: 8, roll: 120 }), defaultBall, viewDir)
+
+kickFlight({ speed: 26, angle: 44 })      // { range, apex, hangTime, at, path }
+launcherExit({ top: 48, bottom: 16 })     // { speed, spin, bias }
+sampleRoute(routePath("post", { depth: 12 }), 13.4)  // { point, heading, turn }`,
+    api: [
+      { name: "ballFrame", type: "(attitude?) => BallFrame", description: "The ball's own axes in world space from a yaw, a pitch and a roll. At rest the nose points downfield and the laces face up." },
+      { name: "ballSilhouette", type: "(frame, shape, viewDir, steps?) => Vec3[]", description: "The outline, exactly: the great circle whose pole is M⁻¹Rᵀd, pushed back out through R M. End-on it degenerates to a circle of the waist radius, and nothing special-cases it." },
+      { name: "ballSeam / ballLaces / ballStripes", type: "(frame, shape, viewDir, …) => marks", description: "Surface marks, each carrying the sign of its own normal against the view, so what is on the far side is not drawn on the near one." },
+      { name: "flightAttitude", type: "(flight, t, options?) => BallAttitude", description: "Spiral, wobble, tumble and snap as one mechanism: the nose walks a cone at a third of the roll rate, and the cone opens as the spin comes down." },
+      { name: "kickFlight", type: "(options?) => KickFlight", description: "A drag-free parabola. The hang time, range, apex and impact angle are read off the one curve rather than typed in." },
+      { name: "launcherExit", type: "(options?) => LauncherExit", description: "Exit speed is the mean of the two wheel surface speeds; spin is their difference over the ball's own diameter." },
+      { name: "routePath / sampleRoute", type: "(route, options?) => Vec2[] / (path, distance) => RouteSample", description: "Eleven routes in yards, and the runner at an arc length along one: position, heading, and how hard it is turning at the nearest break." },
+      { name: "playerSpine / playerUpperBody", type: "(options) => Vec3[] / UpperBody", description: "Equal segments at a constant curvature whose chord is the pitch asked for, plus the head's own axes so a helmet lays onto it as a solid." },
+      { name: "stancePitch", type: "(options) => number", description: "The column pitch that puts the shoulder exactly one arm's length from a hand already on the turf. Bisection on the same column the drawing uses." },
+      { name: "sledDeflection / sledSlide", type: "(load, options?) => number / (drive, options?) => SledSlide", description: "Static equilibrium of a pivoted pad arm against its return spring, and the friction threshold a frame will not move below." },
+      { name: "helmetOutline / facemaskBars / shoulderYoke / padOutline", type: "(…) => Vec2[]", description: "The kit all four players wear. Illustration, shared so they match — nothing here is load-bearing." },
+    ],
+    notes: [
+      "No React, no three.js, no dependencies beyond the kinematics and skeleton cores, and nothing is mutated.",
+      "Every trajectory is drag-free. That is an exact parabola of a ball that does not exist: a real punt goes a good deal less far, and the hang time is optimistic.",
+      "The wheel launcher assumes no slip at either contact. A real one loses some of the surface speed to the ball skidding through the gap.",
+      "There is no contact, no defender, no rule and no clock anywhere in it.",
+    ],
+  },
+  {
+    slug: "robot-football", item: "robot-football", title: "Robot football", group: "Robots",
+    summary: "The ball, modelled rather than drawn: a prolate spheroid whose outline is its own central section, with laces on the surface that go round the back when it spins.",
+    files: ["components/ui/robot-football.tsx"],
+    usage: `import { RobotFootball } from "@/components/ui/robot-football"
+
+<RobotFootball behavior="spiral" />
+
+// Controlled, or a ball you can turn in your hand.
+<RobotFootball view="front" yaw={90} pitch={12} roll={140} />
+<RobotFootball interactive onAttitudeChange={setAttitude} />`,
+    props: [
+      view("profile", "ball"),
+      { name: "roll", type: "number", description: "Controlled roll about the long axis, in degrees. Any of the three attitude props stops the loop." },
+      { name: "pitch", type: "number", description: "Controlled nose attitude in degrees, positive nose up." },
+      { name: "yaw", type: "number", description: "Controlled nose bearing in degrees, positive turning right." },
+      { name: "behavior", type: '"spiral" | "wobble" | "tumble" | "snap" | "hold" | "static"', default: '"spiral"', description: "A spiral and a wobble are the same mechanism with different numbers; a tumble takes the roll off and pitches it end over end." },
+      { name: "spin", type: "number", default: "6", description: "Turns about the long axis per cycle." },
+      { name: "wobble", type: "number", description: "Half-angle of the precession cone in degrees. Omit and the flight picks one." },
+      { name: "laces", type: "boolean", default: "true", description: "Draw the stitches. They are on the surface, so they are only drawn where the camera can see them." },
+      { name: "stripes", type: "boolean", default: "true", description: "Draw the two bands near the ends." },
+      { name: "speed", type: "number", default: "0.5", description: "Cycles per second." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Drag across to roll it, up and down to pitch it." },
+      { name: "onAttitudeChange", type: "(attitude: { yaw, pitch, roll }) => void", description: "The attitude throughout a drag or a key press." },
+      { name: "showGround", type: "boolean", default: "true", description: "Draw the contact shadow, which fades as a snap lifts the ball." },
+      { name: "label", type: "string", description: "Caption below the readout." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "The silhouette is the ellipsoid's own central section, not its equator, so it is exact from any angle: end-on it is a circle of the waist radius and broadside it reaches the full length, and nothing special-cases either.",
+      "Laces, seam and bands each carry the sign of their own normal against the view. Spinning the ball takes them round the back and brings them out the other side rather than sliding them across the front.",
+      "No air. The ball spins and precesses at whatever it is given and never decays.",
+    ],
+  },
+  {
+    slug: "gridiron-lineman", item: "gridiron-lineman", title: "Gridiron lineman", group: "Robots",
+    summary: "The three-point stance as a four-contact stance: the hand on the turf carries load, and the flat back is the column pitch that being down there implies.",
+    files: ["components/ui/gridiron-lineman.tsx"],
+    usage: `import { GridironLineman } from "@/components/ui/gridiron-lineman"
+
+<GridironLineman behavior="snap" number="74" />
+
+// Controlled, or a snap you can work by hand.
+<GridironLineman stance="two-point" fire={0.6} padLevel={0.9} />
+<GridironLineman interactive onFireChange={setFire} />`,
+    props: [
+      view("profile", "machine"),
+      { name: "fire", type: "number", description: "Controlled: 0 down in the stance, 1 at full extension. Supplying it stops the loop." },
+      { name: "behavior", type: '"snap" | "drive" | "pull" | "set" | "static"', default: '"snap"', description: "What it does when fire is not supplied. A snap is the whole sequence; drive and pull hold its middle open." },
+      { name: "stance", type: '"three-point" | "two-point" | "set" | "upright"', default: '"three-point"', description: "Only the three-point stance puts a hand down, and only that one carries load on it." },
+      { name: "padLevel", type: "number", default: "0.5", description: "How low it plays, 0 to 1: a deeper crouch and more lean off one number." },
+      { name: "mask", type: '"cage" | "bar" | "shield"', default: '"cage"', description: "Facemask style. Bars only — no livery, no markings." },
+      { name: "number", type: "string", default: '""', description: "Two characters on the chest plate. Your string; nobody real's." },
+      { name: "speed", type: "number", default: "0.4", description: "Cycles per second." },
+      ...gaitLoop(),
+      { name: "offset", type: "number", default: "0", description: "Seconds of offset, so a line of them does not fire together." },
+      { name: "interactive", type: "boolean", default: "false", description: "Drag across to work the snap by hand; arrow keys step it." },
+      { name: "onFireChange", type: "(fire: number) => void", description: "How far out of the stance, throughout a drag or a key press." },
+      { name: "showGround", type: "boolean", default: "true", description: "Draw the contact shadow." },
+      { name: "label", type: "string", description: "Caption below the readout." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "Solved: the legs, feet and pelvis are solveSkeleton from skeleton-kinematics — the same solver robot-skeleton ships. The arms come out of the gait's swing and are solved to their own targets, because in this stance they are doing two different jobs.",
+      "The flat back is not typed in. stancePitch bisects for the column pitch that leaves the shoulder exactly one arm's length from the hand on the turf, on the same column the drawing uses.",
+      "The feet are staggered by freezing the walk solver at a cycle fraction where one foot has just landed and the other is still on its toe — a real sample of the gait rather than a second pose table.",
+      "Illustrated: the helmet, facemask, shoulder yoke and pads. Nothing about them is load-bearing, and none of it is a team, a livery or a person.",
+      "No contact, no opponent and no ground reaction. The hand load is a share the stance declares, not a force anything computed.",
+    ],
+  },
+  {
+    slug: "gridiron-quarterback", item: "gridiron-quarterback", title: "Gridiron quarterback", group: "Robots",
+    summary: "A drop-back and a throw with the arm solved to a release point travelling an arc, and a ball that leaves on the velocity the hand had.",
+    files: ["components/ui/gridiron-quarterback.tsx"],
+    usage: `import { GridironQuarterback } from "@/components/ui/gridiron-quarterback"
+
+<GridironQuarterback behavior="throw" steps={7} number="09" />
+
+// Controlled, or a throw you can work by hand.
+<GridironQuarterback release={0.55} velocity={31} />
+<GridironQuarterback interactive onReleaseChange={setRelease} />`,
+    props: [
+      view("profile", "machine"),
+      { name: "release", type: "number", description: "Controlled swing: 0 cocked, 1 through the follow-through. Supplying it stops the loop." },
+      { name: "behavior", type: '"drop" | "throw" | "scramble" | "set" | "static"', default: '"throw"', description: "What it does when release is not supplied." },
+      { name: "steps", type: "number", default: "5", description: "Steps of the drop-back, which is how far into the pocket it goes." },
+      { name: "velocity", type: "number", default: "27", description: "Release speed in yards per second. A hard pass is about 27." },
+      { name: "mask", type: '"cage" | "bar" | "shield"', default: '"cage"', description: "Facemask style." },
+      { name: "number", type: "string", default: '""', description: "Two characters on the chest plate." },
+      { name: "showBall", type: "boolean", default: "true", description: "Draw the ball in the hand and on its way out of the frame." },
+      { name: "speed", type: "number", default: "0.4", description: "Cycles per second." },
+      ...gaitLoop(),
+      { name: "offset", type: "number", default: "0", description: "Seconds of offset." },
+      { name: "interactive", type: "boolean", default: "false", description: "Drag across to work the throw by hand." },
+      { name: "onReleaseChange", type: "(release: number) => void", description: "How far through the swing, throughout a drag or a key press." },
+      { name: "showGround", type: "boolean", default: "true", description: "Draw the contact shadow and the line the machine set up on." },
+      { name: "label", type: "string", description: "Caption below the readout." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "The elbow is never placed. The hand travels an arc through three points — cocked, released, followed through — and solveElbow3 makes of it what it can.",
+      "The release angle is the direction of the last part of the swing, sampled just before the ball leaves, so changing the arc changes the trajectory rather than only the picture.",
+      "The rest of the flight is not drawn. The machine is about two yards tall and the pass goes twenty, so the ball leaves on the real parabola and exits the frame; the range and hang time on the readout are the whole flight.",
+      "That parabola is drag-free, which flatters the throw.",
+    ],
+  },
+  {
+    slug: "gridiron-receiver", item: "gridiron-receiver", title: "Gridiron receiver", group: "Robots",
+    summary: "The route tree as geometry: the runner is a point at an arc length along a polyline, and the lean into a cut is the exterior angle at the break.",
+    files: ["components/ui/gridiron-receiver.tsx"],
+    usage: `import { GridironReceiver } from "@/components/ui/gridiron-receiver"
+
+<GridironReceiver route="post" depth={12} behavior="route" />
+
+// Controlled: put it anywhere along the route, in yards.
+<GridironReceiver route="corner" side={-1} distance={13.4} />
+<GridironReceiver behavior="catch" number="88" />`,
+    props: [
+      view("profile", "machine"),
+      { name: "route", type: '"go" | "hitch" | "slant" | "flat" | "out" | "in" | "curl" | "comeback" | "post" | "corner" | "wheel"', default: '"post"', description: "Which route. Outside breaks are positive x and inside breaks negative, so the whole tree mirrors on one sign." },
+      { name: "depth", type: "number", default: "12", description: "How deep the break is, in yards." },
+      { name: "side", type: "number", default: "1", description: "1 aligned right; -1 mirrors the whole route." },
+      { name: "distance", type: "number", description: "Controlled yards run along the route. Supplying it stops the loop." },
+      { name: "behavior", type: '"route" | "release" | "catch" | "idle" | "static"', default: '"route"', description: "What it does when distance is not supplied. Release is the first couple of yards worked back and forth." },
+      { name: "mask", type: '"cage" | "bar" | "shield"', default: '"cage"', description: "Facemask style." },
+      { name: "number", type: "string", default: '""', description: "Two characters on the chest plate." },
+      { name: "showRoute", type: "boolean", default: "true", description: "Draw the route map beside the machine. It is a map at field scale, and the panel says so." },
+      { name: "speed", type: "number", default: "0.28", description: "Cycles per second." },
+      ...gaitLoop(),
+      { name: "offset", type: "number", default: "0", description: "Seconds of offset." },
+      { name: "interactive", type: "boolean", default: "false", description: "Drag across to run the route by hand." },
+      { name: "onDistanceChange", type: "(yards: number) => void", description: "Yards along the route, throughout a drag or a key press." },
+      { name: "showGround", type: "boolean", default: "true", description: "Draw the contact shadow, which fades in the flight phase of a run." },
+      { name: "label", type: "string", description: "Caption below the readout." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "Nobody typed a lean. sampleRoute returns the turn being taken at the nearest corner, faded in over a couple of yards either side of it, and that number is the bank, the shoulder twist and the head turn.",
+      "The gait phase comes off the distance run rather than a second clock, so the stride cannot drift away from the ground the machine is covering.",
+      "Two scales on purpose: the machine at machine scale and the route beside it at field scale, because a twelve-yard route is six machine-heights long and one scale would lose one of them.",
+      "No defenders, no coverage, no separation. The ball only appears when catch puts one in the hands.",
+    ],
+  },
+  {
+    slug: "gridiron-kicker", item: "gridiron-kicker", title: "Gridiron kicker", group: "Robots",
+    summary: "A swing leg solved to an ankle path that passes through the ball, and a drag-free parabola that starts where the strike happened. Whether it is good is read off the plot.",
+    files: ["components/ui/gridiron-kicker.tsx"],
+    usage: `import { GridironKicker } from "@/components/ui/gridiron-kicker"
+
+<GridironKicker kick="place" distance={38} />
+
+// Controlled, or a punt with its own hang time.
+<GridironKicker kick="punt" swing={0.5} power={1} />
+<GridironKicker interactive onSwingChange={setSwing} />`,
+    props: [
+      view("profile", "machine"),
+      { name: "swing", type: "number", description: "Controlled: 0 cocked, 0.5 at contact, 1 through the follow-through. Supplying it stops the loop." },
+      { name: "behavior", type: '"kick" | "approach" | "set" | "static"', default: '"kick"', description: "What it does when swing is not supplied." },
+      { name: "kick", type: '"place" | "punt" | "kickoff"', default: '"place"', description: "A punt is struck from the hands and much higher, which is a different trajectory rather than a different number." },
+      { name: "power", type: "number", default: "0.85", description: "How hard, 0 to 1. Scales the launch speed the kick style starts from." },
+      { name: "angle", type: "number", description: "Launch angle in degrees. Omit and the kick style picks one." },
+      { name: "distance", type: "number", default: "35", description: "Distance to the uprights, in yards. The bar is at ten feet, and clearing it is computed." },
+      { name: "mask", type: '"cage" | "bar" | "shield"', default: '"bar"', description: "Facemask style." },
+      { name: "number", type: "string", default: '""', description: "Two characters on the chest plate." },
+      { name: "showPlot", type: "boolean", default: "true", description: "Draw the flight plot above the machine. It is at field scale, and the panel says how many yards it spans." },
+      { name: "speed", type: "number", default: "0.4", description: "Cycles per second." },
+      ...gaitLoop(),
+      { name: "offset", type: "number", default: "0", description: "Seconds of offset." },
+      { name: "interactive", type: "boolean", default: "false", description: "Drag across to work the swing by hand." },
+      { name: "onSwingChange", type: "(swing: number) => void", description: "How far through the swing, throughout a drag or a key press." },
+      { name: "showGround", type: "boolean", default: "true", description: "Draw the contact shadow." },
+      { name: "label", type: "string", description: "Caption below the readout." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "The launch height is the height of the strike on the swing path, so a punt starts where the ball was dropped and a placement starts off the turf. Different trajectory, same solver.",
+      "CLEARS or SHORT is the ball's height where the bar is, against the height of the bar. Nothing declares the result.",
+      "Two scales on purpose: the machine at machine scale, and the flight above it at field scale with the span written on the panel.",
+      "The parabola is drag-free. A real ball does not go this far and does not hang this long.",
+    ],
+  },
+  {
+    slug: "blocking-sled", item: "blocking-sled", title: "Blocking sled", group: "Machines",
+    summary: "Pads at a static equilibrium — the load's moment against a return spring's — on a frame that will not move at all until the drive beats the friction under its skids.",
+    files: ["components/ui/blocking-sled.tsx"],
+    usage: `import { BlockingSled } from "@/components/ui/blocking-sled"
+
+<BlockingSled behavior="drive" pads={5} />
+
+// Controlled, or a sled you can lean on.
+<BlockingSled load={0.8} stiffness={4000} weight={400} />
+<BlockingSled interactive onLoadChange={setLoad} />`,
+    props: [
+      view("iso", "machine"),
+      { name: "load", type: "number", description: "Controlled load on the pads, 0 to 1. Supplying it stops the loop." },
+      { name: "behavior", type: '"drive" | "hit" | "recoil" | "idle" | "static"', default: '"drive"', description: "What it does when load is not supplied. Recoil is a loaded pad let go, ringing back through its own spring." },
+      { name: "pads", type: "number", default: "3", description: "How many pads the frame carries, 1 to 5." },
+      { name: "stiffness", type: "number", default: "2600", description: "Return spring rate, torque per radian. Stiffer gives less ground for the same load." },
+      { name: "weight", type: "number", default: "220", description: "What the frame weighs, which is what has to be beaten before it moves at all." },
+      { name: "friction", type: "number", default: "0.62", description: "Static friction under the skids." },
+      { name: "speed", type: "number", default: "0.45", description: "Cycles per second." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Drag across to lean on it; let go and the springs take it back." },
+      { name: "onLoadChange", type: "(load: number) => void", description: "The load throughout a drag or a key press." },
+      { name: "showGround", type: "boolean", default: "true", description: "Draw the contact shadow." },
+      { name: "label", type: "string", description: "Caption below the readout." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "The pad angle is a static equilibrium, found by bisection: the load's moment falls off as the cosine of the angle while the spring's climbs linearly, so there is exactly one crossing. That is why the last few degrees cost so much more than the first few.",
+      "The frame is a threshold, not a ramp. Nothing happens until the drive beats the static friction under the skids; past that, the surplus is what accelerates it, and the readout says which side of the line the machine is on.",
+      "Modelled once in the profile elevation and pushed through the camera, so the row of pads foreshortens from a raised camera rather than being redrawn per view.",
+      "No impact and no impulse. The deflection is a static balance and the slide is a constant acceleration — a real hit is neither.",
+    ],
+  },
+  {
+    slug: "ball-launcher", item: "ball-launcher", title: "Ball launcher", group: "Machines",
+    summary: "Two counter-rotating wheels: the ball leaves at the mean of their surface speeds and turns at their difference over its own diameter. Both numbers are on the readout.",
+    files: ["components/ui/ball-launcher.tsx"],
+    usage: `import { BallLauncher } from "@/components/ui/ball-launcher"
+
+<BallLauncher behavior="feed" elevation={30} />
+
+// Controlled: mismatch the wheels and the spin is the difference.
+<BallLauncher top={48} bottom={16} />
+<BallLauncher interactive onWheelsChange={setWheels} />`,
+    props: [
+      view("profile", "machine"),
+      { name: "top", type: "number", default: "34", description: "Top wheel speed in turns per second. Supplying either wheel stops the loop from picking them." },
+      { name: "bottom", type: "number", default: "22", description: "Bottom wheel speed in turns per second. Mismatch is spin." },
+      { name: "behavior", type: '"feed" | "spin" | "idle" | "static"', default: '"feed"', description: "Feed runs balls through; spin brings the wheels up with nothing going between them." },
+      { name: "elevation", type: "number", default: "26", description: "Barrel elevation in degrees. The wheels, the chute and the muzzle all lie on that axis." },
+      { name: "speed", type: "number", default: "0.5", description: "Cycles per second." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Drag up and down to bias the wheels, which is to dial the spin in." },
+      { name: "onWheelsChange", type: "(wheels: { top: number; bottom: number }) => void", description: "Both wheel speeds throughout a drag or a key press." },
+      { name: "showGround", type: "boolean", default: "true", description: "Draw the contact shadow under the tripod." },
+      { name: "label", type: "string", description: "Caption below the readout." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "Exit speed is the mean of the two contact speeds and spin is their difference over the ball's own diameter, both out of launcherExit off the same pair of inputs. Matched wheels throw it flat and fast; every turn of mismatch trades speed for rotation.",
+      "The wheels are drawn at the speeds they are given — the spokes index by the clock times the rate — so a wheel at half speed visibly turns at half speed.",
+      "No slip, no compression and no air. A real launcher loses some of the contact speed to the ball skidding through the gap; this one reports the ideal, which is the number the machine is set to.",
+    ],
+  },
 ]
 /**
  * Which group a registry item lands in when nobody has written its page yet.

@@ -203,6 +203,14 @@ Consumers install with `npx shadcn@latest add https://<host>/r/robot-arm.json`, 
 | `rail-bogie` | ui | The only self-excited motion in the set: coned treads, so the wheelsets weave at Klingel's wavelength until the flange stops them. |
 | `pantograph-collector` | ui | Height is bought with reach, and the head is level because a second closed loop says so — at one height, and not at the ends of the travel. |
 | `rail-turnout` | ui | A route is detection rather than a setting, so a turnout caught in mid-stroke has none; and the crossing angle is the turnout number and nothing else. |
+| `gridiron-geometry` | lib | The ball as a real prolate spheroid, drag-free ballistics, counter-rotating wheel exit conditions, a route tree sampled by arc length, a sprung pad arm at equilibrium, and the column pitch a hand on the turf implies. |
+| `robot-football` | ui | The outline is the ellipsoid's own central section, so end-on it is a circle; the laces are on the surface and go round the back. |
+| `gridiron-lineman` | ui | A three-point stance is a four-contact stance: the hand on the turf is what makes the back flat, and the pitch is solved for. |
+| `gridiron-quarterback` | ui | The elbow is an output of where the hand is on the swing, and the ball leaves on the velocity the hand had. |
+| `gridiron-receiver` | ui | Pose from a path: a point at an arc length along the route tree, leaning by the exterior angle at the break. |
+| `gridiron-kicker` | ui | A swing leg that meets a ball, and a parabola that starts where the strike did. Clearing the bar is computed. |
+| `blocking-sled` | ui | Static equilibrium against a return spring, on a frame with a friction threshold it will not move below. |
+| `ball-launcher` | ui | Mean of the two surface speeds out, difference as spin. Both numbers, one pair of inputs. |
 
 ### The rail machines
 
@@ -1238,3 +1246,68 @@ frames to confirm it runs its own cycle — the switch's contact tripping and ho
 hysteresis, the keypad's scan walking its cells, the terminal's lines filling — reduced motion
 forced on to confirm the loops park frame-identical, the catalogue cards at 150–170px, and the
 four pages at 390px with no horizontal overflow.
+
+## Gridiron machines
+
+Seven machines and one solver, `docs/gridiron-machines.md`. Four players in the postures the
+game asks for, the ball they throw, and the two pieces of training equipment that make them do
+it again. No team, league, franchise, character, logo, colourway or real number appears
+anywhere in it, including in demo labels and catalogue lines: the players are named for the job
+and wear plain plated armour in the set's own palette.
+
+The ball is the reason the family has a lib. A football is a prolate spheroid, and two things
+follow from writing it that way rather than drawing an oval. Its **silhouette is exact** from
+any angle — written as `p = R M q`, the surface normal is `R M⁻¹ q`, so the outline is the great
+circle of the unit sphere whose pole is `M⁻¹ Rᵀ d`, pushed back out through `R M`; end-on that
+degenerates to a circle of the waist radius, and nothing special-cases it. And the **laces are
+on the surface**, each carrying the sign of its own normal against the view, so a spiral takes
+them round the back instead of sliding them across the front.
+
+The players are `solveSkeleton` from `skeleton-kinematics` below the shoulders. The column is
+this family's own: `playerSpine` sweeps equal segments through a constant curvature centred so
+the **chord** comes out at the pitch asked for, where `spineCurve` accumulates its pitch down
+the column and so puts the chord at about half of it. Making the chord the number is what lets
+`stancePitch` bisect for it: the flat back of a three-point stance is the pitch that leaves the
+shoulder exactly one arm's length from a hand already on the turf, not a number anybody typed.
+
+Two machines carry a second register at a different scale, and say so on the panel: the
+receiver's route map and the kicker's flight plot are both at field scale, because a machine is
+two yards tall and a route is twelve. The quarterback has no second register at all — the ball
+leaves on the real parabola and exits the frame, with the range and hang time on the readout.
+
+Every trajectory in the family is drag-free, and the plot says `DRAG-FREE` on its own axis
+label. There is no air, no contact, no defender, no rule and no clock.
+
+### Verification for these eight items
+
+`vitest` — 41 solver tests and 31 across the seven machines. The solver: an orthonormal ball
+frame at any attitude, every surface point actually on the spheroid it claims, the end-on
+silhouette a circle of the waist radius with nothing along the axis, the broadside one reaching
+the full length, every silhouette point's real normal perpendicular to the view (which is what
+makes it the outline), the laces facing the camera at one roll and away at the opposite one,
+a spiral's cone tighter than a wobble's, whole cycles repeating in both directions, the parabola
+against its own closed form, forty-five degrees as the furthest range off the ground, a steeper
+launch trading range for hang time, matched wheels giving no spin and the spin equal to the
+surface difference over the ball's circumference, every named route with real length and the
+tree mirroring on one sign, arc-length sampling clamped at both ends, the turn appearing only
+near a break, the pad arm's equilibrium checked as a moment balance and its returns diminishing,
+the frame held below the friction threshold, the column's segments equal with its chord at the
+pitch asked for, the stance pitch putting the shoulder exactly one arm from the hand and laying
+the back flat, an orthonormal head frame at any pitch, and `NaN` on every input. The machines:
+the laces thinning as the ball rolls away, the end-on outline round and the broadside one long,
+the hand leaving the turf when the lineman fires and only the three-point stance putting one
+there, the helmet sitting lower in a stance than standing, the throwing arm moving through the
+swing with the ball changing from held to away, a harder throw ranging further, the receiver's
+body turning with the route and the label changing from running straight to cutting, the route
+map redrawing on a new route, the kicking leg swinging and the tee disappearing at contact,
+CLEARS and SHORT decided from the flight rather than declared, a punt out-hanging a placement,
+the sled's returns diminishing and its frame held or sliding on the threshold, the pad count
+clamped, topspin and backspin from which wheel is faster, the whole head elevating together,
+every behaviour sampler at fixed phases, palette overrides, accessible labels, and every view
+and variant rendering with no `NaN` in the DOM.
+
+`tsc --noEmit`, `eslint` and `pnpm registry:build` clean, and `pnpm build` green. Driven in
+Chrome at the eight docs pages: every behaviour, variant and view switched through, each machine
+grabbed with a pointer and released back into its behaviour, reduced motion forced on to confirm
+the loops park, the catalogue cards at 150–210px, and the pages at 390px with no horizontal
+overflow.

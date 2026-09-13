@@ -4144,6 +4144,192 @@
           "target": "@ui/rail-turnout.tsx"
         }
       ]
+    },
+    {
+      "name": "gridiron-geometry",
+      "type": "registry:lib",
+      "title": "Gridiron geometry",
+      "description": "The football family's maths: the ball as a real prolate spheroid whose silhouette and laces are exact from any angle, drag-free ballistics, counter-rotating wheel exit conditions, a route tree sampled by arc length, a sprung pad arm solved to equilibrium, and the column pitch a hand on the turf implies.",
+      "categories": [
+        "robotics",
+        "math"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/skeleton-kinematics.json"
+      ],
+      "files": [
+        {
+          "path": "src/lib/robocn/gridiron.ts",
+          "type": "registry:lib",
+          "target": "@lib/robocn/gridiron.ts"
+        }
+      ]
+    },
+    {
+      "name": "robot-football",
+      "type": "registry:ui",
+      "title": "Robot football",
+      "description": "The ball, modelled rather than drawn: a prolate spheroid whose outline is its own central section, so end-on it is a circle and broadside it reaches the full length. The laces are stitches on the surface, so a spiral takes them round the back.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/gridiron-geometry.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/robot-football.tsx",
+          "type": "registry:ui",
+          "target": "@ui/robot-football.tsx"
+        }
+      ]
+    },
+    {
+      "name": "gridiron-lineman",
+      "type": "registry:ui",
+      "title": "Gridiron lineman",
+      "description": "A three-point stance is a four-contact stance: the hand on the turf carries load, and the flat back is the column pitch that puts the shoulder exactly one arm's length from it. Fires out of the stance and drives.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/skeleton-kinematics.json",
+        "{REGISTRY_URL}/r/gridiron-geometry.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/gridiron-lineman.tsx",
+          "type": "registry:ui",
+          "target": "@ui/gridiron-lineman.tsx"
+        }
+      ]
+    },
+    {
+      "name": "gridiron-quarterback",
+      "type": "registry:ui",
+      "title": "Gridiron quarterback",
+      "description": "A drop-back and a throw with the arm solved to a release point travelling an arc, so the elbow is an output. The ball leaves on the velocity the hand had, and the readout carries the range and hang time the parabola produced.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/skeleton-kinematics.json",
+        "{REGISTRY_URL}/r/gridiron-geometry.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/gridiron-quarterback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/gridiron-quarterback.tsx"
+        }
+      ]
+    },
+    {
+      "name": "gridiron-receiver",
+      "type": "registry:ui",
+      "title": "Gridiron receiver",
+      "description": "The route tree as geometry: the runner is a point at an arc length along a polyline, the heading turns the whole machine, and the lean into a cut is the exterior angle at the break. A field-scale route map sits beside the machine.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/skeleton-kinematics.json",
+        "{REGISTRY_URL}/r/gridiron-geometry.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/gridiron-receiver.tsx",
+          "type": "registry:ui",
+          "target": "@ui/gridiron-receiver.tsx"
+        }
+      ]
+    },
+    {
+      "name": "gridiron-kicker",
+      "type": "registry:ui",
+      "title": "Gridiron kicker",
+      "description": "A swing leg solved to an ankle path that passes through the ball, and a drag-free parabola that starts where the strike happened. Whether it clears the bar is read off the flight plot rather than typed in.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/skeleton-kinematics.json",
+        "{REGISTRY_URL}/r/gridiron-geometry.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/gridiron-kicker.tsx",
+          "type": "registry:ui",
+          "target": "@ui/gridiron-kicker.tsx"
+        }
+      ]
+    },
+    {
+      "name": "blocking-sled",
+      "type": "registry:ui",
+      "title": "Blocking sled",
+      "description": "A training sled whose pads sit at a static equilibrium — the load's moment against a return spring's, solved by bisection — on a frame that will not move at all until the drive beats the friction under its skids.",
+      "categories": [
+        "robotics",
+        "machines"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/gridiron-geometry.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/blocking-sled.tsx",
+          "type": "registry:ui",
+          "target": "@ui/blocking-sled.tsx"
+        }
+      ]
+    },
+    {
+      "name": "ball-launcher",
+      "type": "registry:ui",
+      "title": "Ball launcher",
+      "description": "Two counter-rotating wheels: the ball leaves at the mean of the two surface speeds and turns at their difference over its own diameter. Both numbers come off the same pair of inputs, and both are on the readout.",
+      "categories": [
+        "robotics",
+        "machines"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/gridiron-geometry.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/ball-launcher.tsx",
+          "type": "registry:ui",
+          "target": "@ui/ball-launcher.tsx"
+        }
+      ]
     }
   ]
 }

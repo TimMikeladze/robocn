@@ -88,6 +88,13 @@ import { RailLocomotive } from "@/components/ui/rail-locomotive"
 import { RailBogie } from "@/components/ui/rail-bogie"
 import { PantographCollector } from "@/components/ui/pantograph-collector"
 import { RailTurnout } from "@/components/ui/rail-turnout"
+import { BallLauncher } from "@/components/ui/ball-launcher"
+import { BlockingSled } from "@/components/ui/blocking-sled"
+import { GridironKicker } from "@/components/ui/gridiron-kicker"
+import { GridironLineman } from "@/components/ui/gridiron-lineman"
+import { GridironQuarterback } from "@/components/ui/gridiron-quarterback"
+import { GridironReceiver } from "@/components/ui/gridiron-receiver"
+import { RobotFootball } from "@/components/ui/robot-football"
 import { CargoPlane } from "@/components/ui/cargo-plane"
 import { HydrofoilCraft } from "@/components/ui/hydrofoil-craft"
 import { LaunchVehicle } from "@/components/ui/launch-vehicle"
@@ -278,6 +285,14 @@ const art: Record<string, Art> = {
   "pantograph-collector": { line: "Height is bought with reach; a rod keeps the head level.", art: <PantographCollector size={170} behavior="raise" /> },
   "rail-turnout": { line: "A route is detection, not a setting.", art: <RailTurnout size={100} behavior="route" /> },
   "rail-geometry": { line: "Throw on a curve, Klingel hunting, a crossing angle.", art: <RailLocomotive size={200} variant="blueprint" behavior="yard" cars={0} view="plan" showThrow /> },
+  "robot-football": { line: "The outline is the ellipsoid's own section, not an oval.", art: <RobotFootball size={186} behavior="spiral" speed={0.7} showGround={false} /> },
+  "gridiron-lineman": { line: "A hand on the turf is what makes the back flat.", art: <GridironLineman size={190} behavior="snap" speed={0.5} number="74" /> },
+  "gridiron-quarterback": { line: "The elbow is an output; the ball leaves on the hand's velocity.", art: <GridironQuarterback size={178} behavior="throw" speed={0.45} number="09" /> },
+  "gridiron-receiver": { line: "The lean is the exterior angle at the break.", art: <GridironReceiver size={210} behavior="route" route="post" speed={0.35} number="88" /> },
+  "gridiron-kicker": { line: "Clears or short is read off the plot, not declared.", art: <GridironKicker size={212} behavior="kick" speed={0.45} distance={38} /> },
+  "blocking-sled": { line: "Static equilibrium, and a frame with a friction threshold.", art: <BlockingSled size={198} behavior="drive" pads={3} speed={0.6} /> },
+  "ball-launcher": { line: "Mean of the surface speeds out, difference as spin.", art: <BallLauncher size={190} behavior="feed" speed={0.7} /> },
+  "gridiron-geometry": { line: "A prolate spheroid, a parabola, a route tree, a sprung arm.", art: <RobotFootball size={186} variant="blueprint" behavior="tumble" speed={0.5} showGround={false} /> },
   "cargo-plane": { line: "It banks because it was asked to turn.", art: <CargoPlane size={170} behavior="circuit" /> },
   "hydrofoil-craft": { line: "Lift goes as v\u00b2, so the hull climbs out of the water.", art: <HydrofoilCraft size={180} behavior="takeoff" /> },
   "launch-vehicle": { line: "Flies a pitch program, stages, and drops its own \u0394v.", art: <LaunchVehicle size={140} behavior="ascent" showReadout={false} /> },

@@ -36,6 +36,18 @@ const equineSlugs = [
 ] as const
 
 /** The vehicle family: seven machines and the solver under two of them. */
+/** The football family, its solver, and the two training machines. */
+const gridironSlugs = [
+  "gridiron-geometry",
+  "robot-football",
+  "gridiron-lineman",
+  "gridiron-quarterback",
+  "gridiron-receiver",
+  "gridiron-kicker",
+  "blocking-sled",
+  "ball-launcher",
+] as const
+
 const vehicleSlugs = [
   "robot-car",
   "transit-bus",
@@ -220,6 +232,11 @@ describe('docs catalogue', () => {
   })
 
   it.each(equineSlugs)("documents and demos %s", (slug) => {
+    expect(docs.some((entry) => entry.slug === slug && entry.item === slug)).toBe(true)
+    expect(demoFor(slug)).toBeTruthy()
+  })
+
+  it.each(gridironSlugs)("documents and demos %s", (slug) => {
     expect(docs.some((entry) => entry.slug === slug && entry.item === slug)).toBe(true)
     expect(demoFor(slug)).toBeTruthy()
   })

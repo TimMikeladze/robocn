@@ -182,6 +182,14 @@ import { Refrigerator, type RefrigeratorBehavior, type RefrigeratorLayout } from
 import { WashingMachine, type WashingBehavior, type WashingLoading } from "@/components/ui/washing-machine"
 import { galleryEntries } from "@/components/site/gallery.generated"
 import { Segmented } from "@/components/site/segmented"
+import { BallLauncher, type LauncherBehavior } from "@/components/ui/ball-launcher"
+import { BlockingSled, type SledBehavior } from "@/components/ui/blocking-sled"
+import { GridironKicker, type KickStyle, type KickerBehavior } from "@/components/ui/gridiron-kicker"
+import { GridironLineman, type LinemanBehavior } from "@/components/ui/gridiron-lineman"
+import { GridironQuarterback, type QuarterbackBehavior } from "@/components/ui/gridiron-quarterback"
+import { GridironReceiver, type ReceiverBehavior } from "@/components/ui/gridiron-receiver"
+import { RobotFootball, type FootballBehavior } from "@/components/ui/robot-football"
+import { routeNames, type FacemaskStyle, type GridironStance, type RouteName } from "@/lib/robocn/gridiron"
 import { Slider } from "@/components/ui/slider"
 import { oklchToHex } from "@/lib/robocn/color"
 import {
@@ -4540,7 +4548,200 @@ function RailTurnoutDemo() {
   )
 }
 
+const masks: FacemaskStyle[] = ["cage", "bar", "shield"]
+
+function RobotFootballDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<FootballBehavior | "manual">("spiral")
+  const [spin, setSpin] = React.useState(6)
+  const [roll, setRoll] = React.useState(40)
+  const [pitch, setPitch] = React.useState(10)
+  const [yaw, setYaw] = React.useState(0)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="flight" value={drive} options={["spiral", "wobble", "tumble", "snap", "static", "manual"] as const} onChange={setDrive} />
+      <NumberControl label="spin" value={spin} min={0} max={16} onChange={setSpin} format={v => `${v}/cyc`} />
+      {drive === "manual" ? <>
+        <NumberControl label="yaw" value={yaw} min={-180} max={180} onChange={setYaw} format={v => `${v}°`} />
+        <NumberControl label="pitch" value={pitch} min={-90} max={90} onChange={setPitch} format={v => `${v}°`} />
+        <NumberControl label="roll" value={roll} min={0} max={360} onChange={setRoll} format={v => `${v}°`} />
+      </> : <Hint>Drag across to roll it and up or down to pitch it. Nose-on the outline is a circle, because the outline is the ellipsoid&apos;s own central section — and the laces go round the back rather than sliding across the front.</Hint>}
+    </>}>
+      <RobotFootball view={view} size={320} variant={variant} spin={spin} label="BALL / 01"
+        {...(drive === "manual" ? { yaw, pitch, roll } : { behavior: drive })} interactive />
+    </Bench>
+  )
+}
+
+function GridironLinemanDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<LinemanBehavior | "manual">("snap")
+  const [stance, setStance] = React.useState<GridironStance>("three-point")
+  const [fire, setFire] = React.useState(0.3)
+  const [padLevel, setPadLevel] = React.useState(50)
+  const [mask, setMask] = React.useState<FacemaskStyle>("cage")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="stance" value={stance} options={["three-point", "two-point", "set", "upright"] as const} onChange={setStance} />
+      <Segmented label="drive" value={drive} options={["snap", "drive", "pull", "set", "static", "manual"] as const} onChange={setDrive} />
+      <Segmented label="mask" value={mask} options={masks} onChange={setMask} />
+      <NumberControl label="pad level" value={padLevel} min={0} max={100} onChange={setPadLevel} format={v => `${v}%`} />
+      {drive === "manual"
+        ? <NumberControl label="fire" value={fire} min={0} max={1} step={0.02} onChange={setFire} format={v => `${Math.round(v * 100)}%`} />
+        : <Hint>Drag across to work the snap. Only the three-point stance puts a hand on the turf, and the flat back is the column pitch that being down there implies — nobody typed it.</Hint>}
+    </>}>
+      <GridironLineman view={view} size={320} variant={variant} stance={stance} mask={mask}
+        padLevel={padLevel / 100} number="74" label="LINE / 74"
+        {...(drive === "manual" ? { fire } : { behavior: drive })} interactive />
+    </Bench>
+  )
+}
+
+function GridironQuarterbackDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<QuarterbackBehavior | "manual">("throw")
+  const [release, setRelease] = React.useState(0.55)
+  const [steps, setSteps] = React.useState(5)
+  const [velocity, setVelocity] = React.useState(27)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["throw", "drop", "scramble", "set", "static", "manual"] as const} onChange={setDrive} />
+      <NumberControl label="steps" value={steps} min={1} max={9} onChange={setSteps} />
+      <NumberControl label="velocity" value={velocity} min={12} max={40} onChange={setVelocity} format={v => `${v} yd/s`} />
+      {drive === "manual"
+        ? <NumberControl label="release" value={release} min={0} max={1} step={0.02} onChange={setRelease} format={v => `${Math.round(v * 100)}%`} />
+        : <Hint>Drag across to work the throw. The ball leaves on the velocity the hand had, so the release angle comes off the swing; the rest of the flight is off the frame and on the readout.</Hint>}
+    </>}>
+      <GridironQuarterback view={view} size={320} variant={variant} steps={steps} velocity={velocity}
+        number="09" label="POCKET / 09"
+        {...(drive === "manual" ? { release } : { behavior: drive })} interactive />
+    </Bench>
+  )
+}
+
+function GridironReceiverDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<ReceiverBehavior | "manual">("route")
+  const [route, setRoute] = React.useState<RouteName>("post")
+  const [depth, setDepth] = React.useState(12)
+  const [side, setSide] = React.useState(1)
+  const [distance, setDistance] = React.useState(12)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="route" value={route} options={routeNames} onChange={setRoute} />
+      <Segmented label="drive" value={drive} options={["route", "release", "catch", "idle", "static", "manual"] as const} onChange={setDrive} />
+      <NumberControl label="depth" value={depth} min={4} max={24} onChange={setDepth} format={v => `${v} yd`} />
+      <NumberControl label="side" value={side} min={-1} max={1} step={2} onChange={setSide} format={v => (v < 0 ? "left" : "right")} />
+      {drive === "manual"
+        ? <NumberControl label="distance" value={distance} min={0} max={36} step={0.5} onChange={setDistance} format={v => `${v} yd`} />
+        : <Hint>Drag across to run the route by hand. The lean is the exterior angle at the break, so changing the route changes the pose without touching the drawing.</Hint>}
+    </>}>
+      <GridironReceiver view={view} size={340} variant={variant} route={route} depth={depth} side={side}
+        number="88" label="ROUTE / 88"
+        {...(drive === "manual" ? { distance } : { behavior: drive })} interactive />
+    </Bench>
+  )
+}
+
+function GridironKickerDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<KickerBehavior | "manual">("kick")
+  const [kick, setKick] = React.useState<KickStyle>("place")
+  const [power, setPower] = React.useState(85)
+  const [distance, setDistance] = React.useState(35)
+  const [swing, setSwing] = React.useState(0.5)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="kick" value={kick} options={["place", "punt", "kickoff"] as const} onChange={setKick} />
+      <Segmented label="drive" value={drive} options={["kick", "approach", "set", "static", "manual"] as const} onChange={setDrive} />
+      <NumberControl label="power" value={power} min={20} max={110} onChange={setPower} format={v => `${v}%`} />
+      <NumberControl label="uprights" value={distance} min={10} max={60} onChange={setDistance} format={v => `${v} yd`} />
+      {drive === "manual"
+        ? <NumberControl label="swing" value={swing} min={0} max={1} step={0.02} onChange={setSwing} format={v => `${Math.round(v * 100)}%`} />
+        : <Hint>Drag across to work the swing. Whether it clears is the ball&apos;s height where the bar is — push the uprights out far enough and it says SHORT.</Hint>}
+    </>}>
+      <GridironKicker view={view} size={340} variant={variant} kick={kick} power={power / 100}
+        distance={distance} number="03" label="KICK / 03"
+        {...(drive === "manual" ? { swing } : { behavior: drive })} interactive />
+    </Bench>
+  )
+}
+
+function BlockingSledDemo() {
+  const [view, setView] = React.useState<RobotView>("iso")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<SledBehavior | "manual">("drive")
+  const [pads, setPads] = React.useState(3)
+  const [stiffness, setStiffness] = React.useState(2600)
+  const [weight, setWeight] = React.useState(220)
+  const [load, setLoad] = React.useState(0.6)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["drive", "hit", "recoil", "idle", "static", "manual"] as const} onChange={setDrive} />
+      <NumberControl label="pads" value={pads} min={1} max={5} onChange={setPads} />
+      <NumberControl label="spring" value={stiffness} min={800} max={6000} step={100} onChange={setStiffness} />
+      <NumberControl label="weight" value={weight} min={60} max={600} step={10} onChange={setWeight} />
+      {drive === "manual"
+        ? <NumberControl label="load" value={load} min={0} max={1} step={0.02} onChange={setLoad} format={v => `${Math.round(v * 100)}%`} />
+        : <Hint>Drag across to lean on it. The last few degrees cost far more than the first few, and the frame does not move at all until the drive beats the friction under the skids.</Hint>}
+    </>}>
+      <BlockingSled view={view} size={340} variant={variant} pads={pads} stiffness={stiffness}
+        weight={weight} label="SLED / 05"
+        {...(drive === "manual" ? { load } : { behavior: drive })} interactive />
+    </Bench>
+  )
+}
+
+function BallLauncherDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<LauncherBehavior | "manual">("feed")
+  const [top, setTop] = React.useState(40)
+  const [bottom, setBottom] = React.useState(20)
+  const [elevation, setElevation] = React.useState(26)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["feed", "spin", "idle", "static", "manual"] as const} onChange={setDrive} />
+      <NumberControl label="elevation" value={elevation} min={-10} max={70} onChange={setElevation} format={v => `${v}°`} />
+      {drive === "manual" ? <>
+        <NumberControl label="top" value={top} min={0} max={60} onChange={setTop} format={v => `${v}/s`} />
+        <NumberControl label="bottom" value={bottom} min={0} max={60} onChange={setBottom} format={v => `${v}/s`} />
+      </> : <Hint>Drag up and down to bias the wheels. Matched, it throws flat and fast with no spin; every turn of mismatch trades exit speed for rotation, and both numbers are on the readout.</Hint>}
+    </>}>
+      <BallLauncher view={view} size={330} variant={variant} elevation={elevation} label="FEED / 02"
+        {...(drive === "manual" ? { top, bottom, behavior: "feed" as const } : { behavior: drive })} interactive />
+    </Bench>
+  )
+}
+
 export const demos: Record<string, React.ComponentType<DemoProps>> = {
+  "robot-football": RobotFootballDemo,
+  "gridiron-geometry": RobotFootballDemo,
+  "gridiron-lineman": GridironLinemanDemo,
+  "gridiron-quarterback": GridironQuarterbackDemo,
+  "gridiron-receiver": GridironReceiverDemo,
+  "gridiron-kicker": GridironKickerDemo,
+  "blocking-sled": BlockingSledDemo,
+  "ball-launcher": BallLauncherDemo,
   "gabled-house": GabledHouseDemo,
   "tower-block": TowerBlockDemo,
   "espresso-machine": EspressoMachineDemo,

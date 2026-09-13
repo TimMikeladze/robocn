@@ -54,6 +54,17 @@ const equineCollection = [
   "robot-camel",
 ] as const
 
+/** The football family and the geometry under it. */
+const gridironCollection = [
+  "robot-football",
+  "gridiron-lineman",
+  "gridiron-quarterback",
+  "gridiron-receiver",
+  "gridiron-kicker",
+  "blocking-sled",
+  "ball-launcher",
+] as const
+
 const vehicleCollection = [
   "robot-car",
   "transit-bus",
@@ -231,6 +242,13 @@ describe("registry.json", () => {
     expect(item?.files).toHaveLength(1)
     expect(item?.files[0]?.path).toBe(`src/components/ui/${name}.tsx`)
     expect(item?.registryDependencies).toContain("{REGISTRY_URL}/r/rail-geometry.json")
+  })
+
+  it.each(gridironCollection)("publishes %s as one UI source file", (name) => {
+    const item = registry.items.find((candidate) => candidate.name === name)
+    expect(item?.type).toBe("registry:ui")
+    expect(item?.files).toHaveLength(1)
+    expect(item?.files[0]?.path).toBe(`src/components/ui/${name}.tsx`)
   })
 
   it.each(vehicleCollection)("publishes %s as one UI source file", (name) => {

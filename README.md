@@ -115,6 +115,14 @@ installs at.
 | `rail-bogie` | A powered two-axle bogie, and the only self-excited motion in the set: nothing commands the wheelsets to wander, they wander because they are coned — at exactly Klingel's wavelength, until the flange stops them. |
 | `pantograph-collector` | A single-arm roof current collector that spends reach to buy height, with a control-rod loop that keeps the head level over its working range and a contact wire strung with real stagger. |
 | `rail-turnout` | The points: two blades on one throw bar, a route that is detection rather than a setting, and a crossing angle that is the turnout number and nothing else. |
+| `gridiron-geometry` | The football family's maths: the ball as a real prolate spheroid whose outline is its own central section, drag-free ballistics, counter-rotating wheel exit conditions, a route tree sampled by arc length, a sprung pad arm at equilibrium, and the column pitch a hand on the turf implies. |
+| `robot-football` | The ball, modelled rather than drawn: end-on it is a circle of the waist radius and broadside it reaches the full length, and the laces are stitches on the surface that go round the back when it spins. |
+| `gridiron-lineman` | The three-point stance as the four-contact stance it is: the hand on the turf carries load, and the flat back is the column pitch that puts the shoulder exactly one arm's length from it. |
+| `gridiron-quarterback` | A drop-back and a throw with the arm solved to a release point travelling an arc, so the elbow is an output and the ball leaves on the velocity the hand had. |
+| `gridiron-receiver` | The route tree as geometry: a point at an arc length along a polyline, with the heading turning the machine and the lean falling out of the exterior angle at the break. |
+| `gridiron-kicker` | A swing leg solved to an ankle path that passes through the ball, and a parabola that starts where the strike happened. Clearing the bar is computed, not declared. |
+| `blocking-sled` | Pads at a static equilibrium — the load's moment against a return spring's — on a frame that will not move at all until the drive beats the friction under its skids. |
+| `ball-launcher` | Two counter-rotating wheels: exit speed is the mean of their surface speeds and spin is their difference over the ball's own diameter, both off the same pair of inputs. |
 | `cargo-plane` | A high-wing freighter that banks because it was asked to turn, with ailerons carrying the roll it has not finished. |
 | `hydrofoil-craft` | A foilborne ferry that climbs out of its own ground plane: lift goes as v², so the surface-piercing V sheds wetted area as she rises. |
 | `launch-vehicle` | A two-stage booster that flies a pitch program, gimbals against it, stages, and reports the ideal Δv left from the rocket equation. |
