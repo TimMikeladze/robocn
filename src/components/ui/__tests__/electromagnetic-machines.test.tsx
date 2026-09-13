@@ -17,6 +17,8 @@ import { EddyCurrentBrake, eddyBrakeGoal } from "@/components/ui/eddy-current-br
 import { MaglevCarriage, maglevCarriageGoal } from "@/components/ui/maglev-carriage"
 import { MagneticGripper, magneticGripperGoal } from "@/components/ui/magnetic-gripper"
 import { InductiveSensor, inductiveSensorGoal } from "@/components/ui/inductive-sensor"
+import { Resolver, resolverGoal } from "@/components/ui/resolver"
+import { TransformerCore, transformerGoal } from "@/components/ui/transformer-core"
 
 afterEach(() => vi.restoreAllMocks())
 
@@ -268,6 +270,53 @@ describe("inductive sensor", () => {
       .toBe(far.container.querySelector("[data-target]")?.getAttribute("transform"))
     for (const behavior of ["approach", "inspect", "static"] as const) {
       const value = inductiveSensorGoal(behavior, Infinity)
+      expect(value).toBeGreaterThanOrEqual(0)
+      expect(value).toBeLessThanOrEqual(1)
+    }
+  })
+})
+
+describe("resolver", () => {
+  it("rotates the transformer rotor and exposes quadrature channel values", () => {
+    const { container, rerender } = render(<Resolver angle={0} showChannels />)
+    const rotor = container.querySelector("[data-rotor]")?.getAttribute("transform")
+    expect(container.querySelector('[data-channel="sine"]')?.getAttribute("data-value")).toBe("0")
+    rerender(<Resolver angle={90} showChannels />)
+    expect(container.querySelector("[data-rotor]")?.getAttribute("transform")).not.toBe(rotor)
+    expect(container.querySelector('[data-channel="sine"]')?.getAttribute("data-value")).toBe("1")
+    expect(container.querySelector('[data-channel="cosine"]')?.getAttribute("data-value")).toBe("0")
+  })
+
+  it("neutralizes invalid angle and reports rotary keyboard input", () => {
+    const neutral = render(<Resolver angle={0} />)
+    const invalid = render(<Resolver angle={Infinity} />)
+    expect(invalid.container.querySelector("[data-rotor]")?.getAttribute("transform"))
+      .toBe(neutral.container.querySelector("[data-rotor]")?.getAttribute("transform"))
+    const onAngleChange = vi.fn()
+    const interactive = render(<Resolver angle={20} interactive onAngleChange={onAngleChange} />)
+    fireEvent.keyDown(interactive.getByRole("slider"), { key: "ArrowRight" })
+    expect(onAngleChange).toHaveBeenLastCalledWith(25)
+    expect(resolverGoal("turn", Infinity)).toBe(0)
+  })
+})
+
+describe("transformer core", () => {
+  it("reverses flux direction with electrical phase and changes winding density by ratio", () => {
+    const { container, rerender } = render(<TransformerCore phase={0} turns="step-down" />)
+    const flux = container.querySelector("[data-flux]")?.getAttribute("data-direction")
+    const secondaryTurns = container.querySelectorAll('[data-secondary] [data-turn]').length
+    rerender(<TransformerCore phase={0.5} turns="step-up" />)
+    expect(container.querySelector("[data-flux]")?.getAttribute("data-direction")).not.toBe(flux)
+    expect(container.querySelectorAll('[data-secondary] [data-turn]').length).toBeGreaterThan(secondaryTurns)
+  })
+
+  it("uses neutral phase for invalid input and samples a finite cycle", () => {
+    const neutral = render(<TransformerCore phase={0} />)
+    const invalid = render(<TransformerCore phase={Number.NaN} />)
+    expect(invalid.container.querySelector("[data-flux]")?.getAttribute("data-phase"))
+      .toBe(neutral.container.querySelector("[data-flux]")?.getAttribute("data-phase"))
+    for (const behavior of ["alternate", "pulse", "static"] as const) {
+      const value = transformerGoal(behavior, Infinity)
       expect(value).toBeGreaterThanOrEqual(0)
       expect(value).toBeLessThanOrEqual(1)
     }
