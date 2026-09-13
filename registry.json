@@ -663,7 +663,7 @@
       "name": "protocol-droid",
       "type": "registry:ui",
       "title": "Protocol droid",
-      "description": "An articulate humanoid translator with formal, conversational, and cautious poses, four gestures, and optional exposed wiring.",
+      "description": "An articulate humanoid translator with formal, conversational, and cautious poses, four gestures, and optional exposed wiring. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
         "robots"
@@ -686,7 +686,7 @@
       "name": "security-droid",
       "type": "registry:ui",
       "title": "Security droid",
-      "description": "A tall angular security humanoid with controlled guard and patrol poses, pointer-tracking optics, and an alert state.",
+      "description": "A tall angular security humanoid with controlled guard and patrol poses, pointer-tracking optics, and an alert state. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
         "robots"
@@ -708,7 +708,7 @@
       "name": "medical-droid",
       "type": "registry:ui",
       "title": "Medical droid",
-      "description": "A modular clinical assistant with a diagnostic display, controlled head angle, and five interchangeable instrument ends.",
+      "description": "A modular clinical assistant with a diagnostic display, controlled head angle, and five interchangeable instrument ends. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
         "robots"
@@ -731,7 +731,7 @@
       "name": "infantry-droid",
       "type": "registry:ui",
       "title": "Infantry droid",
-      "description": "A mechanical infantry unit with light and heavy frames, four controlled poses, and interchangeable utility equipment.",
+      "description": "A mechanical infantry unit with light and heavy frames, four controlled poses, and interchangeable utility equipment. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
         "robots"
@@ -847,7 +847,7 @@
       "name": "attendant-droid",
       "type": "registry:ui",
       "title": "Attendant droid",
-      "description": "A plated humanoid attendant with a fixed faceplate and vocoder grille, four etiquette poses, and plating levels that strip back to the exposed loom.",
+      "description": "A plated humanoid attendant with a fixed faceplate and vocoder grille, four etiquette poses, and plating levels that strip back to the exposed loom. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
         "robots"
@@ -870,7 +870,7 @@
       "name": "cyber-trooper",
       "type": "registry:ui",
       "title": "Cyber trooper",
-      "description": "A converted armoured humanoid with a blank slab head, optional side handles, three chest units, a bounded power meter, and four controlled poses.",
+      "description": "A converted armoured humanoid with a blank slab head, optional side handles, three chest units, a bounded power meter, and four controlled poses. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
         "robots"

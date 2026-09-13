@@ -3,15 +3,21 @@
 import * as React from "react"
 
 import { usePointerTarget } from "@/hooks/use-pointer-target"
-import { clamp, type Vec2 } from "@/lib/robocn/kinematics"
+import { clamp, toRadians, type Vec2 } from "@/lib/robocn/kinematics"
 import {
+  aboutPoint,
+  capsulePath,
+  extrudedPath,
   px,
   resolveRobotPalette,
   resolveRobotSize,
+  robotCamera,
   robotSurface,
+  roundedFootprint,
   type RobotPaletteProps,
   type RobotSize,
   type RobotVariant,
+  type RobotView,
 } from "@/lib/robocn/style"
 import { cn } from "@/lib/utils"
 
@@ -22,6 +28,8 @@ export interface SecurityDroidProps
     RobotPaletteProps {
   size?: RobotSize | number
   variant?: RobotVariant
+  /** Where the camera stands. One droid, four projections. */
+  view?: RobotView
   pose?: SecurityDroidPose
   headAngle?: number
   look?: Vec2 | null
@@ -30,6 +38,22 @@ export interface SecurityDroidProps
   signal?: "idle" | "ready" | "warning"
   showGround?: boolean
   label?: string
+}
+
+/** The droid is drawn standing straight on; that is the camera it defaults to. */
+const NATIVE_VIEW: RobotView = "front"
+/** Where it stands in the frame, and the depths a front elevation never had
+ *  to give: how far the body, limbs and head reach through the picture. */
+const CENTRE = 90
+const GROUND = 207
+const BODY_DEEP = 12
+const LIMB_DEEP = 7
+
+const viewNames: Record<RobotView, string> = {
+  plan: "plan view",
+  front: "front elevation",
+  profile: "side elevation",
+  iso: "isometric view",
 }
 
 const poses: Record<SecurityDroidPose, { lean: number; leftLeg: number; rightLeg: number; arms: number }> = {
@@ -41,6 +65,7 @@ const poses: Record<SecurityDroidPose, { lean: number; leftLeg: number; rightLeg
 function SecurityDroid({
   size = "md",
   variant = "solid",
+  view = NATIVE_VIEW,
   pose = "stand",
   headAngle = 0,
   look = null,
@@ -80,12 +105,60 @@ function SecurityDroid({
   const machined = robotSurface("metal", variant, palette)
   const cast = robotSurface("dark", variant, palette)
   const signalColor = alert || signal === "warning" ? palette.shell : signal === "ready" ? palette.accent : palette.metal
+  // The drawing is a front elevation, so it goes through `wall` where the
+  // droid stands and comes out untouched straight on. A humanoid drawn from
+  // the front says nothing about its own depth: the torso, pelvis and head
+  // become boxes, and the limbs tubes set through the body.
+  const camera = robotCamera(view)
+  const offAxis = view !== NATIVE_VIEW
+  const face = aboutPoint(camera.wall(), CENTRE, GROUND)
+  const Frame = (face ? "g" : React.Fragment) as React.FC<{
+    transform?: string
+    children?: React.ReactNode
+  }>
+  const frame = face ? { transform: face } : {}
+  /** A point in the frame, leaned with the body and set `deep` toward us. */
+  const at = (x: number, y: number, deep = 0) => {
+    const tilt = toRadians(stance.lean)
+    return camera.project(
+      -(x * Math.cos(tilt) - y * Math.sin(tilt)),
+      -(x * Math.sin(tilt) + y * Math.cos(tilt)),
+      -deep,
+    )
+  }
+  /** The joints of a limb: each segment turned by its own angle, in order. */
+  const chain = (
+    ox: number,
+    oy: number,
+    deep: number,
+    segments: readonly { angle: number; length: number }[],
+  ) => {
+    let x = ox
+    let y = oy
+    const joints = [at(x, y, deep)]
+    for (const segment of segments) {
+      const a = toRadians(segment.angle)
+      x -= Math.sin(a) * segment.length
+      y += Math.cos(a) * segment.length
+      joints.push(at(x, y, deep))
+    }
+    return joints
+  }
+  const solid = (halfWidth: number, deep: number, top: number, bottom: number, x = 0) =>
+    extrudedPath(
+      roundedFootprint(halfWidth, deep, Math.min(halfWidth, deep) * 0.4, 4).map(point => ({
+        x: point.x - x,
+        y: point.y,
+      })),
+      camera, -top, -bottom,
+    )
+
 
   return (
     <svg
       ref={svgRef}
       role="img"
-      aria-label={`Security droid, ${pose} pose${alert ? ", alert" : ""}`}
+      aria-label={`Security droid, ${pose} pose${alert ? ", alert" : ""}, ${viewNames[view] ?? viewNames.front}`}
       viewBox="0 0 180 240"
       width={width}
       height={px(width * 1.33)}
@@ -100,7 +173,38 @@ function SecurityDroid({
         </g>
       )}
       {showGround && <ellipse cx={90} cy={216} rx={48} ry={6} fill={palette.dark} opacity={0.14} />}
-      <g data-frame transform={`translate(90 207) rotate(${stance.lean})`}>
+      {offAxis && <g data-solids transform={`translate(${CENTRE} ${GROUND})`}>
+        {([-1, 1] as const).map(side => {
+          const [hip, knee, ankle] = chain(side * 18, -69, side * LIMB_DEEP, [
+            { angle: side < 0 ? stance.leftLeg : stance.rightLeg, length: 54 },
+            { angle: side < 0 ? stance.leftLeg : stance.rightLeg, length: 56 },
+          ])
+          return (
+            <g key={side} data-leg={side < 0 ? "left" : "right"}>
+              <path d={capsulePath(hip, knee, 7)} {...shell} />
+              <path d={capsulePath(knee, ankle, 6)} {...machined} />
+            </g>
+          )
+        })}
+        {([-1, 1] as const).map(side => {
+          const [shoulder, elbow, wrist] = chain(side * 36, -135, side * BODY_DEEP, [
+            { angle: side * stance.arms, length: 53 },
+            { angle: side * stance.arms, length: 40 },
+          ])
+          return (
+            <g key={side} data-arm={side < 0 ? "left" : "right"}>
+              <path d={capsulePath(shoulder, elbow, 7)} {...shell} />
+              <path d={capsulePath(elbow, wrist, 6)} {...machined} />
+            </g>
+          )
+        })}
+        <path d={solid(32, BODY_DEEP, 151, 69)} {...cast} />
+        <path d={solid(24, BODY_DEEP - 2, 132, 79)} {...shell} />
+        <path d={solid(9, 8, 178, 148)} {...machined} />
+        <path d={solid(19, 15, 200, 160, turn * 0.12)} {...shell} />
+      </g>}
+      <Frame {...frame}>
+      <g data-frame data-view={view} transform={`translate(90 207) rotate(${stance.lean})`}>
         {[-1, 1].map((side) => (
           <g key={side} data-leg={side < 0 ? "left" : "right"} transform={`translate(${side * 18} -69) rotate(${side < 0 ? stance.leftLeg : stance.rightLeg})`}>
             <rect x={-7} y={0} width={14} height={53} rx={5} {...cast} />
@@ -135,6 +239,7 @@ function SecurityDroid({
           {alert && <circle data-alert cx={20} cy={-12} r={4} fill={palette.accent} className="robocn-pulse" />}
         </g>
       </g>
+      </Frame>
       {label && <text x={90} y={234} textAnchor="middle" fontFamily="ui-monospace, monospace" fontSize={6} fill={palette.foreground}>{label}</text>}
     </svg>
   )

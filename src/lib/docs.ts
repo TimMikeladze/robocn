@@ -199,6 +199,7 @@ export const docs: DocEntry[] = [
 
 <ProtocolDroid pose="converse" gesture="explain" headAngle={15} exposed />`,
     props: [
+      view("front", "droid"),
       { name: "pose", type: '"formal" | "converse" | "cautious"', default: '"formal"', description: "Whole-body posture and leg stance." },
       { name: "gesture", type: '"none" | "explain" | "greet" | "point"', default: '"none"', description: "Controlled arm and forearm pose." },
       { name: "headAngle", type: "number", default: "0", description: "Head rotation in degrees, clamped to −55..55." },
@@ -210,7 +211,7 @@ export const docs: DocEntry[] = [
       { name: "onGestureChange", type: "(gesture: ProtocolDroidGesture) => void", description: "The gesture a click moved it to." },
       ...droidForm,
     ],
-    notes: ["Each named pose is deterministic and immediately rendered; interpolate props outside the component when animation is needed.", "The form is an original translator archetype rather than a character replica."],
+    notes: ["Front elevation is the drawing it always had. A humanoid drawn from the front says nothing about its own depth: off that axis the torso, pelvis and head are boxes and the limbs are tubes set through the body, at the same joint angles the pose already solved.", "Each named pose is deterministic and immediately rendered; interpolate props outside the component when animation is needed.", "The form is an original translator archetype rather than a character replica."],
   },
   {
     slug: "security-droid", item: "security-droid", title: "Security droid", group: "Robots",
@@ -220,6 +221,7 @@ export const docs: DocEntry[] = [
 
 <SecurityDroid pose="guard" alert look={{ x: -0.4, y: 0 }} headAngle={-20} />`,
     props: [
+      view("front", "droid"),
       { name: "pose", type: '"stand" | "patrol" | "guard"', default: '"stand"', description: "Whole-frame stance and arm position." },
       { name: "headAngle", type: "number", default: "0", description: "Head rotation in degrees, clamped to −70..70." },
       { name: "look", type: "Vec2 | null", default: "null", description: "Controlled horizontal sensor aim; overrides tracking." },
@@ -227,7 +229,7 @@ export const docs: DocEntry[] = [
       { name: "alert", type: "boolean", default: "false", description: "Light the alert beacon and promote the sensor colour." },
       ...droidForm,
     ],
-    notes: ["Alert is visual state only; the component does not infer threats or start a timer.", "The tracked sensor translates inside a fixed protective bar so it remains mechanically legible."],
+    notes: ["Front elevation is the drawing it always had. A humanoid drawn from the front says nothing about its own depth: off that axis the torso, pelvis and head are boxes and the limbs are tubes set through the body, at the same joint angles the pose already solved.", "Alert is visual state only; the component does not infer threats or start a timer.", "The tracked sensor translates inside a fixed protective bar so it remains mechanically legible."],
   },
   {
     slug: "medical-droid", item: "medical-droid", title: "Medical droid", group: "Robots",
@@ -237,6 +239,7 @@ export const docs: DocEntry[] = [
 
 <MedicalDroid leftTool="scanner" rightTool="injector" diagnostic={0.82} signal="ready" />`,
     props: [
+      view("front", "droid"),
       { name: "leftTool / rightTool", type: '"none" | "scanner" | "injector" | "clamp" | "probe"', default: '"scanner" / "probe"', description: "Instrument mounted on each modular arm." },
       { name: "diagnostic", type: "number", default: "0.65", description: "Normalized 0–1 diagnostic meter fill." },
       { name: "headAngle", type: "number", default: "0", description: "Head rotation in degrees, clamped to −60..60." },
@@ -247,7 +250,7 @@ export const docs: DocEntry[] = [
       { name: "onDiagnosticRestart", type: "() => void", description: "Fired when a click restarts the scan." },
       ...droidForm,
     ],
-    notes: ["Tools change the visible end geometry but do not imply medical advice or simulated treatment.", "The diagnostic value is a display input supplied by the parent application."],
+    notes: ["Front elevation is the drawing it always had. The column is a tapered body of revolution rather than a flat panel, and the two instrument arms reach forward out of it \u2014 neither of which one elevation could say.", "Tools change the visible end geometry but do not imply medical advice or simulated treatment.", "The diagnostic value is a display input supplied by the parent application."],
   },
   {
     slug: "infantry-droid", item: "infantry-droid", title: "Infantry droid", group: "Robots",
@@ -257,6 +260,7 @@ export const docs: DocEntry[] = [
 
 <InfantryDroid frame="heavy" pose="guard" equipment="shield" signal="warning" />`,
     props: [
+      view("front", "droid"),
       { name: "frame", type: '"light" | "heavy"', default: '"light"', description: "Skeletal scout or armored field silhouette." },
       { name: "pose", type: '"stand" | "march" | "guard" | "disabled"', default: '"stand"', description: "Controlled whole-body posture." },
       { name: "equipment", type: '"none" | "pack" | "scanner" | "shield"', default: '"none"', description: "Visible utility module carried by the frame." },
@@ -268,7 +272,7 @@ export const docs: DocEntry[] = [
       { name: "onPoseChange", type: "(pose: InfantryDroidPose) => void", description: "The stance a click asked for." },
       ...droidForm,
     ],
-    notes: ["Equipment deliberately stays at utility pack, survey scanner, and protective shield silhouettes.", "Light and heavy frames share the same pose contract for easy replacement."],
+    notes: ["Front elevation is the drawing it always had. A humanoid drawn from the front says nothing about its own depth: off that axis the torso, pelvis and head are boxes and the limbs are tubes set through the body, at the same joint angles the pose already solved.", "Equipment deliberately stays at utility pack, survey scanner, and protective shield silhouettes.", "Light and heavy frames share the same pose contract for easy replacement."],
   },
   {
     slug: "probe-droid", item: "probe-droid", title: "Probe droid", group: "Robots",
@@ -376,6 +380,7 @@ export const docs: DocEntry[] = [
 
 <AttendantDroid pose="present" plating="partial" headAngle={18} speaking />`,
     props: [
+      view("front", "droid"),
       { name: "pose", type: '"attention" | "bow" | "present" | "alarm"', description: "Etiquette posture. Omit and the behaviour works through them." },
       { name: "headAngle", type: "number", description: "Head rotation in degrees, clamped to −45..45. Omit and it turns to whoever it is addressing." },
       { name: "plating", type: '"full" | "partial" | "bare"', default: '"full"', description: "Body covering. Partial keeps the chest plate; bare exposes the torso and limb looms." },
@@ -390,7 +395,7 @@ export const docs: DocEntry[] = [
       { name: "interactive", type: "boolean", default: "true", description: "The head turns to the pointer, and a click takes it on to its next pose. `onPoseChange` reports either way." },
       ...droidForm,
     ],
-    notes: ["Heavier and fully plated where the protocol droid is slim and jointed; the two share the collection prop contract.", "An original attendant archetype rather than a character replica."],
+    notes: ["Front elevation is the drawing it always had. A humanoid drawn from the front says nothing about its own depth: off that axis the torso, pelvis and head are boxes and the limbs are tubes set through the body, at the same joint angles the pose already solved.", "Heavier and fully plated where the protocol droid is slim and jointed; the two share the collection prop contract.", "An original attendant archetype rather than a character replica."],
   },
   {
     slug: "cyber-trooper", item: "cyber-trooper", title: "Cyber trooper", group: "Robots",
@@ -400,6 +405,7 @@ export const docs: DocEntry[] = [
 
 <CyberTrooper pose="march" chestUnit="core" power={0.45} handles headAngle={-14} />`,
     props: [
+      view("front", "trooper"),
       { name: "pose", type: '"stand" | "march" | "reach" | "powerdown"', description: "Whole-body posture; powerdown slumps the frame and dims the optics. Omit and the behaviour drives it." },
       { name: "headAngle", type: "number", description: "Head rotation in degrees, clamped to −40..40. Omit and it turns to whoever it is facing." },
       { name: "chestUnit", type: '"bar" | "vent" | "core"', default: '"bar"', description: "Chest module face; core also scales with the power reserve." },
@@ -416,7 +422,7 @@ export const docs: DocEntry[] = [
       { name: "interactive", type: "boolean", default: "true", description: "The head turns to the pointer, and a click cuts its power — click again to bring it back. `onPowerChange` reports both." },
       ...droidForm,
     ],
-    notes: ["Supply a value and it renders exactly as given; leave it out and the behaviour runs it.", "The power meter is display state, not a battery model — the parent decides what a reserve means."],
+    notes: ["Front elevation is the drawing it always had. A humanoid drawn from the front says nothing about its own depth: off that axis the torso, pelvis and head are boxes and the limbs are tubes set through the body, at the same joint angles the pose already solved.", "Supply a value and it renders exactly as given; leave it out and the behaviour runs it.", "The power meter is display state, not a battery model — the parent decides what a reserve means."],
   },
   {
     slug: "micro-duck", item: "micro-duck", title: "Micro duck", group: "Robots",

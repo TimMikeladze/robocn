@@ -1028,6 +1028,7 @@ function OrbDroidDemo() {
 }
 
 function ProtocolDroidDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
   const [pose, setPose] = React.useState<ProtocolDroidPose>("converse")
   const [gesture, setGesture] = React.useState<ProtocolDroidGesture>("explain")
   const [headAngle, setHeadAngle] = React.useState(10)
@@ -1036,6 +1037,7 @@ function ProtocolDroidDemo() {
   const [variant, setVariant] = React.useState<RobotVariant>("solid")
   return (
     <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
       <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
       <Segmented label="pose" value={pose} options={["formal", "converse", "cautious"] as const} onChange={setPose} />
       <Segmented label="torso" value={exposed} options={["closed", "exposed"] as const} onChange={setExposed} />
@@ -1045,31 +1047,34 @@ function ProtocolDroidDemo() {
         <NumberControl label="head" value={headAngle} min={-55} max={55} onChange={setHeadAngle} format={value => `${value}°`} />
       </> : <Hint>Click it to move the conversation on a gesture.</Hint>}
     </>}>
-      <ProtocolDroid size={300} pose={pose} exposed={exposed === "exposed"} variant={variant} label="PROTOCOL / 16"
+      <ProtocolDroid view={view} size={300} pose={pose} exposed={exposed === "exposed"} variant={variant} label="PROTOCOL / 16"
         {...(drive === "manual" ? { gesture, headAngle, behavior: "static" as const } : { behavior: drive })} />
     </Bench>
   )
 }
 
 function SecurityDroidDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
   const [pose, setPose] = React.useState<SecurityDroidPose>("guard")
   const [headAngle, setHeadAngle] = React.useState(-8)
   const [alert, setAlert] = React.useState<"clear" | "alert">("clear")
   const [variant, setVariant] = React.useState<RobotVariant>("solid")
   return (
     <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
       <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
       <Segmented label="pose" value={pose} options={["stand", "patrol", "guard"] as const} onChange={setPose} />
       <Segmented label="state" value={alert} options={["clear", "alert"] as const} onChange={setAlert} />
       <NumberControl label="head" value={headAngle} min={-70} max={70} onChange={setHeadAngle} format={value => `${value}°`} />
       <p className="text-[11px] text-muted-foreground">The sensor bar tracks the pointer unless a controlled look is supplied.</p>
     </>}>
-      <SecurityDroid size={300} pose={pose} headAngle={headAngle} alert={alert === "alert"} variant={variant} label="SECURITY / 17" />
+      <SecurityDroid view={view} size={300} pose={pose} headAngle={headAngle} alert={alert === "alert"} variant={variant} label="SECURITY / 17" />
     </Bench>
   )
 }
 
 function MedicalDroidDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
   const [leftTool, setLeftTool] = React.useState<MedicalDroidTool>("scanner")
   const [rightTool, setRightTool] = React.useState<MedicalDroidTool>("injector")
   const [diagnostic, setDiagnostic] = React.useState(0.78)
@@ -1078,6 +1083,7 @@ function MedicalDroidDemo() {
   const medicalTools = ["none", "scanner", "injector", "clamp", "probe"] as const
   return (
     <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
       <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
       <Segmented label="left" value={leftTool} options={medicalTools} onChange={setLeftTool} />
       <Segmented label="right" value={rightTool} options={medicalTools} onChange={setRightTool} />
@@ -1086,13 +1092,14 @@ function MedicalDroidDemo() {
         ? <NumberControl label="diagnose" value={diagnostic} min={0} max={1} step={0.01} onChange={setDiagnostic} format={value => `${Math.round(value * 100)}%`} />
         : <Hint>Click it to run the scan again from the top.</Hint>}
     </>}>
-      <MedicalDroid size={330} leftTool={leftTool} rightTool={rightTool} variant={variant} label="MEDICAL / 18"
+      <MedicalDroid view={view} size={330} leftTool={leftTool} rightTool={rightTool} variant={variant} label="MEDICAL / 18"
         {...(drive === "manual" ? { diagnostic, behavior: "static" as const } : { behavior: drive })} />
     </Bench>
   )
 }
 
 function InfantryDroidDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
   const [frame, setFrame] = React.useState<InfantryDroidFrame>("light")
   const [pose, setPose] = React.useState<InfantryDroidPose>("march")
   const [drive, setDrive] = React.useState<InfantryDroidBehavior | "manual">("patrol")
@@ -1100,6 +1107,7 @@ function InfantryDroidDemo() {
   const [variant, setVariant] = React.useState<RobotVariant>("solid")
   return (
     <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
       <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
       <Segmented label="frame" value={frame} options={["light", "heavy"] as const} onChange={setFrame} />
       <Segmented label="module" value={equipment} options={["none", "pack", "scanner", "shield"] as const} onChange={setEquipment} />
@@ -1108,7 +1116,7 @@ function InfantryDroidDemo() {
         ? <Segmented label="pose" value={pose} options={["stand", "march", "guard", "disabled"] as const} onChange={setPose} />
         : <Hint>The head follows the pointer; click to put it on guard.</Hint>}
     </>}>
-      <InfantryDroid size={300} frame={frame} equipment={equipment} variant={variant} label="INFANTRY / 19"
+      <InfantryDroid view={view} size={300} frame={frame} equipment={equipment} variant={variant} label="INFANTRY / 19"
         {...(drive === "manual" ? { pose, behavior: "static" as const } : { behavior: drive })} />
     </Bench>
   )
@@ -1242,6 +1250,7 @@ function AstromechDroidDemo() {
   )
 }
 function AttendantDroidDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
   const [plating, setPlating] = React.useState<AttendantDroidPlating>("full")
   const [build, setBuild] = React.useState<AttendantDroidBuild>("standard")
   const [face, setFace] = React.useState<AttendantDroidFace>("grille")
@@ -1253,6 +1262,7 @@ function AttendantDroidDemo() {
   const [variant, setVariant] = React.useState<RobotVariant>("solid")
   return (
     <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
       <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
       <Segmented label="plating" value={plating} options={["full", "partial", "bare"] as const} onChange={setPlating} />
       <Segmented label="build" value={build} options={["slim", "standard", "heavy"] as const} onChange={setBuild} />
@@ -1265,13 +1275,14 @@ function AttendantDroidDemo() {
         <NumberControl label="head" value={headAngle} min={-45} max={45} onChange={setHeadAngle} format={value => `${value}°`} />
       </> : <Hint>The head turns to the pointer, and a click moves it on to its next courtesy.</Hint>}
     </>}>
-      <AttendantDroid size={300} plating={plating} build={build} face={face} hands={hands}
+      <AttendantDroid view={view} size={300} plating={plating} build={build} face={face} hands={hands}
         collar={collar === "collar"} variant={variant} label="ATTENDANT / 24"
         {...(drive === "manual" ? { pose, headAngle, behavior: "static" as const } : { behavior: drive })} />
     </Bench>
   )
 }
 function CyberTrooperDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
   const [chestUnit, setChestUnit] = React.useState<CyberTrooperChest>("core")
   const [helmet, setHelmet] = React.useState<CyberTrooperHelmet>("slab")
   const [build, setBuild] = React.useState<CyberTrooperBuild>("standard")
@@ -1285,6 +1296,7 @@ function CyberTrooperDemo() {
   const [variant, setVariant] = React.useState<RobotVariant>("solid")
   return (
     <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
       <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
       <Segmented label="helmet" value={helmet} options={["slab", "domed", "crested"] as const} onChange={setHelmet} />
       <Segmented label="visor" value={visor} options={["lamps", "slit", "bar"] as const} onChange={setVisor} />
@@ -1299,7 +1311,7 @@ function CyberTrooperDemo() {
         <NumberControl label="power" value={power} min={0} max={1} step={0.01} onChange={setPower} format={value => `${Math.round(value * 100)}%`} />
       </> : <Hint>Click it to cut the power, and click again to bring it back.</Hint>}
     </>}>
-      <CyberTrooper size={300} chestUnit={chestUnit} helmet={helmet} build={build} visor={visor}
+      <CyberTrooper view={view} size={300} chestUnit={chestUnit} helmet={helmet} build={build} visor={visor}
         shoulders={shoulders} jaw={jaw === "jaw"} handles={handles === "handles"} variant={variant} label="TROOPER / 25"
         {...(drive === "manual" ? { pose, power, behavior: "static" as const } : { behavior: drive })} />
     </Bench>
