@@ -7,7 +7,7 @@
  */
 
 import * as React from "react"
-import { useFrame, useThree } from "@react-three/fiber"
+import { useFrame } from "@react-three/fiber"
 import * as THREE from "three"
 
 import { RobotArm3D } from "@/components/ui/robot-arm-3d"
@@ -25,6 +25,8 @@ export interface HeroStageProps {
   wireframe: boolean
   /** False parks the canvas on `demand`, so a hidden context costs no frames. */
   awake: boolean
+  /** Fired once the context exists, so the wipe never reveals an empty canvas. */
+  onReady?: () => void
   reach?: number
 }
 
@@ -34,10 +36,11 @@ function HeroStage({
   pointer,
   wireframe,
   awake,
+  onReady,
   reach = 2.4,
 }: HeroStageProps) {
-  // Stable, so `RobotArm3D` never re-renders as the pointer moves.
-  const goal = React.useCallback(() => target.current ?? rest(reach), [target, reach])
+  // Read through the ref, so a pointer move never re-renders the rig.
+  const goal = () => target.current ?? rest(reach)
 
   return (
     <RobotStage
@@ -46,7 +49,10 @@ function HeroStage({
       fov={FLAT_CAMERA.fov}
       controls={false}
       floor="grid"
-      canvasProps={{ frameloop: awake ? "always" : "demand" }}
+      canvasProps={{
+        frameloop: awake ? "always" : "demand",
+        onCreated: onReady,
+      }}
     >
       <CameraRig progress={progress} pointer={pointer} />
       <RobotArm3D
@@ -70,10 +76,8 @@ function CameraRig({
   progress,
   pointer,
 }: Pick<HeroStageProps, "progress" | "pointer">) {
-  const camera = useThree((state) => state.camera) as THREE.PerspectiveCamera
-  const look = React.useRef(new THREE.Vector3())
-
-  useFrame(() => {
+  useFrame((state) => {
+    const camera = state.camera as THREE.PerspectiveCamera
     const t = progress.current
     const view = lerpCamera(t)
     const sway = t * 0.5
@@ -86,11 +90,14 @@ function CameraRig({
       camera.fov = view.fov
       camera.updateProjectionMatrix()
     }
-    camera.lookAt(look.current.set(...view.target))
+    camera.lookAt(look.set(...view.target))
   })
 
   return null
 }
+
+/** Scratch vector: the rig runs every frame and should allocate nothing. */
+const look = new THREE.Vector3()
 
 const rest = (reach: number): Vec3 => ({
   x: reach * 0.42,
