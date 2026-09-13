@@ -8,7 +8,10 @@
       "type": "registry:lib",
       "title": "Robot kinematics",
       "description": "Dependency-free inverse and forward kinematics: analytic two-link elbow, FABRIK for longer chains, closed-form delta IK, isometric projection.",
-      "categories": ["robotics", "math"],
+      "categories": [
+        "robotics",
+        "math"
+      ],
       "files": [
         {
           "path": "src/lib/robocn/kinematics.ts",
@@ -22,8 +25,13 @@
       "type": "registry:lib",
       "title": "Robot style",
       "description": "The shared visual language: size scale, paint variants, palette resolution from CSS variables, and the capsule limb geometry every machine is drawn from.",
-      "categories": ["robotics", "theming"],
-      "registryDependencies": ["{REGISTRY_URL}/r/robot-kinematics.json"],
+      "categories": [
+        "robotics",
+        "theming"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json"
+      ],
       "files": [
         {
           "path": "src/lib/robocn/style.ts",
@@ -50,30 +58,70 @@
         }
       },
       "css": {
-        "@keyframes robocn-spin": { "to": { "transform": "rotate(360deg)" } },
+        "@keyframes robocn-spin": {
+          "to": {
+            "transform": "rotate(360deg)"
+          }
+        },
         "@keyframes robocn-spray": {
-          "from": { "transform": "translateX(0) scale(1)", "opacity": "0.85" },
-          "to": { "transform": "translateX(7px) scale(0.35)", "opacity": "0" }
+          "from": {
+            "transform": "translateX(0) scale(1)",
+            "opacity": "0.85"
+          },
+          "to": {
+            "transform": "translateX(7px) scale(0.35)",
+            "opacity": "0"
+          }
         },
         "@keyframes robocn-spark": {
-          "from": { "transform": "translateX(0) scale(1)", "opacity": "1" },
-          "to": { "transform": "translateX(5px) scale(0.2)", "opacity": "0" }
+          "from": {
+            "transform": "translateX(0) scale(1)",
+            "opacity": "1"
+          },
+          "to": {
+            "transform": "translateX(5px) scale(0.2)",
+            "opacity": "0"
+          }
         },
-        "@keyframes robocn-pulse": { "50%": { "opacity": "0.45" } },
+        "@keyframes robocn-pulse": {
+          "50%": {
+            "opacity": "0.45"
+          }
+        },
         "@keyframes robocn-scan": {
-          "0%, 100%": { "transform": "rotate(-16deg)" },
-          "50%": { "transform": "rotate(16deg)" }
+          "0%, 100%": {
+            "transform": "rotate(-16deg)"
+          },
+          "50%": {
+            "transform": "rotate(16deg)"
+          }
         },
         "@keyframes robocn-blink": {
-          "0%, 92%, 100%": { "transform": "scaleY(1)" },
-          "95%": { "transform": "scaleY(0.08)" }
+          "0%, 92%, 100%": {
+            "transform": "scaleY(1)"
+          },
+          "95%": {
+            "transform": "scaleY(0.08)"
+          }
         },
-        ".robocn-spin": { "animation": "robocn-spin 1.1s linear infinite" },
-        ".robocn-spray": { "animation": "robocn-spray 0.8s linear infinite" },
-        ".robocn-spark": { "animation": "robocn-spark 0.5s ease-out infinite" },
-        ".robocn-pulse": { "animation": "robocn-pulse 1.1s ease-in-out infinite" },
-        ".robocn-scan": { "animation": "robocn-scan 1.6s ease-in-out infinite" },
-        ".robocn-blink": { "animation": "robocn-blink 5.4s ease-in-out infinite" },
+        ".robocn-spin": {
+          "animation": "robocn-spin 1.1s linear infinite"
+        },
+        ".robocn-spray": {
+          "animation": "robocn-spray 0.8s linear infinite"
+        },
+        ".robocn-spark": {
+          "animation": "robocn-spark 0.5s ease-out infinite"
+        },
+        ".robocn-pulse": {
+          "animation": "robocn-pulse 1.1s ease-in-out infinite"
+        },
+        ".robocn-scan": {
+          "animation": "robocn-scan 1.6s ease-in-out infinite"
+        },
+        ".robocn-blink": {
+          "animation": "robocn-blink 5.4s ease-in-out infinite"
+        },
         "@media (prefers-reduced-motion: reduce)": {
           ".robocn-spin, .robocn-spray, .robocn-spark, .robocn-pulse, .robocn-scan, .robocn-blink": {
             "animation": "none"
@@ -86,7 +134,10 @@
       "type": "registry:lib",
       "title": "Robot color",
       "description": "Resolves CSS variables and oklch() to something three.js can parse, so the WebGL robots share the theme with the SVG ones.",
-      "categories": ["robotics", "theming"],
+      "categories": [
+        "robotics",
+        "theming"
+      ],
       "files": [
         {
           "path": "src/lib/robocn/color.ts",
@@ -100,7 +151,10 @@
       "type": "registry:hook",
       "title": "useRobotArm",
       "description": "Animated pose for a link chain: eases the tool tip toward a target or a scripted path, and stops rendering entirely once the pose settles.",
-      "categories": ["robotics", "hooks"],
+      "categories": [
+        "robotics",
+        "hooks"
+      ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
         "{REGISTRY_URL}/r/robot-style.json"
@@ -118,8 +172,13 @@
       "type": "registry:hook",
       "title": "usePointerTarget",
       "description": "Pointer position mapped into a component's own world units, returning null when the pointer is away so a machine can fall back to its idle behaviour.",
-      "categories": ["robotics", "hooks"],
-      "registryDependencies": ["{REGISTRY_URL}/r/robot-kinematics.json"],
+      "categories": [
+        "robotics",
+        "hooks"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json"
+      ],
       "files": [
         {
           "path": "src/hooks/use-pointer-target.ts",
@@ -133,7 +192,10 @@
       "type": "registry:ui",
       "title": "Robot arm",
       "description": "An articulated industrial arm in SVG: any number of links, eight end effectors, four paint variants, four mounts, and pointer tracking.",
-      "categories": ["robotics", "svg"],
+      "categories": [
+        "robotics",
+        "svg"
+      ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
         "{REGISTRY_URL}/r/robot-style.json",
@@ -153,7 +215,10 @@
       "type": "registry:ui",
       "title": "SCARA arm",
       "description": "A SCARA cell in plan view: two rotary links, a Z spindle, the swept area, and a shadow that reads as height.",
-      "categories": ["robotics", "svg"],
+      "categories": [
+        "robotics",
+        "svg"
+      ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
         "{REGISTRY_URL}/r/robot-style.json",
@@ -173,7 +238,10 @@
       "type": "registry:ui",
       "title": "Delta arm",
       "description": "A parallel delta robot drawn in isometric, solved with real delta inverse kinematics rather than an approximation.",
-      "categories": ["robotics", "svg"],
+      "categories": [
+        "robotics",
+        "svg"
+      ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
         "{REGISTRY_URL}/r/robot-style.json",
@@ -193,7 +261,10 @@
       "type": "registry:ui",
       "title": "Gantry arm",
       "description": "A cartesian gantry: independent axes, the dog-leg path a real machine takes, and an optional plotter trail.",
-      "categories": ["robotics", "svg"],
+      "categories": [
+        "robotics",
+        "svg"
+      ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
         "{REGISTRY_URL}/r/robot-style.json",
@@ -213,7 +284,10 @@
       "type": "registry:ui",
       "title": "Robot face",
       "description": "A head whose eyes follow the pointer anywhere on the page, with moods for waiting, succeeded, thinking, failed and asleep.",
-      "categories": ["robotics", "svg"],
+      "categories": [
+        "robotics",
+        "svg"
+      ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
         "{REGISTRY_URL}/r/robot-style.json",
@@ -232,7 +306,10 @@
       "type": "registry:ui",
       "title": "Robot loader",
       "description": "A pick-and-place cycle as a loading indicator: indeterminate on its own, or filling the out-tray in proportion to a value.",
-      "categories": ["robotics", "svg"],
+      "categories": [
+        "robotics",
+        "svg"
+      ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
         "{REGISTRY_URL}/r/robot-style.json",
@@ -251,8 +328,13 @@
       "type": "registry:ui",
       "title": "Arm controls",
       "description": "A teach pendant: one slider per joint driving an arm in forward kinematics, plus the tool selector and live readouts.",
-      "categories": ["robotics", "controls"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "robotics",
+        "controls"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
         "button",
@@ -274,9 +356,18 @@
       "type": "registry:ui",
       "title": "Robot stage",
       "description": "The room the 3D robots stand in: a configured react-three-fiber canvas with lights, a contact shadow, a grid floor and orbit controls.",
-      "categories": ["robotics", "3d"],
-      "dependencies": ["three", "@react-three/fiber", "@react-three/drei"],
-      "registryDependencies": ["{REGISTRY_URL}/r/robot-style.json"],
+      "categories": [
+        "robotics",
+        "3d"
+      ],
+      "dependencies": [
+        "three",
+        "@react-three/fiber",
+        "@react-three/drei"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json"
+      ],
       "files": [
         {
           "path": "src/components/ui/robot-stage.tsx",
@@ -290,9 +381,17 @@
       "type": "registry:ui",
       "title": "Robot arm 3D",
       "description": "The articulated arm as a procedural react-three-fiber rig: no model to load, and it shares its palette with the SVG components.",
-      "categories": ["robotics", "3d"],
-      "dependencies": ["three", "@react-three/fiber"],
-      "devDependencies": ["@types/three"],
+      "categories": [
+        "robotics",
+        "3d"
+      ],
+      "dependencies": [
+        "three",
+        "@react-three/fiber"
+      ],
+      "devDependencies": [
+        "@types/three"
+      ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
         "{REGISTRY_URL}/r/robot-style.json",
@@ -304,6 +403,168 @@
           "path": "src/components/ui/robot-arm-3d.tsx",
           "type": "registry:ui",
           "target": "@ui/robot-arm-3d.tsx"
+        }
+      ]
+    },
+    {
+      "name": "robot-gripper",
+      "type": "registry:ui",
+      "title": "Robot gripper",
+      "description": "Standalone parallel or angular gripper with controlled jaw opening, status lamp, and four paint variants.",
+      "categories": [
+        "robotics",
+        "machines"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/robot-gripper.tsx",
+          "type": "registry:ui",
+          "target": "@ui/robot-gripper.tsx"
+        }
+      ]
+    },
+    {
+      "name": "conveyor-belt",
+      "type": "registry:ui",
+      "title": "Conveyor belt",
+      "description": "Conveyor with automatic or controlled belt travel, reversible direction, rollers, and a configurable number of workpieces.",
+      "categories": [
+        "robotics",
+        "machines"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/conveyor-belt.tsx",
+          "type": "registry:ui",
+          "target": "@ui/conveyor-belt.tsx"
+        }
+      ]
+    },
+    {
+      "name": "robot-rover",
+      "type": "registry:ui",
+      "title": "Robot rover",
+      "description": "A top-down four- or six-wheel ground robot with controlled heading, front-wheel steering, tread travel, and a sensor turret.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/robot-rover.tsx",
+          "type": "registry:ui",
+          "target": "@ui/robot-rover.tsx"
+        }
+      ]
+    },
+    {
+      "name": "robot-drone",
+      "type": "registry:ui",
+      "title": "Robot drone",
+      "description": "A four- or six-rotor drone with controlled heading and propeller angles, optional guards, and four paint variants.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/robot-drone.tsx",
+          "type": "registry:ui",
+          "target": "@ui/robot-drone.tsx"
+        }
+      ]
+    },
+    {
+      "name": "lidar-scan",
+      "type": "registry:ui",
+      "title": "Lidar scan",
+      "description": "A polar lidar display that plots supplied angle-distance samples, with sensor heading, scan ray, and range rings.",
+      "categories": [
+        "robotics",
+        "sensors"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/lidar-scan.tsx",
+          "type": "registry:ui",
+          "target": "@ui/lidar-scan.tsx"
+        }
+      ]
+    },
+    {
+      "name": "rotary-table",
+      "type": "registry:ui",
+      "title": "Rotary table",
+      "description": "A controlled rotary indexing table with equally spaced fixtures, optional workpieces, a fixed drive motor, and four paint variants.",
+      "categories": [
+        "robotics",
+        "machines"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/rotary-table.tsx",
+          "type": "registry:ui",
+          "target": "@ui/rotary-table.tsx"
+        }
+      ]
+    },
+    {
+      "name": "linear-actuator",
+      "type": "registry:ui",
+      "title": "Linear actuator",
+      "description": "A controlled linear cylinder with rod and piston travel, optional cutaway view, stroke ruler, and four paint variants.",
+      "categories": [
+        "robotics",
+        "actuators"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/linear-actuator.tsx",
+          "type": "registry:ui",
+          "target": "@ui/linear-actuator.tsx"
+        }
+      ]
+    },
+    {
+      "name": "servo-motor",
+      "type": "registry:ui",
+      "title": "Servo motor",
+      "description": "A positional servo motor with controlled horn angle, single, double, or cross horns, mounting tabs, and optional cable.",
+      "categories": [
+        "robotics",
+        "actuators"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/servo-motor.tsx",
+          "type": "registry:ui",
+          "target": "@ui/servo-motor.tsx"
         }
       ]
     }

@@ -136,7 +136,7 @@ function GantryArm({
     })
   })()
 
-  const eased = useEasedPoint(goal, { x: 0, y: 34 }, { speed, animate, paused, phase })
+  const eased = useEasedPoint(goal, { x: 0, y: 34 }, { speed, animate, paused, phase, perAxis: true })
   const head = eased.point
   const beamY = clamp(head.y + HEAD_DROP, 22, TOP - 4)
   const engaged = active ?? eased.moving

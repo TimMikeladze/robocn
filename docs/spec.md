@@ -48,6 +48,14 @@ Consumers install with `npx shadcn@latest add https://<host>/r/robot-arm.json`, 
 | `robot-face` | ui | Head with pointer-tracking eyes, moods, blinking, antenna. |
 | `robot-loader` | ui | Pick-and-place loop as a loading indicator. |
 | `arm-controls` | ui | Slider panel that drives an arm in forward kinematics. |
+| `robot-gripper` | ui | Standalone parallel or angular gripper with controlled opening. |
+| `conveyor-belt` | ui | Automatic or controlled conveyor travel with workpieces. |
+| `linear-actuator` | ui | Cylinder with controlled stroke and piston cutaway. |
+| `servo-motor` | ui | Positional servo with interchangeable horn geometry. |
+| `rotary-table` | ui | Controlled indexing platter, fixtures, and workpieces. |
+| `robot-rover` | ui | Four- or six-wheel ground robot with controlled heading and steering. |
+| `robot-drone` | ui | Four- or six-rotor aircraft with controlled blade and heading angles. |
+| `lidar-scan` | ui | Polar angle-distance display for supplied sensor returns. |
 
 ## Customisation contract
 
@@ -85,7 +93,10 @@ bob), `static`. Or drive it yourself with a controlled `target`. All motion resp
 
 ## Verification
 
-What was run, and what it caught.
+### Initial release
+
+Historical verification for the original release; this does not imply that the later
+additions have been installed into that same fresh consumer project.
 
 - `vitest` — 23 tests. Kinematics: link lengths preserved, reach clamping, FK/IK round trip,
   elbow side, delta solutions landing on their forearm spheres, seeded poses staying
@@ -107,3 +118,29 @@ What was run, and what it caught.
 Deployed at https://robocn.dev (Vercel, linesofcode scope, GitHub connected for
 auto-deploys). `NEXT_PUBLIC_REGISTRY_URL` is set per environment and is what gets stamped
 into the registry JSON at build time.
+
+## Controlled mobile robots and sensing
+
+Rovers and drones render controlled poses directly. They do not integrate vehicle or
+flight dynamics. Their controls update immediately and need no internal animation loop;
+a consumer can supply its own timeline or telemetry. All angles are degrees, clockwise
+from the top of the drawing. Invalid angles use a stable neutral pose.
+
+The lidar display consumes angle-distance pairs, using a caller-specified maximum range.
+It omits invalid and beyond-range returns, never inventing obstacles or clamping them
+onto the outer ring. Sensor heading rotates the returns; scan angle only moves the ray.
+The docs demo labels its synthetic room data explicitly.
+
+### Expanded library verification
+
+The expanded source currently contains 22 registry items. The test suite covers actuator
+poses, rover/drone/lidar geometry, accessible controls, catalogue filtering, mobile
+navigation, registry documentation coverage, and animation scheduling. Motion regressions
+are reproduced with controlled animation frames, including disabled paths, live reduced
+motion, settled-state reporting, independent gantry axes, and stationary scripted updates.
+
+The app passes TypeScript, ESLint, and the production build. The generated registry source
+is checked against the component files. The new component demos and catalogue flows have
+also been exercised in a browser on desktop and at a 390px viewport. These checks cover
+source delivery and the docs app; the original release's fresh-consumer installation
+check above has not been repeated for all of the expanded items.

@@ -1,9 +1,9 @@
 # robocn
 
 A [shadcn registry](https://ui.shadcn.com/docs/registry) of robot components: articulated
-arms in SVG and WebGL, SCARA, delta and gantry machines, a face, a loader, and a teach
-pendant. Every pose is solved in the browser from real kinematics — there are no sprite
-sheets and no keyframed animations.
+arms in SVG and WebGL, production-line machines, mobile robots, and sensor displays.
+Articulated arms solve their poses from real kinematics; rovers, drones, and lidar displays
+accept controlled poses or sensor data. Components are procedural SVG or WebGL, not sprite sheets.
 
 Components install as source into your project, the way shadcn/ui components do. Own them,
 edit them, theme them with CSS variables.
@@ -16,6 +16,14 @@ pnpm dlx shadcn@latest add https://robocn.dev/r/robot-arm.json
 
 | Item | What it is |
 |---|---|
+| `linear-actuator` | Controlled cylinder stroke with optional piston cutaway. |
+| `servo-motor` | Positional servo with single, double, or cross horns. |
+| `rotary-table` | Rotary indexing platter with controlled angle and up to twelve fixtures. |
+| `robot-rover` | Four- or six-wheel ground robot with controlled heading, steering, and tread travel. |
+| `robot-drone` | Quad- or hexacopter with counter-rotating propellers and optional guards. |
+| `lidar-scan` | Polar range display for supplied angle-distance samples. |
+| `robot-gripper` | A standalone parallel or angular gripper with controlled jaw opening. |
+| `conveyor-belt` | A conveyor with automatic or controlled travel, reversible direction, and workpieces. |
 | `robot-arm` | The articulated arm. Any number of links, eight end effectors, four paint variants, four mounts. |
 | `robot-arm-3d` | The same arm as a procedural react-three-fiber rig. |
 | `robot-stage` | Canvas, lights, contact shadow, grid floor and orbit controls for the 3D items. |
@@ -52,7 +60,8 @@ export function Hero() {
 }
 ```
 
-Three axes cover every component, so learning one teaches the rest.
+The SVG machines share colour, size, and paint variants. Motion and mechanical
+controls depend on the component; each docs page lists its supported props.
 
 **Colour.** Four roles — `shell`, `metal`, `dark`, `accent` — each resolving from a prop,
 then a CSS variable, then a built-in default.
@@ -69,16 +78,22 @@ then a CSS variable, then a built-in default.
 ```
 
 **Size.** `size` takes a scale step (`xs`–`xl`) or a pixel number. Geometry lives in a fixed
-viewBox, so size only ever scales the drawing; `thickness` scales limb weight separately.
+viewBox, so size only ever scales the drawing. Arms also support `thickness` to scale
+limb weight separately.
 
 **Form.** `variant` is `solid`, `outline`, `blueprint` or `wire`. Blueprint adds the grid,
-the dimensions and the joint angles. `tool` picks the end effector; `mount` bolts the machine
-to the floor, the ceiling or a wall.
+the dimensions or the joint angles where applicable. On articulated arms, `tool` picks
+the end effector and `mount` bolts the machine to the floor, ceiling or wall.
 
-**Motion.** `behavior` is `pointer`, `orbit`, `sweep`, `idle` or `static`. Or drive it
+**Arm motion.** `behavior` is `pointer`, `orbit`, `sweep`, `idle` or `static`. Or drive it
 yourself with a controlled `target`, a function of elapsed seconds for a scripted path, or an
 `angles` array to pose it joint by joint. The loop stops once a pose settles, so a parked arm
-costs no renders, and `prefers-reduced-motion` skips the easing.
+costs no renders. With animation disabled or reduced motion enabled, fixed goals snap
+into place and scripted paths are sampled at `phase` without a continuous loop.
+
+Rovers, drones, and actuators use controlled positions without internal timers. The
+conveyor can run automatically or take a controlled position. Lidar displays accept
+your angle-distance samples.
 
 ## The kinematics
 

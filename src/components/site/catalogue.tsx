@@ -2,6 +2,16 @@
 
 import Link from "next/link"
 
+import { LinearActuator } from "@/components/ui/linear-actuator"
+import { ServoMotor } from "@/components/ui/servo-motor"
+import { RotaryTable } from "@/components/ui/rotary-table"
+import { RobotRover } from "@/components/ui/robot-rover"
+import { RobotDrone } from "@/components/ui/robot-drone"
+import { LidarScan } from "@/components/ui/lidar-scan"
+
+import { RobotGripper } from "@/components/ui/robot-gripper"
+import { ConveyorBelt } from "@/components/ui/conveyor-belt"
+
 import { DeltaArm } from "@/components/ui/delta-arm"
 import { GantryArm } from "@/components/ui/gantry-arm"
 import { RobotArm } from "@/components/ui/robot-arm"
@@ -11,6 +21,14 @@ import { ScaraArm } from "@/components/ui/scara-arm"
 import { Panel } from "@/components/site/panel"
 
 const entries = [
+  { slug: "linear-actuator", title: "Linear actuator", line: "Controlled stroke and a piston cutaway.", art: <LinearActuator size={240} cutaway /> },
+  { slug: "servo-motor", title: "Servo motor", line: "Positional shaft with three horn styles.", art: <ServoMotor size={150} angle={30} /> },
+  { slug: "rotary-table", title: "Rotary table", line: "Indexing platter, fixtures, and workpieces.", art: <RotaryTable size={170} angle={30} /> },
+  { slug: "robot-rover", title: "Robot rover", line: "Four or six wheels, heading, and steering.", art: <RobotRover size={170} wheels={6} heading={25} steering={15} active /> },
+  { slug: "robot-drone", title: "Robot drone", line: "Four or six rotors, guards, and blade angles.", art: <RobotDrone size={170} rotorAngle={25} active /> },
+  { slug: "lidar-scan", title: "Lidar scan", line: "Your range data, plotted in polar coordinates.", art: <LidarScan size={160} scanAngle={60} samples={Array.from({ length: 36 }, (_, i) => ({ angle: i * 10, distance: 5 + 2 * Math.sin(i * 0.7) }))} /> },
+  { slug: "robot-gripper", title: "Robot gripper", line: "Parallel or angular fingers, controlled opening.", art: <RobotGripper size={170} opening={0.6} active /> },
+  { slug: "conveyor-belt", title: "Conveyor belt", line: "Wrapping travel, rollers, and workpieces.", art: <ConveyorBelt size={250} position={0.15} /> },
   {
     slug: "robot-arm",
     title: "Robot arm",

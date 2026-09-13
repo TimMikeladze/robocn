@@ -4,6 +4,16 @@
 
 import * as React from "react"
 
+import { LinearActuator } from "@/components/ui/linear-actuator"
+import { ServoMotor, type ServoHorn } from "@/components/ui/servo-motor"
+import { RotaryTable } from "@/components/ui/rotary-table"
+import { RobotRover } from "@/components/ui/robot-rover"
+import { RobotDrone } from "@/components/ui/robot-drone"
+import { LidarScan } from "@/components/ui/lidar-scan"
+
+import { RobotGripper } from "@/components/ui/robot-gripper"
+import { ConveyorBelt } from "@/components/ui/conveyor-belt"
+
 import { ArmControls } from "@/components/ui/arm-controls"
 import { DeltaArm } from "@/components/ui/delta-arm"
 import { GantryArm } from "@/components/ui/gantry-arm"
@@ -599,7 +609,161 @@ function UsePointerTargetDemo() {
   )
 }
 
+
+function RobotGripperDemo() {
+  const [opening, setOpening] = React.useState(0.5)
+  const [fingers, setFingers] = React.useState<"parallel" | "angular">("parallel")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [active, setActive] = React.useState<"off" | "on">("on")
+  return <Bench controls={<>
+    <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+    <Segmented label="fingers" value={fingers} options={["parallel", "angular"] as const} onChange={setFingers} />
+    <Segmented label="active" value={active} options={["off", "on"] as const} onChange={setActive} />
+    <NumberControl label="opening" value={opening} min={0} max={1} step={0.01} onChange={setOpening} format={value => `${Math.round(value * 100)}%`} />
+  </>}><RobotGripper size={320} opening={opening} fingers={fingers} variant={variant} active={active === "on"} /></Bench>
+}
+
+function ConveyorBeltDemo() {
+  const [position, setPosition] = React.useState(0.25)
+  const [parts, setParts] = React.useState(3)
+  const [direction, setDirection] = React.useState<"left" | "right">("right")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  return <Bench controls={<>
+    <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+    <Segmented label="direction" value={direction} options={["left", "right"] as const} onChange={setDirection} />
+    <NumberControl label="travel" value={position} min={-1} max={1} step={0.01} onChange={setPosition} format={value => `${value.toFixed(2)} rev`} />
+    <NumberControl label="parts" value={parts} min={0} max={12} onChange={setParts} />
+  </>}><ConveyorBelt size={420} position={position} parts={parts} direction={direction} variant={variant} label="FEED / 05" /></Bench>
+}
+
+function RobotRoverDemo() {
+  const [heading, setHeading] = React.useState(25)
+  const [steering, setSteering] = React.useState(15)
+  const [travel, setTravel] = React.useState(0)
+  const [wheels, setWheels] = React.useState<"4" | "6">("6")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  return (
+    <Bench controls={<>
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="wheels" value={wheels} options={["4", "6"] as const} onChange={setWheels} />
+      <NumberControl label="heading" value={heading} min={0} max={360} onChange={setHeading} format={value => `${value}°`} />
+      <NumberControl label="steer" value={steering} min={-45} max={45} onChange={setSteering} format={value => `${value}°`} />
+      <NumberControl label="travel" value={travel} min={0} max={1} step={0.01} onChange={setTravel} format={value => value.toFixed(2)} />
+    </>}>
+      <RobotRover size={340} wheels={wheels === "4" ? 4 : 6} heading={heading} steering={steering} wheelTravel={travel} variant={variant} active label="ROVER / 06" />
+    </Bench>
+  )
+}
+
+function RobotDroneDemo() {
+  const [heading, setHeading] = React.useState(0)
+  const [angle, setAngle] = React.useState(25)
+  const [rotors, setRotors] = React.useState<"4" | "6">("4")
+  const [guards, setGuards] = React.useState<"on" | "off">("on")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  return (
+    <Bench controls={<>
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="rotors" value={rotors} options={["4", "6"] as const} onChange={setRotors} />
+      <Segmented label="guards" value={guards} options={["on", "off"] as const} onChange={setGuards} />
+      <NumberControl label="heading" value={heading} min={0} max={360} onChange={setHeading} format={value => `${value}°`} />
+      <NumberControl label="blades" value={angle} min={0} max={360} onChange={setAngle} format={value => `${value}°`} />
+    </>}>
+      <RobotDrone size={340} rotors={rotors === "4" ? 4 : 6} heading={heading} rotorAngle={angle} guards={guards === "on"} variant={variant} active label="FLIGHT / 07" />
+    </Bench>
+  )
+}
+
+// A deterministic rectangular room in metres, with a closer obstacle on one side.
+// These are demo data; the installable component never invents sensor returns.
+const roomSamples = Array.from({ length: 120 }, (_, i) => {
+  const angle = i * 3
+  const radians = angle * Math.PI / 180
+  const wall = Math.min(7 / Math.max(Math.abs(Math.sin(radians)), 0.001), 5 / Math.max(Math.abs(Math.cos(radians)), 0.001))
+  return { angle, distance: angle >= 45 && angle <= 75 ? 3.5 : wall }
+})
+
+function LidarScanDemo() {
+  const [heading, setHeading] = React.useState(0)
+  const [scanAngle, setScanAngle] = React.useState(60)
+  const [range, setRange] = React.useState(10)
+  const [rays, setRays] = React.useState<"on" | "off">("off")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  return (
+    <Bench controls={<>
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="rays" value={rays} options={["off", "on"] as const} onChange={setRays} />
+      <NumberControl label="heading" value={heading} min={0} max={360} onChange={setHeading} format={value => `${value}°`} />
+      <NumberControl label="scan" value={scanAngle} min={0} max={360} onChange={setScanAngle} format={value => `${value}°`} />
+      <NumberControl label="range" value={range} min={3} max={15} step={0.5} onChange={setRange} format={value => `${value} m`} />
+      <p className="text-[11px] text-muted-foreground">Sample data: a 14 × 10 m room and one nearby obstacle. Reduce range to filter distant returns.</p>
+    </>}>
+      <LidarScan size={340} samples={roomSamples} heading={heading} scanAngle={scanAngle} maxRange={range} showRays={rays === "on"} variant={variant} label={`RANGE ${range} m`} />
+    </Bench>
+  )
+}
+
+function RotaryTableDemo() {
+  const [angle, setAngle] = React.useState(30)
+  const [stations, setStations] = React.useState(6)
+  const [loaded, setLoaded] = React.useState<"on" | "off">("on")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  return (
+    <Bench controls={<>
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="loaded" value={loaded} options={["on", "off"] as const} onChange={setLoaded} />
+      <NumberControl label="angle" value={angle} min={0} max={360} onChange={setAngle} format={value => `${value}°`} />
+      <NumberControl label="stations" value={stations} min={0} max={12} onChange={setStations} />
+      <button type="button" disabled={stations === 0}
+        onClick={() => setAngle(current => ((Math.floor(current / (360 / stations) + 1e-9) + 1) * 360 / stations) % 360)}
+        className="border border-border px-3 py-2 text-[12px] hover:border-foreground disabled:opacity-40">
+        Next station
+      </button>
+    </>}>
+      <RotaryTable size={340} angle={angle} stations={stations} loaded={loaded === "on"} variant={variant} label="INDEX / 08" />
+    </Bench>
+  )
+}
+
+function LinearActuatorDemo() {
+  const [extension, setExtension] = React.useState(0.5)
+  const [cutaway, setCutaway] = React.useState<"on" | "off">("on")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  return (
+    <Bench controls={<>
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="cutaway" value={cutaway} options={["on", "off"] as const} onChange={setCutaway} />
+      <NumberControl label="stroke" value={extension} min={0} max={1} step={0.01} onChange={setExtension} format={value => `${Math.round(value * 100)}%`} />
+    </>}>
+      <LinearActuator size={420} extension={extension} cutaway={cutaway === "on"} variant={variant} label="STROKE / 09" />
+    </Bench>
+  )
+}
+
+function ServoMotorDemo() {
+  const [angle, setAngle] = React.useState(30)
+  const [horn, setHorn] = React.useState<ServoHorn>("double")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  return (
+    <Bench controls={<>
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="horn" value={horn} options={["single", "double", "cross"] as const} onChange={setHorn} />
+      <NumberControl label="angle" value={angle} min={-180} max={180} onChange={setAngle} format={value => `${value}°`} />
+    </>}>
+      <ServoMotor size={290} angle={angle} horn={horn} variant={variant} label="SERVO / 10" />
+    </Bench>
+  )
+}
+
 export const demos: Record<string, React.ComponentType> = {
+  "linear-actuator": LinearActuatorDemo,
+  "servo-motor": ServoMotorDemo,
+  "rotary-table": RotaryTableDemo,
+  "robot-rover": RobotRoverDemo,
+  "robot-drone": RobotDroneDemo,
+  "lidar-scan": LidarScanDemo,
+  "robot-gripper": RobotGripperDemo,
+  "conveyor-belt": ConveyorBeltDemo,
   "robot-arm": RobotArmDemo,
   "robot-arm-3d": RobotArm3DDemo,
   "robot-stage": RobotStageDemo,

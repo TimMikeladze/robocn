@@ -95,7 +95,7 @@ const motion: PropRow[] = [
     type: "boolean",
     default: "true",
     description:
-      "Off snaps to the goal and renders once. Reduced-motion does this for you.",
+      "Off snaps to a fixed goal or samples a scripted path at phase, then stops. Reduced-motion preference does the same.",
   },
   { name: "paused", type: "boolean", default: "false", description: "Freeze in place." },
   {
@@ -107,6 +107,152 @@ const motion: PropRow[] = [
 ]
 
 export const docs: DocEntry[] = [
+  {
+    slug: "linear-actuator", item: "linear-actuator", title: "Linear actuator", group: "Machines",
+    summary: "A linear cylinder with a moving piston and rod. Reveal its internals in cutaway view, or use the complete housing in a production-cell illustration.",
+    files: ["components/ui/linear-actuator.tsx"],
+    usage: `import { LinearActuator } from "@/components/ui/linear-actuator"
+
+<LinearActuator extension={0.75} cutaway size="lg" />`,
+    props: [
+      { name: "extension", type: "number", default: "0.5", description: "Controlled stroke, clamped to 0–1. Zero retracts and one fully extends; non-finite values retract." },
+      { name: "cutaway", type: "boolean", default: "false", description: "Make the cylinder wall translucent and reveal the piston." },
+      { name: "showRuler", type: "boolean", default: "true", description: "Stroke scale and percentage under the rod." },
+      { name: "label", type: "string", description: "Caption under the assembly." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: ["Extension updates immediately without an internal timer. The piston and rod move together through a fixed illustrative stroke; the component does not simulate fluid pressure or force.", "The scale is a percentage of the drawing's stroke, not a measurement in physical units."],
+  },
+  {
+    slug: "servo-motor", item: "servo-motor", title: "Servo motor", group: "Machines",
+    summary: "A positional servo with mounting tabs, a cable, and interchangeable single, double, or cross horns. Drive the shaft angle from application state.",
+    files: ["components/ui/servo-motor.tsx"],
+    usage: `import { ServoMotor } from "@/components/ui/servo-motor"
+
+<ServoMotor angle={45} horn="cross" variant="blueprint" />`,
+    props: [
+      { name: "angle", type: "number", default: "0", description: "Clockwise horn angle in degrees, clamped to −180..180. Zero points up. Non-finite values use zero." },
+      { name: "horn", type: '"single" | "double" | "cross"', default: '"double"', description: "One, two, or four attachment arms. The first arm carries the direction mark." },
+      { name: "showCable", type: "boolean", default: "true", description: "Draw the three-wire cable and connector." },
+      { name: "showScale", type: "boolean", default: "true", description: "Circular reference scale around the shaft." },
+      { name: "label", type: "string", description: "Caption under the motor." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: ["Angle updates immediately without an internal timer. Supply values from your controls or timeline to animate the horn.", "The drawing's travel limits are illustrative and do not specify the limits of a particular physical servo."],
+  },
+  {
+    slug: "rotary-table", item: "rotary-table", title: "Rotary table", group: "Machines",
+    summary: "A rotary indexing table in plan view. Fixtures and workpieces rotate with the platter while the base, motor, and index pointer stay fixed.",
+    files: ["components/ui/rotary-table.tsx"],
+    usage: `import { RotaryTable } from "@/components/ui/rotary-table"
+
+<RotaryTable angle={60} stations={6} loaded variant="blueprint" />`,
+    props: [
+      { name: "angle", type: "number", default: "0", description: "Controlled clockwise platter angle in degrees. Wraps after each turn; non-finite values use zero." },
+      { name: "stations", type: "number", default: "6", description: "Equally spaced fixtures, rounded and clamped to 0–12. Non-finite values use six; zero gives a bare platter." },
+      { name: "loaded", type: "boolean", default: "true", description: "Show a workpiece in every fixture." },
+      { name: "showTicks", type: "boolean", default: "true", description: "Draw the graduated angle marks on the rotating platter." },
+      { name: "label", type: "string", description: "Caption below the stationary angle readout." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: ["The platter angle updates immediately without an internal timer. Drive it from your simulation or index it by setting angle to stationIndex * 360 / stations when stations is greater than zero.", "Zero degrees aligns the first fixture to the fixed pointer at the top. The remaining fixtures are equally spaced clockwise."],
+  },
+  {
+    slug: "robot-rover", item: "robot-rover", title: "Robot rover", group: "Robots",
+    summary: "A ground robot in plan view. Choose four or six wheels, steer the front axle, and drive its heading and tread travel from your application.",
+    files: ["components/ui/robot-rover.tsx"],
+    usage: `import { RobotRover } from "@/components/ui/robot-rover"
+
+<RobotRover wheels={6} heading={25} steering={15} wheelTravel={0.4} active />`,
+    props: [
+      { name: "wheels", type: "4 | 6", default: "4", description: "Two or three axles. Only the front axle steers." },
+      { name: "heading", type: "number", default: "0", description: "Clockwise degrees from the top. Wraps after each turn; non-finite values use zero." },
+      { name: "steering", type: "number", default: "0", description: "Front-wheel angle, clamped to −45..45 degrees. Non-finite values use zero." },
+      { name: "wheelTravel", type: "number", default: "0", description: "Controlled tread phase. Whole turns repeat; decrease to reverse. Non-finite values use zero." },
+      { name: "showSensor", type: "boolean", default: "true", description: "Draw the roof-mounted sensor turret." },
+      { name: "active", type: "boolean", default: "false", description: "Illuminate the front status lights." },
+      { name: "label", type: "string", description: "Caption underneath the rover, independent of heading." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: ["All positions are controlled and update immediately. The component has no timer; connect your own timeline or telemetry for motion.", "This is a pose illustration, not a vehicle dynamics solver. Steering rotates the front wheels equally and does not integrate a driving path."],
+  },
+  {
+    slug: "robot-drone", item: "robot-drone", title: "Robot drone", group: "Robots",
+    summary: "A multirotor aircraft in plan view, with four or six motors, counter-rotating propellers, a camera, and removable guards.",
+    files: ["components/ui/robot-drone.tsx"],
+    usage: `import { RobotDrone } from "@/components/ui/robot-drone"
+
+<RobotDrone rotors={6} heading={30} rotorAngle={45} guards active />`,
+    props: [
+      { name: "rotors", type: "4 | 6", default: "4", description: "Quadcopter or hexacopter geometry." },
+      { name: "heading", type: "number", default: "0", description: "Clockwise degrees from the top, wrapping after each turn." },
+      { name: "rotorAngle", type: "number", default: "0", description: "Controlled blade angle in degrees. Adjacent propellers rotate in opposite directions." },
+      { name: "guards", type: "boolean", default: "true", description: "Protective rings and struts around each rotor." },
+      { name: "active", type: "boolean", default: "false", description: "Illuminate the fuselage status lamp." },
+      { name: "label", type: "string", description: "Caption underneath the aircraft, independent of heading." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: ["Heading and rotor angle update immediately without an internal animation loop. Non-finite angles use zero. Active changes the lamp; supply changing rotorAngle values to animate the blades.", "The component illustrates a pose; it does not calculate lift or simulate flight."],
+  },
+  {
+    slug: "lidar-scan", item: "lidar-scan", title: "Lidar scan", group: "Robots",
+    summary: "A polar range display for real or simulated lidar samples. Returns stay in sensor coordinates and rotate with its heading.",
+    files: ["components/ui/lidar-scan.tsx"],
+    usage: `import { LidarScan } from "@/components/ui/lidar-scan"
+
+<LidarScan
+  samples={[{ angle: 0, distance: 5 }, { angle: 90, distance: 8 }]}
+  maxRange={10}
+  heading={20}
+  scanAngle={60}
+  showRays
+/>`,
+    props: [
+      { name: "samples", type: "readonly LidarSample[]", default: "[]", description: "Angle-distance pairs. Angles run clockwise from sensor-forward; distance uses the same units as maxRange." },
+      { name: "maxRange", type: "number", default: "10", description: "Distance represented by the outer ring. Non-finite or nonpositive values use 10." },
+      { name: "heading", type: "number", default: "0", description: "Clockwise sensor heading in degrees. Rotates samples and scan ray together; non-finite values use zero." },
+      { name: "scanAngle", type: "number", description: "Scan-ray angle relative to sensor-forward. Omit or supply a non-finite value to hide the ray." },
+      { name: "showRays", type: "boolean", default: "false", description: "Draw a line from the sensor to each valid return." },
+      { name: "showRings", type: "boolean", default: "true", description: "Quarter-range rings and crosshairs." },
+      { name: "label", type: "string", description: "Bottom caption; defaults to the maximum range." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: ["The component does not generate samples. The demo supplies a deterministic room outline and obstacle, clearly labelled as sample data.", "Negative, non-finite, and beyond-range distances are omitted. Non-finite angles are omitted. Zero-distance returns are valid and plot at the origin.", "Changing scanAngle only moves the ray; it does not filter or age returns. Supply a new samples array when fresh sensor data arrives."],
+  },
+  {
+    slug: "robot-gripper", item: "robot-gripper", title: "Robot gripper",
+    summary: "A standalone end effector with parallel or angular fingers. Drive the jaws from application state to build a fixture, tool selector, or work-cell simulation.",
+    group: "Machines", files: ["components/ui/robot-gripper.tsx"],
+    usage: `import { RobotGripper } from "@/components/ui/robot-gripper"
+
+<RobotGripper opening={0.65} fingers="parallel" active size="lg" />`,
+    props: [
+      { name: "opening", type: "number", default: "0.6", description: "Controlled jaw opening, clamped to 0–1. Non-finite values close the jaws." },
+      { name: "fingers", type: '"parallel" | "angular"', default: '"parallel"', description: "Straight fingers or inward-reaching angled fingers. Both close at the centre." },
+      { name: "active", type: "boolean", default: "false", description: "Pulses the status lamp, respecting reduced motion." },
+      { name: "holding", type: "boolean", default: "false", description: "Draws a workpiece between the jaws." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: ["Opening updates immediately. There is no internal animation loop: drive it from your own timeline, telemetry, or slider. This also keeps static and reduced-motion views still.", "The drawing exposes an accessible name with its opening percentage. Override aria-label for application-specific context."],
+  },
+  {
+    slug: "conveyor-belt", item: "conveyor-belt", title: "Conveyor belt",
+    summary: "A production-line conveyor with rollers and workpieces. Runs automatically or follows a controlled travel value, wrapping in either direction.",
+    group: "Machines", files: ["components/ui/conveyor-belt.tsx"],
+    usage: `import { ConveyorBelt } from "@/components/ui/conveyor-belt"
+
+<ConveyorBelt position={0.25} parts={4} direction="right" size="lg" />`,
+    props: [
+      { name: "position", type: "number", description: "Controlled belt travel in revolutions. Wraps at every integer. Omit to run automatically; non-finite values park at zero." },
+      { name: "parts", type: "number", default: "3", description: "Evenly spaced workpieces, rounded and clamped to 0–12. Zero gives an empty belt; non-finite values use three." },
+      { name: "direction", type: '"left" | "right"', default: '"right"', description: "Direction of travel, including controlled travel." },
+      { name: "speed", type: "number", default: "0.12", description: "Turns per second when uncontrolled. Zero or non-finite values park the belt; negative values reverse travel." },
+      { name: "animate", type: "boolean", default: "true", description: "Enables automatic travel. Reduced-motion preference also disables it." },
+      { name: "label", type: "string", description: "Caption underneath the conveyor." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: ["A supplied position updates immediately and disables the internal animation loop. The travel slider in the demo shows this controlled mode.", "Omit position for automatic motion, or set animate={false} for a still illustration. The animation loop is cleaned up on unmount."],
+  },
   {
     slug: "installation",
     item: null,
@@ -742,7 +888,7 @@ pose.angles // degrees, relative to the previous segment`,
         name: "useEasedPoint",
         type: "(target, start, options?) => EasedPoint",
         description:
-          "The easing half on its own, for machines with no chain to solve. Returns the point, the clock and whether it is moving.",
+          "The easing half on its own, for machines with no chain to solve. Returns point, clock and moving. Set perAxis: true to move each axis independently at the configured feed rate.",
       },
       {
         name: "robotRestTarget",

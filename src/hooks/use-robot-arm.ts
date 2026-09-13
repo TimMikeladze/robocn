@@ -13,10 +13,22 @@ import {
 } from "@/lib/robocn/kinematics"
 import { prefersReducedMotion, type RobotBehavior } from "@/lib/robocn/style"
 
+function subscribeReducedMotion(onChange: () => void) {
+  if (typeof window === "undefined" || !window.matchMedia) return () => {}
+  const media = window.matchMedia("(prefers-reduced-motion: reduce)")
+  media.addEventListener("change", onChange)
+  return () => media.removeEventListener("change", onChange)
+}
+
+function useReducedMotion() {
+  return React.useSyncExternalStore(subscribeReducedMotion, prefersReducedMotion, () => false)
+}
+
 /**
  * A fixed point, or a path: given seconds since the loop started, where the
- * tool tip should be now. A function target never settles, so it is the way to
- * script a cycle without owning an animation loop.
+ * tool tip should be now. A function target keeps the clock running while animation is enabled, so it
+ * can script a cycle without owning an animation loop. Disabled animation
+ * samples the path once at phase.
  */
 export type RobotTarget = Vec2 | ((clock: number) => Vec2) | null
 
@@ -102,7 +114,7 @@ function poseChanged(a: Vec2[], b: Vec2[]) {
 /**
  * Animated pose for a link chain. Eases the tool tip toward its goal on every
  * animation frame, solves the chain seeded with the previous frame, and stops
- * the loop entirely once a pose settles — an idle arm costs no renders.
+ * the loop entirely once a fixed target settles. Scripted behaviors keep running.
  */
 export function useRobotArm({
   links,
@@ -115,14 +127,18 @@ export function useRobotArm({
   paused = false,
   phase = 0,
 }: UseRobotArmOptions): RobotArmPose {
+  const reduced = useReducedMotion()
   const linksKey = links.join(",")
   const rootKey = `${root.x},${root.y}`
   // A function target is re-read every frame, so it must not key the effect.
+  // Active paths use a stable key to preserve their clock. Parked paths are
+  // sampled at phase so changed captured inputs still update the stopped pose.
+  const keyedTarget = typeof target === "function" && (!animate || reduced) ? target(phase) : target
   const targetKey =
-    typeof target === "function"
+    typeof keyedTarget === "function"
       ? "path"
-      : target
-        ? `${target.x.toFixed(3)},${target.y.toFixed(3)}`
+      : keyedTarget
+        ? `${keyedTarget.x},${keyedTarget.y}`
         : ""
 
   // The animation loop reads the latest links, root and target without being
@@ -153,14 +169,15 @@ export function useRobotArm({
 
   React.useEffect(() => {
     if (paused) return
-    const reduced = prefersReducedMotion()
     const travel = speed ?? chainReach(linksRef.current) * 1.6
+    const enabled = animate && !reduced
+    const running = enabled && Number.isFinite(travel) && travel > 0
     let clock = phase
     let last = performance.now()
     let frame = requestAnimationFrame(function step(now) {
       const dt = Math.min(0.05, (now - last) / 1000)
       last = now
-      clock += dt
+      if (running) clock += dt
 
       const held = targetRef.current
       const goal =
@@ -169,12 +186,14 @@ export function useRobotArm({
           : (held ??
             behaviorGoal(behavior, clock, rootRef.current, linksRef.current))
       const distance = distance2(tipRef.current, goal)
-      // Ease rather than jump: a critically-damped approach reads as a machine
-      // accelerating, and keeps the seed close enough to stay coherent.
+      // Advance at the configured feed rate, keeping the solver seed close
+      // enough to the next pose to preserve continuity.
       const tip =
-        !animate || reduced || distance < 0.05
+        !enabled || distance < 0.05
           ? goal
-          : lerp2(tipRef.current, goal, Math.min(1, (travel * dt) / distance))
+          : running
+            ? lerp2(tipRef.current, goal, Math.min(1, (travel * dt) / distance))
+            : tipRef.current
       tipRef.current = tip
 
       const next = solveChain2(rootRef.current, tip, linksRef.current, {
@@ -186,19 +205,16 @@ export function useRobotArm({
         setJoints(next)
       }
 
-      const chasing = distance > 0.05
-      setMoving(chasing)
-      // A behaviour moves its own goal every frame, so it never settles; a
-      // fixed target does, and the loop then stops until the target changes.
-      const driven =
-        typeof targetRef.current === "function" ||
-        (behavior !== "static" && !targetRef.current)
-      if ((driven && animate && !reduced) || chasing) {
+      const driven = typeof held === "function" ||
+        (!held && (behavior === "idle" || behavior === "orbit" || behavior === "sweep"))
+      const chasing = running && distance2(tip, goal) > 0.05
+      setMoving(chasing || (running && driven && distance > 0.008))
+      if (running && (driven || chasing)) {
         frame = requestAnimationFrame(step)
       }
     })
     return () => cancelAnimationFrame(frame)
-  }, [behavior, bend, speed, animate, paused, phase, linksKey, rootKey, targetKey])
+  }, [behavior, bend, speed, animate, paused, phase, linksKey, rootKey, targetKey, reduced])
 
   // `links` can change between renders, and the loop only catches up on the
   // next frame. Re-solve inline for that one render rather than handing back a
@@ -218,7 +234,7 @@ export function useRobotArm({
   )
   const angles = React.useMemo(() => chainAngles2(resolved), [resolved])
 
-  return { joints: resolved, tip: resolved[resolved.length - 1], angles, moving }
+  return { joints: resolved, tip: resolved[resolved.length - 1], angles, moving: !paused && animate && !reduced ? moving : false }
 }
 
 export interface UseEasedPointOptions {
@@ -249,8 +265,9 @@ export interface EasedPoint {
 export function useEasedPoint(
   target: RobotTarget,
   start: Vec2,
-  { speed = 60, animate = true, paused = false, phase = 0 }: UseEasedPointOptions = {},
+  { speed = 60, animate = true, paused = false, phase = 0, perAxis = false }: UseEasedPointOptions = {},
 ): EasedPoint {
+  const reduced = useReducedMotion()
   const targetRef = React.useRef(target)
   React.useEffect(() => {
     targetRef.current = target
@@ -261,41 +278,56 @@ export function useEasedPoint(
     moving: false,
   }))
   const pointRef = React.useRef(state.point)
+  // Active paths use a stable key to preserve their clock. Parked paths are
+  // sampled at phase so changed captured inputs still update the stopped pose.
+  const keyedTarget = typeof target === "function" && (!animate || reduced) ? target(phase) : target
   const targetKey =
-    typeof target === "function"
+    typeof keyedTarget === "function"
       ? "path"
-      : target
-        ? `${target.x.toFixed(3)},${target.y.toFixed(3)}`
+      : keyedTarget
+        ? `${keyedTarget.x},${keyedTarget.y}`
         : ""
 
   React.useEffect(() => {
     if (paused) return
-    const reduced = prefersReducedMotion()
+    const enabled = animate && !reduced
+    const running = enabled && Number.isFinite(speed) && speed > 0
     let clock = phase
     let last = performance.now()
     let frame = requestAnimationFrame(function step(now) {
       const dt = Math.min(0.05, (now - last) / 1000)
       last = now
-      clock += dt
+      if (running) clock += dt
       const held = targetRef.current
       const goal =
         typeof held === "function" ? held(clock) : (held ?? pointRef.current)
       const gap = distance2(pointRef.current, goal)
-      const next =
-        !animate || reduced || gap < 0.05
-          ? goal
-          : lerp2(pointRef.current, goal, Math.min(1, (speed * dt) / gap))
-      const moved =
-        Math.abs(next.x - pointRef.current.x) > 0.008 ||
-        Math.abs(next.y - pointRef.current.y) > 0.008
+      const stepSize = running ? speed * dt : 0
+      const advance = (value: number, goal: number) => value + Math.sign(goal - value) * Math.min(Math.abs(goal - value), stepSize)
+      const next = !enabled || gap < 0.05
+        ? goal
+        : perAxis
+          ? { x: advance(pointRef.current.x, goal.x), y: advance(pointRef.current.y, goal.y) }
+          : lerp2(pointRef.current, goal, Math.min(1, stepSize / gap))
+      const moved = distance2(next, pointRef.current) > 0.008
+      const driven = typeof held === "function"
+      const chasing = running && distance2(next, goal) > 0.05
+      const moving = chasing || (running && driven && moved)
       pointRef.current = next
-      if (moved) setState({ point: next, clock, moving: gap > 0.05 })
-      if (typeof targetRef.current === "function" || gap > 0.05) {
+      // Scripted paths can animate another dimension from clock, even if x/y
+      // remain fixed. Fixed points publish their final settled state as well.
+      setState(current =>
+        current.point.x === next.x && current.point.y === next.y &&
+        current.moving === moving && (!driven || current.clock === clock)
+          ? current
+          : { point: next, clock, moving },
+      )
+      if (running && (driven || chasing)) {
         frame = requestAnimationFrame(step)
       }
     })
     return () => cancelAnimationFrame(frame)
-  }, [speed, animate, paused, phase, targetKey])
+  }, [speed, animate, paused, phase, targetKey, perAxis, reduced])
 
-  return state
+  return paused || !animate || reduced ? { ...state, moving: false } : state
 }

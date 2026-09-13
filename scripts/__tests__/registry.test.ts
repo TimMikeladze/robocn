@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { docs } from "../../src/lib/docs"
 
 interface RegistryFile {
   path: string
@@ -25,6 +26,20 @@ const registry = JSON.parse(readFileSync("registry.json", "utf8")) as {
 const names = new Set(registry.items.map((item) => item.name))
 
 describe("registry.json", () => {
+  it("has unique names and a documentation page for every published item", () => {
+    expect(names.size).toBe(registry.items.length)
+    const documented = docs.filter(entry => entry.item !== null)
+    expect(new Set(documented.map(entry => entry.item)).size).toBe(documented.length)
+    expect(new Set(documented.map(entry => entry.item))).toEqual(names)
+    for (const item of registry.items) {
+      const doc = documented.find(entry => entry.item === item.name)!
+      expect(doc.files.length, item.name).toBeGreaterThan(0)
+      for (const file of doc.files) {
+        expect(item.files.some(source => source.path === `src/${file}`), `${item.name}: undocumented source ownership for ${file}`).toBe(true)
+      }
+    }
+  })
+
   it("ships every file it claims to", () => {
     for (const item of registry.items) {
       for (const file of item.files) {
@@ -74,12 +89,17 @@ describe("registry.json", () => {
       )
       for (const file of item.files) {
         const source = readFileSync(file.path, "utf8")
-        const imports = source.matchAll(/from "(@\/(?:lib\/robocn|hooks)\/[^"]+)"/g)
+        const imports = source.matchAll(/from "(@\/(?:lib\/robocn|hooks|components\/ui)\/[^"]+)"/g)
         for (const [, specifier] of imports) {
           const path = `src/${specifier.slice(2)}`
           const owner =
             owners.get(`${path}.ts`) ?? owners.get(`${path}.tsx`) ?? null
-          if (!owner || owner === item.name) continue
+          if (owner === item.name) continue
+          if (!owner) {
+            const shadcnName = specifier.startsWith("@/components/ui/") ? specifier.split("/").at(-1) : null
+            expect(shadcnName && dependencies.has(shadcnName), `${item.name}: unregistered import ${specifier}`).toBeTruthy()
+            continue
+          }
           expect(
             dependencies.has(owner),
             `${item.name} imports ${specifier} but does not depend on ${owner}`,
