@@ -174,11 +174,20 @@ function KeySwitch({
     closed,
   })
 
+  // Latching the leaf during render rather than in an effect: the contact's
+  // state is derived from the travel it has just been given, and React's own
+  // answer for state derived from a changed input is to set it here and let the
+  // render restart. An effect would paint one frame with the wrong contact.
+  if (pose.actuated !== closed) setClosed(pose.actuated)
+
+  // Reporting it is a side effect, so that does go in an effect — and only on a
+  // real change, which is why the first commit records rather than fires.
+  const reported = React.useRef<boolean | null>(null)
   React.useEffect(() => {
-    if (pose.actuated === closed) return
-    setClosed(pose.actuated)
-    onActuatedChange?.(pose.actuated)
-  }, [pose.actuated, closed, onActuatedChange])
+    const last = reported.current
+    reported.current = closed
+    if (last !== null && last !== closed) onActuatedChange?.(closed)
+  }, [closed, onActuatedChange])
 
   const apply = React.useCallback(
     (next: number) => {

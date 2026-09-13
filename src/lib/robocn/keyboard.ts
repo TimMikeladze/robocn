@@ -414,14 +414,36 @@ export interface CapOptions {
   body?: number
   /** How much narrower the top face is than the base, 0..1. */
   taper?: number
+  /** Degrees the cap is turned within the deck plane — a split board's halves. */
+  spin?: number
+  /** Degrees its top face is tilted about the deck's across-axis, positive toward the operator. */
+  tilt?: number
 }
 
-const capMetrics = ({ height = 5, travel = 3, body = 3.4, taper = 0.84 }: CapOptions) => ({
+const capMetrics = ({
+  height = 5,
+  travel = 3,
+  body = 3.4,
+  taper = 0.84,
+  spin = 0,
+  tilt = 0,
+}: CapOptions) => ({
   height: span(height, 5),
   travel: Math.abs(finite(travel, 3)),
   body: span(body, 3.4),
   taper: clamp(finite(taper, 0.84), 0.2, 1),
+  spin: finite(spin, 0),
+  // Past a right angle a "tilt" is a different face, so it is bounded well short.
+  tilt: clamp(finite(tilt, 0), -45, 45),
 })
+
+/** A cap-local offset, turned into the deck plane by the cap's own spin. */
+const capOffset = (across: number, down: number, spin: number) => {
+  const theta = toRadians(spin)
+  const cs = Math.cos(theta)
+  const sn = Math.sin(theta)
+  return { x: across * cs - down * sn, y: across * sn + down * cs }
+}
 
 /**
  * One keycap as a tapered box standing on the deck, projected and hulled.
@@ -443,19 +465,24 @@ export function capSolid(
   const top = metric.height - down
   const halfWidth = span(placement.width, 8) / 2
   const halfDepth = span(placement.depth, 8) / 2
+  const rake = Math.tan(toRadians(metric.tilt))
   const corners = ([
-    [top, metric.taper],
-    [Math.max(0, top - metric.body), 1],
-  ] as const).flatMap(([lift, scale]) =>
+    [top, metric.taper, true],
+    [Math.max(0, top - metric.body), 1, false],
+  ] as const).flatMap(([lift, scale, tilted]) =>
     ([-1, 1] as const).flatMap((sx) =>
-      ([-1, 1] as const).map((sy) =>
-        deckPoint(
+      ([-1, 1] as const).map((sy) => {
+        const across = sx * halfWidth * scale
+        const back = sy * halfDepth * scale
+        const offset = capOffset(across, back, metric.spin)
+        return deckPoint(
           frame,
-          finite(placement.x, 0) + sx * halfWidth * scale,
-          finite(placement.y, 0) + sy * halfDepth * scale,
-          lift,
-        ),
-      ),
+          finite(placement.x, 0) + offset.x,
+          finite(placement.y, 0) + offset.y,
+          // The sculpt tilts the top face only: a cap's base sits flat on the deck.
+          tilted ? lift + back * rake : lift,
+        )
+      }),
     ),
   )
   return slabPath(corners, camera)
@@ -497,7 +524,10 @@ export function deckPanel(
   )
 }
 
-/** The top face of one cap as a panel, so a legend rides the press with it. */
+/**
+ * The top face of one cap as a panel, so a legend rides the press with it — and
+ * rides its spin and its sculpt too, which `deckPanel` on its own cannot do.
+ */
 export function capFace(
   camera: RobotCamera,
   frame: DeckFrame,
@@ -507,13 +537,14 @@ export function capFace(
 ): PanelProjection {
   const metric = capMetrics(options)
   const lift = metric.height - clamp(finite(press, 0), 0, 1) * metric.travel
-  return deckPanel(
-    camera,
-    frame,
-    finite(placement.x, 0),
-    finite(placement.y, 0),
-    span(placement.width, 8) * metric.taper,
-    span(placement.depth, 8) * metric.taper,
-    lift,
-  )
+  const rake = Math.tan(toRadians(metric.tilt))
+  const w = span(placement.width, 8) * metric.taper
+  const h = span(placement.depth, 8) * metric.taper
+  const cx = finite(placement.x, 0)
+  const cy = finite(placement.y, 0)
+  const at = (across: number, back: number) => {
+    const offset = capOffset(across, back, metric.spin)
+    return deckPoint(frame, cx + offset.x, cy + offset.y, lift + back * rake)
+  }
+  return panelTransform(camera, at(w / 2, -h / 2), at(-w / 2, -h / 2), at(w / 2, h / 2), w, h)
 }

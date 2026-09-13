@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  capFace,
   capSolid,
   codeStrikes,
   deckFrame,
@@ -238,5 +239,34 @@ describe("capSolid", () => {
     const plan = robotCamera("plan")
     expect(capSolid(plan, frame, placement, 0, { height: 5, travel: 3 })).toMatch(/^M /)
     expect(capSolid(camera, frame, placement, Number.NaN, {})).not.toMatch(/NaN/)
+  })
+})
+
+describe("capSolid with a sculpt and a splay", () => {
+  const camera = robotCamera("iso")
+  const frame = deckFrame({ x: 0, y: 8, z: 0 }, 8)
+  const placement = { index: 0, row: 0, column: 0, x: 0, y: 0, width: 16, depth: 16, units: 1 }
+
+  it("turns a cap within the deck plane, and tilts only its top face", () => {
+    const plain = capSolid(camera, frame, placement, 0, { height: 6, travel: 3 })
+    const splayed = capSolid(camera, frame, placement, 0, { height: 6, travel: 3, spin: 12 })
+    const sculpted = capSolid(camera, frame, placement, 0, { height: 6, travel: 3, tilt: 12 })
+
+    expect(splayed).not.toBe(plain)
+    expect(sculpted).not.toBe(plain)
+    expect(splayed).not.toBe(sculpted)
+    for (const path of [splayed, sculpted]) expect(path).not.toMatch(/NaN/)
+
+    // A cap turned right round by a quarter of its own square is the same box.
+    const square = capSolid(camera, frame, placement, 0, { height: 6, travel: 3, spin: 90 })
+    expect(square).toBe(plain)
+  })
+
+  it("carries the legend plane with both of them", () => {
+    const plain = capFace(camera, frame, placement, 0, { height: 6 })
+    const turned = capFace(camera, frame, placement, 0, { height: 6, spin: 12, tilt: 9 })
+    expect(turned.transform).not.toBe(plain.transform)
+    expect(turned.transform).not.toMatch(/NaN/)
+    expect(turned.facing).toBeGreaterThan(0)
   })
 })

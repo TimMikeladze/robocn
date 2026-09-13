@@ -18,7 +18,7 @@ another machine, and it is the reason this family exists.
 | `keyboard-geometry` | lib: travel with hysteresis, sculpted cap profiles, a raked deck frame, matrix scan order, typing schedules | — |
 | `key-switch` | one switch, sectioned: stem, spring, and a leaf that closes partway down | `profile` |
 | `robot-keypad` | a raked bench entry pad: a scanned matrix of travelling keys and an entry readout | `front` |
-| `robot-keyboard` | a whole deck: staggered rows, sculpted caps, per-key travel, three layouts | `iso` |
+| `robot-keyboard` | a whole deck: rows in units on one pitch, sculpted caps, per-key travel, three layouts | `iso` |
 | `input-terminal` | two coupled mechanisms — a canted display head, and a key deck whose strokes land on its screen | `front` |
 
 ## Distinctness
@@ -30,9 +30,12 @@ another machine, and it is the reason this family exists.
 - `robot-keypad` is the only machine with a **scanned matrix**: state distributed over a grid
   that is read one row at a time, so "which key is down" and "which key is being looked at"
   are two different things, both drawn.
-- `robot-keyboard` is the only machine whose parts are **placed by a unit grid with a
-  stagger** — 1u, 1.25u, 6.25u — and whose caps are sculpted per row, so the deck has a real
-  profile in elevation instead of being a flat plate.
+- `robot-keyboard` is the only machine whose parts are **placed by a unit grid** — 1u, 1.25u,
+  6.25u — with the stagger falling out of the widths rather than being nudged into place, and
+  whose caps are sculpted per row, so the deck has a real profile in elevation instead of
+  being a flat plate. `split` cuts the same rows down the middle and turns the halves about
+  the deck's own centre; the one change to the rows is that a 6.25u space cannot belong to one
+  half, so it becomes two thumb keys.
 - `input-terminal` is the only machine where **one mechanism drives another**: the keys it
   strikes are what puts characters on its screen. Everything else in the set has one
   mechanism, or several that are independent.
@@ -61,7 +64,9 @@ Four things a drawing gets wrong if it guesses.
   world's y axis. `deckFrame` is that frame, and `capSolid` is one cap as a box on it — eight
   corners projected and hulled, so a cap is truthful from all four cameras and a press moves
   it the right way in each. This is what makes a keypad's travel visible from `front`, which
-  is what the rake is for: a face flat on the bench has travel straight into the screen.
+  is what the rake is for: a face flat on the bench has travel straight into the screen. A cap
+  also carries its own `spin` in the deck plane and a `tilt` on its top face, which is what a
+  split board's turned halves and a sculpted row are made of.
 
 Not modelled, and said so in every `notes`: no force curve, no tactile bump force, no click
 leaf dynamics, no key rollover, no debounce timing, no ghosting, no character encoding. The
@@ -77,12 +82,14 @@ machines because all four are bodies you can walk round, controlled-prop-wins mo
 `"static"` behaviour, `interactive` drag plus arrow keys with `on…Change` throughout, `px()` on
 every computed coordinate, and a neutral pose for non-finite input.
 
-The one axis this family adds is a **stroke**: the position through a schedule of keystrokes,
-0 at the start of the passage to 1 at the end. It is the scalar the keypad, the keyboard and
-the terminal are grabbed by, and it is what makes scrubbing a typing sequence with a pointer
-mean something. `key-switch` is grabbed by `press` instead, because one switch has no passage.
+The one axis this family adds is a **passage**: the position through a schedule of keystrokes,
+0 at the start to 1 at the end. The prop is `typed` — not `stroke`, which is an SVG attribute
+and collides on an `svg` element — and it is what makes scrubbing a typing sequence with a
+pointer mean something. `key-switch` is grabbed by `press` instead, because one switch has no
+passage, and `input-terminal` is grabbed by `cant`, because a console's head is the thing a
+hand actually goes to.
 
-`input-terminal` carries two scalars, `rake` and `stroke`, and the loop runs while either is
+`input-terminal` carries two scalars, `cant` and `typed`, and the loop runs while either is
 uncontrolled — a head held by hand keeps typing underneath, which is what `hold` on
 `useRobotScalar` is for. `behavior="static"` or `animate={false}` parks both.
 
