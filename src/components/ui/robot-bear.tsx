@@ -88,11 +88,14 @@ const NECK = [9, 8] as const
 const HIND_STANCE = 2
 const FORE_STANCE = 48
 /** Hip height standing square, fully crouched, and reared. */
-const STAND = 41
-const CROUCH = 32
-const REARED = 45
-/** How far a full rear tips the whole animal about its hip, in degrees. */
-const REAR_PITCH = 64
+const STAND = 38
+const CROUCH = 29
+/** Reared, the hind legs are nearly straight: this is what they can reach to. */
+const REARED = 42
+/** How far a full rear tips the whole animal about its hip, in degrees. A real
+ *  rear takes the spine near vertical, which is also what brings the mass back
+ *  over the hind soles rather than out past them. */
+const REAR_PITCH = 78
 /** How far the balance rule may slide the body over its own feet. */
 const SHIFT_LIMIT = 22
 /** Hump height over the withers, unloaded and at a full forelimb load. */
@@ -344,6 +347,13 @@ function RobotBear({
     y: massPoints.reduce((sum, entry) => sum + entry.point.y * entry.weight, 0) / massTotal,
   }
 
+  // How far from the hip a hind sole can be put and still make the floor: the
+  // horizontal leg of the limb's own reach triangle. Everything the balance
+  // rule does is bounded by it, because a foot it cannot reach is not a foot.
+  const hindRoom = Math.sqrt(
+    Math.max(0, (HIND[0] + HIND[1]) ** 2 - (hipHeight - HIND_SOLE.ankle) ** 2),
+  )
+
   // The feet are placed in the world, and they stay where they are put: the
   // body is what slides over them.
   const steps = legPlan.map(({ id, fore, offset: legOffset }) => {
@@ -352,10 +362,14 @@ function RobotBear({
       ? plantigradeStep(stance.stride + legOffset, { reach: fore ? 11 : 13, clearance: 9 })
       : { plant: { x: 0, y: 0 }, pivot: "flat" as const, pitch: 0, roll: "flat" as const, contact: true }
     const digging = fore && id === "fore-left" ? rake : 0
-    const nominal = fore ? FORE_STANCE : HIND_STANCE
+    // The first half of the balance rule: standing up, the hind soles step in
+    // under the centre of mass, as far as the limb can put them. Without it
+    // the mass is simply out past the toes and the animal is falling.
+    const under = clamp(comLocal.x, -hindRoom, hindRoom)
+    const nominal = fore ? FORE_STANCE : lerp(HIND_STANCE, under, rise * weight)
     return {
       id,
-      x: nominal + step.plant.x + digging * 7,
+      x: nominal + step.plant.x * (fore ? 1 : 1 - rise) + digging * 7,
       y: step.plant.y,
       pivot: step.pivot,
       pitch: step.pitch - digging * 22,
@@ -373,10 +387,16 @@ function RobotBear({
   })
   const preview = solveSupport(intended, comLocal.x)
   const centre = preview.span ? (preview.span[0] + preview.span[1]) / 2 : comLocal.x
-  // The balance rule: slide the whole body back over its own feet until the
-  // centre of mass is where the base of support can hold it. Proportional, with
-  // no gain and no lag — a rule, not a controller.
-  const shift = clamp(centre - comLocal.x, -SHIFT_LIMIT, SHIFT_LIMIT) * weight
+  // The second half: slide the whole body over its own feet until the centre of
+  // mass is where the base can hold it. Bounded both by how far a body slides
+  // and by the hind limb's reach, since the hip cannot leave its own feet
+  // behind. Proportional, with no gain and no lag — a rule, not a controller.
+  const hindFoot = (steps[0].x + steps[2].x) / 2
+  const shift = clamp(
+    clamp(centre - comLocal.x, -SHIFT_LIMIT, SHIFT_LIMIT) * weight,
+    hindFoot - hindRoom,
+    hindFoot + hindRoom,
+  )
   const hip: Vec2 = { x: shift, y: hipHeight }
   const spinePoint = (index: number): Vec2 => {
     const point = local(index)
@@ -785,7 +805,7 @@ function RobotBear({
           </g>
 
           {showSupport && (
-            <g data-support data-stable={support.stable}>
+            <g data-support data-stable={support.stable} data-margin={px(support.margin)} data-base={support.span ? px(support.span[1] - support.span[0]) : 0}>
               {support.span && (
                 <rect
                   x={px(support.span[0])}

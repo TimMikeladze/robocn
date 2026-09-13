@@ -84,10 +84,13 @@ const NECK = [13, 11] as const
 
 const HIND_STANCE = 2
 const FORE_STANCE = 54
-const STAND = 42
-const CROUCH = 31
-const REARED = 46
-const REAR_PITCH = 62
+const STAND = 39
+const CROUCH = 29
+/** Reared, the hind legs are nearly straight: this is what they can reach to. */
+const REARED = 43
+/** A rear takes the spine near vertical, which is what brings the mass back
+ *  over the hind soles rather than out past them. */
+const REAR_PITCH = 76
 const SHIFT_LIMIT = 22
 
 /** Where the surface sits above the floor, and how deep the hull rides in it. */
@@ -314,14 +317,24 @@ function RobotPolarBear({
 
   /* ---- where each foot goes: a step, a trail, or a stroke ----------------- */
 
+  // How far from the hip a hind sole can be put and still make the floor.
+  const hindRoom = Math.sqrt(
+    Math.max(0, (HIND[0] + HIND[1]) ** 2 - (hipHeight - HIND_SOLE.ankle) ** 2),
+  )
+
   const steps = legPlan.map(({ id, fore, offset: legOffset }) => {
     const walking = stance.stride >= 0 && stance.stride <= 1.5
     const step = walking
       ? plantigradeStep(stance.stride + legOffset, { reach: fore ? 12 : 13, clearance: 9 })
       : { plant: { x: 0, y: 0 }, pivot: "flat" as const, pitch: 0, roll: "flat" as const, contact: true }
+    // Standing up, the hind soles step in under the centre of mass, as far as
+    // the limb can put them: the first half of the same balance rule.
+    const under = clamp(comLocal.x, -hindRoom, hindRoom)
     return {
       id,
-      x: (fore ? FORE_STANCE : HIND_STANCE) + step.plant.x,
+      x:
+        (fore ? FORE_STANCE : lerp(HIND_STANCE, under, rise * weight)) +
+        step.plant.x * (fore ? 1 : 1 - rise),
       y: step.plant.y,
       pivot: step.pivot,
       pitch: step.pitch,
@@ -341,7 +354,14 @@ function RobotPolarBear({
     comLocal.x,
   )
   const centre = preview.span ? (preview.span[0] + preview.span[1]) / 2 : comLocal.x
-  const shift = clamp(centre - comLocal.x, -SHIFT_LIMIT, SHIFT_LIMIT) * weight * (1 - afloat)
+  // The hip cannot leave its own feet behind, so the slide is bounded by the
+  // hind limb's reach as well as by how far a body slides.
+  const hindFoot = (steps[0].x + steps[2].x) / 2
+  const shift = clamp(
+    clamp(centre - comLocal.x, -SHIFT_LIMIT, SHIFT_LIMIT) * weight * (1 - afloat),
+    hindFoot - hindRoom,
+    hindFoot + hindRoom,
+  )
   const hip: Vec2 = { x: shift, y: hipHeight }
   const spinePoint = (index: number): Vec2 => {
     const point = local(index)
@@ -731,7 +751,7 @@ function RobotPolarBear({
           </g>
 
           {showSupport && (
-            <g data-support data-stable={support.stable} data-afloat={afloat > 0.5}>
+            <g data-support data-stable={support.stable} data-afloat={afloat > 0.5} data-margin={px(support.margin)} data-base={support.span ? px(support.span[1] - support.span[0]) : 0}>
               {support.span && afloat < 0.98 && (
                 <rect
                   x={px(support.span[0])}
