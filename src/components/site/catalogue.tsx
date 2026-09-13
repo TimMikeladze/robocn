@@ -2,6 +2,8 @@
 
 import Link from "next/link"
 
+import { MicroDuck } from "@/components/ui/micro-duck"
+import { ReachyMini } from "@/components/ui/reachy-mini"
 import { RobotQuadruped } from "@/components/ui/robot-quadruped"
 import { LinearActuator } from "@/components/ui/linear-actuator"
 import { ServoMotor } from "@/components/ui/servo-motor"
@@ -22,6 +24,8 @@ import { ScaraArm } from "@/components/ui/scara-arm"
 import { Panel } from "@/components/site/panel"
 
 const entries = [
+  { slug: "micro-duck", title: "Micro duck", line: "A biped that walks, pecks, and quacks.", art: <MicroDuck size={132} gait="walk" phase={0.3} gaze={0.3} /> },
+  { slug: "reachy-mini", title: "Reachy mini", line: "A head on six solved rods, eyes that follow.", art: <ReachyMini size={165} yaw={14} pitch={-6} track={false} look={{ x: 0.4, y: 0.2 }} /> },
   { slug: "robot-quadruped", title: "Robot quadruped", line: "Four solved legs, standing, walking, and trotting.", art: <RobotQuadruped size={240} gait="trot" phase={0.65} /> },
   { slug: "linear-actuator", title: "Linear actuator", line: "Controlled stroke and a piston cutaway.", art: <LinearActuator size={240} cutaway /> },
   { slug: "servo-motor", title: "Servo motor", line: "Positional shaft with three horn styles.", art: <ServoMotor size={150} angle={30} /> },

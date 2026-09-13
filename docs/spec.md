@@ -50,6 +50,10 @@ Consumers install with `npx shadcn@latest add https://<host>/r/robot-arm.json`, 
 | `arm-controls` | ui | Slider panel that drives an arm in forward kinematics. |
 | `robot-gripper` | ui | Standalone parallel or angular gripper with controlled opening. |
 | `conveyor-belt` | ui | Automatic or controlled conveyor travel with workpieces. |
+| `micro-duck` | ui | Bipedal duck robot: solved legs, craning neck, hinged beak. |
+| `duck-kinematics` | lib | Pure biped pose solver: footfall cycle, neck chain, beak. |
+| `reachy-mini` | ui | Companion head on a solved six-rod parallel platform. |
+| `stewart-kinematics` | lib | Closed-form 6-DOF Stewart platform IK with stroke limits. |
 | `robot-quadruped` | ui | Four-legged robot with solved controlled gait poses. |
 | `quadruped-kinematics` | lib | Pure planar leg solver and illustrative footfall trajectories. |
 | `linear-actuator` | ui | Cylinder with controlled stroke and piston cutaway. |

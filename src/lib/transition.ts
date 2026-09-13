@@ -53,9 +53,9 @@ export interface HeroCamera {
 
 /** Dead-on and nearly orthographic: a perspective camera imitating a drawing. */
 export const FLAT_CAMERA: HeroCamera = {
-  position: [0, 1.25, 8.6],
+  position: [0, 1.4, 11.5],
   fov: 20,
-  target: [0, 1.15, 0],
+  target: [0, 1.3, 0],
 }
 
 /** The three-quarter view that shows the rig is a solid object. */

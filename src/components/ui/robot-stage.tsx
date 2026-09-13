@@ -12,6 +12,7 @@ import * as React from "react"
 import { ContactShadows, Grid, OrbitControls } from "@react-three/drei"
 import { Canvas, type CanvasProps } from "@react-three/fiber"
 
+import { resolveCssColor } from "@/lib/robocn/color"
 import { resolveRobotPalette, type RobotPaletteProps } from "@/lib/robocn/style"
 import { cn } from "@/lib/utils"
 
@@ -58,6 +59,9 @@ function RobotStage({
     grid,
     palette: paletteOverride,
   })
+  // three.js parses neither CSS variables nor oklch, and a floor drawn in
+  // unparsed colour comes out white.
+  const gridColor = useThreeColor(palette.grid, "#8d94a1")
 
   return (
     <div className={cn("relative h-80 w-full", className)} {...props}>
@@ -85,8 +89,8 @@ function RobotStage({
             sectionThickness={1}
             fadeDistance={16}
             infiniteGrid
-            sectionColor={palette.grid}
-            cellColor={palette.grid}
+            sectionColor={gridColor}
+            cellColor={gridColor}
             position={[0, 0.001, 0]}
           />
         ) : null}
@@ -115,6 +119,27 @@ function RobotStage({
       </Canvas>
     </div>
   )
+}
+
+/**
+ * One palette role as a colour three.js can use. Re-read when the document's
+ * theme changes, so a dark-mode toggle retints the floor without a remount.
+ */
+function useThreeColor(value: string, fallback: string) {
+  const [resolved, setResolved] = React.useState(fallback)
+
+  React.useEffect(() => {
+    const read = () => setResolved(resolveCssColor(value, fallback))
+    read()
+    const observer = new MutationObserver(read)
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class", "style", "data-theme"],
+    })
+    return () => observer.disconnect()
+  }, [value, fallback])
+
+  return resolved
 }
 
 export { RobotStage }

@@ -51,6 +51,16 @@ throughout, which is what lets both layers track the pointer at the same time,
 including mid-wipe. The arm therefore never jumps at the swap: it is the same
 target solved twice.
 
+Two things had to be fixed for this to work at all:
+
+- the WebGL canvas sets its own `pointer-events`, so it has to be cleared on the
+  canvas itself (`[&_canvas]:pointer-events-none`) or the drawing underneath
+  never sees a pointer move again once the rig is mounted;
+- `resolveCssColor` only understood `oklch()`. Chrome now serialises a computed
+  `var()` colour as `lab()`, which three.js cannot parse — every 3D component was
+  quietly keeping its built-in fallback instead of the theme's colour, and the
+  stage floor came out white. It now normalises through a 1px canvas.
+
 ## Cost
 
 - `three` and the stage are behind `next/dynamic({ ssr: false })`, so the flat

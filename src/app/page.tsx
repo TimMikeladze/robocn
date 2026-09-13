@@ -45,9 +45,6 @@ export default function Home() {
         </div>
         <Panel className="p-4">
           <HeroArm />
-          <p className="mt-2 text-center font-mono text-[11px] text-muted-foreground">
-            move your pointer
-          </p>
         </Panel>
       </section>
 

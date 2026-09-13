@@ -366,7 +366,8 @@
         "@react-three/drei"
       ],
       "registryDependencies": [
-        "{REGISTRY_URL}/r/robot-style.json"
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-color.json"
       ],
       "files": [
         {
@@ -606,6 +607,90 @@
           "path": "src/components/ui/robot-quadruped.tsx",
           "type": "registry:ui",
           "target": "@ui/robot-quadruped.tsx"
+        }
+      ]
+    },
+    {
+      "name": "duck-kinematics",
+      "type": "registry:lib",
+      "title": "Duck kinematics",
+      "description": "Pure biped pose solver: two rear-breaking legs, a footfall cycle with double support, an S-curve neck chain, and a hinged beak.",
+      "categories": [
+        "robotics",
+        "math"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json"
+      ],
+      "files": [
+        {
+          "path": "src/lib/robocn/duck.ts",
+          "type": "registry:lib",
+          "target": "@lib/robocn/duck.ts"
+        }
+      ]
+    },
+    {
+      "name": "micro-duck",
+      "type": "registry:ui",
+      "title": "Micro duck",
+      "description": "A desk-scale bipedal duck robot: solved legs, a servo-stack neck, a camera eye that aims where it gazes, and a beak that opens.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/duck-kinematics.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/micro-duck.tsx",
+          "type": "registry:ui",
+          "target": "@ui/micro-duck.tsx"
+        }
+      ]
+    },
+    {
+      "name": "stewart-kinematics",
+      "type": "registry:lib",
+      "title": "Stewart kinematics",
+      "description": "Closed-form six-degree-of-freedom Stewart platform inverse kinematics with per-leg stroke, travel limits, and a reachability flag.",
+      "categories": [
+        "robotics",
+        "math"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json"
+      ],
+      "files": [
+        {
+          "path": "src/lib/robocn/stewart.ts",
+          "type": "registry:lib",
+          "target": "@lib/robocn/stewart.ts"
+        }
+      ]
+    },
+    {
+      "name": "reachy-mini",
+      "type": "registry:ui",
+      "title": "Reachy mini",
+      "description": "A companion robot head on a solved six-rod parallel platform, with pointer-tracking eyes, sprung antennas, and a linkage fault lamp.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/stewart-kinematics.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/reachy-mini.tsx",
+          "type": "registry:ui",
+          "target": "@ui/reachy-mini.tsx"
         }
       ]
     }

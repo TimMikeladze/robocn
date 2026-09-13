@@ -16,6 +16,10 @@ pnpm dlx shadcn@latest add https://robocn.dev/r/robot-arm.json
 
 | Item | What it is |
 |---|---|
+| `micro-duck` | Bipedal duck robot: solved legs, a craning neck, and a beak that opens. |
+| `duck-kinematics` | Pure biped pose solver: footfall cycle, S-curve neck chain, hinged beak. |
+| `reachy-mini` | Companion head on a six-rod parallel platform, with tracking eyes and antennas. |
+| `stewart-kinematics` | Closed-form six-degree-of-freedom Stewart platform IK with stroke limits. |
 | `robot-quadruped` | Four-legged robot with solved gait poses and controlled stance. |
 | `quadruped-kinematics` | Pure two-link leg solver with standing, walking, and trotting trajectories. |
 | `linear-actuator` | Controlled cylinder stroke with optional piston cutaway. |
@@ -103,7 +107,7 @@ your angle-distance samples.
 - Three or more run FABRIK, seeded with the previous frame so animation stays coherent
   instead of snapping between valid solutions.
 - Out-of-reach targets clamp onto the reachable annulus rather than failing.
-- The delta has its own closed-form solver; the gantry is direct.
+- The delta and the Stewart platform have their own closed-form solvers; the gantry is direct.
 - Everything is plain functions over `{x, y}` and `{x, y, z}` objects, shared by the SVG
   components and the three.js rig.
 

@@ -4,6 +4,10 @@
 
 import * as React from "react"
 
+import { MicroDuck } from "@/components/ui/micro-duck"
+import type { DuckGait } from "@/lib/robocn/duck"
+import { ReachyMini } from "@/components/ui/reachy-mini"
+import { defaultStewartGeometry, solveStewart } from "@/lib/robocn/stewart"
 import { RobotQuadruped } from "@/components/ui/robot-quadruped"
 import type { QuadrupedGait } from "@/lib/robocn/quadruped"
 import { LinearActuator } from "@/components/ui/linear-actuator"
@@ -779,7 +783,63 @@ function RobotQuadrupedDemo() {
   )
 }
 
+function MicroDuckDemo() {
+  const [gait, setGait] = React.useState<DuckGait>("walk")
+  const [phase, setPhase] = React.useState(0.3)
+  const [height, setHeight] = React.useState(0.55)
+  const [gaze, setGaze] = React.useState(0.2)
+  const [beak, setBeak] = React.useState(0)
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  return (
+    <Bench controls={<>
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="gait" value={gait} options={["stand", "walk", "strut"] as const} onChange={setGait} />
+      <NumberControl label="phase" value={phase} min={0} max={1} step={0.01} onChange={setPhase} format={value => `${Math.round(value * 100)}%`} />
+      <NumberControl label="height" value={height} min={0} max={1} step={0.01} onChange={setHeight} format={value => `${Math.round(value * 100)}%`} />
+      <NumberControl label="gaze" value={gaze} min={-1} max={1} step={0.05} onChange={setGaze} format={value => value.toFixed(2)} />
+      <NumberControl label="beak" value={beak} min={0} max={1} step={0.05} onChange={setBeak} format={value => `${Math.round(value * 34)}°`} />
+      <p className="text-[11px] text-muted-foreground">Gaze swings the neck between a peck and a craned-up pose on a constant radius. Coloured marks show the foot carrying weight.</p>
+    </>}>
+      <MicroDuck size={300} gait={gait} phase={phase} height={height} gaze={gaze} beak={beak} variant={variant} showContacts label="DUCK / 12" />
+    </Bench>
+  )
+}
+
+function ReachyMiniDemo() {
+  const [yaw, setYaw] = React.useState(14)
+  const [pitch, setPitch] = React.useState(-6)
+  const [roll, setRoll] = React.useState(0)
+  const [heave, setHeave] = React.useState(0)
+  const [travel, setTravel] = React.useState(9)
+  const [linkage, setLinkage] = React.useState<"on" | "off">("on")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const solution = solveStewart({ yaw, pitch, roll, heave }, { ...defaultStewartGeometry, baseRadius: 24, platformRadius: 18, height: 30, travel })
+  return (
+    <Bench controls={<>
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="linkage" value={linkage} options={["on", "off"] as const} onChange={setLinkage} />
+      <NumberControl label="yaw" value={yaw} min={-30} max={30} onChange={setYaw} format={value => `${value}°`} />
+      <NumberControl label="pitch" value={pitch} min={-24} max={24} onChange={setPitch} format={value => `${value}°`} />
+      <NumberControl label="roll" value={roll} min={-24} max={24} onChange={setRoll} format={value => `${value}°`} />
+      <NumberControl label="heave" value={heave} min={-8} max={8} step={0.5} onChange={setHeave} format={value => `${value} u`} />
+      <NumberControl label="travel" value={travel} min={2} max={12} step={0.5} onChange={setTravel} format={value => `±${value} u`} />
+      <Readout rows={[
+        ["longest leg", `${Math.max(...solution.legs.map(leg => leg.length)).toFixed(1)} u`],
+        ["max stroke", `${Math.max(...solution.legs.map(leg => Math.abs(leg.stroke))).toFixed(1)} u`],
+        ["reachable", solution.reachable ? "yes" : "no"],
+      ]} />
+      <p className="text-[11px] text-muted-foreground">Six leg lengths come from real Stewart platform IK. Lower the travel until a rod turns accent-coloured and the fault lamp lights.</p>
+    </>}>
+      <ReachyMini size={320} yaw={yaw} pitch={pitch} roll={roll} heave={heave} geometry={{ travel }} showLinkage={linkage === "on"} variant={variant} label="MINI / 13" />
+    </Bench>
+  )
+}
+
 export const demos: Record<string, React.ComponentType> = {
+  "micro-duck": MicroDuckDemo,
+  "duck-kinematics": MicroDuckDemo,
+  "reachy-mini": ReachyMiniDemo,
+  "stewart-kinematics": ReachyMiniDemo,
   "robot-quadruped": RobotQuadrupedDemo,
   "quadruped-kinematics": RobotQuadrupedDemo,
   "linear-actuator": LinearActuatorDemo,

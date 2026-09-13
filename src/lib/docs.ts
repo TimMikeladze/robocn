@@ -108,6 +108,86 @@ const motion: PropRow[] = [
 
 export const docs: DocEntry[] = [
   {
+    slug: "micro-duck", item: "micro-duck", title: "Micro duck", group: "Robots",
+    summary: "A bipedal duck robot: two solved legs on a controlled footfall cycle, a servo-stack neck that cranes and pecks, and a beak that opens.",
+    files: ["components/ui/micro-duck.tsx"],
+    usage: `import { MicroDuck } from "@/components/ui/micro-duck"
+
+<MicroDuck gait="walk" phase={0.3} gaze={0.4} beak={0.2} showContacts />`,
+    props: [
+      { name: "gait", type: '"stand" | "walk" | "strut"', default: '"stand"', description: "Standing pose, a walk with a double-support window, or a strut that trades it for a longer swing." },
+      { name: "phase", type: "number", default: "0", description: "Controlled cycle fraction. Wraps in both directions; ignored when standing. Non-finite values use zero." },
+      { name: "height", type: "number", default: "0.55", description: "Normalized pelvis height, clamped to 0–1 (24–54 world units). Zero folds the legs into a sit." },
+      { name: "stride", type: "number", default: "0.6", description: "Normalized fore/aft foot travel, clamped to 0–1. Zero steps in place." },
+      { name: "lift", type: "number", default: "0.5", description: "Normalized foot clearance, clamped to 0–1. Zero slides the foot along the ground." },
+      { name: "gaze", type: "number", default: "0", description: "Neck aim, clamped to −1..1: −1 pecks at the floor, 1 cranes upward. The head stays level in between." },
+      { name: "beak", type: "number", default: "0", description: "Normalized beak opening, clamped to 0–1. One is a 34° gape, and the skull lifts a little with it." },
+      { name: "showGround", type: "boolean", default: "true", description: "Ground reference line; blueprint adds its hatching." },
+      { name: "showContacts", type: "boolean", default: "false", description: "Mark the foot that is carrying weight." },
+      { name: "showCable", type: "boolean", default: "true", description: "The wire loom running down the back of the neck." },
+      { name: "label", type: "string", description: "Caption underneath the robot." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: ["Phase is controlled and updates immediately; there is no internal animation loop. Drive it from a timeline or telemetry, and honor reduced-motion preferences in that code.", "Legs solve two-link inverse kinematics with the knee breaking rearward, and the neck is a three-link FABRIK chain. The drawing preserves link lengths but does not model balance or ground forces.", "The far leg is drawn behind the body at reduced opacity, which is depth in the illustration rather than a second solve."],
+  },
+  {
+    slug: "duck-kinematics", item: "duck-kinematics", title: "Duck kinematics", group: "Foundations",
+    summary: "The pose solver behind the duck. Two planar legs, a footfall cycle that never lifts both feet, and a neck chain swung on a constant radius.",
+    files: ["lib/robocn/duck.ts"],
+    usage: `import { solveDuck } from "@/lib/robocn/duck"
+
+const pose = solveDuck({ gait: "walk", phase: 0.3, gaze: 0.5 })
+pose.legs // id, hip, knee, ankle, contact
+pose.neck // four joints from shoulder to skull base
+pose.head // pivot, angle, beak opening in degrees`,
+    api: [
+      { name: "solveDuck", type: "(options?: DuckOptions) => DuckPose", description: "Solves both legs, the neck chain, and the head from the gait and stance controls." },
+      { name: "DuckOptions", type: "{ gait?, phase?, height?, stride?, lift?, gaze?, beak? }", description: "Same controls as MicroDuck. Every value is clamped, and non-finite input falls back to the default." },
+      { name: "DuckLeg", type: "{ id, hip: Vec2, knee: Vec2, ankle: Vec2, contact }", description: "Sagittal coordinates: x forward, y up, ground at zero. Thigh 26 units, shank 28, ankle 9 above the ground when the foot is down." },
+      { name: "duckLinks", type: "{ thigh, shank, neck }", description: "The link lengths the solver uses, exported so a renderer can size parts from them." },
+    ],
+    notes: ["No React and no three.js: the solver is plain functions over `{x, y}` objects and does not mutate its input.", "Walk holds 0.62 of the cycle in stance and strut 0.52, so at most one foot is ever off the ground. These are illustrative trajectories, not a balance model."],
+  },
+  {
+    slug: "reachy-mini", item: "reachy-mini", title: "Reachy mini", group: "Robots",
+    summary: "A companion robot: a head on a six-rod parallel platform, driven in six degrees of freedom, with pointer-tracking eyes and sprung antennas.",
+    files: ["components/ui/reachy-mini.tsx"],
+    usage: `import { ReachyMini } from "@/components/ui/reachy-mini"
+
+<ReachyMini yaw={18} pitch={-8} antennaLeft={22} antennaRight={-10} />`,
+    props: [
+      { name: "sway / heave / surge", type: "number", default: "0", description: "Head translation in world units: right, up, and toward the viewer. Clamped to ±10, ±8, ±10." },
+      { name: "roll / pitch / yaw", type: "number", default: "0", description: "Head rotation in degrees, clamped to ±24, ±24, ±30. Positive pitch tips the face down." },
+      { name: "look", type: "Vec2 | null", default: "null", description: "Pupil aim in −1..1 on both axes. Set it to drive the gaze; leave it null to track the pointer." },
+      { name: "track", type: "boolean", default: "true", description: "Follow the pointer anywhere on the page while look is null." },
+      { name: "blink", type: "boolean", default: "true", description: "Occasional blink, disabled by a reduced-motion preference." },
+      { name: "antennaLeft / antennaRight", type: "number", default: "0", description: "Antenna angles in degrees, clamped to ±45. Positive leans a wire outward." },
+      { name: "showLinkage", type: "boolean", default: "true", description: "Draw the six rods, their bearings, and the platform disc." },
+      { name: "showGround", type: "boolean", default: "true", description: "Contact shadow under the body." },
+      { name: "geometry", type: "Partial<StewartGeometry>", description: "Override ring radii, anchor spread, platform height, or actuator travel." },
+      { name: "label", type: "string", description: "Caption under the robot." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: ["The linkage is solved: six leg lengths from real Stewart platform inverse kinematics, projected isometrically and depth-sorted. The head shell is an illustration that takes roll from the pose and shifts its face with yaw and pitch.", "A pose that asks a leg for more than its travel lights the fault lamp and paints that rod in the accent colour. The component clamps its own inputs, so faults come from tightening geometry.travel.", "Eye tracking is pointer-driven through use-pointer-target; pass look to control it, or track={false} to hold the gaze still."],
+  },
+  {
+    slug: "stewart-kinematics", item: "stewart-kinematics", title: "Stewart kinematics", group: "Foundations",
+    summary: "Closed-form inverse kinematics for a six-legged parallel platform: give it a head pose, get six leg lengths and their stroke.",
+    files: ["lib/robocn/stewart.ts"],
+    usage: `import { solveStewart } from "@/lib/robocn/stewart"
+
+const solution = solveStewart({ yaw: 20, pitch: -6, heave: 3 })
+solution.legs // base, platform, length, stroke, withinLimits
+solution.reachable // false when any leg runs out of travel`,
+    api: [
+      { name: "solveStewart", type: "(pose?: StewartPose, geometry?: StewartGeometry) => StewartSolution", description: "Rotates and translates each platform anchor, then measures back to its base anchor. One pass, no iteration." },
+      { name: "StewartPose", type: "{ sway?, heave?, surge?, roll?, pitch?, yaw? }", description: "Translations in world units (x right, y up, z toward the viewer) and rotations in degrees, applied yaw, then pitch, then roll." },
+      { name: "StewartLeg", type: "{ id, base: Vec3, platform: Vec3, length, stroke, withinLimits }", description: "Stroke is the change from the home length; withinLimits compares it to geometry.travel." },
+      { name: "defaultStewartGeometry", type: "StewartGeometry", description: "Ring radii, anchor spread per pair, platform height, and actuator travel for a desk-scale head." },
+    ],
+    notes: ["Anchors sit in three pairs 120° apart on both rings and each leg crosses to the far anchor of its pair, so every leg has the same home length.", "Out-of-range poses still return complete geometry with reachable false, so a UI can draw the fault instead of handling an exception."],
+  },
+  {
     slug: "robot-quadruped", item: "robot-quadruped", title: "Robot quadruped", group: "Robots",
     summary: "A four-legged robot with solved hip, knee, and foot positions. Scrub a walking or trotting cycle, change the stance, and inspect which feet touch the ground.",
     files: ["components/ui/robot-quadruped.tsx"],

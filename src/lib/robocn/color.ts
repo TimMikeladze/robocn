@@ -61,6 +61,36 @@ export function oklchToHex(input: string): string | null {
 }
 
 /**
+ * Any CSS colour the browser understands, as `#rrggbb`. Painting one pixel and
+ * reading it back is the only way to normalise the modern colour spaces a
+ * computed style now serialises into (`lab()`, `color(display-p3 ...)`), which
+ * three.js cannot parse. Returns null when there is no canvas, or when the
+ * value was not a colour at all.
+ */
+function paintToHex(value: string): string | null {
+  if (typeof document === "undefined") return null
+  const canvas = document.createElement("canvas")
+  canvas.width = 1
+  canvas.height = 1
+  const context = canvas.getContext("2d", { willReadFrequently: true })
+  if (!context) return null
+
+  // An invalid assignment leaves the sentinel in place, which is how an
+  // unparseable value is told apart from a legitimately dark one.
+  const sentinel = "#010203"
+  context.fillStyle = sentinel
+  context.fillStyle = value
+  if (context.fillStyle === sentinel && value.trim().toLowerCase() !== sentinel) {
+    return null
+  }
+
+  context.fillRect(0, 0, 1, 1)
+  const [r, g, b, a] = context.getImageData(0, 0, 1, 1).data
+  if (a === 0) return null
+  return `#${hex2(r)}${hex2(g)}${hex2(b)}`
+}
+
+/**
  * A colour three.js can parse. CSS variables are resolved against `context`
  * (or the document root), so a robot in a `.dark` subtree picks up that
  * subtree's values. Falls back to `fallback` while server-rendering.
@@ -84,5 +114,5 @@ export function resolveCssColor(
     probe.remove()
   }
 
-  return oklchToHex(raw) ?? raw
+  return oklchToHex(raw) ?? paintToHex(raw) ?? raw
 }
