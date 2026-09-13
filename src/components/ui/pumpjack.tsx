@@ -30,7 +30,7 @@ import {
 import {
   boxCorners,
   elevationDraft,
-  fitTransform,
+  fitFrame,
   px,
   resolveRobotPalette,
   resolveRobotSize,
@@ -111,6 +111,13 @@ const wrap360 = (value: number) =>
 
 const signed = (degrees: number) => (degrees > 180 ? degrees - 360 : degrees)
 
+/** The crank centre in viewBox units, for one camera. */
+function crankHub(view: RobotView): Vec2 {
+  const camera = robotCamera(view)
+  const frame = fitFrame(ENVELOPE, camera, VIEW_WIDTH, VIEW_HEIGHT)
+  return frame.toViewBox(camera.project(0, CRANK_PIVOT.y, -CRANK_PIVOT.x))
+}
+
 function Pumpjack({
   crankAngle,
   onCrankAngleChange,
@@ -150,7 +157,7 @@ function Pumpjack({
   const controlled = crankAngle !== undefined
 
   const camera = robotCamera(view)
-  const frame = fitTransform(ENVELOPE, camera, VIEW_WIDTH, VIEW_HEIGHT)
+  const frame = fitFrame(ENVELOPE, camera, VIEW_WIDTH, VIEW_HEIGHT)
   const { point: to, path: line, solid, box, bar, disc } = elevationDraft(camera, "profile")
 
   const hold = controlled ? (Number.isFinite(crankAngle) ? (crankAngle as number) : 0) : held
@@ -179,20 +186,19 @@ function Pumpjack({
   )
 
   // The pointer's bearing about the crank centre is the crank angle: grabbing
-  // it turns the gearbox by hand.
-  const hub = to(CRANK_PIVOT)
-  const hubX = px(hub.x)
-  const hubY = px(hub.y)
+  // it turns the gearbox by hand. The hub is recomputed from the camera inside
+  // the handler, so the only thing it closes over is the view.
   const dragging = useRobotDrag(svgRef, {
     enabled: interactive,
     onDrag: React.useCallback(
       (unit: Vec2) => {
-        const dx = unit.x * VIEW_WIDTH - hubX
-        const dy = unit.y * VIEW_HEIGHT - hubY
+        const hub = crankHub(view)
+        const dx = unit.x * VIEW_WIDTH - hub.x
+        const dy = unit.y * VIEW_HEIGHT - hub.y
         if (Math.hypot(dx, dy) < 4) return
         apply((Math.atan2(-dy, dx) * 180) / Math.PI)
       },
-      [apply, hubX, hubY],
+      [apply, view],
     ),
     onDragEnd: React.useCallback(() => setHeld(null), []),
   })
@@ -277,7 +283,7 @@ function Pumpjack({
         />
       )}
 
-      <g data-view={view} transform={frame || undefined}>
+      <g data-view={view} transform={frame.transform || undefined}>
         {showGround && (
           <>
             <path data-ground d={solid([{ x: -4, y: 0 }, { x: 236, y: 0 }], 30)} fill={palette.dark} opacity={0.12} />

@@ -1,11 +1,11 @@
 # Virtualizing the landing catalogue
 
-The grid under "Every machine" on `/` renders **one card per registry item — 120
-of them today, and the number only goes up** — and every card is a live machine:
-an SVG that runs its own `requestAnimationFrame` loop and calls `setState` on
-every frame (`use-robot-motion.ts`). Mounted all at once that is 120 animation
-loops and 120 React re-renders per frame, for a section that shows at most six
-cards at a time.
+The grid under "Every machine" on `/` renders **one card per registry item**, and
+the count only goes up — it passed 140 while this was being written. Every card
+is a live machine: an SVG that runs its own `requestAnimationFrame` loop and
+calls `setState` on every frame (`use-robot-motion.ts`). Mounted all at once that
+is one animation loop and one React re-render per card per frame, for a section
+that shows at most six cards at a time.
 
 ## What "virtualization" means here
 
@@ -22,10 +22,16 @@ well mounts when the card comes within 600px of the viewport and unmounts when i
 leaves again. The well is a fixed `h-44` either way, so nothing reflows and the
 scrollbar never moves.
 
-What that buys, per frame: animation loops proportional to what is on screen
-(roughly 6–12 cards with the 600px margin) instead of all of them. And in the
-server HTML: the grid is **85KB instead of 1.1MB** — measured by rendering it
-with `renderToStaticMarkup` both ways.
+What that buys, measured in Chrome against the dev server: **36 machines mounted
+out of 145**, and the number stays there wherever you scroll to, rather than
+climbing to every card on the page. In the server HTML the same grid is **85KB
+instead of 1.1MB**, measured by rendering it with `renderToStaticMarkup` with
+every card mounted and with none.
+
+The difference is not subtle at this size: with every card mounted, the dev-mode
+page pins the main thread hard enough that a bare `window.scrollTo` over CDP
+times out. With the art virtualized the same page answers scripted scrolls and
+fills each row as it arrives.
 
 ## The mechanism
 

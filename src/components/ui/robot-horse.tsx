@@ -43,7 +43,6 @@ import {
   type GaitLead,
   type GaitLeg,
   type GaitLegId,
-  type GaitPose,
 } from "@/lib/robocn/gait"
 import { solveSpine, spineLimits, type SpinePose } from "@/lib/robocn/spine"
 import {

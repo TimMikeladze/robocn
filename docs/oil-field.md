@@ -53,16 +53,24 @@ truck's compartments fill, the column's flash zone moves. That is the axis this 
 `src/lib/robocn/linkage.ts`. Pure functions, plain `{x, y}`, no React, no dependencies.
 
 ```ts
-solveFourBar(crankAngle, { ground, crank, coupler, rocker }, { branch })
-  // → { crankPin, couplerPin, crankAngle, couplerAngle, rockerAngle,
-  //     transmissionAngle, assembled }
-couplerPoint(pose, { along, offset })    // a point rigid to the coupler
+solveFourBar(crankAngle, { ground, rise, crank, coupler, rocker }, { branch })
+  // → { crankPivot, crankPin, couplerPin, rockerPivot, crankAngle,
+  //     couplerAngle, rockerAngle, transmissionAngle, assembled }
+rigidPoint(origin, angle, along, offset)    // a point rigid to a link
 solveSliderCrank(crankAngle, { crank, rod, offset })
-  // → { pin, slider, rodAngle, stroke, assembled }
-tacklePosition(payout, { lines, drumRadius, crownHeight, blockHeight })
-  // → { height, travel, advantage }
-tackleFalls(crown, block, lines, spacing)   // → the reeved rope, one polyline per fall
+  // → { pin, wrist, slider, rodAngle, stroke, assembled }
+tacklePosition(drumTurns, { lines, drumRadius, topHeight, floorHeight })
+  // → { height, travel, payout, advantage, atLimit }
+tackleReeving(crown, block, lines, spacing) // → the reeved rope, one polyline
 ```
+
+The drawing half lives in `robot-style`, not here, because every machine in the
+registry projects the same way: `elevationDraft(camera, plane)` hands a machine
+drawn in one vertical plane every solid, disc, member and polyline it needs
+already pushed through the camera, and `fitTransform` / `fitFrame` lay a *fixed*
+envelope of motion into the frame so a machine drawn to fit its native view
+stays inside its own frame from every other camera and the framing never
+breathes as the machine works.
 
 Invariants, all tested directly:
 
@@ -71,9 +79,9 @@ Invariants, all tested directly:
   meets a circle of radius `rocker` about the rocker pivot — so the lengths are the
   construction, not an approximation that drifts.
 - **Non-assemblable geometry clamps, never returns `NaN`.** Where the circles do not meet, the
-  coupler pin lands on the line between the two centres at the point closest to both, and
-  `assembled` is `false`. A caller drawing a linkage that has locked up gets a stretched
-  drawing, which is what it is, rather than a dead subtree.
+  coupler keeps its length and points straight at the ground pivot — so the rocker is the link
+  left short — and `assembled` is `false`. A caller drawing a linkage that has locked up gets a
+  stretched drawing, which is what it is, rather than a dead subtree.
 - **The branch is chosen, not discovered.** `branch: "up" | "down"` picks the intersection, the
   same way `bend` picks an elbow, so the machine cannot flip between the two valid solutions
   frame to frame.
@@ -97,20 +105,25 @@ Everything the rest of the registry keeps, kept here: `shell`/`metal`/`dark`/`ac
 **Views.** All ten have a body in space and all ten take `view`. They are modelled once in
 world units — **x** starboard, **y** up, **z** aft — and projected:
 
-- principal masses are solids, drawn with `extrudedPath` / `frustumPath` / `slabPath`, so they
-  are correct from every camera;
-- the mechanism is solved in the machine's own working plane and lifted into a box, so the
+- principal masses are solids: `elevationDraft`'s `solid` / `box` / `bar` / `disc` lift a
+  drawing into a world-space box and hull it with `slabPath`, and bodies of revolution use
+  `extrudedPath` / `frustumPath` directly, so each is correct from every camera;
+- the mechanism is solved in the machine's own working plane and lifted the same way, so the
   pumpjack's beam in plan view is the beam seen from above, foreshortened by its own tilt,
   rather than a second drawing;
-- flat horizontal features — a tank roof, a rotary table, a deck, a spudcan — go through
-  `camera.plane(height, spin)` and are exact;
-- fine elevation detail — gauge faces, ladder rungs, handwheels, seams — goes through
-  `camera.wall(offset, spin)` and collapses in plan view, which is what a drawn-on face does
-  when you look at it edge-on.
+- flat horizontal features — a tank roof, a spudcan, a helideck, a tray seam, a steam ring —
+  go through `camera.plane(height)` and are exact;
+- fine elevation detail — gauge faces, ladder rungs, bracing, seams — is a polyline drawn at a
+  depth, which foreshortens with the camera and finally collapses in plan view, which is what a
+  line drawn on a face does when you look at it edge-on;
+- rigid motion is applied in the machine's own plane before projecting, never as a screen
+  transform: the tanker's heave and trim, and the truck's hitch yaw, are real motions in world
+  space, so every camera is looking at the same machine.
 
 Native views: `profile` for the machines whose mechanism is a side elevation (`pumpjack`,
-`mud-pump`, `oil-tanker`, `tanker-truck`), `front` for the standing ones (`drilling-derrick`,
-`wellhead-tree`, `storage-tank`, `flare-stack`, `fractionating-column`, `jackup-rig`).
+`oil-tanker`, `tanker-truck`), `front` for the standing ones (`drilling-derrick`,
+`wellhead-tree`, `storage-tank`, `flare-stack`, `fractionating-column`, `jackup-rig`), and
+`iso` for the mud pump, whose three cylinders sit behind one another in both elevations.
 
 **Ground and water.** `showGround` draws a grade line and a contact shadow on the land
 machines, and a waterline with a hull shadow on `oil-tanker` and `jackup-rig`. The waterline
@@ -123,16 +136,16 @@ These are API. A test asserts a prop moved one of them.
 
 | Machine | Hooks |
 |---|---|
-| `pumpjack` | `data-crank` `data-pitman` `data-beam` `data-horsehead` `data-rod` `data-counterweight` |
-| `drilling-derrick` | `data-block` `data-hook` `data-drum` `data-falls` `data-string` `data-mast` |
-| `mud-pump` | `data-crankshaft` `data-cylinder="0\|1\|2"` `data-piston` `data-rod` `data-discharge` |
-| `wellhead-tree` | `data-choke` `data-valve="master\|swab\|wing-left\|wing-right"` `data-flow` `data-gauge` |
-| `storage-tank` | `data-roof` `data-liquid` `data-seal` `data-stair` `data-gauge` |
-| `oil-tanker` | `data-hull` `data-waterline` `data-cargo` `data-manifold` `data-house` `data-crane` |
-| `tanker-truck` | `data-tractor` `data-trailer` `data-hitch` `data-compartment="n"` `data-wheel="n"` |
-| `flare-stack` | `data-plume` `data-pilot` `data-tip` `data-boom` `data-knockout` |
-| `fractionating-column` | `data-shell` `data-tray="n"` `data-draw="n"` `data-flash` `data-overhead` |
-| `jackup-rig` | `data-hull` `data-leg="n"` `data-jack="n"` `data-spudcan="n"` `data-cantilever` |
+| `pumpjack` | `data-crank` `data-pitman` `data-beam` (+`data-angle`) `data-horsehead` `data-rod` (+`data-position`) `data-counterweight` `data-wellhead` `data-skid` `data-post` `data-gearbox` |
+| `drilling-derrick` | `data-block` (+`data-height`) `data-hook` `data-drum` (+`data-turns`) `data-falls` (+`data-lines`) `data-string` `data-mast` `data-crown` `data-rack` |
+| `mud-pump` | `data-crankshaft` (+`data-angle`) `data-cylinder="0\|1\|2"` `data-piston` (+`data-position`) `data-rod` `data-charge` `data-discharge` (+`data-flow`) |
+| `wellhead-tree` | `data-choke` (+`data-opening`) `data-valve="master\|swab\|wing-left\|wing-right"` (+`data-open`) `data-flow` `data-outlet` `data-gauge` (+`data-reading`) `data-cross` |
+| `storage-tank` | `data-roof` (+`data-height`) `data-liquid` `data-seal` `data-ladder` `data-stair` `data-gauge` |
+| `oil-tanker` | `data-hull` (+`data-draft`) `data-waterline` `data-sea` `data-boot` `data-cargo` `data-manifold` `data-house` |
+| `tanker-truck` | `data-tractor` `data-trailer` (+`data-hitch`) `data-barrel` `data-cabinet` `data-compartment="n"` `data-wheel="n"` |
+| `flare-stack` | `data-plume` (+`data-flow`) `data-pilot` `data-tip` `data-riser` `data-boom` `data-knockout` |
+| `fractionating-column` | `data-shell` `data-tray="n"` `data-draw="n"` (+`data-live`) `data-flash` `data-overhead` `data-reboiler` |
+| `jackup-rig` | `data-hull` (+`data-elevation`) `data-leg` `data-jack="n"` `data-cantilever` `data-string` |
 
 ## Behaviours
 

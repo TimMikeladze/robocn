@@ -14,8 +14,10 @@ import { CustodianDroid } from "@/components/ui/custodian-droid"
 import { DeltaArm } from "@/components/ui/delta-arm"
 import { GantryArm } from "@/components/ui/gantry-arm"
 import { GuideDroid } from "@/components/ui/guide-droid"
+import { RobotCamel } from "@/components/ui/robot-camel"
 import { RobotHorse } from "@/components/ui/robot-horse"
 import { RobotHound } from "@/components/ui/robot-hound"
+import { RobotPegasus } from "@/components/ui/robot-pegasus"
 import { InfantryDroid } from "@/components/ui/infantry-droid"
 import { LinearActuator } from "@/components/ui/linear-actuator"
 import { MedicalDroid } from "@/components/ui/medical-droid"
@@ -67,6 +69,24 @@ import { MagneticGripper } from "@/components/ui/magnetic-gripper"
 import { InductiveSensor } from "@/components/ui/inductive-sensor"
 import { Resolver } from "@/components/ui/resolver"
 import { TransformerCore } from "@/components/ui/transformer-core"
+import { RobotSunflower } from "@/components/ui/robot-sunflower"
+import { CelestialPlanet } from "@/components/ui/celestial-planet"
+import { CelestialMoon } from "@/components/ui/celestial-moon"
+import { CelestialStar } from "@/components/ui/celestial-star"
+import { CelestialAsteroid } from "@/components/ui/celestial-asteroid"
+import { Orrery } from "@/components/ui/orrery"
+import { BattleStation } from "@/components/ui/battle-station"
+import { DebrisField } from "@/components/ui/debris-field"
+import { Pumpjack } from "@/components/ui/pumpjack"
+import { DrillingDerrick } from "@/components/ui/drilling-derrick"
+import { MudPump } from "@/components/ui/mud-pump"
+import { WellheadTree } from "@/components/ui/wellhead-tree"
+import { StorageTank } from "@/components/ui/storage-tank"
+import { OilTanker } from "@/components/ui/oil-tanker"
+import { TankerTruck } from "@/components/ui/tanker-truck"
+import { FlareStack } from "@/components/ui/flare-stack"
+import { FractionatingColumn } from "@/components/ui/fractionating-column"
+import { JackupRig } from "@/components/ui/jackup-rig"
 import { UtilityDroid } from "@/components/ui/utility-droid"
 
 /**
@@ -90,6 +110,16 @@ const drawing = (container: HTMLElement) =>
     .replaceAll(/«[^»]*»|:r[0-9a-z]+:|_r_[0-9a-z]+_/g, "id")
 
 const machines: Record<string, (view?: RobotView) => React.ReactElement> = {
+  pumpjack: (view) => <Pumpjack animate={false} crankAngle={62} view={view} />,
+  "drilling-derrick": (view) => <DrillingDerrick animate={false} hoist={0.55} lines={8} view={view} />,
+  "mud-pump": (view) => <MudPump animate={false} crankAngle={48} view={view} />,
+  "wellhead-tree": (view) => <WellheadTree animate={false} choke={0.62} view={view} />,
+  "storage-tank": (view) => <StorageTank animate={false} level={0.58} view={view} />,
+  "oil-tanker": (view) => <OilTanker animate={false} cargo={0.68} view={view} />,
+  "tanker-truck": (view) => <TankerTruck animate={false} level={0.7} hitch={18} view={view} />,
+  "flare-stack": (view) => <FlareStack animate={false} flow={0.72} view={view} />,
+  "fractionating-column": (view) => <FractionatingColumn animate={false} heat={0.54} trays={16} view={view} />,
+  "jackup-rig": (view) => <JackupRig animate={false} elevation={0.7} view={view} />,
   "robot-arm": (view) => <RobotArm animate={false} angles={[38, -66, 30]} view={view} />,
   "scara-arm": (view) => <ScaraArm animate={false} behavior="static" view={view} />,
   "delta-arm": (view) => <DeltaArm animate={false} behavior="static" view={view} />,
@@ -134,6 +164,8 @@ const machines: Record<string, (view?: RobotView) => React.ReactElement> = {
   "robot-dog": (view) => <RobotDog animate={false} phase={0.25} view={view} />,
   "robot-fox": (view) => <RobotFox animate={false} phase={0.25} view={view} />,
   "robot-horse": (view) => <RobotHorse animate={false} phase={0.25} interactive={false} view={view} />,
+  "robot-camel": (view) => <RobotCamel animate={false} phase={0.25} ground={0.8} interactive={false} view={view} />,
+  "robot-pegasus": (view) => <RobotPegasus animate={false} phase={0.25} lift={1} spread={1} beat={0.15} interactive={false} view={view} />,
   "robot-turtle": (view) => <RobotTurtle animate={false} phase={0.25} view={view} />,
   "robot-inchworm": (view) => <RobotInchworm animate={false} phase={0.25} view={view} />,
   "robot-fish": (view) => <RobotFish animate={false} phase={0.25} view={view} />,
@@ -155,6 +187,14 @@ const machines: Record<string, (view?: RobotView) => React.ReactElement> = {
   "sentinel-console": (view) => <SentinelConsole animate={false} aperture={0.55} voice={0.4} track={false} look={{ x: 0.3, y: -0.2 }} view={view} />,
   "bellows-droid": (view) => <BellowsDroid animate={false} inflation={0.62} pleats={7} view={view} />,
   "reachy-mini": (view) => <ReachyMini animate={false} view={view} />,
+  "robot-sunflower": (view) => <RobotSunflower animate={false} track={false} daylight={0.42} view={view} />,
+  "celestial-planet": (view) => <CelestialPlanet animate={false} spin={38} sun={44} view={view} />,
+  "celestial-moon": (view) => <CelestialMoon animate={false} phase={0.28} view={view} />,
+  "celestial-star": (view) => <CelestialStar animate={false} activity={0.55} spin={30} view={view} />,
+  "celestial-asteroid": (view) => <CelestialAsteroid animate={false} tumble={62} view={view} />,
+  orrery: (view) => <Orrery animate={false} epoch={0.34} view={view} />,
+  "battle-station": (view) => <BattleStation animate={false} breakup={0.28} charge={0.8} spin={42} view={view} />,
+  "debris-field": (view) => <DebrisField animate={false} spread={0.5} showTrails view={view} />,
 }
 
 /**
@@ -163,6 +203,16 @@ const machines: Record<string, (view?: RobotView) => React.ReactElement> = {
  * never appear in it.
  */
 const natives: Partial<Record<keyof typeof machines, RobotView>> = {
+  pumpjack: "profile",
+  "drilling-derrick": "front",
+  "mud-pump": "iso",
+  "wellhead-tree": "front",
+  "storage-tank": "front",
+  "oil-tanker": "profile",
+  "tanker-truck": "profile",
+  "flare-stack": "front",
+  "fractionating-column": "front",
+  "jackup-rig": "front",
   "robot-arm": "profile",
   "scara-arm": "plan",
   "delta-arm": "iso",
@@ -207,6 +257,8 @@ const natives: Partial<Record<keyof typeof machines, RobotView>> = {
   "robot-dog": "profile",
   "robot-fox": "profile",
   "robot-horse": "profile",
+  "robot-camel": "profile",
+  "robot-pegasus": "profile",
   "robot-turtle": "plan",
   "robot-inchworm": "profile",
   "robot-fish": "profile",
@@ -228,6 +280,14 @@ const natives: Partial<Record<keyof typeof machines, RobotView>> = {
   "sentinel-console": "front",
   "bellows-droid": "front",
   "reachy-mini": "iso",
+  "robot-sunflower": "front",
+  "celestial-planet": "front",
+  "celestial-moon": "front",
+  "celestial-star": "front",
+  "celestial-asteroid": "front",
+  orrery: "plan",
+  "battle-station": "front",
+  "debris-field": "front",
 }
 
 const tippedFrom = (native: RobotView): RobotView =>

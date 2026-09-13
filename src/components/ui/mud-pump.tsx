@@ -23,7 +23,7 @@ import { rigidPoint, solveSliderCrank } from "@/lib/robocn/linkage"
 import {
   boxCorners,
   elevationDraft,
-  fitTransform,
+  fitFrame,
   px,
   resolveRobotPalette,
   resolveRobotSize,
@@ -62,6 +62,13 @@ const viewNames: Record<RobotView, string> = {
 
 const wrap360 = (value: number) =>
   Number.isFinite(value) ? ((value % 360) + 360) % 360 : 0
+
+/** The crankshaft centre in viewBox units, for one camera. */
+function shaftHub(view: RobotView): Vec2 {
+  const camera = robotCamera(view)
+  const frame = fitFrame(ENVELOPE, camera, VIEW_WIDTH, VIEW_HEIGHT)
+  return frame.toViewBox(camera.project(0, SHAFT.y, -SHAFT.x))
+}
 
 /** Throw angles for a shaft with `count` cranks, evenly spaced. */
 const throws = (count: number) =>
@@ -141,7 +148,7 @@ function MudPump({
   const turn = wrap360(motion.value)
 
   const camera = robotCamera(view)
-  const frame = fitTransform(ENVELOPE, camera, VIEW_WIDTH, VIEW_HEIGHT)
+  const frame = fitFrame(ENVELOPE, camera, VIEW_WIDTH, VIEW_HEIGHT)
   const { point: to, path: line, solid, box, bar, disc } = elevationDraft(camera, "profile")
 
   const apply = React.useCallback(
@@ -151,19 +158,17 @@ function MudPump({
     },
     [onCrankAngleChange],
   )
-  const hub = to(SHAFT)
-  const hubX = px(hub.x)
-  const hubY = px(hub.y)
   const dragging = useRobotDrag(svgRef, {
     enabled: interactive,
     onDrag: React.useCallback(
       (unit: Vec2) => {
-        const dx = unit.x * VIEW_WIDTH - hubX
-        const dy = unit.y * VIEW_HEIGHT - hubY
+        const hub = shaftHub(view)
+        const dx = unit.x * VIEW_WIDTH - hub.x
+        const dy = unit.y * VIEW_HEIGHT - hub.y
         if (Math.hypot(dx, dy) < 4) return
         apply((Math.atan2(-dy, dx) * 180) / Math.PI)
       },
-      [apply, hubX, hubY],
+      [apply, view],
     ),
     onDragEnd: React.useCallback(() => setHeld(null), []),
   })
@@ -238,7 +243,7 @@ function MudPump({
         />
       )}
 
-      <g data-view={view} transform={frame || undefined}>
+      <g data-view={view} transform={frame.transform || undefined}>
         {showGround && (
           <path data-ground d={solid([{ x: 2, y: 0 }, { x: 270, y: 0 }], 60)} fill={palette.dark} opacity={0.12} />
         )}

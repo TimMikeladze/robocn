@@ -61,8 +61,12 @@ export interface GaitPose {
   legs: GaitLeg[]
 }
 
-/** Foot travel at `stride` 1 and swing height at `lift` 1, in world units. */
-export const gaitLimits = { reach: 16, clearance: 11, fetlock: 26 } as const
+/**
+ * Foot travel at `stride` 1, swing height at `lift` 1, the fetlock's full drop,
+ * how far a loaded pad spreads past its own width, and how deep a foot goes
+ * into fully soft ground at the pressure a bare unspread pad makes.
+ */
+export const gaitLimits = { reach: 16, clearance: 11, fetlock: 30, spread: 0.55, sinkage: 9 } as const
 
 /** The standing weight split: a horse carries more of itself on the forehand. */
 const FOREHAND = 0.58
@@ -236,4 +240,34 @@ export function gaitLoad(pose: GaitPose, id: GaitLegId): number {
  */
 export function fetlockSink(load: number): number {
   return gaitLimits.fetlock * unit(load, 0)
+}
+
+/**
+ * A spreading pad: how much wider than its own width a foot gets under load.
+ *
+ * A desert foot is a splay pad rather than a hoof — it opens as weight comes on
+ * to it and closes again when the limb swings — so this is the same primitive
+ * as {@link fetlockSink}, read off the same load, with a different consequence.
+ * Returns a multiplier on the pad's unloaded width, 1 at no load.
+ */
+export function padSpread(load: number): number {
+  return 1 + gaitLimits.spread * unit(load, 0)
+}
+
+/**
+ * How far a foot sinks into the ground, in world units.
+ *
+ * Pressure is load over contact area, and how far that pressure takes the foot
+ * down depends on how soft the ground is: rock takes nothing, dry sand takes
+ * most of it. The spread is what makes the difference — a pad that opens under
+ * load drops its own pressure, so the same animal on the same sand sinks less
+ * than it would on a foot that did not open.
+ *
+ * A proportional rule, not a soil model: no bearing capacity, no shear, no
+ * compaction, and nothing is displaced anywhere it has to go.
+ */
+export function footSinkage(load: number, ground: number, spread = padSpread(load)): number {
+  const soft = unit(ground, 0)
+  const area = Number.isFinite(spread) ? Math.max(1, spread) : 1
+  return (gaitLimits.sinkage * unit(load, 0) * soft) / area
 }

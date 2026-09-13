@@ -61,8 +61,6 @@ const TRACK = 62
 const HALF_TRACK = TRACK / 2
 const WHEEL_RADIUS = 19
 const WHEEL_HALF_WIDTH = 6.5
-const HALF_BEAM = 38
-const CABIN_BEAM = 30
 const MID = (REAR_AXLE + FRONT_AXLE) / 2
 /** The height the body rolls and pitches about. */
 const RIDE_HEIGHT = 26
@@ -80,9 +78,10 @@ const MAX_ROLL = 7
 /** Degrees of rack per second while it eases back into a behaviour. */
 const RACK_RATE = 55
 
+/** The box the car works inside. The road runs past it and off the frame. */
 const ENVELOPE = boxCorners(
-  { x: -46, y: -16, z: -228 },
-  { x: 46, y: 104, z: 8 },
+  { x: -40, y: -6, z: -220 },
+  { x: 40, y: 98, z: 2 },
 )
 
 const viewNames: Record<RobotView, string> = {
@@ -105,6 +104,16 @@ const TUB: Vec2[] = [
   { x: 34, y: 16 },
   { x: 8, y: 21 },
 ]
+
+/**
+ * Half-beam at a height, for the body and for the greenhouse. A car is not an
+ * extrusion: it is widest at the waist and draws in at the sill and the
+ * roofline, which is the only reason the front elevation and the plan read as
+ * a car rather than as a box. The wheels stand proud of both, so the plan is
+ * where the two front wheels visibly disagree.
+ */
+const tubBeam = (y: number) => 30 - Math.abs(y - 32) * 0.3
+const cabinBeam = (y: number) => 27 - Math.max(0, y - 52) * 0.22
 
 /** The greenhouse, narrower than the body and set in from both ends. */
 const CABIN: Vec2[] = [
@@ -224,11 +233,11 @@ function RobotCar({
   // The road passes underneath; the wheels follow it and the body takes the
   // line through them.
   const rough = Number.isFinite(roughness) ? clamp(roughness, 0, 1) : 0
-  const travel = motion.clock * carRoadSpeed(behavior)
-  const surface = React.useCallback(
-    (x: number) => roadProfile(x + travel, rough * 3.4),
-    [travel, rough],
-  )
+  // A non-finite phase parks the clock at NaN; nothing derived from it may
+  // reach the DOM, so the road stands still instead.
+  const clock = Number.isFinite(motion.clock) ? motion.clock : 0
+  const travel = clock * carRoadSpeed(behavior)
+  const surface = (x: number) => roadProfile(x + travel, rough * 3.4)
   const ride = axleRide(surface, [REAR_AXLE, FRONT_AXLE])
   const lift = ride.heave + Math.tan(toRadians(ride.pitch)) * MID
   const pitch = toRadians(ride.pitch)
@@ -236,33 +245,43 @@ function RobotCar({
   const sinPitch = Math.sin(pitch)
 
   /** A drawing point carried by the body: pitched, heaved, then rolled. */
-  const world = React.useCallback(
-    (point: Vec2, depth: number): Vec3 => {
-      const dx = point.x - MID
-      const dy = point.y - RIDE_HEIGHT
-      const posed = {
-        x: MID + dx * cosPitch - dy * sinPitch,
-        y: RIDE_HEIGHT + dx * sinPitch + dy * cosPitch + lift,
-      }
-      return rollPoint(posed, depth, roll, RIDE_HEIGHT + lift)
-    },
-    [cosPitch, sinPitch, lift, roll],
-  )
+  const world = (point: Vec2, depth: number): Vec3 => {
+    const dx = point.x - MID
+    const dy = point.y - RIDE_HEIGHT
+    const posed = {
+      x: MID + dx * cosPitch - dy * sinPitch,
+      y: RIDE_HEIGHT + dx * sinPitch + dy * cosPitch + lift,
+    }
+    return rollPoint(posed, depth, roll, RIDE_HEIGHT + lift)
+  }
 
   const camera = robotCamera(view)
   const frame = fitTransform(ENVELOPE, camera, VIEW_WIDTH, VIEW_HEIGHT)
-  const solid = (outline: Vec2[], halfDepth: number, offset = 0) =>
+  /** A solid whose half-beam follows the section it is cut at. */
+  const solid = (outline: Vec2[], beam: (y: number) => number, offset = 0) =>
     slabPath(
       outline.flatMap((point) => [
-        world(point, offset + halfDepth),
-        world(point, offset - halfDepth),
+        world(point, offset + beam(point.y)),
+        world(point, offset - beam(point.y)),
       ]),
       camera,
     )
-  const face = (points: Vec2[], depth: number, close = false) =>
+  /** A member across the machine at one station: a lamp bar, a grille, an axle. */
+  const across = (point: Vec2, from: number, to: number) => {
+    const a = world(point, from)
+    const b = world(point, to)
+    const start = camera.project(a.x, a.y, a.z)
+    const end = camera.project(b.x, b.y, b.z)
+    return `M ${px(start.x)} ${px(start.y)} L ${px(end.x)} ${px(end.y)}`
+  }
+  const face = (
+    points: Vec2[],
+    depth: number | ((y: number) => number),
+    close = false,
+  ) =>
     `${points
       .map((point, index) => {
-        const corner = world(point, depth)
+        const corner = world(point, typeof depth === "function" ? depth(point.y) : depth)
         const screen = camera.project(corner.x, corner.y, corner.z)
         return `${index ? "L" : "M"} ${px(screen.x)} ${px(screen.y)}`
       })
@@ -424,17 +443,17 @@ function RobotCar({
             }),
           )}
 
-          <path d={solid(TUB, HALF_BEAM)} {...shell} />
+          <path d={solid(TUB, tubBeam)} {...shell} />
           {/* Sill shadow and the shoulder seam: two marks, drawn on the face. */}
           <path
-            d={face([{ x: 22, y: 22 }, { x: 196, y: 22 }], HALF_BEAM + 0.4)}
+            d={face([{ x: 22, y: 22 }, { x: 196, y: 22 }], (y) => tubBeam(y) + 0.4)}
             fill="none"
             stroke={palette.dark}
             strokeWidth={2}
             opacity={0.55}
           />
           <path
-            d={face([{ x: 18, y: 44 }, { x: 200, y: 44 }], HALF_BEAM + 0.4)}
+            d={face([{ x: 18, y: 44 }, { x: 200, y: 44 }], (y) => tubBeam(y) + 0.4)}
             fill="none"
             stroke={palette.dark}
             strokeWidth={1}
@@ -442,7 +461,7 @@ function RobotCar({
           />
 
           <g data-cabin>
-            <path d={solid(CABIN, CABIN_BEAM)} {...machined} />
+            <path d={solid(CABIN, cabinBeam)} {...machined} />
             <path
               data-glass
               d={face(
@@ -452,14 +471,14 @@ function RobotCar({
                   { x: 136, y: 76 },
                   { x: 152, y: 50 },
                 ],
-                CABIN_BEAM + 0.4,
+                (y) => cabinBeam(y) + 0.4,
                 true,
               )}
               fill={palette.dark}
               opacity={0.55}
             />
             <path
-              d={face([{ x: 112, y: 50 }, { x: 112, y: 75 }], CABIN_BEAM + 0.6)}
+              d={face([{ x: 112, y: 50 }, { x: 112, y: 75 }], (y) => cabinBeam(y) + 0.6)}
               fill="none"
               stroke={palette.metal}
               strokeWidth={1.2}
@@ -476,7 +495,7 @@ function RobotCar({
                     { x: 124, y: 94 },
                     { x: 104, y: 94 },
                   ],
-                  9,
+                  () => 9,
                 )}
                 {...cast}
               />
@@ -489,21 +508,31 @@ function RobotCar({
             </g>
           )}
 
-          {/* Lamps, fore and aft, painted on the ends of the body. */}
+          {/* Lamp bars, fore and aft: across the machine, so they read from
+              every camera rather than only from the side. */}
           <path
             data-lamp="front"
-            d={face([{ x: 209, y: 26 }, { x: 212, y: 32 }], HALF_BEAM - 6)}
+            d={across({ x: 211, y: 29 }, -(tubBeam(29) - 4), tubBeam(29) - 4)}
             fill="none"
             stroke={lamps ? palette.accent : palette.metal}
-            strokeWidth={4}
+            strokeWidth={3.6}
             strokeLinecap="round"
           />
           <path
+            data-grille
+            d={across({ x: 206, y: 21 }, -(tubBeam(21) - 7), tubBeam(21) - 7)}
+            fill="none"
+            stroke={palette.dark}
+            strokeWidth={2.4}
+            strokeLinecap="round"
+            opacity={0.6}
+          />
+          <path
             data-lamp="rear"
-            d={face([{ x: 8, y: 30 }, { x: 9, y: 38 }], HALF_BEAM - 6)}
+            d={across({ x: 8, y: 34 }, -(tubBeam(34) - 4), tubBeam(34) - 4)}
             fill="none"
             stroke={lamps ? palette.shell : palette.metal}
-            strokeWidth={3.4}
+            strokeWidth={3.2}
             strokeLinecap="round"
           />
         </g>

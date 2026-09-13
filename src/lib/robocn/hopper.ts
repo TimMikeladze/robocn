@@ -246,7 +246,7 @@ function sequence(
     flight: number
   }) => boolean | void,
 ) {
-  const { omega, sag, height } = resolve(options)
+  const { omega, height } = resolve(options)
   const restitution = clamp(finite(options.restitution, 1), 0, 1)
   const restHeight = Math.max(0, finite(options.restHeight, REST_HEIGHT))
   const minimum = Math.sqrt(2 * restHeight)

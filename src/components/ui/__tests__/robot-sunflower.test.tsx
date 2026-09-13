@@ -151,12 +151,15 @@ describe("robot sunflower", () => {
 
 describe("the sunflower's own numbers", () => {
   it("sweeps dawn to dusk, runs the whole day, and hunts about noon", () => {
-    expect(sunflowerGoal("sweep", 0)).toBeCloseTo(0.25, 9)
-    expect(sunflowerGoal("sweep", 0.999)).toBeCloseTo(0.75, 2)
+    expect(sunflowerGoal("sweep", 0)).toBeCloseTo(0.34, 9)
+    expect(sunflowerGoal("sweep", 0.999)).toBeCloseTo(0.66, 2)
+    // The working arc keeps the light well above the horizon all the way.
+    expect(sunflowerSun(sunflowerGoal("sweep", 0)).elevation).toBeGreaterThan(35)
+    expect(sunflowerSun(sunflowerGoal("sweep", 0.5)).elevation).toBeGreaterThan(60)
     expect(sunflowerGoal("day", 0.42)).toBeCloseTo(0.42, 9)
     expect(Math.abs(sunflowerGoal("nod", 0.3) - 0.5)).toBeLessThan(0.04)
     expect(sunflowerGoal("static", 3.7)).toBe(0.5)
-    expect(sunflowerGoal("sweep", Number.NaN)).toBe(0.25)
+    expect(sunflowerGoal("sweep", Number.NaN)).toBe(0.34)
   })
 
   it("puts the sun overhead at noon and under the horizon at midnight", () => {

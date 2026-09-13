@@ -91,7 +91,7 @@ const LEAF_CHORD = 21
  * well short of the stop: past about a third the head leaves the frame, and a
  * mast that lies down is not what tracking the sun looks like.
  */
-const MAX_LEAN = 0.17
+const MAX_LEAN = 0.13
 /** Daylight travelled per second while it returns to its behaviour. */
 const DAY_RATE = 0.42
 /** Peak solar elevation at noon, in degrees. */
@@ -736,9 +736,11 @@ export function sunflowerGoal(behavior: SunflowerBehavior, clock: number): numbe
   if (behavior === "static") return 0.5
   const t = Number.isFinite(clock) ? ((clock % 1) + 1) % 1 : 0
   switch (behavior) {
-    // Dawn to dusk and no further: the half of the day there is light in.
+    // The working arc: a two-axis mount has an azimuth range, and this one
+    // covers the part of the day a collector actually collects in — the head
+    // stays on the light without the mast having to lie down to reach it.
     case "sweep":
-      return 0.25 + 0.5 * t
+      return 0.34 + 0.32 * t
     // The whole twenty-four hours, so the head turns away and the rays furl.
     case "day":
       return t

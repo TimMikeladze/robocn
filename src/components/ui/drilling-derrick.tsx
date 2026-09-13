@@ -24,7 +24,7 @@ import { rigidPoint, tacklePosition, tackleReeving } from "@/lib/robocn/linkage"
 import {
   boxCorners,
   elevationDraft,
-  fitTransform,
+  fitFrame,
   px,
   resolveRobotPalette,
   resolveRobotSize,
@@ -64,6 +64,14 @@ const viewNames: Record<RobotView, string> = {
   front: "front elevation",
   profile: "side elevation",
   iso: "isometric view",
+}
+
+/** The block's travel in viewBox units, for one camera. */
+function travelIn(view: RobotView) {
+  const camera = robotCamera(view)
+  const frame = fitFrame(ENVELOPE, camera, VIEW_WIDTH, VIEW_HEIGHT)
+  const at = (height: number) => frame.toViewBox(camera.project(0, height, 0)).y
+  return { top: at(BLOCK_TOP), low: at(BLOCK_LOW) }
 }
 
 /** Half-width of the mast at a height: it tapers all the way to the crown. */
@@ -159,7 +167,7 @@ function DrillingDerrick({
   const drumAngle = -turns * 360
 
   const camera = robotCamera(view)
-  const frame = fitTransform(ENVELOPE, camera, VIEW_WIDTH, VIEW_HEIGHT)
+  const frame = fitFrame(ENVELOPE, camera, VIEW_WIDTH, VIEW_HEIGHT)
   const { point: to, path: line, solid, box, bar, disc } = elevationDraft(camera, "front")
 
   const apply = React.useCallback(
@@ -170,16 +178,14 @@ function DrillingDerrick({
     },
     [onHoistChange],
   )
-  const topScreen = px(to({ x: 0, y: BLOCK_TOP }).y)
-  const lowScreen = px(to({ x: 0, y: BLOCK_LOW }).y)
   const dragging = useRobotDrag(svgRef, {
     enabled: interactive,
     onDrag: React.useCallback(
       (unit: Vec2) => {
-        const y = unit.y * VIEW_HEIGHT
-        apply((y - lowScreen) / (topScreen - lowScreen || 1))
+        const span = travelIn(view)
+        apply((unit.y * VIEW_HEIGHT - span.low) / (span.top - span.low || 1))
       },
-      [apply, topScreen, lowScreen],
+      [apply, view],
     ),
     onDragEnd: React.useCallback(() => setHeld(null), []),
   })
@@ -259,7 +265,7 @@ function DrillingDerrick({
         />
       )}
 
-      <g data-view={view} transform={frame || undefined}>
+      <g data-view={view} transform={frame.transform || undefined}>
         {showGround && (
           <>
             <path data-ground d={solid([{ x: -66, y: 0 }, { x: 66, y: 0 }], 52)} fill={palette.dark} opacity={0.12} />

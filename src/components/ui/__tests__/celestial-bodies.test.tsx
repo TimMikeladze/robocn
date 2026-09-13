@@ -9,6 +9,7 @@ import { CelestialMoon, moonGoal, moonLibration } from "@/components/ui/celestia
 import { CelestialPlanet, planetGoal, planetSun } from "@/components/ui/celestial-planet"
 import { CelestialStar, starGoal } from "@/components/ui/celestial-star"
 import { Orrery, orreryGoal } from "@/components/ui/orrery"
+import { RobotSunflower, sunflowerGoal } from "@/components/ui/robot-sunflower"
 
 afterEach(cleanup)
 
@@ -436,3 +437,67 @@ function bodyAt(container: HTMLElement) {
   const body = container.querySelector('[data-body="0"]')!
   return { x: Number(body.getAttribute("cx")), y: Number(body.getAttribute("cy")) }
 }
+
+/**
+ * All six machines run on the shared clock, so a reduced-motion preference has
+ * to park every one of them at `phase` — and at exactly the pose the equivalent
+ * controlled props draw, not merely somewhere still.
+ */
+describe("reduced motion", () => {
+  afterEach(() => {
+    Reflect.deleteProperty(window, "matchMedia")
+  })
+
+  const askForLessMotion = () =>
+    Object.defineProperty(window, "matchMedia", {
+      configurable: true,
+      value: vi.fn().mockReturnValue({
+        matches: true,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+      }),
+    })
+
+  const drawing = (markup: HTMLElement) => markup.querySelector("svg")!.innerHTML
+
+  it("parks every loop at the pose its controlled props would draw", () => {
+    askForLessMotion()
+
+    expect(drawing(render(<RobotSunflower behavior="sweep" track={false} />).container)).toBe(
+      drawing(
+        render(
+          <RobotSunflower daylight={sunflowerGoal("sweep", 0)} behavior="static" track={false} />,
+        ).container,
+      ),
+    )
+    expect(drawing(render(<CelestialPlanet behavior="rotate" />).container)).toBe(
+      drawing(render(<CelestialPlanet spin={planetGoal("rotate", 0)} behavior="static" />).container),
+    )
+    expect(drawing(render(<CelestialMoon behavior="cycle" />).container)).toBe(
+      drawing(render(<CelestialMoon phase={moonGoal("cycle", 0)} behavior="static" />).container),
+    )
+    expect(drawing(render(<CelestialStar behavior="flare" spin={0} />).container)).toBe(
+      drawing(
+        render(<CelestialStar activity={starGoal("flare", 0)} spin={0} behavior="static" />).container,
+      ),
+    )
+    expect(drawing(render(<CelestialAsteroid behavior="tumble" />).container)).toBe(
+      drawing(
+        render(<CelestialAsteroid tumble={asteroidGoal("tumble", 0)} behavior="static" />).container,
+      ),
+    )
+    expect(drawing(render(<Orrery behavior="run" />).container)).toBe(
+      drawing(render(<Orrery epoch={orreryGoal("run", 0)} behavior="static" />).container),
+    )
+  })
+
+  it("still lets a person work the machine by hand", () => {
+    askForLessMotion()
+    const onPhaseChange = vi.fn()
+    const { container } = render(<CelestialMoon interactive onPhaseChange={onPhaseChange} />)
+    const svg = container.querySelector("svg")!
+    // Parked is not disabled: reduced motion stops loops, never input.
+    fireEvent.keyDown(svg, { key: "End" })
+    expect(onPhaseChange).toHaveBeenLastCalledWith(0.5)
+  })
+})

@@ -248,8 +248,9 @@ export function stackDeltaV(stages: readonly RocketStage[]): number {
 
 /**
  * **Illustrative.** A pitch program shaped like a gravity turn: vertical off
- * the pad, kicked over early, then falling away fast at first and slowly at
- * the end. Degrees from vertical, 0 on the pad and 90 at insertion.
+ * the pad, kicked over early, then most of the turn taken in the middle of the
+ * ascent and very little of it at either end. Degrees from vertical, 0 on the
+ * pad and 90 at insertion.
  *
  * This is a curve chosen to look like the real thing. It is not a solved
  * trajectory, and no machine here is flying it.
@@ -259,7 +260,8 @@ export function pitchProgram(fraction: number, kick = 8): number {
   const kicked = clamp(finite(kick, 8), 0, 45)
   const start = 0.04
   if (f <= start) return (f / start) * kicked
-  const rest = Math.sqrt((f - start) / (1 - start))
+  const t = (f - start) / (1 - start)
+  const rest = t * t * (3 - 2 * t)
   return clamp(kicked + (90 - kicked) * rest, 0, 90)
 }
 

@@ -143,7 +143,7 @@ function FractionatingColumn({
 
   const camera = robotCamera(view)
   const frame = fitTransform(ENVELOPE, camera, VIEW_WIDTH, VIEW_HEIGHT)
-  const { point: to, path: line, solid, box, bar, disc } = elevationDraft(camera, "front")
+  const { point: to, path: line, box, bar, disc } = elevationDraft(camera, "front")
 
   const apply = React.useCallback(
     (next: number) => {

@@ -146,7 +146,7 @@ function StorageTank({
 
   const camera = robotCamera(view)
   const frame = fitTransform(ENVELOPE, camera, VIEW_WIDTH, VIEW_HEIGHT)
-  const { point: to, path: line, solid, box, bar, disc } = elevationDraft(camera, "front")
+  const { point: to, path: line, box, bar, disc } = elevationDraft(camera, "front")
 
   const apply = React.useCallback(
     (next: number) => {
@@ -377,13 +377,21 @@ export function storageTankLevel(behavior: StorageTankBehavior, clock: number) {
   return 0.08 + (1 - Math.abs(2 * t - 1)) * 0.86
 }
 
-/** Where the rolling ladder's wheels stand for a level: the solved contact. */
+/**
+ * Where the rolling ladder's wheels stand for a level, and how far that is from
+ * the hinge — which is the ladder's own length, and must not change.
+ */
 export function storageTankLadder(level: number) {
   const full = Number.isFinite(level) ? clamp(level, 0, 1) : 0
   const roofY = lerp(ROOF_LOW, ROOF_HIGH, full)
   const drop = LADDER_HINGE.y - roofY
   const run = Math.sqrt(Math.max(0, LADDER * LADDER - drop * drop))
-  return { x: clamp(LADDER_HINGE.x + run, -RADIUS + 8, RADIUS - 8), y: roofY }
+  const wheel = { x: clamp(LADDER_HINGE.x + run, -RADIUS + 8, RADIUS - 8), y: roofY }
+  return {
+    ...wheel,
+    hinge: LADDER_HINGE,
+    reach: Math.hypot(wheel.x - LADDER_HINGE.x, wheel.y - LADDER_HINGE.y),
+  }
 }
 
 export { StorageTank }

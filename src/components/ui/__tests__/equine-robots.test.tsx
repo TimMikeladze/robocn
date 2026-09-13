@@ -354,3 +354,61 @@ describe("robot pegasus", () => {
     expect(container.querySelectorAll("[data-fetlock]")).toHaveLength(4)
   })
 })
+
+/* -------------------------------------------------------------------------- */
+
+/** A drag across a machine whose box jsdom otherwise reports as zero-sized. */
+function drag(svg: Element, from: { x: number; y: number }, to: { x: number; y: number }) {
+  svg.getBoundingClientRect = () => ({ left: 0, top: 0, width: 200, height: 200 }) as DOMRect
+  fireEvent.pointerDown(svg, { clientX: from.x, clientY: from.y, pointerId: 1 })
+  fireEvent.pointerMove(svg, { clientX: to.x, clientY: to.y, pointerId: 1 })
+  fireEvent.pointerUp(svg, { clientX: to.x, clientY: to.y, pointerId: 1 })
+}
+
+describe("grabbing the equine machines", () => {
+  it("scrubs the horse's stride across the frame", () => {
+    const onPhaseChange = vi.fn()
+    const { getByRole } = render(<RobotHorse behavior="walk" onPhaseChange={onPhaseChange} />)
+    // The width of the box is one whole stride, so a quarter across is a
+    // quarter through the cycle.
+    drag(getByRole("slider"), { x: 20, y: 100 }, { x: 50, y: 100 })
+    expect(onPhaseChange).toHaveBeenLastCalledWith(0.25)
+    drag(getByRole("slider"), { x: 50, y: 100 }, { x: 150, y: 100 })
+    expect(onPhaseChange).toHaveBeenLastCalledWith(0.75)
+  })
+
+  it("works the pegasus's handover up and down the frame", () => {
+    const onLiftChange = vi.fn()
+    const { getByRole } = render(<RobotPegasus behavior="launch" onLiftChange={onLiftChange} />)
+    // The bottom of the box is the floor and the top is flight.
+    drag(getByRole("slider"), { x: 100, y: 200 }, { x: 100, y: 200 })
+    expect(onLiftChange).toHaveBeenLastCalledWith(0)
+    drag(getByRole("slider"), { x: 100, y: 100 }, { x: 100, y: 0 })
+    expect(onLiftChange).toHaveBeenLastCalledWith(1)
+  })
+
+  it("parks every loop under a reduced-motion preference", () => {
+    const reduced = vi.fn().mockImplementation((query: string) => ({
+      matches: query.includes("reduce"),
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }))
+    vi.stubGlobal("matchMedia", reduced)
+    try {
+      // Parked, the drawing is the same twice over: there is no clock moving
+      // underneath it, which is the whole of the preference.
+      const horse = render(<RobotHorse behavior="gallop" interactive={false} />)
+      const first = horse.container.innerHTML
+      horse.rerender(<RobotHorse behavior="gallop" interactive={false} />)
+      expect(horse.container.innerHTML).toBe(first)
+
+      const pegasus = render(<RobotPegasus behavior="hover" interactive={false} />)
+      const flying = pegasus.container.innerHTML
+      pegasus.rerender(<RobotPegasus behavior="hover" interactive={false} />)
+      expect(pegasus.container.innerHTML).toBe(flying)
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  })
+})

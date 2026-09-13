@@ -39,7 +39,6 @@ import {
   toDegrees,
   toRadians,
   type Vec2,
-  type Vec3,
 } from "@/lib/robocn/kinematics"
 import {
   fetlockSink,
@@ -69,13 +68,8 @@ import { cn } from "@/lib/utils"
 
 export type PegasusBehavior = "launch" | "canter" | "soar" | "hover" | "static"
 
-/**
- * The one machine in the set that does not default to an elevation. Its two
- * axes are perpendicular — the body's length and the wing's span — so no single
- * elevation can say both: a side view foreshortens a lateral span to almost
- * nothing, which is honest and unreadable. Three-quarter shows both.
- */
-const NATIVE_VIEW: RobotView = "iso"
+/** Drawn in side elevation; that is the camera it defaults to. */
+const NATIVE_VIEW: RobotView = "profile"
 
 const ORIGIN = 150
 const GROUND = 180
@@ -106,17 +100,17 @@ const FLY_RISE = 40
 const RISE = 14
 
 /** Humerus, radius, manus. Exported so the tests can hold them to their lengths. */
-export const pegasusWingLinks = [17, 19, 24] as const
+export const pegasusWingLinks = [19, 21, 28] as const
 /** Where the wing roots sit, off the centre plane and above the shoulder. */
 const WING_ROOT = { across: 8, up: 9, forward: 2 } as const
 /** How far out of the root the tip can be taken, and how far it swings. */
-const WING_SPAN = 50
+const WING_SPAN = 62
 const WING_ELEVATION = 54
-const WING_SWEEP = 17
+const WING_SWEEP = 20
 /** The smallest the path ever gets: a furled wing is still a wing. */
 const WING_FURLED = 0.16
 
-const fits: Record<RobotView, number> = { plan: 0.88, front: 0.9, profile: 0.98, iso: 1 }
+const fits: Record<RobotView, number> = { plan: 0.88, front: 0.92, profile: 1, iso: 0.86 }
 
 const viewNames: Record<RobotView, string> = {
   plan: "plan view",
@@ -125,9 +119,13 @@ const viewNames: Record<RobotView, string> = {
   iso: "isometric view",
 }
 
-/** The side elevation's own camera, kept at module scope: the wings beat out of
- *  the plane the machine is drawn in, so even the native drawing projects them. */
-const sideCamera = robotCamera(NATIVE_VIEW)
+/**
+ * The body's flat artwork is authored in side elevation and carried to whatever
+ * camera is on by the frame transform, so anything three-dimensional riding on
+ * that artwork — the ears — projects through the elevation's own camera first.
+ * The wings do not: they go through the real camera, in their own group.
+ */
+const sideCamera = robotCamera("profile")
 
 /** A point in the animal's own frame: nose-ward, up, and off the centre plane. */
 interface Solid {
@@ -470,7 +468,7 @@ function RobotPegasus({
       >
         <path
           d={`${vane.map((point, index) => `${index ? "L" : "M"} ${px(point.x)} ${px(point.y)}`).join(" ")} Z`}
-          {...shell}
+          {...machined}
         />
         <path d={capsulePath(root, elbow, 3.6)} {...machined} />
         <path d={capsulePath(elbow, wrist, 2.9)} {...machined} />
@@ -783,21 +781,23 @@ function wingChain(beat: number, spread: number, side: 1 | -1, root: Solid): Win
     across: point.across,
   })
   const open = lerp(WING_FURLED, 1, clamp(spread, 0, 1))
+  // Chord roughly half the span at the elbow, tapering to nothing at the tip:
+  // the shape a wing is, hung on wherever the solver put the spar.
   const vane: Solid[] = [
     joints[0],
     elbow,
     wrist,
     tip,
-    behind(tip, 5 * open),
-    behind(wrist, 20 * open),
-    behind(elbow, 24 * open),
-    behind(joints[0], 13 * open),
+    behind(tip, 7 * open),
+    behind(wrist, 27 * open),
+    behind(elbow, 33 * open),
+    behind(joints[0], 18 * open),
   ]
   const quills: [Solid, Solid][] = [0.25, 0.5, 0.75].flatMap((t): [Solid, Solid][] => {
     const spar = mixSolid(wrist, tip, t)
-    return [[spar, behind(spar, lerp(18, 6, t) * open)]]
+    return [[spar, behind(spar, lerp(24, 8, t) * open)]]
   })
-  quills.push([mixSolid(elbow, wrist, 0.5), behind(mixSolid(elbow, wrist, 0.5), 22 * open)])
+  quills.push([mixSolid(elbow, wrist, 0.5), behind(mixSolid(elbow, wrist, 0.5), 30 * open)])
   return { joints, vane, quills }
 }
 

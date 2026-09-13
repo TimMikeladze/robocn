@@ -503,6 +503,49 @@ export function roundedFootprint(
  * machine drawn to fit its native view then stays inside its own frame from
  * every other camera, which is otherwise the first thing a new view breaks.
  */
+export interface RobotFrame {
+  scale: number
+  dx: number
+  dy: number
+  /** The SVG transform for the drawing group. */
+  transform: string
+  /** A point already projected by the camera, in the drawing's viewBox units. */
+  toViewBox(point: Vec2): Vec2
+}
+
+export function fitFrame(
+  corners: readonly Vec3[],
+  camera: RobotCamera,
+  width: number,
+  height: number,
+  margin = 8,
+  maxScale = 1,
+): RobotFrame {
+  const points = corners.map((corner) => camera.project(corner.x, corner.y, corner.z))
+  const xs = points.length ? points.map((point) => point.x) : [0]
+  const ys = points.length ? points.map((point) => point.y) : [0]
+  const minX = Math.min(...xs)
+  const maxX = Math.max(...xs)
+  const minY = Math.min(...ys)
+  const maxY = Math.max(...ys)
+  const scale = points.length
+    ? Math.min(
+        maxScale,
+        (width - margin * 2) / Math.max(1e-6, maxX - minX),
+        (height - margin * 2) / Math.max(1e-6, maxY - minY),
+      )
+    : 1
+  const dx = width / 2 - ((minX + maxX) / 2) * scale
+  const dy = height / 2 - ((minY + maxY) / 2) * scale
+  return {
+    scale,
+    dx,
+    dy,
+    transform: points.length ? `translate(${px(dx)} ${px(dy)}) scale(${px(scale)})` : "",
+    toViewBox: (point) => ({ x: dx + point.x * scale, y: dy + point.y * scale }),
+  }
+}
+
 export function fitTransform(
   corners: readonly Vec3[],
   camera: RobotCamera,
@@ -511,22 +554,7 @@ export function fitTransform(
   margin = 8,
   maxScale = 1,
 ): string {
-  if (corners.length === 0) return ""
-  const points = corners.map((corner) => camera.project(corner.x, corner.y, corner.z))
-  const xs = points.map((point) => point.x)
-  const ys = points.map((point) => point.y)
-  const minX = Math.min(...xs)
-  const maxX = Math.max(...xs)
-  const minY = Math.min(...ys)
-  const maxY = Math.max(...ys)
-  const scale = Math.min(
-    maxScale,
-    (width - margin * 2) / Math.max(1e-6, maxX - minX),
-    (height - margin * 2) / Math.max(1e-6, maxY - minY),
-  )
-  const dx = width / 2 - ((minX + maxX) / 2) * scale
-  const dy = height / 2 - ((minY + maxY) / 2) * scale
-  return `translate(${px(dx)} ${px(dy)}) scale(${px(scale)})`
+  return fitFrame(corners, camera, width, height, margin, maxScale).transform
 }
 
 /** The eight corners of a world-space box, ready for {@link fitTransform}. */

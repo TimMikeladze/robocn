@@ -52,9 +52,9 @@ const ORIGIN = { x: 100, y: 100 }
 const NATIVE_VIEW: RobotView = "front"
 
 const RADIUS = 56
-/** Samples over the surface, and angular bins the silhouette is built in. */
-const SURFACE_SAMPLES = 900
-const OUTLINE_BINS = 84
+/** Directions the outline is built at, and depth samples along each one. */
+const OUTLINE_BINS = 64
+const OUTLINE_DEPTH = 11
 /** Degrees of tumble per second while it returns to its behaviour. */
 const TUMBLE_RATE = 60
 /**
@@ -215,61 +215,80 @@ function CelestialAsteroid({
 
   /* ---- the rock -------------------------------------------------------- */
 
-  // The surface, in the body's own frame, so turning it turns the shape.
-  const lattice = sphereLattice(SURFACE_SAMPLES)
-  const surface = lattice.map((site) => {
-    const local = surfacePoint(frame, 1, latitudeOf(site), longitudeOf(site))
-    return {
-      site,
-      point: scale3(local, RADIUS * lumpyRadius(site, field)),
-    }
+  // The screen plane, in world directions.
+  const reference: Vec3 = Math.abs(eye.y) > 0.99 ? { x: 1, y: 0, z: 0 } : { x: 0, y: 1, z: 0 }
+  const across = unit(crossOf(reference, eye))
+  const upward = crossOf(eye, across)
+  const bodyLocal = (d: Vec3): Vec3 => ({
+    x: dot3(d, frame.right),
+    y: dot3(d, frame.up),
+    z: dot3(d, frame.forward),
   })
-  const projected = surface.map((sample) => ({
-    screen: at(sample.point),
-    lit: illumination(sample.point, light) > 0,
-    facing: front(sample.point) > 0,
-  }))
-  const centre = at({ x: 0, y: 0, z: 0 })
-  // One binned outline serves both the body and the shadow, so the shadow's
-  // outer edge lands exactly on the body's own rim instead of sawtoothing
-  // along whichever unlit sample happened to be farthest out.
-  const rim = binnedOutline(projected.map((sample) => sample.screen), centre)
-  const outline = polygonPath(rim.filter((point): point is Vec2 => point !== null))
-  const darkBins = Array.from({ length: OUTLINE_BINS }, () => false)
-  for (const sample of projected) {
-    if (sample.facing && !sample.lit) darkBins[binOf(sample.screen, centre)] = true
-  }
+  const surfaceAt = (d: Vec3) => scale3(d, RADIUS * lumpyRadius(bodyLocal(d), field))
 
-  // The day-night line, taken analytically rather than off the samples: it is
-  // the great circle of directions square to the light, with the body's own
-  // radius applied along each one. Smooth, and exactly where the shading is.
+  /**
+   * The outline, exactly rather than by binning a point cloud. Every direction
+   * that projects onto one screen bearing lies on a single great circle
+   * through the line of sight — so sweeping that circle and keeping the point
+   * that projects farthest out gives the true silhouette of a body that is
+   * star-shaped about its own centre, concavities and all, and smoothly.
+   */
+  const rim = Array.from({ length: OUTLINE_BINS }, (_, index) => {
+    const bearing = (index / OUTLINE_BINS) * Math.PI * 2
+    const plane: Vec3 = {
+      x: across.x * Math.cos(bearing) + upward.x * Math.sin(bearing),
+      y: across.y * Math.cos(bearing) + upward.y * Math.sin(bearing),
+      z: across.z * Math.cos(bearing) + upward.z * Math.sin(bearing),
+    }
+    let best: { point: Vec3; screen: Vec2; reach: number; lit: boolean } | null = null
+    for (let step = 0; step <= OUTLINE_DEPTH; step++) {
+      // Toward the camera only: the far half of the body is behind this one.
+      const lean = (-Math.PI / 2 + (Math.PI * step) / OUTLINE_DEPTH) * 0.94
+      const direction: Vec3 = {
+        x: plane.x * Math.cos(lean) + eye.x * Math.sin(lean),
+        y: plane.y * Math.cos(lean) + eye.y * Math.sin(lean),
+        z: plane.z * Math.cos(lean) + eye.z * Math.sin(lean),
+      }
+      const point = surfaceAt(direction)
+      const screen = at(point)
+      const reach = Math.hypot(screen.x - ORIGIN.x, screen.y - ORIGIN.y)
+      if (!best || reach > best.reach) {
+        best = { point, screen, reach, lit: illumination(direction, light) > 0 }
+      }
+    }
+    return best!
+  })
+  const outline = polygonPath(rim.map((edge) => edge.screen))
+
+  // The day-night line: the great circle of directions square to the light,
+  // with the body's own radius along each one. Analytic, so it is smooth.
   const edge = (() => {
-    const reference: Vec3 =
-      Math.abs(light.y) > 0.9 ? { x: 1, y: 0, z: 0 } : { x: 0, y: 1, z: 0 }
-    const a = unit(crossOf(reference, light))
+    const pole: Vec3 = Math.abs(light.y) > 0.9 ? { x: 1, y: 0, z: 0 } : { x: 0, y: 1, z: 0 }
+    const a = unit(crossOf(pole, light))
     const c = crossOf(light, a)
-    return Array.from({ length: 160 }, (_, index) => {
-      const angle = (index / 160) * Math.PI * 2
+    return Array.from({ length: 96 }, (_, index) => {
+      const angle = (index / 96) * Math.PI * 2
       const direction = {
         x: a.x * Math.cos(angle) + c.x * Math.sin(angle),
         y: a.y * Math.cos(angle) + c.y * Math.sin(angle),
         z: a.z * Math.cos(angle) + c.z * Math.sin(angle),
       }
-      const local = {
-        x: dot3(direction, frame.right),
-        y: dot3(direction, frame.up),
-        z: dot3(direction, frame.forward),
-      }
-      return scale3(direction, RADIUS * lumpyRadius(local, field))
-    }).filter((point) => front(point) > 0)
+      return { point: surfaceAt(direction), facing: front(direction) > 0 }
+    })
+      .filter((sample) => sample.facing)
+      .map((sample) => at(sample.point))
   })()
 
   // The night side: the body's own outline outside, the terminator inside.
-  const shadow = nightPath(rim, darkBins, edge.map(at), centre)
+  const shadow = nightPath(
+    rim.map((point) => point.screen),
+    rim.map((point) => !point.lit),
+    edge,
+  )
 
   const pitList = sphereLattice(pits).map((site, index) => {
     const local = surfacePoint(frame, 1, latitudeOf(site), longitudeOf(site))
-    const point = scale3(local, RADIUS * lumpyRadius(site, field))
+    const point = surfaceAt(local)
     const facing = front(local)
     const screen = at(point)
     const scale = 2 + ((((index * 41 + grain * 17) % 13) + 13) % 13) / 13 * 4
@@ -470,82 +489,56 @@ function bearingDirection(bearing: number): Vec3 {
   return { x: Math.sin(a), y: 0.16, z: -Math.cos(a) }
 }
 
-/** Which angular bin about `centre` a projected point falls in. */
-const binOf = (point: Vec2, centre: Vec2) =>
-  Math.min(
-    OUTLINE_BINS - 1,
-    Math.max(
-      0,
-      Math.floor(
-        ((Math.atan2(point.y - centre.y, point.x - centre.x) + Math.PI) / (Math.PI * 2)) *
-          OUTLINE_BINS,
-      ),
-    ),
-  )
-
 /**
- * The true outline of a projected surface that is star-shaped about its own
- * centre: the farthest sample in each angular bin. A convex hull would bridge
- * every hollow the lobes make, which on a lumpy body is the whole subject.
- */
-function binnedOutline(points: readonly Vec2[], centre: Vec2): (Vec2 | null)[] {
-  const far: (Vec2 | null)[] = Array.from({ length: OUTLINE_BINS }, () => null)
-  const reach: number[] = Array.from({ length: OUTLINE_BINS }, () => -1)
-  for (const point of points) {
-    const bin = binOf(point, centre)
-    const distance = Math.hypot(point.x - centre.x, point.y - centre.y)
-    if (distance > reach[bin]) {
-      reach[bin] = distance
-      far[bin] = point
-    }
-  }
-  return far
-}
-
-/**
- * The unlit part of the visible surface: in every angular bin it reaches, the
- * region between the terminator and the body's own outline. A bin the
- * terminator never crosses is unlit all the way in, so its inner edge is the
- * centre — which is what makes the shadow close over the middle once more than
- * half the face is dark.
+ * The unlit part of the visible face: the dark arc of the body's own outline,
+ * closed against the terminator's visible arc. Two curves that already meet at
+ * the limb, so the region between them is the night side exactly — no binning,
+ * and no spokes to the centre where a bin happened to miss the terminator.
  */
 function nightPath(
-  rim: readonly (Vec2 | null)[],
+  rim: readonly Vec2[],
   dark: readonly boolean[],
   edge: readonly Vec2[],
-  centre: Vec2,
 ): string {
-  const outer = rim.map((point, bin) => (dark[bin] ? point : null))
-  if (outer.filter(Boolean).length < 4) return ""
-  const low: number[] = Array.from({ length: OUTLINE_BINS }, () => -1)
-  for (const point of edge) {
-    const bin = binOf(point, centre)
-    const distance = Math.hypot(point.x - centre.x, point.y - centre.y)
-    if (low[bin] < 0 || distance < low[bin]) low[bin] = distance
-  }
+  const count = rim.length
+  if (dark.every((night) => night)) return polygonPath(rim)
+  if (!dark.some((night) => night) || edge.length < 3) return ""
 
-  // The longest circular run of bins that carry any unlit sample.
+  // The longest unbroken run of dark bins: the one arc the light is not on.
   let best = { start: 0, length: 0 }
-  for (let start = 0; start < OUTLINE_BINS; start++) {
-    if (outer[start] && outer[(start - 1 + OUTLINE_BINS) % OUTLINE_BINS]) continue
+  for (let start = 0; start < count; start++) {
+    if (dark[start] && dark[(start - 1 + count) % count]) continue
     let length = 0
-    while (length < OUTLINE_BINS && outer[(start + length) % OUTLINE_BINS]) length++
+    while (length < count && dark[(start + length) % count]) length++
     if (length > best.length) best = { start, length }
   }
-  const complete = outer.every((point) => point !== null)
-  const run = complete
-    ? Array.from({ length: OUTLINE_BINS }, (_, bin) => bin)
-    : Array.from({ length: best.length }, (_, step) => (best.start + step) % OUTLINE_BINS)
-  if (run.length < 3) return ""
-  const inward = (bin: number): Vec2 => {
-    const angle = -Math.PI + ((bin + 0.5) / OUTLINE_BINS) * Math.PI * 2
-    const radius = Math.max(0, low[bin])
-    return { x: centre.x + Math.cos(angle) * radius, y: centre.y + Math.sin(angle) * radius }
+  if (best.length < 2) return ""
+  const arc = Array.from({ length: best.length }, (_, step) => rim[(best.start + step) % count])
+
+  // The terminator comes back as a closed sweep with the far half removed, so
+  // it can be split across the seam: start it where its own gap is widest.
+  const term = openedAt(edge)
+  const tail = arc[arc.length - 1]
+  const forward =
+    span(tail, term[0]) <= span(tail, term[term.length - 1]) ? term : [...term].reverse()
+  return polygonPath([...arc, ...forward])
+}
+
+const span = (a: Vec2, b: Vec2) => Math.hypot(a.x - b.x, a.y - b.y)
+
+/** A sampled arc rotated so it starts after its own widest gap. */
+function openedAt(points: readonly Vec2[]): Vec2[] {
+  if (points.length < 3) return [...points]
+  let seam = 0
+  let widest = -1
+  for (let index = 0; index < points.length; index++) {
+    const gap = span(points[index], points[(index + 1) % points.length])
+    if (gap > widest) {
+      widest = gap
+      seam = index + 1
+    }
   }
-  return polygonPath([
-    ...run.map((bin) => outer[bin]!),
-    ...[...run].reverse().map(inward),
-  ])
+  return [...points.slice(seam), ...points.slice(0, seam)]
 }
 
 function polygonPath(points: readonly Vec2[]): string {
