@@ -1,0 +1,92 @@
+# robocn — spec
+
+A shadcn-compatible registry of robot components: articulated arms, alternate kinematic
+families, and robot ephemera. Every item is copy-in source, themeable with CSS variables,
+and sized by props.
+
+## Why
+
+`shadcn/ui` covers forms and layout. Nothing covers *machines* — the arm that animates on a
+robotics landing page, the pick-and-place loader on a fabrication dashboard, the face on a
+support bot. robocn is that set, built on a real kinematics core rather than a looping GIF.
+
+Inspiration and prior art: `../keycaps/packages/fabricator` — its FABRIK solver, analytic
+two-link elbow, procedural `ArmRig`, and tool-head vocabulary. robocn generalises those from
+one bespoke three.js scene into installable components with no scene assumptions.
+
+## Shape of the repo
+
+Single Next.js app that is both the docs site and the registry source of truth. Files live at
+the exact path a consumer installs them to, so the docs site always compiles what it ships.
+
+```
+src/lib/robocn/kinematics.ts     zero-dependency math: FABRIK, elbow IK, FK, delta IK
+src/lib/robocn/style.ts          sizes, variants, palette resolution, tool + motion types
+src/hooks/use-robot-arm.ts       rAF pose loop: eases a chain toward a target, settles to 0 renders
+src/hooks/use-pointer-target.ts  pointer/touch position in a component's own world units
+src/components/ui/*.tsx          the components
+registry.json                    registry manifest -> `pnpm registry:build` -> public/r/*.json
+```
+
+Consumers install with `npx shadcn@latest add https://<host>/r/robot-arm.json`, or add the
+`@robocn` namespace to `components.json` and run `add @robocn/robot-arm`.
+
+## Components
+
+| Item | Type | What it is |
+|---|---|---|
+| `robot-kinematics` | lib | IK/FK core. No React, no three, no deps. |
+| `robot-style` | lib | Size scale, variants, palette resolution from CSS vars. |
+| `use-robot-arm` | hook | Animated pose state for a link chain. |
+| `use-pointer-target` | hook | Pointer position mapped into arm world units. |
+| `robot-arm` | ui | The flagship: SVG articulated arm, N links, 8 tools, 4 variants. |
+| `robot-arm-3d` | ui | The same arm as a procedural react-three-fiber rig. |
+| `robot-stage` | ui | Canvas + lights + floor + orbit controls for the 3D items. |
+| `scara-arm` | ui | SCARA in plan view: two rotary links, Z column, top-down. |
+| `delta-arm` | ui | Parallel delta robot, real delta IK, isometric projection. |
+| `gantry-arm` | ui | Cartesian gantry / plotter head on X-Y rails. |
+| `robot-face` | ui | Head with pointer-tracking eyes, moods, blinking, antenna. |
+| `robot-loader` | ui | Pick-and-place loop as a loading indicator. |
+| `arm-controls` | ui | Slider panel that drives an arm in forward kinematics. |
+
+## Customisation contract
+
+Every visual component takes the same three axes, so learning one teaches all of them.
+
+**Colour.** Four palette roles — `shell`, `metal`, `dark`, `accent` — plus `glow`, `grid`,
+`foreground`. Each resolves from a prop, else a CSS variable (`--robot-shell`, …), else a
+shadcn token. The registry ships the variables in `cssVars` for light and dark, so an install
+themes itself; passing `color="#f97316"` overrides one arm without touching the theme.
+
+**Size.** `size` takes a scale name (`xs`–`xl`) or a pixel number. Geometry is defined in
+world units inside a fixed `viewBox`, so size never re-lays-out the drawing — one number
+scales the whole machine. `thickness` scales limb weight independently.
+
+**Form.** `variant`: `solid` (filled machine), `outline` (line art), `blueprint` (technical
+drawing with grid, dimensions and joint angles), `wire` (skeleton). `tool` picks the end
+effector: `gripper | welder | painter | cutter | scanner | vacuum | magnet | none`.
+
+**Motion.** `behavior`: `pointer` (follow the cursor), `orbit`, `sweep`, `idle` (breathing
+bob), `static`. Or drive it yourself with a controlled `target`. All motion respects
+`prefers-reduced-motion` and the loop stops rendering once a pose settles.
+
+## Kinematics core
+
+- Two links solve analytically (law of cosines) with a chosen elbow side — cheap, stable,
+  and the pose people expect from an industrial arm.
+- Three or more links run FABRIK, seeded with the previous frame so animation is temporally
+  coherent instead of snapping between valid solutions.
+- Out-of-reach targets clamp onto the reachable sphere rather than failing, so a pointer
+  dragged off-canvas produces a stretched arm, not a broken one.
+- Delta gets its own closed-form solver (per-arm YZ formulation at 120° rotations); the
+  gantry is direct.
+- Pure functions over plain `{x,y}` / `{x,y,z}` objects. The 2D components and the three.js
+  rig call the same code.
+
+## Verification
+
+- `vitest` over the kinematics: link lengths preserved, reach clamping, FK/IK round trip,
+  elbow side, delta solutions land on target.
+- `tsc --noEmit` and `next build` over the whole app, so every published file type-checks.
+- `shadcn build` emits `public/r/*.json`; a test asserts every registry item's files exist.
+- Docs site driven in a browser to confirm the arms actually move.

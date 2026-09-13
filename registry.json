@@ -1,0 +1,311 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "robocn",
+  "homepage": "{REGISTRY_URL}",
+  "items": [
+    {
+      "name": "robot-kinematics",
+      "type": "registry:lib",
+      "title": "Robot kinematics",
+      "description": "Dependency-free inverse and forward kinematics: analytic two-link elbow, FABRIK for longer chains, closed-form delta IK, isometric projection.",
+      "categories": ["robotics", "math"],
+      "files": [
+        {
+          "path": "src/lib/robocn/kinematics.ts",
+          "type": "registry:lib",
+          "target": "@lib/robocn/kinematics.ts"
+        }
+      ]
+    },
+    {
+      "name": "robot-style",
+      "type": "registry:lib",
+      "title": "Robot style",
+      "description": "The shared visual language: size scale, paint variants, palette resolution from CSS variables, and the capsule limb geometry every machine is drawn from.",
+      "categories": ["robotics", "theming"],
+      "registryDependencies": ["{REGISTRY_URL}/r/robot-kinematics.json"],
+      "files": [
+        {
+          "path": "src/lib/robocn/style.ts",
+          "type": "registry:lib",
+          "target": "@lib/robocn/style.ts"
+        }
+      ],
+      "cssVars": {
+        "light": {
+          "robot-shell": "oklch(0.72 0.17 47)",
+          "robot-metal": "oklch(0.74 0.012 250)",
+          "robot-dark": "oklch(0.32 0.02 250)",
+          "robot-accent": "oklch(0.72 0.15 176)",
+          "robot-glow": "oklch(0.78 0.16 176)",
+          "robot-grid": "oklch(0.62 0.02 250)"
+        },
+        "dark": {
+          "robot-shell": "oklch(0.7 0.18 47)",
+          "robot-metal": "oklch(0.72 0.015 250)",
+          "robot-dark": "oklch(0.26 0.02 250)",
+          "robot-accent": "oklch(0.84 0.16 176)",
+          "robot-glow": "oklch(0.88 0.17 176)",
+          "robot-grid": "oklch(0.55 0.02 250)"
+        }
+      },
+      "css": {
+        "@keyframes robocn-spin": { "to": { "transform": "rotate(360deg)" } },
+        "@keyframes robocn-spray": {
+          "from": { "transform": "translateX(0) scale(1)", "opacity": "0.85" },
+          "to": { "transform": "translateX(7px) scale(0.35)", "opacity": "0" }
+        },
+        "@keyframes robocn-spark": {
+          "from": { "transform": "translateX(0) scale(1)", "opacity": "1" },
+          "to": { "transform": "translateX(5px) scale(0.2)", "opacity": "0" }
+        },
+        "@keyframes robocn-pulse": { "50%": { "opacity": "0.45" } },
+        "@keyframes robocn-scan": {
+          "0%, 100%": { "transform": "rotate(-16deg)" },
+          "50%": { "transform": "rotate(16deg)" }
+        },
+        "@keyframes robocn-blink": {
+          "0%, 92%, 100%": { "transform": "scaleY(1)" },
+          "95%": { "transform": "scaleY(0.08)" }
+        },
+        ".robocn-spin": { "animation": "robocn-spin 1.1s linear infinite" },
+        ".robocn-spray": { "animation": "robocn-spray 0.8s linear infinite" },
+        ".robocn-spark": { "animation": "robocn-spark 0.5s ease-out infinite" },
+        ".robocn-pulse": { "animation": "robocn-pulse 1.1s ease-in-out infinite" },
+        ".robocn-scan": { "animation": "robocn-scan 1.6s ease-in-out infinite" },
+        ".robocn-blink": { "animation": "robocn-blink 5.4s ease-in-out infinite" },
+        "@media (prefers-reduced-motion: reduce)": {
+          ".robocn-spin, .robocn-spray, .robocn-spark, .robocn-pulse, .robocn-scan, .robocn-blink": {
+            "animation": "none"
+          }
+        }
+      }
+    },
+    {
+      "name": "robot-color",
+      "type": "registry:lib",
+      "title": "Robot color",
+      "description": "Resolves CSS variables and oklch() to something three.js can parse, so the WebGL robots share the theme with the SVG ones.",
+      "categories": ["robotics", "theming"],
+      "files": [
+        {
+          "path": "src/lib/robocn/color.ts",
+          "type": "registry:lib",
+          "target": "@lib/robocn/color.ts"
+        }
+      ]
+    },
+    {
+      "name": "use-robot-arm",
+      "type": "registry:hook",
+      "title": "useRobotArm",
+      "description": "Animated pose for a link chain: eases the tool tip toward a target or a scripted path, and stops rendering entirely once the pose settles.",
+      "categories": ["robotics", "hooks"],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json"
+      ],
+      "files": [
+        {
+          "path": "src/hooks/use-robot-arm.ts",
+          "type": "registry:hook",
+          "target": "@hooks/use-robot-arm.ts"
+        }
+      ]
+    },
+    {
+      "name": "use-pointer-target",
+      "type": "registry:hook",
+      "title": "usePointerTarget",
+      "description": "Pointer position mapped into a component's own world units, returning null when the pointer is away so a machine can fall back to its idle behaviour.",
+      "categories": ["robotics", "hooks"],
+      "registryDependencies": ["{REGISTRY_URL}/r/robot-kinematics.json"],
+      "files": [
+        {
+          "path": "src/hooks/use-pointer-target.ts",
+          "type": "registry:hook",
+          "target": "@hooks/use-pointer-target.ts"
+        }
+      ]
+    },
+    {
+      "name": "robot-arm",
+      "type": "registry:ui",
+      "title": "Robot arm",
+      "description": "An articulated industrial arm in SVG: any number of links, eight end effectors, four paint variants, four mounts, and pointer tracking.",
+      "categories": ["robotics", "svg"],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/use-robot-arm.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/robot-arm.tsx",
+          "type": "registry:ui",
+          "target": "@ui/robot-arm.tsx"
+        }
+      ]
+    },
+    {
+      "name": "scara-arm",
+      "type": "registry:ui",
+      "title": "SCARA arm",
+      "description": "A SCARA cell in plan view: two rotary links, a Z spindle, the swept area, and a shadow that reads as height.",
+      "categories": ["robotics", "svg"],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/use-robot-arm.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/scara-arm.tsx",
+          "type": "registry:ui",
+          "target": "@ui/scara-arm.tsx"
+        }
+      ]
+    },
+    {
+      "name": "delta-arm",
+      "type": "registry:ui",
+      "title": "Delta arm",
+      "description": "A parallel delta robot drawn in isometric, solved with real delta inverse kinematics rather than an approximation.",
+      "categories": ["robotics", "svg"],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/use-robot-arm.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/delta-arm.tsx",
+          "type": "registry:ui",
+          "target": "@ui/delta-arm.tsx"
+        }
+      ]
+    },
+    {
+      "name": "gantry-arm",
+      "type": "registry:ui",
+      "title": "Gantry arm",
+      "description": "A cartesian gantry: independent axes, the dog-leg path a real machine takes, and an optional plotter trail.",
+      "categories": ["robotics", "svg"],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/use-robot-arm.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/gantry-arm.tsx",
+          "type": "registry:ui",
+          "target": "@ui/gantry-arm.tsx"
+        }
+      ]
+    },
+    {
+      "name": "robot-face",
+      "type": "registry:ui",
+      "title": "Robot face",
+      "description": "A head whose eyes follow the pointer anywhere on the page, with moods for waiting, succeeded, thinking, failed and asleep.",
+      "categories": ["robotics", "svg"],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/robot-face.tsx",
+          "type": "registry:ui",
+          "target": "@ui/robot-face.tsx"
+        }
+      ]
+    },
+    {
+      "name": "robot-loader",
+      "type": "registry:ui",
+      "title": "Robot loader",
+      "description": "A pick-and-place cycle as a loading indicator: indeterminate on its own, or filling the out-tray in proportion to a value.",
+      "categories": ["robotics", "svg"],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/use-robot-arm.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/robot-loader.tsx",
+          "type": "registry:ui",
+          "target": "@ui/robot-loader.tsx"
+        }
+      ]
+    },
+    {
+      "name": "arm-controls",
+      "type": "registry:ui",
+      "title": "Arm controls",
+      "description": "A teach pendant: one slider per joint driving an arm in forward kinematics, plus the tool selector and live readouts.",
+      "categories": ["robotics", "controls"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "button",
+        "card",
+        "label",
+        "select",
+        "slider"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/arm-controls.tsx",
+          "type": "registry:ui",
+          "target": "@ui/arm-controls.tsx"
+        }
+      ]
+    },
+    {
+      "name": "robot-stage",
+      "type": "registry:ui",
+      "title": "Robot stage",
+      "description": "The room the 3D robots stand in: a configured react-three-fiber canvas with lights, a contact shadow, a grid floor and orbit controls.",
+      "categories": ["robotics", "3d"],
+      "dependencies": ["three", "@react-three/fiber", "@react-three/drei"],
+      "registryDependencies": ["{REGISTRY_URL}/r/robot-style.json"],
+      "files": [
+        {
+          "path": "src/components/ui/robot-stage.tsx",
+          "type": "registry:ui",
+          "target": "@ui/robot-stage.tsx"
+        }
+      ]
+    },
+    {
+      "name": "robot-arm-3d",
+      "type": "registry:ui",
+      "title": "Robot arm 3D",
+      "description": "The articulated arm as a procedural react-three-fiber rig: no model to load, and it shares its palette with the SVG components.",
+      "categories": ["robotics", "3d"],
+      "dependencies": ["three", "@react-three/fiber"],
+      "devDependencies": ["@types/three"],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-color.json",
+        "{REGISTRY_URL}/r/robot-stage.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/robot-arm-3d.tsx",
+          "type": "registry:ui",
+          "target": "@ui/robot-arm-3d.tsx"
+        }
+      ]
+    }
+  ]
+}
