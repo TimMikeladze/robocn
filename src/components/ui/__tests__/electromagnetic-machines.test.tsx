@@ -13,6 +13,8 @@ import { InductionMotor, inductionMotorGoal } from "@/components/ui/induction-mo
 import { StepperMotor, stepperMotorGoal } from "@/components/ui/stepper-motor"
 import { VoiceCoilActuator, voiceCoilGoal } from "@/components/ui/voice-coil-actuator"
 import { MagneticBearing, magneticBearingGoal } from "@/components/ui/magnetic-bearing"
+import { EddyCurrentBrake, eddyBrakeGoal } from "@/components/ui/eddy-current-brake"
+import { MaglevCarriage, maglevCarriageGoal } from "@/components/ui/maglev-carriage"
 
 afterEach(() => vi.restoreAllMocks())
 
@@ -172,6 +174,53 @@ describe("magnetic bearing", () => {
       .toBe(neutral.container.querySelector("[data-rotor]")?.getAttribute("transform"))
     for (const behavior of ["balance", "disturb", "static"] as const) {
       expect(Math.abs(magneticBearingGoal(behavior, Infinity))).toBeLessThanOrEqual(1)
+    }
+  })
+})
+
+describe("eddy-current brake", () => {
+  it("moves the magnet array over the disc without touching its rotation", () => {
+    const { container, rerender } = render(<EddyCurrentBrake engagement={0} discAngle={20} slots={6} />)
+    const disc = container.querySelector("[data-disc]")?.getAttribute("transform")
+    const magnet = container.querySelector("[data-magnet]")?.getAttribute("transform")
+    rerender(<EddyCurrentBrake engagement={1} discAngle={20} slots={6} />)
+    expect(container.querySelector("[data-magnet]")?.getAttribute("transform")).not.toBe(magnet)
+    expect(container.querySelector("[data-disc]")?.getAttribute("transform")).toBe(disc)
+    expect(container.querySelectorAll("[data-slot]")).toHaveLength(6)
+  })
+
+  it("neutralizes invalid engagement and bounds automatic overlap", () => {
+    const neutral = render(<EddyCurrentBrake engagement={0} />)
+    const invalid = render(<EddyCurrentBrake engagement={Infinity} />)
+    expect(invalid.container.querySelector("[data-magnet]")?.getAttribute("transform"))
+      .toBe(neutral.container.querySelector("[data-magnet]")?.getAttribute("transform"))
+    for (const behavior of ["brake", "feather", "static"] as const) {
+      expect(eddyBrakeGoal(behavior, Infinity)).toBeGreaterThanOrEqual(0)
+      expect(eddyBrakeGoal(behavior, Infinity)).toBeLessThanOrEqual(1)
+    }
+  })
+})
+
+describe("maglev carriage", () => {
+  it("moves the carriage along the stator while preserving its air gap", () => {
+    const { container, rerender } = render(<MaglevCarriage travel={0} payload="bin" />)
+    const gap = container.querySelector("[data-air-gap]")?.outerHTML
+    const carriage = container.querySelector("[data-carriage]")?.getAttribute("transform")
+    rerender(<MaglevCarriage travel={1} payload="bin" />)
+    expect(container.querySelector("[data-carriage]")?.getAttribute("transform")).not.toBe(carriage)
+    expect(container.querySelector("[data-air-gap]")?.outerHTML).toBe(gap)
+    expect(container.querySelector('[data-payload="bin"]')).toBeTruthy()
+  })
+
+  it("parks invalid travel at the centre and samples within the rail", () => {
+    const centre = render(<MaglevCarriage travel={0.5} />)
+    const invalid = render(<MaglevCarriage travel={Number.NaN} />)
+    expect(invalid.container.querySelector("[data-carriage]")?.getAttribute("transform"))
+      .toBe(centre.container.querySelector("[data-carriage]")?.getAttribute("transform"))
+    for (const behavior of ["shuttle", "hover", "static"] as const) {
+      const value = maglevCarriageGoal(behavior, Infinity)
+      expect(value).toBeGreaterThanOrEqual(0)
+      expect(value).toBeLessThanOrEqual(1)
     }
   })
 })
