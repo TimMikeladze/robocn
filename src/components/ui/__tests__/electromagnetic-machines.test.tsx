@@ -9,6 +9,8 @@ import {
   SolenoidValve,
   solenoidValveGoal,
 } from "@/components/ui/solenoid-valve"
+import { InductionMotor, inductionMotorGoal } from "@/components/ui/induction-motor"
+import { StepperMotor, stepperMotorGoal } from "@/components/ui/stepper-motor"
 
 afterEach(() => vi.restoreAllMocks())
 
@@ -73,5 +75,56 @@ describe("electromagnetic relay", () => {
         expect(electromagneticRelayGoal(behavior, clock)).toBeLessThanOrEqual(1)
       }
     }
+  })
+})
+
+describe("induction motor", () => {
+  it("rotates the cage rotor without moving the stator phases", () => {
+    const { container, rerender } = render(<InductionMotor angle={0} poles={4} />)
+    const stator = container.querySelector("[data-stator-phase]")?.outerHTML
+    const rotor = container.querySelector("[data-rotor]")?.getAttribute("transform")
+    rerender(<InductionMotor angle={90} poles={4} />)
+    expect(container.querySelector("[data-rotor]")?.getAttribute("transform")).not.toBe(rotor)
+    expect(container.querySelector("[data-stator-phase]")?.outerHTML).toBe(stator)
+    expect(container.querySelectorAll("[data-cage-bar]").length).toBeGreaterThan(5)
+  })
+
+  it("neutralizes invalid rotor angles and samples finite rotation", () => {
+    const neutral = render(<InductionMotor angle={0} />)
+    const invalid = render(<InductionMotor angle={Infinity} />)
+    expect(invalid.container.querySelector("[data-rotor]")?.getAttribute("transform"))
+      .toBe(neutral.container.querySelector("[data-rotor]")?.getAttribute("transform"))
+    for (const behavior of ["run", "slip", "static"] as const) {
+      expect(Number.isFinite(inductionMotorGoal(behavior, Infinity))).toBe(true)
+    }
+  })
+})
+
+describe("stepper motor", () => {
+  it("indexes the rotor to discrete teeth and exposes the active phases", () => {
+    const { container, rerender } = render(<StepperMotor step={0} steps={8} />)
+    const rotor = container.querySelector("[data-rotor]")?.getAttribute("transform")
+    rerender(<StepperMotor step={3} steps={8} />)
+    expect(container.querySelector("[data-rotor]")?.getAttribute("transform")).not.toBe(rotor)
+    expect(container.querySelectorAll("[data-phase]").length).toBeGreaterThanOrEqual(4)
+    expect(container.querySelector("[data-index]")?.getAttribute("data-step")).toBe("3")
+  })
+
+  it("wraps integer steps and uses step zero for invalid input", () => {
+    expect(render(<StepperMotor step={9} steps={8} />).container.querySelector("[data-index]")?.getAttribute("data-step")).toBe("1")
+    expect(render(<StepperMotor step={Number.NaN} steps={8} />).container.querySelector("[data-index]")?.getAttribute("data-step")).toBe("0")
+    for (const behavior of ["step", "run", "static"] as const) {
+      const value = stepperMotorGoal(behavior, Infinity, 8)
+      expect(Number.isInteger(value)).toBe(true)
+      expect(value).toBeGreaterThanOrEqual(0)
+      expect(value).toBeLessThan(8)
+    }
+  })
+
+  it("reports one discrete keyboard step", () => {
+    const onStepChange = vi.fn()
+    const { getByRole } = render(<StepperMotor step={2} steps={8} interactive onStepChange={onStepChange} />)
+    fireEvent.keyDown(getByRole("slider"), { key: "ArrowRight" })
+    expect(onStepChange).toHaveBeenLastCalledWith(3)
   })
 })
