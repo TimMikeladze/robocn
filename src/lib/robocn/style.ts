@@ -9,10 +9,12 @@
 
 import {
   add2,
+  convexHull2,
   normalize2,
   perpendicular2,
   scale2,
   sub2,
+  toRadians,
   type Vec2,
 } from "@/lib/robocn/kinematics"
 
@@ -244,4 +246,165 @@ export function capsulePath(a: Vec2, b: Vec2, radius: number) {
     `A ${r} ${r} 0 0 0 ${px(a1.x)} ${px(a1.y)}`,
     "Z",
   ].join(" ")
+}
+
+/* -------------------------------------------------------------------------- */
+/* views                                                                       */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Where the camera stands. Geometry never changes between views — a machine is
+ * modelled once and projected, so heading, guards and blades stay truthful from
+ * every angle instead of being redrawn per view.
+ */
+export type RobotView = "plan" | "front" | "profile" | "iso"
+
+/**
+ * World axes for a viewed machine: `x` starboard, `y` up, `z` toward the tail.
+ * Right-handed, and it lands nose-up in plan view, which is how the flat
+ * machines were already drawn.
+ */
+export const robotViews: Record<RobotView, { azimuth: number; elevation: number }> = {
+  plan: { azimuth: 0, elevation: 90 },
+  front: { azimuth: 180, elevation: 10 },
+  profile: { azimuth: 90, elevation: 10 },
+  iso: { azimuth: 145, elevation: 26 },
+}
+
+export interface RobotCamera {
+  view: RobotView
+  /** Screen position of a world point, in drawing units. */
+  project(x: number, y: number, z: number): Vec2
+  /** How far toward the camera a point sits. Bigger draws later. */
+  depth(x: number, y: number, z: number): number
+  /**
+   * SVG transform that lays a plan-view drawing onto the screen at height `y`,
+   * turned `spin` degrees clockwise. Anything flat — a guard ring, a propeller,
+   * the deck detail — is exact under it, so one piece of artwork serves every
+   * view. In plan the transform is the identity.
+   */
+  plane(y?: number, spin?: number): string
+  /**
+   * The same thing for artwork drawn in a *vertical* plane — an elevation
+   * drawing. The plane stands `offset` world units toward the viewer and is
+   * turned `spin` degrees about the vertical, in the same sense as `plane()`.
+   * Drawing coordinates are the elevation's own: x right, y down.
+   *
+   * `spin` 0 faces the `front` camera and 90 contains the fore-aft axis with
+   * the nose to the right, so a front-drawn machine uses `wall()` and a
+   * side-drawn one uses `wall(0, 90)`. In its own view the transform is the
+   * identity; seen edge-on it is singular and the artwork collapses to a line,
+   * which is what a wall seen from the side is.
+   */
+  wall(offset?: number, spin?: number): string
+  /** Screen rise per world unit of height. Zero looking straight down. */
+  lift: number
+  /** How much a horizontal disc keeps of its depth. One looking straight down. */
+  flatten: number
+}
+
+/**
+ * The vertical axis carries a constant unit scale, the same in every view, so
+ * that height comes out unforeshortened in the two elevations: `ce` is exactly
+ * 1 there and still exactly 0 in plan. That is what lets a machine drawn in
+ * elevation and a machine drawn in plan each keep its own drawing untouched in
+ * its own view while sharing one camera.
+ */
+const ELEVATION_COS = Math.cos(toRadians(robotViews.front.elevation))
+
+export function robotCamera(view: RobotView = "plan"): RobotCamera {
+  const { azimuth, elevation } = robotViews[view] ?? robotViews.plan
+  const a = toRadians(azimuth)
+  const e = toRadians(elevation)
+  const ca = Math.cos(a)
+  const sa = Math.sin(a)
+  const ce = Math.cos(e) / ELEVATION_COS
+  const se = Math.sin(e)
+  const flat = px(ca) === 1 && px(sa) === 0 && px(se) === 1
+  return {
+    view,
+    project: (x, y, z) => ({ x: x * ca - z * sa, y: x * sa * se - y * ce + z * ca * se }),
+    depth: (x, y, z) => x * ce * sa + y * se + z * ce * ca,
+    plane: (y = 0, spin = 0) => {
+      // Straight down is the identity, so plan-view drawings stay untouched.
+      const shift = px(-y * ce)
+      const parts = flat
+        ? (shift ? [`translate(0 ${shift})`] : [])
+        : [`matrix(${px(ca)} ${px(sa * se)} ${px(-sa)} ${px(ca * se)} 0 ${shift})`]
+      if (spin) parts.push(`rotate(${px(spin)})`)
+      return parts.join(" ")
+    },
+    wall: (offset = 0, spin = 0) => {
+      const turn = toRadians(spin)
+      const cs = Math.cos(turn)
+      const sn = Math.sin(turn)
+      const a11 = px(sn * sa - cs * ca)
+      const a12 = px(-se * (cs * sa + sn * ca))
+      const d = px(ce)
+      const dx = px(offset * (sn * ca + cs * sa))
+      const dy = px(offset * se * (sn * sa - cs * ca))
+      // The plane's own view: no transform at all, so the drawing is untouched.
+      if (a11 === 1 && a12 === 0 && d === 1 && !dx && !dy) return ""
+      return `matrix(${a11} ${a12} 0 ${d} ${dx} ${dy})`
+    },
+    lift: ce,
+    flatten: se,
+  }
+}
+
+/**
+ * The outline a solid part makes: its plan-view footprint drawn at two heights
+ * and wrapped in one hull. A height offset projects to a pure vertical screen
+ * offset, so this is exact for any convex footprint and collapses back to the
+ * footprint itself in plan view.
+ */
+export function extrudedPath(
+  footprint: readonly Vec2[],
+  camera: RobotCamera,
+  top: number,
+  bottom: number,
+  spin = 0,
+): string {
+  const turn = toRadians(spin)
+  const cs = Math.cos(turn)
+  const sn = Math.sin(turn)
+  const corners = footprint.flatMap((point) => {
+    // Footprint coordinates are plan-view: x starboard, y toward the tail.
+    const x = point.x * cs - point.y * sn
+    const z = point.x * sn + point.y * cs
+    return [camera.project(x, top, z), camera.project(x, bottom, z)]
+  })
+  const hull = convexHull2(corners)
+  if (hull.length < 3) return ""
+  return `${hull.map((p, i) => `${i ? "L" : "M"} ${px(p.x)} ${px(p.y)}`).join(" ")} Z`
+}
+
+/** A circle sampled as a ring of points, ready to extrude: the round parts. */
+export function circleFootprint(x: number, z: number, radius: number, steps = 12): Vec2[] {
+  return Array.from({ length: steps }, (_, index) => {
+    const angle = (index / steps) * Math.PI * 2
+    return { x: x + Math.cos(angle) * radius, y: z + Math.sin(angle) * radius }
+  })
+}
+
+/** A rounded rectangle sampled as a ring of points, ready to extrude. */
+export function roundedFootprint(
+  halfWidth: number,
+  halfLength: number,
+  radius: number,
+  steps = 5,
+): Vec2[] {
+  const r = Math.max(0, Math.min(radius, halfWidth, halfLength))
+  const corners: Vec2[] = [
+    { x: halfWidth - r, y: halfLength - r },
+    { x: -(halfWidth - r), y: halfLength - r },
+    { x: -(halfWidth - r), y: -(halfLength - r) },
+    { x: halfWidth - r, y: -(halfLength - r) },
+  ]
+  return corners.flatMap((corner, index) =>
+    Array.from({ length: steps }, (_, step) => {
+      const angle = ((index * 90 + (step * 90) / (steps - 1)) * Math.PI) / 180
+      return { x: corner.x + Math.cos(angle) * r, y: corner.y + Math.sin(angle) * r }
+    }),
+  )
 }

@@ -24,7 +24,7 @@
       "name": "robot-style",
       "type": "registry:lib",
       "title": "Robot style",
-      "description": "The shared visual language: size scale, paint variants, palette resolution from CSS variables, and the capsule limb geometry every machine is drawn from.",
+      "description": "The shared visual language: size scale, paint variants, palette resolution from CSS variables, the capsule limb geometry every machine is drawn from, and the orthographic camera that projects one model into plan, elevation and isometric views.",
       "categories": [
         "robotics",
         "theming"
@@ -188,6 +188,27 @@
       ]
     },
     {
+      "name": "use-robot-motion",
+      "type": "registry:hook",
+      "title": "useRobotMotion",
+      "description": "The clock every machine runs on and the handle you grab it by: a rate-limited scalar, pointer-capture dragging, and keyboard steps, all parked by a reduced-motion preference.",
+      "categories": [
+        "robotics",
+        "hooks"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json"
+      ],
+      "files": [
+        {
+          "path": "src/hooks/use-robot-motion.ts",
+          "type": "registry:hook",
+          "target": "@hooks/use-robot-motion.ts"
+        }
+      ]
+    },
+    {
       "name": "robot-arm",
       "type": "registry:ui",
       "title": "Robot arm",
@@ -200,7 +221,8 @@
         "{REGISTRY_URL}/r/robot-kinematics.json",
         "{REGISTRY_URL}/r/robot-style.json",
         "{REGISTRY_URL}/r/use-robot-arm.json",
-        "{REGISTRY_URL}/r/use-pointer-target.json"
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
       ],
       "files": [
         {
@@ -223,7 +245,8 @@
         "{REGISTRY_URL}/r/robot-kinematics.json",
         "{REGISTRY_URL}/r/robot-style.json",
         "{REGISTRY_URL}/r/use-robot-arm.json",
-        "{REGISTRY_URL}/r/use-pointer-target.json"
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
       ],
       "files": [
         {
@@ -246,7 +269,8 @@
         "{REGISTRY_URL}/r/robot-kinematics.json",
         "{REGISTRY_URL}/r/robot-style.json",
         "{REGISTRY_URL}/r/use-robot-arm.json",
-        "{REGISTRY_URL}/r/use-pointer-target.json"
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
       ],
       "files": [
         {
@@ -269,7 +293,8 @@
         "{REGISTRY_URL}/r/robot-kinematics.json",
         "{REGISTRY_URL}/r/robot-style.json",
         "{REGISTRY_URL}/r/use-robot-arm.json",
-        "{REGISTRY_URL}/r/use-pointer-target.json"
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
       ],
       "files": [
         {
@@ -291,7 +316,8 @@
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
         "{REGISTRY_URL}/r/robot-style.json",
-        "{REGISTRY_URL}/r/use-pointer-target.json"
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
       ],
       "files": [
         {
@@ -341,7 +367,8 @@
         "card",
         "label",
         "select",
-        "slider"
+        "slider",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
       ],
       "files": [
         {
@@ -418,7 +445,8 @@
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
-        "{REGISTRY_URL}/r/robot-kinematics.json"
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
       ],
       "files": [
         {
@@ -439,7 +467,8 @@
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
-        "{REGISTRY_URL}/r/robot-kinematics.json"
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
       ],
       "files": [
         {
@@ -459,7 +488,10 @@
         "robots"
       ],
       "registryDependencies": [
-        "{REGISTRY_URL}/r/robot-style.json"
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json"
       ],
       "files": [
         {
@@ -473,13 +505,17 @@
       "name": "robot-drone",
       "type": "registry:ui",
       "title": "Robot drone",
-      "description": "A four- or six-rotor drone with controlled heading and propeller angles, optional guards, and four paint variants.",
+      "description": "A four- or six-rotor drone drawn from four camera angles — plan, front, side and isometric — that flies its own path or takes a controlled heading, with spinning counter-rotating propellers, landing gear and optional guards.",
       "categories": [
         "robotics",
         "robots"
       ],
       "registryDependencies": [
-        "{REGISTRY_URL}/r/robot-style.json"
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/use-robot-arm.json"
       ],
       "files": [
         {
@@ -499,7 +535,10 @@
         "sensors"
       ],
       "registryDependencies": [
-        "{REGISTRY_URL}/r/robot-style.json"
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json"
       ],
       "files": [
         {
@@ -519,7 +558,8 @@
         "machines"
       ],
       "registryDependencies": [
-        "{REGISTRY_URL}/r/robot-style.json"
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
       ],
       "files": [
         {
@@ -539,7 +579,9 @@
         "actuators"
       ],
       "registryDependencies": [
-        "{REGISTRY_URL}/r/robot-style.json"
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json"
       ],
       "files": [
         {
@@ -559,13 +601,290 @@
         "actuators"
       ],
       "registryDependencies": [
-        "{REGISTRY_URL}/r/robot-style.json"
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json"
       ],
       "files": [
         {
           "path": "src/components/ui/servo-motor.tsx",
           "type": "registry:ui",
           "target": "@ui/servo-motor.tsx"
+        }
+      ]
+    },
+    {
+      "name": "utility-droid",
+      "type": "registry:ui",
+      "title": "Utility droid",
+      "description": "A configurable cylindrical utility droid with three dome shapes, two chassis layouts, rotating sensors, and deployable tools.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/utility-droid.tsx",
+          "type": "registry:ui",
+          "target": "@ui/utility-droid.tsx"
+        }
+      ]
+    },
+    {
+      "name": "orb-droid",
+      "type": "registry:ui",
+      "title": "Orb droid",
+      "description": "A rolling spherical companion with an independently stabilized head, segmented shell, pointer-tracking eye, and configurable antennas.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/orb-droid.tsx",
+          "type": "registry:ui",
+          "target": "@ui/orb-droid.tsx"
+        }
+      ]
+    },
+    {
+      "name": "protocol-droid",
+      "type": "registry:ui",
+      "title": "Protocol droid",
+      "description": "An articulate humanoid translator with formal, conversational, and cautious poses, four gestures, and optional exposed wiring.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/protocol-droid.tsx",
+          "type": "registry:ui",
+          "target": "@ui/protocol-droid.tsx"
+        }
+      ]
+    },
+    {
+      "name": "security-droid",
+      "type": "registry:ui",
+      "title": "Security droid",
+      "description": "A tall angular security humanoid with controlled guard and patrol poses, pointer-tracking optics, and an alert state.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/security-droid.tsx",
+          "type": "registry:ui",
+          "target": "@ui/security-droid.tsx"
+        }
+      ]
+    },
+    {
+      "name": "medical-droid",
+      "type": "registry:ui",
+      "title": "Medical droid",
+      "description": "A modular clinical assistant with a diagnostic display, controlled head angle, and five interchangeable instrument ends.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/medical-droid.tsx",
+          "type": "registry:ui",
+          "target": "@ui/medical-droid.tsx"
+        }
+      ]
+    },
+    {
+      "name": "infantry-droid",
+      "type": "registry:ui",
+      "title": "Infantry droid",
+      "description": "A mechanical infantry unit with light and heavy frames, four controlled poses, and interchangeable utility equipment.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/infantry-droid.tsx",
+          "type": "registry:ui",
+          "target": "@ui/infantry-droid.tsx"
+        }
+      ]
+    },
+    {
+      "name": "probe-droid",
+      "type": "registry:ui",
+      "title": "Probe droid",
+      "description": "A hovering survey probe with a steerable sensor mast, controlled altitude, active scan cone, and three to six appendages.",
+      "categories": [
+        "robotics",
+        "robots",
+        "sensors"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/probe-droid.tsx",
+          "type": "registry:ui",
+          "target": "@ui/probe-droid.tsx"
+        }
+      ]
+    },
+    {
+      "name": "courier-droid",
+      "type": "registry:ui",
+      "title": "Courier droid",
+      "description": "A compact floor-running courier with controlled heading, front-wheel steering, tread travel, antenna options, and cargo modules.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/courier-droid.tsx",
+          "type": "registry:ui",
+          "target": "@ui/courier-droid.tsx"
+        }
+      ]
+    },
+    {
+      "name": "casing-droid",
+      "type": "registry:ui",
+      "title": "Casing droid",
+      "description": "An armoured conical casing unit with a hemisphere skirt, rotating dome, elevating eyestalk, swappable manipulator, and emitter rod.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/casing-droid.tsx",
+          "type": "registry:ui",
+          "target": "@ui/casing-droid.tsx"
+        }
+      ]
+    },
+    {
+      "name": "astromech-droid",
+      "type": "registry:ui",
+      "title": "Astromech droid",
+      "description": "A barrel repair unit with tripod and bipod ride heights, a rotating dome and radar eye, an opening service panel, a rising periscope, and a holographic projection cone.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/astromech-droid.tsx",
+          "type": "registry:ui",
+          "target": "@ui/astromech-droid.tsx"
+        }
+      ]
+    },
+    {
+      "name": "attendant-droid",
+      "type": "registry:ui",
+      "title": "Attendant droid",
+      "description": "A plated humanoid attendant with a fixed faceplate and vocoder grille, four etiquette poses, and plating levels that strip back to the exposed loom.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/attendant-droid.tsx",
+          "type": "registry:ui",
+          "target": "@ui/attendant-droid.tsx"
+        }
+      ]
+    },
+    {
+      "name": "cyber-trooper",
+      "type": "registry:ui",
+      "title": "Cyber trooper",
+      "description": "A converted armoured humanoid with a blank slab head, optional side handles, three chest units, a bounded power meter, and four controlled poses.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/cyber-trooper.tsx",
+          "type": "registry:ui",
+          "target": "@ui/cyber-trooper.tsx"
         }
       ]
     },
@@ -600,7 +919,9 @@
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
-        "{REGISTRY_URL}/r/quadruped-kinematics.json"
+        "{REGISTRY_URL}/r/quadruped-kinematics.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json"
       ],
       "files": [
         {
@@ -641,7 +962,10 @@
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
-        "{REGISTRY_URL}/r/duck-kinematics.json"
+        "{REGISTRY_URL}/r/duck-kinematics.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json"
       ],
       "files": [
         {
@@ -684,13 +1008,178 @@
         "{REGISTRY_URL}/r/robot-kinematics.json",
         "{REGISTRY_URL}/r/robot-style.json",
         "{REGISTRY_URL}/r/stewart-kinematics.json",
-        "{REGISTRY_URL}/r/use-pointer-target.json"
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
       ],
       "files": [
         {
           "path": "src/components/ui/reachy-mini.tsx",
           "type": "registry:ui",
           "target": "@ui/reachy-mini.tsx"
+        }
+      ]
+    },
+    {
+      "name": "spine-kinematics",
+      "type": "registry:lib",
+      "title": "Spine kinematics",
+      "description": "A serpenoid travelling-wave body solver: joints, tangent angles, ground clearance, taper and steady turn, with every link the same length in every pose.",
+      "categories": [
+        "robotics",
+        "math"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json"
+      ],
+      "files": [
+        {
+          "path": "src/lib/robocn/spine.ts",
+          "type": "registry:lib",
+          "target": "@lib/robocn/spine.ts"
+        }
+      ]
+    },
+    {
+      "name": "hexapod-kinematics",
+      "type": "registry:lib",
+      "title": "Hexapod kinematics",
+      "description": "A radial many-legged walker solver: four to ten legs, tripod, wave and ripple gaits, plan-view feet, and knees solved in each leg's own vertical plane.",
+      "categories": [
+        "robotics",
+        "math"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json"
+      ],
+      "files": [
+        {
+          "path": "src/lib/robocn/hexapod.ts",
+          "type": "registry:lib",
+          "target": "@lib/robocn/hexapod.ts"
+        }
+      ]
+    },
+    {
+      "name": "robot-fish",
+      "type": "registry:ui",
+      "title": "Robot fish",
+      "description": "A swimming fish in profile: a tail-weighted body wave, solved hull outline, dorsal and pectoral fins, pointer steering, and a dart on click.",
+      "categories": [
+        "robotics",
+        "robots",
+        "animals"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/spine-kinematics.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/robot-fish.tsx",
+          "type": "registry:ui",
+          "target": "@ui/robot-fish.tsx"
+        }
+      ]
+    },
+    {
+      "name": "robot-snake",
+      "type": "registry:ui",
+      "title": "Robot snake",
+      "description": "A serpentine crawler in plan view: an even body wave, sidewinding lift with contact marks, a coil, a pointer-tracking head, and a strike on click.",
+      "categories": [
+        "robotics",
+        "robots",
+        "animals"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/spine-kinematics.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/robot-snake.tsx",
+          "type": "registry:ui",
+          "target": "@ui/robot-snake.tsx"
+        }
+      ]
+    },
+    {
+      "name": "robot-spider",
+      "type": "registry:ui",
+      "title": "Robot spider",
+      "description": "An eight-legged walker in plan view with solved knees, tripod, wave and ripple gaits, a body that turns to face the pointer, and a crouch on click.",
+      "categories": [
+        "robotics",
+        "robots",
+        "animals"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/hexapod-kinematics.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/robot-spider.tsx",
+          "type": "registry:ui",
+          "target": "@ui/robot-spider.tsx"
+        }
+      ]
+    },
+    {
+      "name": "robot-crab",
+      "type": "registry:ui",
+      "title": "Robot crab",
+      "description": "A sideways walker in plan view: the hexapod gait turned across the body, two hinged claws, pointer-tracking eyestalks, and a claw snap on click.",
+      "categories": [
+        "robotics",
+        "robots",
+        "animals"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/hexapod-kinematics.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/robot-crab.tsx",
+          "type": "registry:ui",
+          "target": "@ui/robot-crab.tsx"
+        }
+      ]
+    },
+    {
+      "name": "robot-bird",
+      "type": "registry:ui",
+      "title": "Robot bird",
+      "description": "A perching flyer in profile: three-link wings carrying fanned feather plates, a beat cycle, a spreading tail, and a takeoff on click.",
+      "categories": [
+        "robotics",
+        "robots",
+        "animals"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/robot-bird.tsx",
+          "type": "registry:ui",
+          "target": "@ui/robot-bird.tsx"
         }
       ]
     }
