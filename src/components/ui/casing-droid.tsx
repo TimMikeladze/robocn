@@ -205,12 +205,19 @@ function CasingDroid({
       {showGround && <ellipse cx={85} cy={205} rx={48} ry={6} fill={palette.dark} opacity={0.14} />}
 
       {offAxis && <g data-solids transform={`translate(${CENTRE} ${GROUND})`}>
-        <path
-          d={extrudedPath(
-            circleFootprint(0, 0, 42, 16), camera, -76, 0,
-          )}
-          {...shell}
-        />
+        {/* The skirt is a cone, so it is stacked bands rather than one drum. */}
+        {[0, 1, 2, 3].map(band => (
+          <path
+            key={band}
+            d={extrudedPath(
+              circleFootprint(0, 0, 42 - band * 3.8, 16),
+              camera,
+              (band + 1) * 19,
+              band * 19,
+            )}
+            {...shell}
+          />
+        ))}
         <path d={drum(27, 104, 76)} {...machined} />
         <path d={drum(21, 138, 104)} {...cast} />
         <path d={drum(24, 160, 138, swing * 3)} {...shell} />
