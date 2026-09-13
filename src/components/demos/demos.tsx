@@ -949,6 +949,7 @@ function MicroDuckDemo() {
 }
 
 function ReachyMiniDemo() {
+  const [view, setView] = React.useState<RobotView>("iso")
   const [drive, setDrive] = React.useState<ReachyBehavior | "manual">("idle")
   const [yaw, setYaw] = React.useState(14)
   const [pitch, setPitch] = React.useState(-6)
@@ -960,6 +961,7 @@ function ReachyMiniDemo() {
   const solution = solveStewart({ yaw, pitch, roll, heave }, { ...defaultStewartGeometry, baseRadius: 24, platformRadius: 18, height: 30, travel })
   return (
     <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
       <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
       <Segmented label="linkage" value={linkage} options={["on", "off"] as const} onChange={setLinkage} />
       <Segmented label="drive" value={drive} options={["idle", "scan", "nod", "manual"] as const} onChange={setDrive} />
@@ -977,13 +979,14 @@ function ReachyMiniDemo() {
       ]} />
       <p className="text-[11px] text-muted-foreground">Six leg lengths come from real Stewart platform IK. Lower the travel until a rod turns accent-coloured and the fault lamp lights.</p>
     </>}>
-      <ReachyMini size={320} geometry={{ travel }} showLinkage={linkage === "on"} variant={variant} label="MINI / 13"
+      <ReachyMini view={view} size={320} geometry={{ travel }} showLinkage={linkage === "on"} variant={variant} label="MINI / 13"
         {...(drive === "manual" ? { yaw, pitch, roll, heave, track: false } : { behavior: drive })} />
     </Bench>
   )
 }
 
 function UtilityDroidDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
   const [series, setSeries] = React.useState<UtilityDroidSeries>("navigator")
   const [tool, setTool] = React.useState<UtilityDroidTool>("scanner")
   const [drive, setDrive] = React.useState<UtilityDroidBehavior | "manual">("work")
@@ -992,6 +995,7 @@ function UtilityDroidDemo() {
   const [variant, setVariant] = React.useState<RobotVariant>("solid")
   return (
     <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
       <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
       <Segmented label="series" value={series} options={["workshop", "navigator", "rescue"] as const} onChange={setSeries} />
       <Segmented label="tool" value={tool} options={["none", "interface", "gripper", "scanner"] as const} onChange={setTool} />
@@ -1001,7 +1005,7 @@ function UtilityDroidDemo() {
         <NumberControl label="extend" value={extension} min={0} max={1} step={0.01} onChange={setExtension} format={value => `${Math.round(value * 100)}%`} />
       </> : <Hint>Bring the pointer over it and the dome turns to you.</Hint>}
     </>}>
-      <UtilityDroid size={330} series={series} tool={tool} variant={variant} label="UTILITY / 14"
+      <UtilityDroid view={view} size={330} series={series} tool={tool} variant={variant} label="UTILITY / 14"
         {...(drive === "manual" ? { headAngle, toolExtension: extension, behavior: "static" as const } : { behavior: drive })} />
     </Bench>
   )
@@ -1175,6 +1179,7 @@ function CourierDroidDemo() {
 }
 
 function CasingDroidDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
   const [skirt, setSkirt] = React.useState<CasingDroidSkirt>("banded")
   const [dome, setDome] = React.useState<CasingDroidDome>("round")
   const [collar, setCollar] = React.useState<CasingDroidCollar>("slats")
@@ -1191,6 +1196,7 @@ function CasingDroidDemo() {
   const [variant, setVariant] = React.useState<RobotVariant>("solid")
   return (
     <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
       <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
       <Segmented label="skirt" value={skirt} options={["banded", "smooth", "ribbed"] as const} onChange={setSkirt} />
       <Segmented label="dome" value={dome} options={["round", "flat", "faceted"] as const} onChange={setDome} />
@@ -1208,7 +1214,7 @@ function CasingDroidDemo() {
         <NumberControl label="eye" value={eyeElevation} min={-28} max={28} onChange={setEyeElevation} format={value => `${value}°`} />
       </> : <Hint>Bring the pointer over it and the eyestalk comes round to you.</Hint>}
     </>}>
-      <CasingDroid size={330} skirt={skirt} dome={dome} collar={collar} lamps={lamps} manipulator={manipulator}
+      <CasingDroid view={view} size={330} skirt={skirt} dome={dome} collar={collar} lamps={lamps} manipulator={manipulator}
         emitter={emitter} hemisphereRows={rows} hemisphereColumns={columns} neckRings={neckRings}
         stalkLength={stalkLength} variant={variant} label="CASING / 22"
         {...(drive === "manual" ? { domeAngle, eyeElevation, behavior: "static" as const } : { behavior: drive })} />
@@ -1216,6 +1222,7 @@ function CasingDroidDemo() {
   )
 }
 function AstromechDroidDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
   const [legMode, setLegMode] = React.useState<"tripod" | "bipod">("tripod")
   const [dome, setDome] = React.useState<AstromechDome>("round")
   const [livery, setLivery] = React.useState<AstromechLivery>("banded")
@@ -1229,6 +1236,7 @@ function AstromechDroidDemo() {
   const [variant, setVariant] = React.useState<RobotVariant>("solid")
   return (
     <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
       <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
       <Segmented label="chassis" value={legMode} options={["tripod", "bipod"] as const} onChange={setLegMode} />
       <Segmented label="dome" value={dome} options={["round", "flat", "faceted"] as const} onChange={setDome} />
@@ -1243,7 +1251,7 @@ function AstromechDroidDemo() {
         <NumberControl label="holo" value={holo} min={0} max={1} step={0.01} onChange={setHolo} format={value => `${Math.round(value * 100)}%`} />
       </> : <Hint>The dome comes round to the pointer; the work cycle opens the panel on its own.</Hint>}
     </>}>
-      <AstromechDroid size={330} legMode={legMode} dome={dome} livery={livery} feet={feet} antenna={antenna}
+      <AstromechDroid view={view} size={330} legMode={legMode} dome={dome} livery={livery} feet={feet} antenna={antenna}
         ports={ports} tool={tool} variant={variant} label="ASTROMECH / 23"
         {...(drive === "manual" ? { domeAngle, holo, panel: true, behavior: "static" as const } : { behavior: drive })} />
     </Bench>

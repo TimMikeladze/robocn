@@ -618,7 +618,7 @@
       "name": "utility-droid",
       "type": "registry:ui",
       "title": "Utility droid",
-      "description": "A configurable cylindrical utility droid with three dome shapes, two chassis layouts, rotating sensors, and deployable tools.",
+      "description": "A configurable cylindrical utility droid with three dome shapes, two chassis layouts, rotating sensors, and deployable tools. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
         "robots"
@@ -801,7 +801,7 @@
       "name": "casing-droid",
       "type": "registry:ui",
       "title": "Casing droid",
-      "description": "An armoured conical casing unit with a hemisphere skirt, rotating dome, elevating eyestalk, swappable manipulator, and emitter rod.",
+      "description": "An armoured conical casing unit with a hemisphere skirt, rotating dome, elevating eyestalk, swappable manipulator, and emitter rod. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
         "robots"
@@ -824,7 +824,7 @@
       "name": "astromech-droid",
       "type": "registry:ui",
       "title": "Astromech droid",
-      "description": "A barrel repair unit with tripod and bipod ride heights, a rotating dome and radar eye, an opening service panel, a rising periscope, and a holographic projection cone.",
+      "description": "A barrel repair unit with tripod and bipod ride heights, a rotating dome and radar eye, an opening service panel, a rising periscope, and a holographic projection cone. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
         "robots"
@@ -1000,7 +1000,7 @@
       "name": "reachy-mini",
       "type": "registry:ui",
       "title": "Reachy mini",
-      "description": "A companion robot head on a solved six-rod parallel platform, with pointer-tracking eyes, sprung antennas, and a linkage fault lamp.",
+      "description": "A companion robot head on a solved six-rod parallel platform, with pointer-tracking eyes, sprung antennas, and a linkage fault lamp. Drawn from any of four camera angles, including its own axonometric.",
       "categories": [
         "robotics",
         "robots"

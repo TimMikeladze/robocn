@@ -7,7 +7,6 @@ import { useRobotClock } from "@/hooks/use-robot-motion"
 import { clamp, toRadians, type Vec2 } from "@/lib/robocn/kinematics"
 import {
   capsulePath,
-  circleFootprint,
   extrudedPath,
   px,
   resolveRobotPalette,

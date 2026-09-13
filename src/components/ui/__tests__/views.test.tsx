@@ -81,10 +81,10 @@ const machines: Record<string, (view?: RobotView) => React.ReactElement> = {
   "infantry-droid": (view) => <InfantryDroid animate={false} view={view} />,
   "attendant-droid": (view) => <AttendantDroid animate={false} view={view} />,
   "cyber-trooper": (view) => <CyberTrooper animate={false} view={view} />,
-  "utility-droid": () => <UtilityDroid animate={false} />,
-  "astromech-droid": () => <AstromechDroid animate={false} />,
-  "casing-droid": () => <CasingDroid animate={false} />,
-  "reachy-mini": () => <ReachyMini animate={false} />,
+  "utility-droid": (view) => <UtilityDroid animate={false} view={view} />,
+  "astromech-droid": (view) => <AstromechDroid animate={false} view={view} />,
+  "casing-droid": (view) => <CasingDroid animate={false} view={view} />,
+  "reachy-mini": (view) => <ReachyMini animate={false} view={view} />,
 }
 
 /**
@@ -119,6 +119,10 @@ const natives: Partial<Record<keyof typeof machines, RobotView>> = {
   "infantry-droid": "front",
   "attendant-droid": "front",
   "cyber-trooper": "front",
+  "utility-droid": "front",
+  "astromech-droid": "front",
+  "casing-droid": "front",
+  "reachy-mini": "iso",
 }
 
 const tippedFrom = (native: RobotView): RobotView =>

@@ -159,6 +159,7 @@ export const docs: DocEntry[] = [
 
 <UtilityDroid series="navigator" dome="faceted" legMode="three" headAngle={32} tool="scanner" toolExtension={0.8} />`,
     props: [
+      view("front", "droid"),
       { name: "series", type: '"workshop" | "navigator" | "rescue"', default: '"workshop"', description: "Changes the functional front-panel module." },
       { name: "dome", type: '"round" | "flat" | "faceted"', default: '"faceted"', description: "Selects the upper sensor-shell silhouette." },
       { name: "legMode", type: '"two" | "three"', default: '"three"', description: "Uses two side legs or adds a central stabilizer." },
@@ -171,7 +172,7 @@ export const docs: DocEntry[] = [
       { name: "interactive", type: "boolean", default: "true", description: "The dome is the droid's attention: it turns to the pointer while it is over the drawing, and goes back to work when it leaves." },
       ...droidForm,
     ],
-    notes: ["The dome and the tool are controlled when you supply them and self-running when you do not — the usual rule. Pointer tracking beats the behaviour while the pointer is over it.", "All three series share one chassis API; the series changes panel geometry rather than character branding."],
+    notes: ["Front elevation is the drawing it always had. The barrel is round in plan and the legs are set round it rather than side by side, which is the thing one elevation could not say.", "The dome and the tool are controlled when you supply them and self-running when you do not — the usual rule. Pointer tracking beats the behaviour while the pointer is over it.", "All three series share one chassis API; the series changes panel geometry rather than character branding."],
   },
   {
     slug: "orb-droid", item: "orb-droid", title: "Orb droid", group: "Robots",
@@ -325,6 +326,7 @@ export const docs: DocEntry[] = [
 
 <CasingDroid domeAngle={40} eyeElevation={-12} manipulator="clamp" emitter lamps />`,
     props: [
+      view("front", "droid"),
       { name: "skirt", type: '"banded" | "smooth" | "ribbed"', default: '"banded"', description: "Lower casing treatment; the flare geometry is shared." },
       { name: "hemisphereRows", type: "number", default: "3", description: "Rows of skirt hemispheres, clamped to 2–4." },
       { name: "hemisphereColumns", type: "number", default: "4", description: "Hemispheres across each row, clamped to 3–6; the studs shrink to fit." },
@@ -343,7 +345,7 @@ export const docs: DocEntry[] = [
       { name: "interactive", type: "boolean", default: "true", description: "The eyestalk follows the pointer — which is, after all, the entire point of this machine." },
       ...droidForm,
     ],
-    notes: ["Heading is cyclic: 360 renders identically to 0 rather than sticking at a limit.", "An original armoured-casing archetype; the emitter is a ringed rod with no projectile effect."],
+    notes: ["Front elevation is the drawing it always had. The casing is a cone of revolution with a dome on top, and the manipulator and emitter reach forward out of the shoulders rather than sideways across the picture.", "Heading is cyclic: 360 renders identically to 0 rather than sticking at a limit.", "An original armoured-casing archetype; the emitter is a ringed rod with no projectile effect."],
   },
   {
     slug: "astromech-droid", item: "astromech-droid", title: "Astromech droid", group: "Robots",
@@ -353,6 +355,7 @@ export const docs: DocEntry[] = [
 
 <AstromechDroid legMode="tripod" domeAngle={55} panel tool="welder" holo={0.8} lean={-6} />`,
     props: [
+      view("front", "droid"),
       { name: "legMode", type: '"tripod" | "bipod"', default: '"tripod"', description: "Tripod drops the centre foot and squats; bipod retracts it and stands tall." },
       { name: "dome", type: '"round" | "flat" | "faceted"', default: '"round"', description: "Upper sensor-shell silhouette, drawn into the same envelope." },
       { name: "livery", type: '"plain" | "banded" | "paneled"', default: '"banded"', description: "How much panel detailing the body carries." },
@@ -370,7 +373,7 @@ export const docs: DocEntry[] = [
       { name: "interactive", type: "boolean", default: "true", description: "The dome turns to the pointer while it is over the drawing, and goes back to work when it leaves." },
       ...droidForm,
     ],
-    notes: ["Every value is controlled when you supply it and self-running when you do not; pointer tracking beats the behaviour while the pointer is over it.", "Ride height follows the chassis mode, so legMode changes the body transform as well as the feet.", "The periscope is dome-mounted and does not require the service panel to be open."],
+    notes: ["Front elevation is the drawing it always had. The barrel is a drum, the centre foot stands behind the other two rather than between them, and the dome sits on top of both \u2014 none of which is in a single view.", "Every value is controlled when you supply it and self-running when you do not; pointer tracking beats the behaviour while the pointer is over it.", "Ride height follows the chassis mode, so legMode changes the body transform as well as the feet.", "The periscope is dome-mounted and does not require the service panel to be open."],
   },
   {
     slug: "attendant-droid", item: "attendant-droid", title: "Attendant droid", group: "Robots",
@@ -486,6 +489,7 @@ pose.head // pivot, angle, beak opening in degrees`,
 // Any axis you supply is yours; the rest keep breathing.
 <ReachyMini yaw={18} pitch={-8} antennaLeft={22} antennaRight={-10} />`,
     props: [
+      view("iso", "robot"),
       { name: "behavior", type: '"idle" | "scan" | "nod" | "static"', default: '"idle"', description: "What the platform does with any axis you have not supplied: breathe, sweep the room, or nod." },
       { name: "sway / heave / surge", type: "number", description: "Head translation in world units: right, up, and toward the viewer. Clamped to ±10, ±8, ±10. Omit and the behavior drives it." },
       { name: "roll / pitch / yaw", type: "number", description: "Head rotation in degrees, clamped to ±24, ±24, ±30. Positive pitch tips the face down. Omit and the head turns toward the pointer instead." },
@@ -503,7 +507,7 @@ pose.head // pivot, angle, beak opening in degrees`,
       { name: "label", type: "string", description: "Caption under the robot." },
       ...form.slice(0, 2), ...palette,
     ],
-    notes: ["Every frame of the idle, the scan and the nod goes through the same inverse kinematics as a pose you supply: the motion is six changing leg lengths, not a transform on the picture.", "The linkage is solved: six leg lengths from real Stewart platform inverse kinematics, projected isometrically and depth-sorted. The head shell is an illustration that takes roll from the pose and shifts its face with yaw and pitch.", "A pose that asks a leg for more than its travel lights the fault lamp and paints that rod in the accent colour. The component clamps its own inputs, so faults come from tightening geometry.travel.", "Eye tracking is pointer-driven through use-pointer-target; pass look to control it, or track={false} to hold the gaze still."],
+    notes: ["The whole robot is modelled in world units and the Stewart solve is already three-dimensional, so a view is only a change of projection. `iso` is its own axonometric; the other three are the shared orthographic cameras.", "Every frame of the idle, the scan and the nod goes through the same inverse kinematics as a pose you supply: the motion is six changing leg lengths, not a transform on the picture.", "The linkage is solved: six leg lengths from real Stewart platform inverse kinematics, projected isometrically and depth-sorted. The head shell is an illustration that takes roll from the pose and shifts its face with yaw and pitch.", "A pose that asks a leg for more than its travel lights the fault lamp and paints that rod in the accent colour. The component clamps its own inputs, so faults come from tightening geometry.travel.", "Eye tracking is pointer-driven through use-pointer-target; pass look to control it, or track={false} to hold the gaze still."],
   },
   {
     slug: "stewart-kinematics", item: "stewart-kinematics", title: "Stewart kinematics", group: "Foundations",
