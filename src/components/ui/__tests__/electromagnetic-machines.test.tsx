@@ -15,6 +15,8 @@ import { VoiceCoilActuator, voiceCoilGoal } from "@/components/ui/voice-coil-act
 import { MagneticBearing, magneticBearingGoal } from "@/components/ui/magnetic-bearing"
 import { EddyCurrentBrake, eddyBrakeGoal } from "@/components/ui/eddy-current-brake"
 import { MaglevCarriage, maglevCarriageGoal } from "@/components/ui/maglev-carriage"
+import { MagneticGripper, magneticGripperGoal } from "@/components/ui/magnetic-gripper"
+import { InductiveSensor, inductiveSensorGoal } from "@/components/ui/inductive-sensor"
 
 afterEach(() => vi.restoreAllMocks())
 
@@ -219,6 +221,53 @@ describe("maglev carriage", () => {
       .toBe(centre.container.querySelector("[data-carriage]")?.getAttribute("transform"))
     for (const behavior of ["shuttle", "hover", "static"] as const) {
       const value = maglevCarriageGoal(behavior, Infinity)
+      expect(value).toBeGreaterThanOrEqual(0)
+      expect(value).toBeLessThanOrEqual(1)
+    }
+  })
+})
+
+describe("magnetic gripper", () => {
+  it("captures and lifts a steel workpiece as field strength rises", () => {
+    const { container, rerender } = render(<MagneticGripper strength={0} workpiece="plate" />)
+    const plate = container.querySelector("[data-workpiece]")?.getAttribute("transform")
+    rerender(<MagneticGripper strength={1} workpiece="plate" />)
+    expect(container.querySelector("[data-workpiece]")?.getAttribute("transform")).not.toBe(plate)
+    expect(container.querySelectorAll("[data-pole]")).toHaveLength(2)
+    expect(container.querySelector("[data-field]")?.getAttribute("data-active")).toBe("true")
+  })
+
+  it("does not invent a workpiece and neutralizes invalid strength", () => {
+    expect(render(<MagneticGripper strength={1} workpiece="none" />).container.querySelector("[data-workpiece]")).toBeNull()
+    const neutral = render(<MagneticGripper strength={0} />)
+    const invalid = render(<MagneticGripper strength={Infinity} />)
+    expect(invalid.container.querySelector("[data-field]")?.getAttribute("data-strength"))
+      .toBe(neutral.container.querySelector("[data-field]")?.getAttribute("data-strength"))
+    for (const behavior of ["pick", "hold", "static"] as const) {
+      expect(magneticGripperGoal(behavior, Infinity)).toBeGreaterThanOrEqual(0)
+      expect(magneticGripperGoal(behavior, Infinity)).toBeLessThanOrEqual(1)
+    }
+  })
+})
+
+describe("inductive sensor", () => {
+  it("moves the metal target and reports whether it is inside the selected range", () => {
+    const { container, rerender } = render(<InductiveSensor distance={1} range={0.4} target="plate" />)
+    const far = container.querySelector("[data-target]")?.getAttribute("transform")
+    expect(container.querySelector("[data-output]")?.getAttribute("data-detected")).toBe("false")
+    rerender(<InductiveSensor distance={0.1} range={0.4} target="plate" />)
+    expect(container.querySelector("[data-target]")?.getAttribute("transform")).not.toBe(far)
+    expect(container.querySelector("[data-output]")?.getAttribute("data-detected")).toBe("true")
+  })
+
+  it("never detects a missing target and treats invalid distance as far", () => {
+    expect(render(<InductiveSensor distance={0} target="none" />).container.querySelector("[data-output]")?.getAttribute("data-detected")).toBe("false")
+    const far = render(<InductiveSensor distance={1} />)
+    const invalid = render(<InductiveSensor distance={Number.NaN} />)
+    expect(invalid.container.querySelector("[data-target]")?.getAttribute("transform"))
+      .toBe(far.container.querySelector("[data-target]")?.getAttribute("transform"))
+    for (const behavior of ["approach", "inspect", "static"] as const) {
+      const value = inductiveSensorGoal(behavior, Infinity)
       expect(value).toBeGreaterThanOrEqual(0)
       expect(value).toBeLessThanOrEqual(1)
     }

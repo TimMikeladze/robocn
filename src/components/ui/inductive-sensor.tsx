@@ -1,0 +1,31 @@
+"use client"
+
+import * as React from "react"
+import { arrowStep, useRobotDrag, useRobotScalar } from "@/hooks/use-robot-motion"
+import { clamp } from "@/lib/robocn/kinematics"
+import { aboutPoint, px, resolveRobotPalette, resolveRobotSize, robotCamera, robotSurface, type RobotPaletteProps, type RobotSize, type RobotVariant, type RobotView } from "@/lib/robocn/style"
+import { cn } from "@/lib/utils"
+
+export type InductiveSensorBehavior = "approach" | "inspect" | "static"
+export type InductiveTarget = "plate" | "tooth" | "none"
+export interface InductiveSensorProps extends Omit<React.ComponentProps<"svg">, "color">, RobotPaletteProps { distance?: number; onDistanceChange?: (distance: number) => void; target?: InductiveTarget; range?: number; behavior?: InductiveSensorBehavior; speed?: number; phase?: number; paused?: boolean; animate?: boolean; interactive?: boolean; showField?: boolean; label?: string; view?: RobotView; size?: RobotSize | number; variant?: RobotVariant }
+const names: Record<RobotView, string> = { plan: "plan view", front: "front elevation", profile: "side elevation", iso: "isometric view" }
+
+function InductiveSensor({ distance, onDistanceChange, target = "plate", range = 0.35, behavior = "approach", speed = 0.35, phase = 0, paused = false, animate = true, interactive = false, showField = true, label, view = "profile", size = "md", variant = "solid", color, accent, metal, dark, glow, grid, palette: paletteOverride, className, style, role, tabIndex, onKeyDown, onBlur, "aria-label": ariaLabel, ...props }: InductiveSensorProps) {
+  const palette = resolveRobotPalette({ color, accent, metal, dark, glow, grid, palette: paletteOverride }); const width = resolveRobotSize(size); const ref = React.useRef<SVGSVGElement>(null); const [held, setHeld] = React.useState<number | null>(null); const controlled = distance !== undefined
+  const hold = controlled ? (Number.isFinite(distance) ? clamp(distance, 0, 1) : 1) : held; const goal = React.useCallback((clock: number) => inductiveSensorGoal(behavior, clock), [behavior]); const motion = useRobotScalar(goal, { hold, rate: 2, speed, phase, paused, animate: animate && !controlled && behavior !== "static" }); const value = clamp(motion.value, 0, 1); const threshold = Number.isFinite(range) ? clamp(range, 0.1, 1) : 0.35; const detected = target !== "none" && value <= threshold
+  const apply = React.useCallback((next: number) => { const bounded = Math.round(clamp(next, 0, 1) * 100) / 100; setHeld(bounded); onDistanceChange?.(bounded) }, [onDistanceChange]); const dragging = useRobotDrag(ref, { enabled: interactive, onDrag: React.useCallback((unit) => apply((unit.x - 0.35) / 0.55), [apply]), onDragEnd: React.useCallback(() => setHeld(null), []) })
+  const shell = robotSurface("shell", variant, palette); const machined = robotSurface("metal", variant, palette); const cast = robotSurface("dark", variant, palette); const face = aboutPoint(robotCamera(view).wall(0, 90), 120, 92, view === "plan" ? 0.94 : 1); const targetX = 146 + value * 58
+  return <svg ref={ref} role={role ?? (interactive ? "slider" : "img")} aria-label={ariaLabel ?? `Inductive sensor, target ${Math.round(value * 100)} percent away, ${detected ? "detected" : "clear"}, ${names[view]}`} aria-valuemin={interactive ? 0 : undefined} aria-valuemax={interactive ? 1 : undefined} aria-valuenow={interactive ? px(value) : undefined} aria-valuetext={interactive ? `${Math.round(value * 100)} percent distance, ${detected ? "detected" : "clear"}` : undefined} tabIndex={tabIndex ?? (interactive ? 0 : undefined)} onKeyDown={(event) => { onKeyDown?.(event); if (!interactive || event.defaultPrevented) return; const delta = arrowStep(event.key, 0.05, 0.15); if (delta) apply(value + delta); else if (event.key === "Home") apply(0); else if (event.key === "End") apply(1); else return; event.preventDefault() }} onBlur={(event) => { onBlur?.(event); if (!dragging) setHeld(null) }} viewBox="0 0 240 180" width={width} height={px(width * 0.75)} className={cn("max-w-full select-none", interactive && "touch-none cursor-grab focus-visible:outline-2", dragging && "cursor-grabbing", className)} style={{ color: palette.foreground, ...style }} {...props}>
+    {variant === "blueprint" && <path d="M 12 92 H 228 M 120 15 V 160" stroke={palette.grid} strokeWidth={0.6} strokeDasharray="3 4" />}
+    <g data-view={view} transform={face || undefined}>
+      <path d="M 23 65 H 120 L 145 76 V 108 L 120 119 H 23 Z" {...shell} /><rect x={33} y={55} width={17} height={74} rx={4} {...cast} /><path d="M 44 61 V 123 M 55 66 V 118 M 66 66 V 118 M 77 66 V 118" stroke={palette.metal} strokeWidth={2.5} />
+      <g data-coil><path d="M 104 74 H 135 M 101 80 H 140 M 100 86 H 142 M 100 98 H 142 M 101 104 H 140 M 104 110 H 135" stroke={palette.accent} strokeWidth={2.5} /></g><circle cx={35} cy={78} r={5} fill={detected ? palette.accent : palette.dark} /><path d="M 23 76 H 10 M 23 108 H 10" stroke={palette.metal} strokeWidth={3} />
+      {showField && <g data-field fill="none" stroke={palette.glow} opacity={detected ? 0.8 : 0.35}><path d="M 143 72 Q 177 92 143 112" /><path d="M 143 64 Q 196 92 143 120" /><path d="M 143 56 Q 215 92 143 128" /></g>}
+      {target !== "none" && <g data-target={target} transform={`translate(${px(targetX - 146)} 0)`}>{target === "plate" ? <rect x={146} y={46} width={18} height={92} rx={3} {...machined} /> : <path d="M 146 68 H 173 V 79 H 161 V 105 H 173 V 116 H 146 Z" {...machined} />}</g>}
+      <g data-output data-detected={detected}><rect x={71} y={132} width={76} height={18} rx={4} {...cast} /><rect x={76} y={137} width={px(66 * (1 - value))} height={8} rx={2} fill={detected ? palette.accent : palette.metal} /></g>
+    </g>{label && <text x={120} y={175} textAnchor="middle" fontFamily="ui-monospace, monospace" fontSize={6} fill={palette.foreground}>{label}</text>}
+  </svg>
+}
+export function inductiveSensorGoal(behavior: InductiveSensorBehavior, clock: number) { if (behavior === "static") return 1; const t = Number.isFinite(clock) ? ((clock % 1) + 1) % 1 : 0; return behavior === "inspect" ? 0.35 + Math.sin(t * Math.PI * 2) * 0.12 : 0.5 + 0.5 * Math.cos(t * Math.PI * 2) }
+export { InductiveSensor }
