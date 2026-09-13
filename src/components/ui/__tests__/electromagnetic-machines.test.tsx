@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/solenoid-valve"
 import { InductionMotor, inductionMotorGoal } from "@/components/ui/induction-motor"
 import { StepperMotor, stepperMotorGoal } from "@/components/ui/stepper-motor"
+import { VoiceCoilActuator, voiceCoilGoal } from "@/components/ui/voice-coil-actuator"
+import { MagneticBearing, magneticBearingGoal } from "@/components/ui/magnetic-bearing"
 
 afterEach(() => vi.restoreAllMocks())
 
@@ -126,5 +128,50 @@ describe("stepper motor", () => {
     const { getByRole } = render(<StepperMotor step={2} steps={8} interactive onStepChange={onStepChange} />)
     fireEvent.keyDown(getByRole("slider"), { key: "ArrowRight" })
     expect(onStepChange).toHaveBeenLastCalledWith(3)
+  })
+})
+
+describe("voice-coil actuator", () => {
+  it("moves its coil and carriage bidirectionally through a fixed gap", () => {
+    const { container, rerender } = render(<VoiceCoilActuator position={-1} />)
+    const gap = container.querySelector("[data-gap]")?.outerHTML
+    const carriage = container.querySelector("[data-carriage]")?.getAttribute("transform")
+    rerender(<VoiceCoilActuator position={1} />)
+    expect(container.querySelector("[data-carriage]")?.getAttribute("transform")).not.toBe(carriage)
+    expect(container.querySelector("[data-gap]")?.outerHTML).toBe(gap)
+    expect(container.querySelector("[data-coil]")?.getAttribute("transform"))
+      .toBe(container.querySelector("[data-carriage]")?.getAttribute("transform"))
+  })
+
+  it("neutralizes invalid position and samples within bipolar travel", () => {
+    const neutral = render(<VoiceCoilActuator position={0} />)
+    const invalid = render(<VoiceCoilActuator position={Infinity} />)
+    expect(invalid.container.querySelector("[data-carriage]")?.getAttribute("transform"))
+      .toBe(neutral.container.querySelector("[data-carriage]")?.getAttribute("transform"))
+    for (const behavior of ["oscillate", "pulse", "static"] as const) {
+      expect(Math.abs(voiceCoilGoal(behavior, Infinity))).toBeLessThanOrEqual(1)
+    }
+  })
+})
+
+describe("magnetic bearing", () => {
+  it("displaces the unsupported rotor and emphasizes the opposing correction coils", () => {
+    const { container, rerender } = render(<MagneticBearing offset={-1} axis="x" />)
+    const rotor = container.querySelector("[data-rotor]")?.getAttribute("transform")
+    const left = container.querySelector('[data-coil="left"]')?.getAttribute("opacity")
+    rerender(<MagneticBearing offset={1} axis="x" />)
+    expect(container.querySelector("[data-rotor]")?.getAttribute("transform")).not.toBe(rotor)
+    expect(container.querySelector('[data-coil="left"]')?.getAttribute("opacity")).not.toBe(left)
+    expect(container.querySelectorAll("[data-gap]")).toHaveLength(4)
+  })
+
+  it("neutralizes invalid offset and samples finite bipolar correction", () => {
+    const neutral = render(<MagneticBearing offset={0} />)
+    const invalid = render(<MagneticBearing offset={Number.NaN} />)
+    expect(invalid.container.querySelector("[data-rotor]")?.getAttribute("transform"))
+      .toBe(neutral.container.querySelector("[data-rotor]")?.getAttribute("transform"))
+    for (const behavior of ["balance", "disturb", "static"] as const) {
+      expect(Math.abs(magneticBearingGoal(behavior, Infinity))).toBeLessThanOrEqual(1)
+    }
   })
 })
