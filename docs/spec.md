@@ -85,8 +85,25 @@ bob), `static`. Or drive it yourself with a controlled `target`. All motion resp
 
 ## Verification
 
-- `vitest` over the kinematics: link lengths preserved, reach clamping, FK/IK round trip,
-  elbow side, delta solutions land on target.
-- `tsc --noEmit` and `next build` over the whole app, so every published file type-checks.
-- `shadcn build` emits `public/r/*.json`; a test asserts every registry item's files exist.
-- Docs site driven in a browser to confirm the arms actually move.
+What was run, and what it caught.
+
+- `vitest` — 23 tests. Kinematics: link lengths preserved, reach clamping, FK/IK round trip,
+  elbow side, delta solutions landing on their forearm spheres, seeded poses staying
+  coherent. Components: accessible labels, limb counts, FK posing, colour overrides, the
+  loader's progress semantics. Registry: every declared file exists, every item has a
+  target, and no item imports a robocn file its registry entry does not depend on.
+- The registry test caught the failure that matters most — `arm-controls` imported
+  `robot-style` without depending on it, which would have shipped a broken install.
+- `tsc --noEmit`, `eslint`, and `next build` over the whole app: clean.
+- Driven in a browser at every stage. This caught a hydration mismatch (trigonometry
+  differing in the last bits between Node and the browser — fixed by rounding coordinates
+  before they reach the DOM), a delta whose motors sat inside its own plate, and a pose
+  array that lagged a render behind a changed `links` prop.
+- End to end: a fresh `create-next-app`, `shadcn init`, then
+  `shadcn add https://robocn.dev/r/robot-arm.json …` for four items. Fourteen files, the
+  theme variables, the keyframes and the npm dependencies all landed; `tsc` and
+  `next build` passed in that project, and all four machines rendered.
+
+Deployed at https://robocn.dev (Vercel, linesofcode scope, GitHub connected for
+auto-deploys). `NEXT_PUBLIC_REGISTRY_URL` is set per environment and is what gets stamped
+into the registry JSON at build time.
