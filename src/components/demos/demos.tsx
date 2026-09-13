@@ -94,6 +94,11 @@ import { WheelPlayer, type PlayerBehavior, type PlayerScreen } from "@/component
 import { TurntableDeck, type DeckRpm, type TurntableBehavior, type TurntableCue } from "@/components/ui/turntable-deck"
 import { GramophoneHorn, type GramophoneBehavior } from "@/components/ui/gramophone-horn"
 import { MusicBoxDrum, type MusicBoxBehavior } from "@/components/ui/music-box-drum"
+import {
+  RobotGrandPiano,
+  type GrandPianoBehavior,
+  type GrandPianoPedal,
+} from "@/components/ui/robot-grand-piano"
 import { BuskerDroid, type BuskerBehavior } from "@/components/ui/busker-droid"
 import { SlabHandset, type HandsetBehavior, type HandsetOrientation, type HandsetScreen } from "@/components/ui/slab-handset"
 import { WristTerminal, type TerminalBehavior, type TerminalScreen } from "@/components/ui/wrist-terminal"
@@ -152,6 +157,11 @@ import { FractionatingColumn, type ColumnBehavior } from "@/components/ui/fracti
 import { JackupRig, type JackupBehavior } from "@/components/ui/jackup-rig"
 import { RobotCar, type CarBehavior } from "@/components/ui/robot-car"
 import { TransitBus, type TransitBusBehavior } from "@/components/ui/transit-bus"
+import { RailLocomotive, type RailLocomotiveBehavior, type RailLocomotivePantograph } from "@/components/ui/rail-locomotive"
+import { RailBogie, type RailBogieBehavior } from "@/components/ui/rail-bogie"
+import { PantographCollector, type PantographBehavior } from "@/components/ui/pantograph-collector"
+import { RailTurnout, type RailTurnoutBehavior } from "@/components/ui/rail-turnout"
+import { bladePose, bogieRide, curveRadius, klingelWavelength, turnoutGeometry } from "@/lib/robocn/rail"
 import { CargoPlane, type CargoPlaneBehavior } from "@/components/ui/cargo-plane"
 import { HydrofoilCraft, type HydrofoilBehavior } from "@/components/ui/hydrofoil-craft"
 import { LaunchVehicle, type LaunchVehicleBehavior } from "@/components/ui/launch-vehicle"
@@ -3196,6 +3206,55 @@ const buskerPatterns = {
   sparse: ["x.......x.......", "........x.......", "....x.......x..."],
 } as const
 
+/** Plain figures, written for this bench. */
+const pianoRolls = {
+  chord: {
+    roll: ["x.......x.......", "..x.......x.....", "....x.......x...", "......x.......x.", ".x...x...x...x..", "...x...x...x...x"],
+    lanes: [16, 28, 35, 40, 47, 52],
+  },
+  scale: {
+    roll: ["x...............", "..x.............", "....x...........", "......x.........", "........x.......", "..........x.....", "............x...", "..............x."],
+    lanes: [24, 26, 28, 29, 31, 33, 35, 36],
+  },
+  octaves: {
+    roll: ["x...x...x...x...", "x...x...x...x...", "..x...x...x...x.", "..x...x...x...x."],
+    lanes: [15, 39, 27, 51],
+  },
+} as const
+
+function RobotGrandPianoDemo() {
+  const [view, setView] = React.useState<RobotView>("plan")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<GrandPianoBehavior | "manual">("perform")
+  const [figure, setFigure] = React.useState<keyof typeof pianoRolls>("chord")
+  const [lid, setLid] = React.useState<"closed" | "half" | "full">("full")
+  const [pedal, setPedal] = React.useState<GrandPianoPedal>("none")
+  const [notes, setNotes] = React.useState(88)
+  const [beat, setBeat] = React.useState(4)
+  const [step, setStep] = React.useState(0)
+  const figures = pianoRolls[figure] ?? pianoRolls.chord
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["perform", "rubato", "static", "manual"] as const} onChange={setDrive} />
+      <Segmented label="roll" value={figure} options={["chord", "scale", "octaves"] as const} onChange={setFigure} />
+      <Segmented label="lid" value={lid} options={["closed", "half", "full"] as const} onChange={setLid} />
+      <Segmented label="pedal" value={pedal} options={["none", "damper", "shift"] as const} onChange={setPedal} />
+      <NumberControl label="notes" value={notes} min={12} max={88} step={4} onChange={setNotes} />
+      {drive === "manual"
+        ? <NumberControl label="roll" value={beat} min={0} max={16} onChange={setBeat} format={v => `step ${v + 1}`} />
+        : <Hint>Drag across to scrub the roll. Watch a hammer stop short of its string — the jack lets go before the blow, and the check catches it on the way back.</Hint>}
+      <Readout rows={[["step", `${step + 1}`]]} />
+    </>}>
+      <RobotGrandPiano view={view} size={330} variant={variant} notes={notes}
+        roll={figures.roll} lanes={figures.lanes} lid={lid} pedal={pedal}
+        label="GRAND / 01" onStepChange={setStep}
+        {...(drive === "manual" ? { beat } : { behavior: drive })} interactive />
+    </Bench>
+  )
+}
+
 function BuskerDroidDemo() {
   const [view, setView] = React.useState<RobotView>("front")
   const [variant, setVariant] = React.useState<RobotVariant>("solid")
@@ -4264,6 +4323,223 @@ function WashingMachineDemo() {
   )
 }
 
+function RailLocomotiveDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [behavior, setBehavior] = React.useState<RailLocomotiveBehavior>("line")
+  const [curve, setCurve] = React.useState(7)
+  const [cars, setCars] = React.useState(1)
+  const [pantograph, setPantograph] = React.useState<RailLocomotivePantograph>("auto")
+  const ride = bogieRide(curve === 0 ? Infinity : curveRadius(curve, 88), {
+    pivotSpacing: 88,
+    halfLength: 66,
+  })
+  return (
+    <Bench
+      controls={
+        <>
+          <Segmented label="view" value={view} options={views} onChange={setView} />
+          <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+          <Segmented
+            label="motion"
+            value={behavior}
+            options={["line", "yard", "depot", "static"] as const}
+            onChange={setBehavior}
+          />
+          <Segmented
+            label="pan"
+            value={pantograph}
+            options={["auto", "raised", "stowed"] as const}
+            onChange={setPantograph}
+          />
+          <NumberControl label="curve" value={curve} min={-10} max={10} step={0.5} onChange={setCurve} format={(v) => `${v}°`} />
+          <NumberControl label="cars" value={cars} min={0} max={4} onChange={setCars} />
+          <Hint>
+            Nothing on board steers. Bend the track and the bogies take the tangent
+            under their own pivots — the body is only the chord between them.
+          </Hint>
+          <Readout
+            rows={[
+              ["radius", curve === 0 ? "straight" : `${Math.round(ride.radius)} u`],
+              ["centre throw", `${ride.centreThrow.toFixed(1)} u`],
+              ["end throw", `${ride.endThrow.toFixed(1)} u`],
+            ]}
+          />
+        </>
+      }
+    >
+      <RailLocomotive
+        view={view}
+        size={320}
+        variant={variant}
+        curve={curve}
+        cars={cars}
+        pantograph={pantograph}
+        behavior={behavior}
+        showThrow
+        label="CLASS / 90"
+        interactive
+        onCurveChange={setCurve}
+      />
+    </Bench>
+  )
+}
+
+function RailBogieDemo() {
+  const [view, setView] = React.useState<RobotView>("plan")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [behavior, setBehavior] = React.useState<RailBogieBehavior>("hunt")
+  const [travel, setTravel] = React.useState(6)
+  const [conicity, setConicity] = React.useState(0.1)
+  const wavelength = klingelWavelength({ wheelRadius: 19, halfGauge: 33, conicity })
+  return (
+    <Bench
+      controls={
+        <>
+          <Segmented label="view" value={view} options={views} onChange={setView} />
+          <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+          <Segmented
+            label="motion"
+            value={behavior}
+            options={["hunt", "curve", "brake", "static"] as const}
+            onChange={setBehavior}
+          />
+          <NumberControl label="run" value={travel} min={0} max={40} step={0.5} onChange={setTravel} format={(v) => `${v}d`} />
+          <NumberControl
+            label="conicity"
+            value={conicity}
+            min={0}
+            max={0.4}
+            step={0.01}
+            onChange={setConicity}
+            format={(v) => v.toFixed(2)}
+          />
+          <Hint>
+            Take the cone to zero and the weave stops dead — nothing was driving it
+            but the shape of the tread.
+          </Hint>
+          <Readout
+            rows={[
+              [
+                "wavelength",
+                Number.isFinite(wavelength) ? `${Math.round(wavelength / 38)} d` : "infinite",
+              ],
+            ]}
+          />
+        </>
+      }
+    >
+      <RailBogie
+        view={view}
+        size={300}
+        variant={variant}
+        travel={travel}
+        conicity={conicity}
+        behavior={behavior}
+        label="BOGIE / B5"
+        interactive
+        onTravelChange={setTravel}
+      />
+    </Bench>
+  )
+}
+
+function PantographCollectorDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [behavior, setBehavior] = React.useState<PantographBehavior>("raise")
+  const [height, setHeight] = React.useState(1)
+  const [along, setAlong] = React.useState(24)
+  return (
+    <Bench
+      controls={
+        <>
+          <Segmented label="view" value={view} options={views} onChange={setView} />
+          <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+          <Segmented
+            label="motion"
+            value={behavior}
+            options={["raise", "run", "stow", "static"] as const}
+            onChange={setBehavior}
+          />
+          <NumberControl label="height" value={height} min={0} max={1} step={0.02} onChange={setHeight} format={(v) => `${Math.round(v * 100)}%`} />
+          <NumberControl label="along" value={along} min={0} max={140} onChange={setAlong} />
+          <Hint>
+            Height is bought with reach: the knee folds in as the pan goes up. Front
+            is where the stagger reads — the contact walks across the strip.
+          </Hint>
+        </>
+      }
+    >
+      <PantographCollector
+        view={view}
+        size={300}
+        variant={variant}
+        height={height}
+        along={along}
+        behavior={behavior}
+        label="COLLECTOR / SA"
+        interactive
+        onHeightChange={setHeight}
+      />
+    </Bench>
+  )
+}
+
+function RailTurnoutDemo() {
+  const [view, setView] = React.useState<RobotView>("plan")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [behavior, setBehavior] = React.useState<RailTurnoutBehavior>("route")
+  const [position, setPosition] = React.useState(1)
+  const [number, setNumber] = React.useState(5)
+  const [hand, setHand] = React.useState<"left" | "right">("right")
+  const geometry = turnoutGeometry(number, 18)
+  const blades = bladePose(position, 7, 1.4)
+  return (
+    <Bench
+      controls={
+        <>
+          <Segmented label="view" value={view} options={views} onChange={setView} />
+          <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+          <Segmented
+            label="motion"
+            value={behavior}
+            options={["route", "creep", "static"] as const}
+            onChange={setBehavior}
+          />
+          <Segmented label="hand" value={hand} options={["left", "right"] as const} onChange={setHand} />
+          <NumberControl label="throw" value={position} min={0} max={1} step={0.02} onChange={setPosition} format={(v) => v.toFixed(2)} />
+          <NumberControl label="number" value={number} min={3} max={12} onChange={setNumber} format={(v) => `1:${v}`} />
+          <Hint>
+            Stop it half way and there is no route at all — the route is detection,
+            not a setting. A bigger number is a longer, flatter turnout, to scale.
+          </Hint>
+          <Readout
+            rows={[
+              ["route", blades.route],
+              ["crossing", `${geometry.crossingAngle.toFixed(1)}°`],
+              ["lead", `${Math.round(geometry.lead)} u`],
+            ]}
+          />
+        </>
+      }
+    >
+      <RailTurnout
+        view={view}
+        size={230}
+        variant={variant}
+        throwPosition={position}
+        number={number}
+        hand={hand}
+        behavior={behavior}
+        label="TURNOUT / 1:5"
+        interactive
+        onThrowChange={setPosition}
+      />
+    </Bench>
+  )
+}
+
 export const demos: Record<string, React.ComponentType<DemoProps>> = {
   "gabled-house": GabledHouseDemo,
   "tower-block": TowerBlockDemo,
@@ -4298,6 +4574,8 @@ export const demos: Record<string, React.ComponentType<DemoProps>> = {
   "music-box-drum": MusicBoxDrumDemo,
   "busker-droid": BuskerDroidDemo,
   "sound-geometry": TurntableDeckDemo,
+  "robot-grand-piano": RobotGrandPianoDemo,
+  "piano-geometry": RobotGrandPianoDemo,
   "clamshell-laptop": ClamshellLaptopDemo,
   "slate-tablet": SlateTabletDemo,
   "wheel-player": WheelPlayerDemo,
@@ -4399,6 +4677,11 @@ export const demos: Record<string, React.ComponentType<DemoProps>> = {
   "lidar-scan": LidarScanDemo,
   "robot-car": RobotCarDemo,
   "transit-bus": TransitBusDemo,
+  "rail-locomotive": RailLocomotiveDemo,
+  "rail-bogie": RailBogieDemo,
+  "pantograph-collector": PantographCollectorDemo,
+  "rail-turnout": RailTurnoutDemo,
+  "rail-geometry": RailLocomotiveDemo,
   "cargo-plane": CargoPlaneDemo,
   "hydrofoil-craft": HydrofoilCraftDemo,
   "launch-vehicle": LaunchVehicleDemo,

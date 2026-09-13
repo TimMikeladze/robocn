@@ -175,10 +175,12 @@ Consumers install with `npx shadcn@latest add https://<host>/r/robot-arm.json`, 
 | `spring-hopper` | ui | A one-legged rig on a real helical spring, with a solid height it can be crushed onto. |
 | `ball-hopper` | ui | A shell that is its own compliance: flattened at constant volume, and it comes to rest in finite time. |
 | `sound-geometry` | lib | Spiral groove, tonearm tracking error, exponential horn, spring governor, tuned comb, pinned barrel. |
+| `piano-geometry` | lib | A grand action and its escapement, a back check, a late damper, a scale that cannot be ideal, the bent side that is its envelope, a lid solved from its prop. |
 | `turntable-deck` | ui | An arm geared to its platter by the groove, and the tracking error that falls out of it. |
 | `gramophone-horn` | ui | A mainspring and its governor, a crank that is the wind, and an exponential horn. |
 | `music-box-drum` | ui | A pinned barrel bending a comb tuned by length, and letting go on the pin. |
 | `busker-droid` | ui | The only machine here whose pose comes from data: a step pattern, two solved arms. |
+| `robot-grand-piano` | ui | A player grand: a roll, 88 solved actions, and a hammer let go before the blow. |
 | `linkage-geometry` | lib | Closed loops: four-bar, slider-crank, block and tackle, and the elevation-to-world helpers. |
 | `pumpjack` | ui | A beam pump whose stroke is what the four-bar produces, not a tween. |
 | `drilling-derrick` | ui | A block reeved on 4–12 lines; the drum's payout is shared between them. |
@@ -196,6 +198,36 @@ Consumers install with `npx shadcn@latest add https://<host>/r/robot-arm.json`, 
 | `espresso-machine` | ui | A spring-lever group solved as a slider-crank: the declining pressure is the spring. |
 | `refrigerator` | ui | Solved leaves on vertical hinges, an interior the swing reveals, and a lamp on a real door switch. |
 | `washing-machine` | ui | Wash and spin either side of a Froude number of one, over a tub that resonates on the way up. |
+| `rail-geometry` | lib | Bogies placed on a curve and the centre and end throw that follow, Klingel hunting on a coned wheelset, a pantograph solved to a working height, and a turnout's lead, crossing angle and blade throw. |
+| `rail-locomotive` | ui | The inverse of every other vehicle here: nothing on board steers, the track places it — bogies on the tangent, the body the chord, the throw the answer. |
+| `rail-bogie` | ui | The only self-excited motion in the set: coned treads, so the wheelsets weave at Klingel's wavelength until the flange stops them. |
+| `pantograph-collector` | ui | Height is bought with reach, and the head is level because a second closed loop says so — at one height, and not at the ends of the travel. |
+| `rail-turnout` | ui | A route is detection rather than a setting, so a turnout caught in mid-stroke has none; and the crossing angle is the turnout number and nothing else. |
+
+### The rail machines
+
+`vitest` over the solver and the four machines: the chord relation the throws come from,
+checked three ways — the centre throw inward, the end throw outward and further, and a bogie
+pivot thrown neither way because it is *on* the track; both going to zero on straight track
+and on nonsense. Klingel's wavelength against its own closed form, longer for less cone and
+infinite for none; the lateral and the yaw a quarter of a wavelength apart, and the whole
+thing repeating after exactly one; the rolling-radius difference equal to `2γy`, which is the
+restoring term itself; the flange as a clamp. The pantograph's arms their own length at every
+height, the knee folding in as the pan rises, the height clamping past full extension rather
+than breaking, and the head level at the height the levelling was set for and measurably tipped
+at the bottom of the travel. The crossing angle from the turnout number, the radius from where
+the inner rails actually meet, the offset coming out as one gauge whatever the number, a
+diverging route that leaves the straight with no kink and runs on at exactly `1:N` past the
+crossing, and two blades whose gaps always sum to the throw with no route set between them.
+`tsc --noEmit`, `eslint`, `registry:build` and `next build` clean.
+
+Rendered headless through all four views and all four variants at each step, which is what
+caught the four a drawing only shows: a fit envelope written with the train's fore-aft sign
+inverted, so the consist ran off one edge of the frame; an underframe solebar modelled as a
+slab across the whole floor, which in plan view painted every vehicle dark; glazing and cab
+screens painted with a literal colour instead of through `robotSurface`, so they stayed solid
+in the outline variant; and a bogie whose axleboxes overlapped its own wheels, which hid them
+from above.
 
 ### The household
 
@@ -751,7 +783,7 @@ horizontal overflow.
 
 ## Mechanical music
 
-Four machines that make a sound by moving something, on one solver. Design note:
+Five machines that make a sound by moving something, on two solvers. Design note:
 [mechanical-music.md](mechanical-music.md).
 
 The piece that earns the file is the **spiral**: one revolution of a platter moves the stylus
@@ -779,10 +811,27 @@ the barrel's surface. `busker-droid` is the first machine in the set whose pose 
 **data you pass it**, with both arms solved as two-link chains in the vertical plane that
 contains the shoulder and the thing it is hitting.
 
+`robot-grand-piano` is the fifth machine and has its own solver, because a grand has something
+none of the others do: an **escapement**. The jack drives the hammer's knuckle until the jack's
+toe meets the let-off button, and from there the hammer covers the last of the blow with nothing
+behind it — you cannot hold a hammer against a string, and a drawing that tweens the hammer off
+the key is doing exactly that. The ratio it escapes at is a product of three levers, so an
+action geared too low never escapes at all and `regulated` says so; on the way back the check
+catches the hammer part-way down, which is what lets a note repeat. Its scale is the other
+closure: an ideal one halves every octave and would want a six-metre bottom string, so the
+exponent is compressed toward the bass and the shortfall is what the wound strings are for.
+Each string runs from an agraffe one strike point in front of the hammers to a bridge pin one
+speaking length behind it, so **the bent side of the case is the envelope of the scale** rather
+than a shape somebody liked. It reads the same roll format the barrel does, through the same
+`combLift` and `combRelease`. Design note: [robot-grand-piano.md](robot-grand-piano.md).
+
 None of it is acoustics: no frequency response, no horn cutoff, no radiation impedance, no
 spring torque curve, no decay, and nothing plays a sound. One approximation is stated rather
 than hidden — the gramophone's platter angle is the clock times the regulated speed, not an
-integral of it — and each docs page says which parts are solved and which are drawn.
+integral of it — and each docs page says which parts are solved and which are drawn. The piano magnifies its
+travels — a key dips a three-hundredth of the instrument's length — and only its travels: every
+ratio, the escapement, the after-touch and the check are solved life-size and the `data-*` hooks
+carry the unmagnified numbers.
 
 Verified with `vitest` (the solver invariants: the stylus walking monotonically inward with the
 arm's own length preserved at every radius, tracking error crossing zero exactly twice across a
@@ -792,10 +841,17 @@ its flyweights going out with the square, an octave of comb at one over root two
 lift at its pin and free the instant after, a blank pattern plucking nothing; plus each
 machine's controlled axis moving its mechanism, the arm cueing and parking, the crank angle
 tracking the wind, the pedal working off the kick row, the four views on one geometry, the
-slider contract on all four, nonsense input on every numeric axis, and the behaviour samplers at
-fixed phases), `tsc --noEmit`, `eslint`, `pnpm registry:build`, `pnpm build`, and driven in
-Chrome: every docs page, all four views, all four variants, the landing cards, reduced motion,
-and the pages at 390px with no horizontal overflow.
+slider contract on all five, nonsense input on every numeric axis, and the behaviour samplers at
+fixed phases; for the piano: the hammer travel as the dip times the product of the three levers
+and stopping dead at the escapement while the key keeps going, an action geared too low never
+escaping, the damper still down at a third of the dip and the sustain pedal lifting every one of
+them, the una corda shifting the whole action, the scale halving at the top and falling short
+below with the foreshortening rising all the way down, a crossed bass string reaching less far
+down the case than its own length, every hitch pin landing inside the case the outline was built
+around, and the lid angle solved from three sides with an impossible stick refused), `tsc
+--noEmit`, `eslint`, `pnpm registry:build`, `pnpm build`, and driven in Chrome: every docs page,
+all four views, all four variants, the landing cards, reduced motion, and the pages at 390px
+with no horizontal overflow.
 
 ## The heliotropic collector
 

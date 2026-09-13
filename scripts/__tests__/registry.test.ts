@@ -64,6 +64,14 @@ const vehicleCollection = [
   "ion-interceptor",
 ] as const
 
+/** The rail family: four machines and the solver under all of them. */
+const railCollection = [
+  "rail-locomotive",
+  "rail-bogie",
+  "pantograph-collector",
+  "rail-turnout",
+] as const
+
 const produceCollection = [
   "robot-avocado",
   "robot-strawberry",
@@ -102,12 +110,13 @@ const electromagneticMachines = [
   "transformer-core",
 ] as const
 
-/** The mechanical music machines, on one sound-geometry solver. */
+/** The mechanical music machines, on the sound and piano solvers. */
 const soundMachines = [
   "turntable-deck",
   "gramophone-horn",
   "music-box-drum",
   "busker-droid",
+  "robot-grand-piano",
 ] as const
 
 /** The household: the building you live in, and the machines inside it. */
@@ -214,6 +223,14 @@ describe("registry.json", () => {
     expect(item?.type).toBe("registry:ui")
     expect(item?.files).toHaveLength(1)
     expect(item?.files[0]?.path).toBe(`src/components/ui/${name}.tsx`)
+  })
+
+  it.each(railCollection)("publishes %s on the rail solver", (name) => {
+    const item = registry.items.find((candidate) => candidate.name === name)
+    expect(item?.type).toBe("registry:ui")
+    expect(item?.files).toHaveLength(1)
+    expect(item?.files[0]?.path).toBe(`src/components/ui/${name}.tsx`)
+    expect(item?.registryDependencies).toContain("{REGISTRY_URL}/r/rail-geometry.json")
   })
 
   it.each(vehicleCollection)("publishes %s as one UI source file", (name) => {

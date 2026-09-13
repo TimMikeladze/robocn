@@ -4562,6 +4562,45 @@ const channels = resolverSignals(37)`,
     ],
   },
   {
+    slug: "robot-grand-piano", item: "robot-grand-piano", title: "Robot grand piano", group: "Machines",
+    summary: "A player grand whose roll drives 88 solved actions. The jack lets each hammer go before it reaches the string, because you cannot hold a hammer against one.",
+    files: ["components/ui/robot-grand-piano.tsx"],
+    usage: `import { RobotGrandPiano } from "@/components/ui/robot-grand-piano"
+
+<RobotGrandPiano />
+
+// Your own roll: one row per lane, and the key each lane strikes.
+<RobotGrandPiano roll={["x...x...", "..x...x."]} lanes={[28, 40]} />
+<RobotGrandPiano view="profile" pedal="damper" lid="half" interactive />`,
+    props: [
+      view("plan", "instrument"),
+      { name: "beat", type: "number", description: "Controlled position through the roll, in steps. Omit it and the roll runs behavior." },
+      { name: "behavior", type: '"perform" | "rubato" | "static"', default: '"perform"', description: "Run the roll at a steady pass, or with the rate swelling and easing inside it — never backwards." },
+      { name: "notes", type: "number", default: "88", description: "Notes in the compass, rounded and clamped to 12–88. The scale, the case and the keyboard are all redrawn around it." },
+      { name: "roll", type: "readonly string[]", description: "One row per lane; any non-blank character is a perforation at that step. An empty roll is a piano that runs and plays nothing." },
+      { name: "lanes", type: "readonly number[]", description: "Which key each lane strikes, as an index into the compass — so three rows can be a chord rather than three neighbours." },
+      { name: "lid", type: '"closed" | "half" | "full"', default: '"full"', description: "Which prop the lid stands on. The angle is solved from the stick, the notch and the cup, not picked." },
+      { name: "pedal", type: '"none" | "damper" | "shift"', default: '"none"', description: "Sustain lifts every damper off its string; una corda slides the whole action across by one string spacing." },
+      { name: "speed", type: "number", default: "0.3", description: "Passes of the whole roll per second." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Drag across to scrub the roll — the frame's width is one pass — or arrow-key it a note at a time." },
+      { name: "onBeatChange", type: "(beat: number) => void", description: "Position through the roll throughout a drag or a key press." },
+      { name: "onStepChange", type: "(step: number) => void", description: "The step now under the reading bar, 0-based." },
+      { name: "showLegs", type: "boolean", default: "true", description: "Draw the legs and the pedal lyre." },
+      { name: "label", type: "string", description: "Caption below the state readout." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "The hammer is released before the note, not at it. The jack drives the knuckle until its toe meets the let-off button and then leaves the hammer to cover the last of the blow unpowered — which is the one thing a piano action exists to do, and the thing a drawing that tweens the hammer off the key gets wrong.",
+      "It comes back to the check, not to rest: the back check holds the hammer part-way down while the key is still held, which is what lets a note repeat. The key is held for as long as its string rings, so the damper falls with the sound.",
+      "The bent side of the case is the envelope of the scale. Each string runs from an agraffe one strike point in front of the hammers to a bridge pin one speaking length behind it; take the hitch pins, push them out by the rim's thickness and that curve is a grand.",
+      "Travels are drawn magnified — a key dips a three-hundredth of the instrument's length — but only the travels. Every ratio, the escapement, the after-touch and the check are solved life-size, and `data-travel`, `data-dip` and `data-lift` carry the unmagnified numbers.",
+      "The case is drawn as a section: the wall between you and the inside is cut away, which is why the harp and the action read from every angle. In plan a raised lid really does cover most of the instrument, so it is drawn as the plate it is with the harp reading through it.",
+      "No acoustics and no dynamics. Nothing computes a frequency, an inharmonicity, a tension or a decay, there is no hammer mass and no velocity, and the flight after let-off is the remaining gap covered in a fixed window rather than an integration. The choirs, the wound strings and the plate are illustrated.",
+      "An original archetype. No maker, model, decal, plate casting, piece of music or performer is reproduced here or in the demo.",
+    ],
+  },
+  {
     slug: "sound-geometry", item: "sound-geometry", title: "Sound geometry", group: "Foundations",
     summary: "The closures in a machine that makes a sound by moving something: a spiral groove, a pivoted tonearm's tracking error, an exponential horn, a spring governor, a tuned comb, and a pinned barrel.",
     files: ["lib/robocn/sound.ts"],
@@ -4595,6 +4634,36 @@ combLift(barrel, 0, 4)                  // 1 at the pin, 0 the instant after`,
       "Pure functions over plain objects. No React, no dependencies, and no acoustics: nothing here computes a frequency response, a horn's cutoff, a radiation impedance, a spring's torque curve or a decay, and nothing plays a sound.",
       "The tonearm is the piece that earns the file. Its tracking error is a number a drawing would otherwise quietly get wrong, and it is what lets `turntable-deck` and `gramophone-horn` share one solver while telling the truth about how differently they track.",
       "A step sequencer is a pinned barrel unrolled flat, which is why `combLift` drives a music box's tine and a droid's beater alike.",
+    ],
+  },
+  {
+    slug: "piano-geometry", item: "piano-geometry", title: "Piano geometry", group: "Foundations",
+    summary: "The closures in a grand: an action that lets its hammer go before the blow, a back check, a late damper, a scale that cannot be ideal, the bent side that is the envelope of it, and a lid solved from its prop.",
+    files: ["lib/robocn/piano.ts"],
+    usage: `import { actionPose, hammerPose, pianoLayout, lidPose } from "@/lib/robocn/piano"
+
+const key = actionPose(1, { dip: 1, balance: 0.55, wippen: 1.3, lever: 7, blow: 4.6 })
+key.ratio        // 5.005 — the product of the three levers
+key.escaped      // true: the jack tripped before the key bottomed
+key.gap          // what the hammer still has to cover on its own
+
+const plan = pianoLayout({ notes: 88, strike: 20, halfWidth: 21 })
+plan.rim         // the case, drawn around the scale
+lidPose("full", { width: 52 }).angle    // 47°, solved from three sides`,
+    api: [
+      { name: "actionPose", type: "(dip, options?) => ActionPose", description: "One action solved from the key dip. The ratio is key × wippen × hammer lever, the jack trips at (blow − letOff) / ratio, and past that the hammer holds where it was left — with the after-touch, the gap and `regulated` reported." },
+      { name: "hammerPose", type: "(lift, ring, options?) => HammerPose", description: "The whole stroke from the two numbers a pattern gives you — `combLift` for the approach and `combRelease` for the ring. Off the string at once, caught by the back check, and home only when the key lets it go." },
+      { name: "damperLift", type: "(press, options?) => number", description: "How far the damper has left the string. Nothing happens for the first half of the dip; the sustain pedal lifts every damper on its own." },
+      { name: "pianoScale", type: "(options?) => PianoString[]", description: "The speaking length of every note, what an ideal halving scale would have asked for, and how far short of it this one falls — plus the strike point, the choir and whether the string is wound." },
+      { name: "pianoLayout", type: "(options?) => PianoLayout", description: "The plan: every string from its tuning pin through its agraffe and bridge pin to its hitch, the long and bass bridges, the capo line, and the rim drawn around all of it." },
+      { name: "lidPose", type: "(stage, options?) => LidPose", description: "The lid on its prop: hinge to notch, hinge to the stick's foot, and the stick. A stick that cannot close the triangle will not stand, and says so." },
+      { name: "pianoKeys", type: "(notes, options?) => PianoKey[]", description: "The compass laid across the keyboard: 52 naturals and 36 sharps for an 88, each sharp leaning outward from the middle of its own group rather than sitting on a boundary." },
+    ],
+    notes: [
+      "Pure functions over plain objects. No React, no dependencies, and no acoustics: nothing computes a frequency, an inharmonicity, a tension, a soundboard impedance or a decay, and there is no hammer mass and no velocity.",
+      "The escapement is the piece that earns the file. Driving the hammer from the key all the way to the string is the mistake every drawing of a piano makes, and it is the one thing the mechanism exists to prevent.",
+      "An ideal scale halves the speaking length every octave; run that down 88 notes and the bottom string wants six metres. The exponent is compressed toward the bass instead, and `foreshortening` reports how much — which is what the wound strings are for.",
+      "The bridge lands one speaking length behind an agraffe one strike point in front of the hammers, so the bent side of a grand is a consequence of the scale. An overstrung bass string reaches less far down the case than its own length, which is the entire point of crossing it.",
     ],
   },
   {
@@ -5513,8 +5582,170 @@ hoistPose(0.8, { travel: 180, sheave: 220 }).length // the same at every positio
       "Every closure here is checked against the thing a drawing would get wrong: a leaf that keeps its width, a panel that keeps its length round a bend, a rope that keeps its length, a projectile that rejoins the drum, and a tracker that says when it has run out of travel.",
     ],
   },
-]
+  {
+    slug: "rail-geometry", item: "rail-geometry", title: "Rail geometry", group: "Foundations",
+    summary: "What a track does to the vehicle standing on it: bogies placed on a curve and the centre and end throw that follow, Klingel hunting on a coned wheelset, a pantograph solved to a working height, and a turnout's lead, crossing angle and blade throw.",
+    files: ["lib/robocn/rail.ts"],
+    usage: `import { bogieRide, curveRadius, huntingPose, klingelWavelength, turnoutGeometry } from "@/lib/robocn/rail"
 
+const ride = bogieRide(curveRadius(10, 88), { pivotSpacing: 88, halfLength: 66 })
+ride.centreThrow   // the body's middle, inside the curve
+ride.endThrow      // its ends, outside it — and always further
+
+klingelWavelength({ wheelRadius: 19, halfGauge: 33, conicity: 0.1 })
+turnoutGeometry(8, 20).crossingAngle   // atan(1/8) in degrees`,
+    api: [
+      { name: "curveRadius", type: "(turn: number, chord: number) => number", description: "The radius of a curve that turns through `turn` degrees under a chord — how a curve is quoted here, because the angle a vehicle's own bogie spacing subtends is the thing you can see. Zero is straight and returns Infinity." },
+      { name: "bogieRide", type: "(radius, geometry: BogieGeometry) => BogieRide", description: "A rigid body on two bogies, placed on a curve. The pivots are on the track and the body is the chord between them, so the yaw of each bogie, the centre throw `R(1 − cos θ)` and the end throw `√(R²cos²θ + L²) − R` all fall out with no approximation." },
+      { name: "bodyOffset", type: "(x, radius, pivotSpacing) => number", description: "Where any point along the body sits across the track, positive outward. Negative between the pivots, zero at them, positive beyond — which is what makes the centre and end throw two readings of one relation." },
+      { name: "klingelWavelength", type: "(geometry: WheelsetGeometry) => number", description: "λ = 2π√(b r₀ / γ): the distance a coned wheelset takes to weave one full cycle. The one length in railway engineering with nothing to do with speed. A cylindrical tread returns Infinity." },
+      { name: "huntingPose", type: "(distance, amplitude, geometry) => HuntingPose", description: "Where a hunting wheelset stands after running `distance`: `y = A cos(2πs/λ)`, and the yaw is its own slope, so the two run a quarter cycle apart. The flange is a hard clamp, and `flanging` says when it is on." },
+      { name: "radialYaw", type: "(offset, radius) => number", description: "The angle a wheelset takes up if it steers radially — square to the radius at its own position along the bogie." },
+      { name: "pantographPose", type: "(height, geometry: PantographGeometry) => PantographPose", description: "A single-arm collector solved to a working height. Height spends reach, so the knee folds in as the pan rises; past full extension the height clamps and `reachable` goes false. The head's attitude is the output of a second, closed loop — the control rod — not a value pinned to horizontal." },
+      { name: "turnoutGeometry", type: "(turnoutNumber, gauge) => TurnoutGeometry", description: "The crossing angle is `atan(1/N)`; the crossing is where the inner rails meet, at `cos α = (R − g)/(R + g)`, which fixes the radius and the lead. The offset at the crossing comes out as very nearly one gauge whatever the number, and the lead grows about as N²." },
+      { name: "turnoutPoint", type: "(distance, geometry) => Vec2", description: "A point on the diverging route, measured along the straight from the toe. Tangent to the straight at the toe, so it leaves with no kink, and straight on at the crossing angle past the crossing." },
+      { name: "bladePose", type: "(position, throwDistance, tolerance?) => BladePose", description: "Two switch blades on one throw bar: the gaps always sum to the throw. The route is detection — a tolerance on the closed blade — so a turnout caught in mid stroke reports `\"unset\"` rather than a route nobody has." },
+      { name: "trackCurvature / wireStagger", type: "(distance, amplitude?) => number / (distance, amplitude?, span?) => number", description: "Illustrative. A stretch of line that winds without repeating over a short run, and the triangular zig-zag a contact wire is strung with. Neither is surveyed or solved." },
+    ],
+    notes: [
+      "Everything here is exact geometry except `trackCurvature` and `wireStagger`, which are stated shapes and say so. No dynamics: nothing knows about mass, speed, force, adhesion, damping or wear.",
+      "Positive is to starboard everywhere — clockwise seen from above — the same sense as every heading in the set.",
+      "The family this is under: `docs/rail-machines.md`. Its thesis is that every other vehicle in robocn is *steered* and a rail vehicle is not, so the track is the input and the pose is the answer.",
+    ],
+  },
+  {
+    slug: "rail-locomotive", item: "rail-locomotive", title: "Rail locomotive", group: "Robots",
+    summary: "An electric locomotive and the train behind it, placed by the track rather than steered along it. Bend the track and each bogie takes the tangent under its own pivot, each body becomes the chord between two of them, and the sideways throw of the middle and the ends follows.",
+    files: ["components/ui/rail-locomotive.tsx"],
+    usage: `import { RailLocomotive } from "@/components/ui/rail-locomotive"
+
+<RailLocomotive behavior="line" cars={1} />
+
+// Plan is where the curve reads: the whole train bends along it.
+<RailLocomotive view="plan" curve={9} cars={2} />
+<RailLocomotive behavior="depot" showThrow />`,
+    props: [
+      view("profile", "train"),
+      { name: "curve", type: "number", description: "Degrees the track turns through under one bogie-centre spacing, positive to starboard, clamped to ±10. Omit it and the behaviour runs the road." },
+      { name: "onCurveChange", type: "(curve: number) => void", description: "The track being asked for, while a person is bending it." },
+      { name: "behavior", type: '"line" | "yard" | "depot" | "static"', default: '"line"', description: "Winding through curves both ways, a crossover held hard over each way, or standing in the depot working its pantograph." },
+      { name: "cars", type: "number", default: "1", description: "Trailing vehicles behind the locomotive, 0–4. Every one of them is placed on the curve at its own arc position." },
+      { name: "pantograph", type: '"auto" | "raised" | "stowed"', default: '"auto"', description: "The roof collector. Auto leaves it to the behaviour, which is the only thing that ever lowers it." },
+      { name: "speed", type: "number", default: "0.22", description: "Track cycles per second." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Press and drag across the train to bend the track under it; arrow keys 1° at a time, Home straightens it." },
+      { name: "showTrack", type: "boolean", default: "true", description: "The rails it is standing on, which curve with it." },
+      { name: "showThrow", type: "boolean", description: "Call out the solved centre and end throw as dimension lines. Blueprint does by default." },
+      { name: "active", type: "boolean", description: "Light the headlight. Omit and it lights under power." },
+      { name: "label", type: "string", description: "Caption underneath the train." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "Solved: the placement, from `bogieRide()`. Each bogie pivot is on the track and the body is the straight line between two of them, so the centre throw `R(1 − cos θ)` inward and the end throw outward are geometry rather than artwork — and both go to zero on straight track without a special case.",
+      "The pantograph is the same linkage `pantograph-collector` ships standalone, and the bogies are the ones `rail-bogie` draws on its own.",
+      "Illustrated: the track a `line` behaviour runs through is a stated shape, and there is no cant, no transition spiral, no traction and no braking. The train does not travel — the curve is a steady state, so straightening the track straightens the train with nothing to unwind.",
+    ],
+  },
+  {
+    slug: "rail-bogie", item: "rail-bogie", title: "Rail bogie", group: "Machines",
+    summary: "A powered two-axle bogie, and the only self-excited motion in the set: nothing commands the wheelsets to wander, they wander because they are coned — at exactly Klingel's wavelength, until the flange stops them.",
+    files: ["components/ui/rail-bogie.tsx"],
+    usage: `import { RailBogie } from "@/components/ui/rail-bogie"
+
+<RailBogie behavior="hunt" />
+
+// Conicity is the whole mechanism. Take it away and the motion stops.
+<RailBogie travel={9} conicity={0} />
+<RailBogie behavior="brake" view="profile" />`,
+    props: [
+      view("plan", "bogie"),
+      { name: "travel", type: "number", description: "Distance run, in wheel diameters, 0–40. Supplying it stops the loop." },
+      { name: "onTravelChange", type: "(travel: number) => void", description: "The run, while a person is scrubbing it." },
+      { name: "behavior", type: '"hunt" | "curve" | "brake" | "static"', default: '"hunt"', description: "Running and letting the cone work, standing radially on a curve, or running the shoes on until the weave dies away." },
+      { name: "conicity", type: "number", default: "0.1", description: "Tread conicity — the tan of the cone angle, 0–0.4. The one control worth touching: zero is a cylindrical tread and the hunting stops dead." },
+      { name: "amplitude", type: "number", default: "7", description: "How far the wheelset wanders, in world units. An input, because the kinematic solution does not set one; the flange clamps it." },
+      { name: "brake", type: "number", description: "Shoes on the treads, 0 off to 1 hard on. Omit it and the behaviour works them." },
+      { name: "speed", type: "number", default: "0.24", description: "Runs per second." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Press and drag across the bogie to scrub the run; arrow keys half a wheel diameter at a time." },
+      { name: "showTrack", type: "boolean", default: "true", description: "The rails and sleepers under it." },
+      { name: "active", type: "boolean", description: "Light the traction motor and call out a wheelset that is flanging." },
+      { name: "label", type: "string", description: "Caption underneath the bogie." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "Solved: the hunting, from `klingelWavelength()` and `huntingPose()`. Displace a coned wheelset and the rolling radii differ, so it yaws; yaw it and it runs sideways. That loop is undamped and second order, so the lateral position and the yaw come out a quarter of a wavelength apart — the wheelset is running most steeply sideways exactly as it passes centre.",
+      "The frame is not animated either. It joins two wheelsets that are a wheelbase apart on one wave, so it sits on their mean and points along the line between them, and the difference is what the primary suspension has to take.",
+      "Illustrated: the suspension travel, the brake shoes and the traction motor. No speed, no creep forces, no damping and no critical speed — and the flange clearance is drawn generously, or a real one per cent of the gauge would be invisible.",
+    ],
+  },
+  {
+    slug: "pantograph-collector", item: "pantograph-collector", title: "Pantograph collector", group: "Machines",
+    summary: "A single-arm roof current collector. Height and reach are not independent — asking for height folds the knee in and walks the pan back over its own base — and the head stays level because a control rod says so, not because it was pinned there.",
+    files: ["components/ui/pantograph-collector.tsx"],
+    usage: `import { PantographCollector } from "@/components/ui/pantograph-collector"
+
+<PantographCollector behavior="raise" />
+
+// Front is where the stagger reads: the contact walks across the strip.
+<PantographCollector view="front" height={1} along={35} />
+<PantographCollector interactive onHeightChange={setHeight} />`,
+    props: [
+      view("profile", "collector"),
+      { name: "height", type: "number", description: "Working height, 0 stowed to 1 at the wire. Supplying it stops the loop." },
+      { name: "onHeightChange", type: "(height: number) => void", description: "The height being asked for, while a person is working it." },
+      { name: "behavior", type: '"raise" | "run" | "stow" | "static"', default: '"raise"', description: "Up, work under the wire, and down; up and holding; or down bar the one moment it is put up and brought straight back." },
+      { name: "along", type: "number", description: "How far along the run it is, which is what walks the contact across the strip and slides the masts past. Omit it and the clock runs it." },
+      { name: "speed", type: "number", default: "0.25", description: "Raise cycles per second." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Press and drag up and down to work it; arrows 5%, shift 15%, Home stows and End is at the wire." },
+      { name: "showWire", type: "boolean", default: "true", description: "The contact wire, its masts, and the stagger it is strung with." },
+      { name: "showRoof", type: "boolean", default: "true", description: "The roof and insulators it stands on." },
+      { name: "active", type: "boolean", description: "Light the strip. Omit and it lights on contact." },
+      { name: "label", type: "string", description: "Caption underneath the collector." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "Solved: the arms, from `pantographPose()`. The head rides the workspace of a two-link chain, so height is bought with reach and the pan travels back over the base as it rises; past full extension the height clamps rather than producing a broken pose, and the docs' `reachable` flag says so.",
+      "The head's attitude is a second closed loop: a control rod runs from the lower arm to a lever on the head, and the head's angle is whatever assembles that loop at this height. It comes out flat at the height the levelling was set for and tips away from it at the ends of the travel — which is what a working range is.",
+      "Illustrated: the stagger pattern, and the wire itself, which is a straight run rather than a catenary. No uplift, no contact force, no sag and no arcing.",
+    ],
+  },
+  {
+    slug: "rail-turnout", item: "rail-turnout", title: "Rail turnout", group: "Machines",
+    summary: "The points, and the fact that a route is a state rather than a setting: two blades on one throw bar, and what decides where a train goes is detection — so a turnout caught in mid stroke has no route set at all.",
+    files: ["components/ui/rail-turnout.tsx"],
+    usage: `import { RailTurnout } from "@/components/ui/rail-turnout"
+
+<RailTurnout behavior="route" />
+
+// The number is the whole geometry, and it is drawn to scale.
+<RailTurnout number={10} throwPosition={1} />
+<RailTurnout hand="left" interactive onRouteChange={setRoute} />`,
+    props: [
+      view("plan", "turnout"),
+      { name: "throwPosition", type: "number", description: "Blade position, 0 normal to 1 reverse. Supplying it stops the loop." },
+      { name: "onThrowChange", type: "(position: number) => void", description: "The blades, while a person is working them." },
+      { name: "onRouteChange", type: '(route: "normal" | "reverse" | "unset") => void', description: "Fires when detection makes or breaks — which is when the route really changes, rather than on every frame the blades move." },
+      { name: "behavior", type: '"route" | "creep" | "static"', default: '"route"', description: "Set, dwell, throw, dwell; or working the blade around the point of detection, where a machine that cannot quite make its route spends its time." },
+      { name: "number", type: "number", default: "5", description: "Turnout number: one across for N along, 3–12. Bigger is shallower, faster, and — because this is drawn to scale — visibly longer." },
+      { name: "hand", type: '"left" | "right"', default: '"right"', description: "Which way the diverging route goes." },
+      { name: "speed", type: "number", default: "0.28", description: "Point-machine cycles per second." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Press and drag across it to work the blades; arrows 10%, shift 25%, Home normal and End reverse." },
+      { name: "showSleepers", type: "boolean", default: "true", description: "The sleepers, which run out under the diverging route through the switch." },
+      { name: "active", type: "boolean", description: "Light the route that is set and the detection lamp. Omit and it lights when detection is made." },
+      { name: "label", type: "string", description: "Caption underneath the turnout." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "Solved: the geometry, from `turnoutGeometry()` and `bladePose()`. The number fixes the crossing angle at `atan(1/N)`; the crossing is where the inner rails actually meet, which fixes the radius and the lead; and the two blades share a rod, so the open gap is exactly the throw less the closed one.",
+      "The route is detection, not a flag: `onRouteChange` fires when the closed blade comes inside its tolerance, and a turnout held in mid stroke reports `\"unset\"` and lights nothing. That is the state a signaller sees.",
+      "Drawn to scale, which is why a bigger number comes out as a longer, flatter machine — a real turnout is a long shallow thing, and the frame is refitted per number rather than the geometry being squashed.",
+      "Illustrated: rail sections, the check rails' own geometry and the point machine's internals. No locking, no interlocking, no forces, and nothing runs over it.",
+    ],
+  },
+]
 /**
  * Which group a registry item lands in when nobody has written its page yet.
  * Deliberately coarse: it only has to be near enough that the item is visible

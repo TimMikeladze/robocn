@@ -84,6 +84,10 @@ import { RobotTurtle } from "@/components/ui/robot-turtle"
 import { RobotQuadruped } from "@/components/ui/robot-quadruped"
 import { RobotCar } from "@/components/ui/robot-car"
 import { TransitBus } from "@/components/ui/transit-bus"
+import { RailLocomotive } from "@/components/ui/rail-locomotive"
+import { RailBogie } from "@/components/ui/rail-bogie"
+import { PantographCollector } from "@/components/ui/pantograph-collector"
+import { RailTurnout } from "@/components/ui/rail-turnout"
 import { CargoPlane } from "@/components/ui/cargo-plane"
 import { HydrofoilCraft } from "@/components/ui/hydrofoil-craft"
 import { LaunchVehicle } from "@/components/ui/launch-vehicle"
@@ -114,6 +118,7 @@ import { WheelPlayer } from "@/components/ui/wheel-player"
 import { TurntableDeck } from "@/components/ui/turntable-deck"
 import { GramophoneHorn } from "@/components/ui/gramophone-horn"
 import { MusicBoxDrum } from "@/components/ui/music-box-drum"
+import { RobotGrandPiano } from "@/components/ui/robot-grand-piano"
 import { BuskerDroid } from "@/components/ui/busker-droid"
 import { SlabHandset } from "@/components/ui/slab-handset"
 import { WristTerminal } from "@/components/ui/wrist-terminal"
@@ -268,6 +273,11 @@ const art: Record<string, Art> = {
   "robot-drone": { line: "Four or six rotors, guards, and blade angles.", art: <RobotDrone size={170} /> },
   "robot-car": { line: "One steering number, two different wheel angles.", art: <RobotCar size={170} behavior="slalom" roughness={0.55} /> },
   "transit-bus": { line: "The bend is solved from the steer, and she kneels to open.", art: <TransitBus size={185} behavior="service" /> },
+  "rail-locomotive": { line: "Nothing steers it — the track places the whole train.", art: <RailLocomotive size={210} behavior="yard" cars={1} view="iso" /> },
+  "rail-bogie": { line: "Coned treads, so it weaves at Klingel's wavelength.", art: <RailBogie size={140} behavior="hunt" conicity={0.16} /> },
+  "pantograph-collector": { line: "Height is bought with reach; a rod keeps the head level.", art: <PantographCollector size={170} behavior="raise" /> },
+  "rail-turnout": { line: "A route is detection, not a setting.", art: <RailTurnout size={100} behavior="route" /> },
+  "rail-geometry": { line: "Throw on a curve, Klingel hunting, a crossing angle.", art: <RailLocomotive size={200} variant="blueprint" behavior="yard" cars={0} view="plan" showThrow /> },
   "cargo-plane": { line: "It banks because it was asked to turn.", art: <CargoPlane size={170} behavior="circuit" /> },
   "hydrofoil-craft": { line: "Lift goes as v\u00b2, so the hull climbs out of the water.", art: <HydrofoilCraft size={180} behavior="takeoff" /> },
   "launch-vehicle": { line: "Flies a pitch program, stages, and drops its own \u0394v.", art: <LaunchVehicle size={140} behavior="ascent" showReadout={false} /> },
@@ -301,6 +311,7 @@ const art: Record<string, Art> = {
   "turntable-deck": { line: "An arm geared to the platter by the groove it tracks.", art: <TurntableDeck size={168} phase={0.6} /> },
   "gramophone-horn": { line: "A mainspring, its governor, and an exponential horn.", art: <GramophoneHorn size={150} progress={0.35} phase={0.25} /> },
   "music-box-drum": { line: "A pinned barrel bending a comb tuned by length.", art: <MusicBoxDrum size={196} phase={1.2} /> },
+  "robot-grand-piano": { line: "A roll, 88 actions, and a hammer that is let go before the blow.", art: <RobotGrandPiano size={200} view="iso" phase={1.4} /> },
   "robot-gripper": { line: "Parallel or angular fingers, controlled opening.", art: <RobotGripper size={170} active /> },
   "conveyor-belt": { line: "Wrapping travel, rollers, and workpieces.", art: <ConveyorBelt size={250} /> },
   "scara-arm": { line: "Plan view, Z spindle, swept area.", art: <ScaraArm size={190} behavior="orbit" z={0.5} phase={1.1} /> },
@@ -365,6 +376,7 @@ const art: Record<string, Art> = {
   "device-geometry": { line: "Hinges, kickstands, detents and bands, solved.", art: <SlateTablet size={195} variant="blueprint" view="profile" screen="home" /> },
   "keyboard-geometry": { line: "Travel, hysteresis, a unit-pitch deck and a raked face.", art: <RobotKeyboard size={170} variant="blueprint" showScan /> },
   "sound-geometry": { line: "A spiral groove, and the arm angle it fixes.", art: <TurntableDeck size={190} variant="blueprint" behavior="scratch" phase={0.3} /> },
+  "piano-geometry": { line: "An escapement, and the scale the case is drawn around.", art: <RobotGrandPiano size={190} variant="blueprint" view="iso" phase={0.62} /> },
   "produce-geometry": { line: "Profiles revolved, a lattice by area, halves that reassemble.", art: <RobotStrawberry size={150} variant="blueprint" seeds={34} interactive={false} /> },
   "transmission-geometry": { line: "Meshing teeth, taut belts, and a chain over its bend.", art: <PlanetaryGearbox size={158} variant="blueprint" sunTeeth={20} planetTeeth={14} planets={4} showRatio={false} /> },
   "electromagnetism-geometry": { line: "Windings, three-phase vectors, and resolver quadrature.", art: <InductionMotor size={152} variant="blueprint" poles={4} /> },

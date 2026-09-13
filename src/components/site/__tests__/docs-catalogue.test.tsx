@@ -47,6 +47,15 @@ const vehicleSlugs = [
   "vehicle-geometry",
 ] as const
 
+/** The rail family: four machines and the solver under all of them. */
+const railSlugs = [
+  "rail-locomotive",
+  "rail-bogie",
+  "pantograph-collector",
+  "rail-turnout",
+  "rail-geometry",
+] as const
+
 /** The produce family: three field units and the solver under them. */
 const produceSlugs = [
   "robot-avocado",
@@ -128,13 +137,15 @@ const electromagneticSlugs = [
   "electromagnetism-geometry",
 ] as const
 
-/** The personal devices: five machines you carry, and the solver under them. */
+/** The mechanical music machines, and the two solvers under them. */
 const soundSlugs = [
   "turntable-deck",
   "gramophone-horn",
   "music-box-drum",
   "busker-droid",
+  "robot-grand-piano",
   "sound-geometry",
+  "piano-geometry",
 ] as const
 
 const deviceSlugs = [
@@ -214,6 +225,11 @@ describe('docs catalogue', () => {
   })
 
   it.each(vehicleSlugs)("documents and demos %s", (slug) => {
+    expect(docs.some((entry) => entry.slug === slug && entry.item === slug)).toBe(true)
+    expect(demoFor(slug)).toBeTruthy()
+  })
+
+  it.each(railSlugs)("documents and demos %s", (slug) => {
     expect(docs.some((entry) => entry.slug === slug && entry.item === slug)).toBe(true)
     expect(demoFor(slug)).toBeTruthy()
   })

@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest"
 import { BuskerDroid, buskerGoal } from "@/components/ui/busker-droid"
 import { GramophoneHorn, gramophoneGoal } from "@/components/ui/gramophone-horn"
 import { MusicBoxDrum, musicBoxGoal } from "@/components/ui/music-box-drum"
+import { RobotGrandPiano, grandPianoGoal } from "@/components/ui/robot-grand-piano"
 import { TurntableDeck, deckGoal, deckRadius } from "@/components/ui/turntable-deck"
 
 const attribute = (container: HTMLElement, selector: string, name: string) =>
@@ -359,5 +360,128 @@ describe("busker droid", () => {
     // A fill is the same pattern at double time.
     expect(buskerGoal("fill", 1, 16)).toBe(32)
     expect(buskerGoal("groove", 1, Number.NaN)).toBe(0)
+  })
+})
+
+describe("robot grand piano", () => {
+  const roll = ["x..."]
+  const lanes = [40]
+
+  it("strikes the note the roll names, and nothing else", () => {
+    const { container } = render(
+      <RobotGrandPiano roll={roll} lanes={lanes} beat={0} behavior="static" />,
+    )
+    expect(Number(attribute(container, '[data-hammer="40"]', "data-travel"))).toBeGreaterThan(0)
+    expect(Number(attribute(container, '[data-hammer="41"]', "data-travel"))).toBe(0)
+    expect(container.querySelector('[data-string="40"]')!.getAttribute("data-sounding")).not.toBeNull()
+    expect(container.querySelector('[data-string="41"]')!.getAttribute("data-sounding")).toBeNull()
+  })
+
+  it("lets the hammer go before the blow: the key keeps going and the hammer does not", () => {
+    const { container, rerender } = render(
+      <RobotGrandPiano roll={roll} lanes={lanes} beat={3.8} behavior="static" />,
+    )
+    const driven = Number(attribute(container, '[data-hammer="40"]', "data-travel"))
+    const early = Number(attribute(container, '[data-key="40"]', "data-dip"))
+
+    // Past the escapement. The key is still going down; the hammer is not.
+    rerender(<RobotGrandPiano roll={roll} lanes={lanes} beat={3.95} behavior="static" />)
+    const escaped = Number(attribute(container, '[data-hammer="40"]', "data-travel"))
+    const held = Number(attribute(container, '[data-key="40"]', "data-dip"))
+    expect(escaped).toBeGreaterThan(driven)
+    expect(held).toBeGreaterThan(early)
+
+    rerender(<RobotGrandPiano roll={roll} lanes={lanes} beat={3.99} behavior="static" />)
+    expect(Number(attribute(container, '[data-key="40"]', "data-dip"))).toBeGreaterThan(held)
+    expect(Number(attribute(container, '[data-hammer="40"]', "data-travel"))).toBeCloseTo(escaped, 9)
+  })
+
+  it("works the pedals: sustain lifts every damper, una corda shifts the action", () => {
+    const { container, rerender } = render(<RobotGrandPiano beat={4} behavior="static" />)
+    const dampers = [...container.querySelectorAll("[data-damper]")]
+    expect(dampers.length).toBeGreaterThan(40)
+    // The keys that are down have lifted theirs; the rest are still on their strings.
+    expect(dampers.some((damper) => Number(damper.getAttribute("data-lift")) === 0)).toBe(true)
+    expect(Number(attribute(container, "[data-action]", "data-shift"))).toBe(0)
+
+    rerender(<RobotGrandPiano beat={4} behavior="static" pedal="damper" />)
+    expect(
+      [...container.querySelectorAll("[data-damper]")].every(
+        (damper) => Number(damper.getAttribute("data-lift")) === 1,
+      ),
+    ).toBe(true)
+
+    rerender(<RobotGrandPiano beat={4} behavior="static" pedal="shift" />)
+    expect(Number(attribute(container, "[data-action]", "data-shift"))).toBeGreaterThan(0)
+  })
+
+  it("stands the lid on the prop it is given", () => {
+    const { container, rerender } = render(<RobotGrandPiano beat={4} behavior="static" lid="full" />)
+    const full = Number(attribute(container, "[data-lid]", "data-angle"))
+
+    rerender(<RobotGrandPiano beat={4} behavior="static" lid="half" />)
+    expect(Number(attribute(container, "[data-lid]", "data-angle"))).toBeLessThan(full)
+
+    rerender(<RobotGrandPiano beat={4} behavior="static" lid="closed" />)
+    expect(container.querySelector("[data-lid]")).toBeNull()
+  })
+
+  it("names the compass, the position and the view, and projects each camera differently", () => {
+    const { container, getByRole, rerender } = render(
+      <RobotGrandPiano roll={roll} lanes={lanes} beat={0} behavior="static" notes={49} view="profile" />,
+    )
+    const label = getByRole("img").getAttribute("aria-label")!
+    expect(label).toContain("49 notes")
+    expect(label).toContain("step 1/4")
+    expect(label).toContain("side elevation")
+    expect(attribute(container, "[data-view]", "data-view")).toBe("profile")
+
+    const elevation = attribute(container, "[data-soundboard]", "d")
+    rerender(
+      <RobotGrandPiano roll={roll} lanes={lanes} beat={0} behavior="static" notes={49} view="iso" />,
+    )
+    expect(attribute(container, "[data-soundboard]", "d")).not.toBe(elevation)
+  })
+
+  it("is a slider you can scrub when it is interactive", () => {
+    const { getByRole } = render(
+      <RobotGrandPiano interactive roll={roll} lanes={lanes} beat={2} behavior="static" />,
+    )
+    const slider = getByRole("slider")
+    expect(slider.getAttribute("aria-valuenow")).toBe("3")
+    expect(slider.getAttribute("aria-valuemax")).toBe("4")
+    expect(slider.getAttribute("tabindex")).toBe("0")
+  })
+
+  it("plays nothing on an empty roll, and stays neutral on nonsense", () => {
+    const { container } = render(
+      <RobotGrandPiano
+        roll={[]}
+        lanes={[Number.NaN]}
+        beat={Number.NaN}
+        notes={Number.NaN}
+        behavior="static"
+        color="#ff0055"
+      />,
+    )
+    expect(
+      [...container.querySelectorAll("[data-hammer]")].every(
+        (hammer) => Number(hammer.getAttribute("data-travel")) === 0,
+      ),
+    ).toBe(true)
+    expect(container.querySelectorAll("[data-string]")).toHaveLength(88)
+    expect(container.innerHTML).not.toContain("NaN")
+    expect(container.innerHTML).toContain("#ff0055")
+  })
+
+  it("runs the roll forward and never backward", () => {
+    expect(grandPianoGoal("static", 2, 16)).toBe(0)
+    expect(grandPianoGoal("perform", 1, 16)).toBeCloseTo(16, 9)
+    expect(grandPianoGoal("perform", Number.NaN, 16)).toBe(0)
+    for (let clock = 0; clock < 4; clock += 0.05) {
+      expect(grandPianoGoal("rubato", clock + 0.05, 16)).toBeGreaterThan(
+        grandPianoGoal("rubato", clock, 16),
+      )
+    }
   })
 })

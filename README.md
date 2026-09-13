@@ -110,6 +110,11 @@ installs at.
 | `vehicle-geometry` | The constraints a vehicle works against: Ackermann steering, steady-state articulation, the coordinated bank, a rigid body on N axles, the rocket equation, and surface-piercing foil lift. |
 | `robot-car` | An autonomous road car whose two front wheels are solved from one steering angle, with the lean the turn radius implies and a body that rides the road on its own axles. |
 | `transit-bus` | An articulated city bus whose rear section angle is solved from the hitch, with plug doors, a concertina at the joint, and a kneel that rides on the doors' own number. |
+| `rail-geometry` | What a track does to the vehicle on it: bogies placed on a curve with the centre and end throw that follow, Klingel hunting on a coned wheelset, a pantograph solved to a working height, and a turnout's lead, crossing angle and blade throw. |
+| `rail-locomotive` | An electric locomotive and its train, placed by the track rather than steered along it: each bogie takes the tangent under its own pivot, each body is the chord between two of them, and the sideways throw of the middle and the ends falls out. |
+| `rail-bogie` | A powered two-axle bogie, and the only self-excited motion in the set: nothing commands the wheelsets to wander, they wander because they are coned — at exactly Klingel's wavelength, until the flange stops them. |
+| `pantograph-collector` | A single-arm roof current collector that spends reach to buy height, with a control-rod loop that keeps the head level over its working range and a contact wire strung with real stagger. |
+| `rail-turnout` | The points: two blades on one throw bar, a route that is detection rather than a setting, and a crossing angle that is the turnout number and nothing else. |
 | `cargo-plane` | A high-wing freighter that banks because it was asked to turn, with ailerons carrying the roll it has not finished. |
 | `hydrofoil-craft` | A foilborne ferry that climbs out of its own ground plane: lift goes as v², so the surface-piercing V sheds wetted area as she rises. |
 | `launch-vehicle` | A two-stage booster that flies a pitch program, gimbals against it, stages, and reports the ideal Δv left from the rocket equation. |
@@ -158,9 +163,11 @@ installs at.
 | `slab-handset` | A touchscreen slab turned about its own axis: edge on at a quarter, back and camera array at a half, and a display re-laid-out rather than rotated for landscape. |
 | `wrist-terminal` | A wrist display with a crown geared to its dial and a link band that keeps its length however far it is opened. |
 | `sound-geometry` | The closures in a machine that makes a sound by moving something: a spiral groove, a pivoted tonearm's tracking error, an exponential horn, a spring governor, a tuned comb, and a pinned barrel. |
+| `piano-geometry` | The closures in a grand: an action whose ratio is a product of three levers and whose jack lets the hammer go before the blow, a back check, a late damper, a scale that cannot be ideal, and the bent side that is the envelope of it. |
 | `turntable-deck` | A belt-drive deck whose arm is geared to its platter by the groove: one revolution walks the stylus in one groove pitch, and the tracking error is in the readout. |
 | `gramophone-horn` | The acoustic deck a century earlier: a mainspring whose governor holds the speed until it runs down, a crank that is the wind, and an exponential horn. |
 | `music-box-drum` | A pinned barrel bending a comb tuned by length, and letting go the instant the pin reaches the tip. The notes are a pattern you pass it. |
+| `robot-grand-piano` | A player grand whose roll drives 88 solved actions. The jack lets each hammer go before it reaches the string, the back check catches it coming down, and the bent side of the case is the envelope of the string scale. |
 | `busker-droid` | A one-machine band whose pose comes from data: a step pattern raises each beater and drops it on the beat, both arms solved to what they are about to hit. |
 | `celestial-planet` | A tilted, turning globe with latitude bands, polar caps, longitude storms and a ring system the body genuinely occludes — the far arc is cut where the silhouette crosses it, and the day-night line is a projected great circle. |
 | `celestial-moon` | The phase machine: a lunation whose crescent is the projection of the terminator circle rather than a drawn shape, and a libration that rocks the body so the limb craters come round and go again. |

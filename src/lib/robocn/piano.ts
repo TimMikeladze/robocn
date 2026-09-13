@@ -24,7 +24,7 @@
  * an integration.
  */
 
-import { clamp, convexHull2, lerp, toDegrees, type Vec2 } from "@/lib/robocn/kinematics"
+import { clamp, lerp, toDegrees, type Vec2 } from "@/lib/robocn/kinematics"
 
 const finite = (value: number | undefined, fallback: number) =>
   Number.isFinite(value) ? (value as number) : fallback
@@ -359,7 +359,7 @@ export interface PianoLayoutOptions extends PianoScaleOptions {
   hitch?: number
   /** How far outside the strings the rim runs. */
   margin?: number
-  /** How wide the tail is, so the bent side has somewhere to finish. */
+  /** The narrowest the tail may finish, so the bent side never comes to a point. */
   tail?: number
 }
 
@@ -408,10 +408,10 @@ export function pianoLayout(options: PianoLayoutOptions = {}): PianoLayout {
   const front = finite(options.front, 0)
   const half = span(options.halfWidth, 26)
   const overstrung = count(options.overstrung, 18, 0, notes)
-  const bassOffset = unit(options.bassOffset, 0.32)
+  const bassOffset = unit(options.bassOffset, 0.2)
   const hitch = span(options.hitch, 3)
   const margin = span(options.margin, 4)
-  const tail = span(options.tail, 20)
+  const tail = span(options.tail, 12)
 
   /** Across the case: the bottom note at the bass edge, the top at the treble. */
   const fan = (index: number) => (notes > 1 ? lerp(half, -half, index / (notes - 1)) : 0)
@@ -436,7 +436,9 @@ export function pianoLayout(options: PianoLayoutOptions = {}): PianoLayout {
       agraffe: { x, y: agraffeZ },
       bridge,
       hitchPin: {
-        x: bridge.x + (sideways / reach) * hitch,
+        // Past the bridge the back length runs on to the hitch pin, and on the
+        // bass bridge it angles back toward the rim it is pulling against.
+        x: bridge.x + (Math.abs(sideways) / reach) * hitch,
         y: bridge.y + (along / reach) * hitch,
       },
     }
@@ -473,10 +475,12 @@ interface RimOptions {
 }
 
 /**
- * The case. Every string has to fit inside it, so the outline is the hull of
- * the hitch pins pushed outward by the rim — which is what makes the bent side
- * the envelope of the scale — with the spine and the front, which on a grand
- * are straight, snapped back onto their own lines.
+ * The case. Every string has to fit inside it, so the bent side is the running
+ * envelope of the hitch pins — walk the notes from the tail forward and keep
+ * the furthest one reached — pushed outward by the thickness of the rim. It is
+ * not a hull: the envelope of a scale is concave through its middle, and a hull
+ * would cut exactly the curve the instrument is known by. The spine, the front
+ * and the tail are straight, because a grand's are.
  */
 function rimOutline(
   strings: readonly PianoPlacement[],
@@ -484,57 +488,39 @@ function rimOutline(
 ): Vec2[] {
   const edge = half + margin
   const back = depth - margin
-  const seeds: Vec2[] = [
-    ...strings.map((string) => string.hitchPin),
-    { x: -half, y: front + margin },
-    { x: half, y: front + margin },
-    // Hold the spine out to the tail, and give the tail a width to finish on.
-    { x: half, y: back },
-    { x: half - tail, y: back },
+  const hitches = strings.map((string) => string.hitchPin).sort((a, b) => b.y - a.y)
+  const envelope: Vec2[] = []
+  let reach = Number.POSITIVE_INFINITY
+  for (const point of hitches) {
+    reach = Math.min(reach, point.x)
+    const last = envelope[envelope.length - 1]
+    if (last && Math.abs(last.y - point.y) < 1e-6) last.x = reach
+    else envelope.push({ x: reach, y: Math.min(point.y, back) })
+  }
+  envelope.reverse()
+  if (envelope.length < 2) return [
+    { x: -edge, y: front },
+    { x: -edge, y: depth },
+    { x: edge, y: depth },
+    { x: edge, y: front },
   ]
-  const hull = convexHull2(seeds)
-  if (hull.length < 3) return seeds
-  const centre = hull.reduce(
-    (sum, point) => ({ x: sum.x + point.x / hull.length, y: sum.y + point.y / hull.length }),
-    { x: 0, y: 0 },
-  )
-  const outline: Vec2[] = []
-  for (let index = 0; index < hull.length; index += 1) {
-    const point = hull[index]!
-    const previous = hull[(index - 1 + hull.length) % hull.length]!
-    const next = hull[(index + 1) % hull.length]!
-    const normal = bisector(previous, point, next, centre)
-    const moved = {
-      x: clamp(point.x + normal.x * margin, -edge, edge),
-      y: Math.max(point.y + normal.y * margin, front),
-    }
-    if (point.x >= half - 1e-6) moved.x = edge
-    if (point.y <= front + margin + 1e-6) moved.y = front
-    if (point.y >= back - 1e-6) moved.y = depth
-    const last = outline[outline.length - 1]
-    if (!last || Math.hypot(last.x - moved.x, last.y - moved.y) > 1e-6) outline.push(moved)
-  }
-  return outline
-}
 
-/** The outward unit bisector at one hull vertex. */
-function bisector(previous: Vec2, point: Vec2, next: Vec2, centre: Vec2): Vec2 {
-  let x = 0
-  let y = 0
-  for (const edge of [
-    { x: point.x - previous.x, y: point.y - previous.y },
-    { x: next.x - point.x, y: next.y - point.y },
-  ]) {
-    const length = Math.hypot(edge.x, edge.y)
-    if (length < 1e-9) continue
-    x += -edge.y / length
-    y += edge.x / length
-  }
-  const length = Math.hypot(x, y)
-  if (length < 1e-9) return { x: 0, y: 0 }
-  const away = { x: point.x - centre.x, y: point.y - centre.y }
-  const sign = (x * away.x + y * away.y < 0 ? -1 : 1) / length
-  return { x: x * sign, y: y * sign }
+  // The rim stands off the strings by its own thickness: sideways along the
+  // bent side, and — since `depth` already carries it — backward at the tail.
+  const bent = envelope.map((point) => ({ x: point.x - margin, y: point.y }))
+
+  const nose = bent[0]!
+  const heel = bent[bent.length - 1]!
+  return [
+    { x: clamp(nose.x, -edge, edge), y: front },
+    ...bent.map((point) => ({
+      x: clamp(point.x, -edge, edge - tail),
+      y: clamp(point.y, front, depth),
+    })),
+    { x: clamp(heel.x, -edge, edge - tail), y: depth },
+    { x: edge, y: depth },
+    { x: edge, y: front },
+  ]
 }
 
 /* -------------------------------------------------------------------------- */

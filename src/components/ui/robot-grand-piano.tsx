@@ -258,7 +258,7 @@ function RobotGrandPiano({
     margin: CASE.margin,
     front: 0,
     pins: 2.6,
-    tail: CASE.halfWidth,
+    tail: 12,
     overstrung: Math.max(2, Math.round(compass * 0.2)),
     hitch: 2.4,
   })
@@ -322,19 +322,34 @@ function RobotGrandPiano({
   const raise = (points: readonly Vec2[], y: number): Vec3[] =>
     points.map((point) => ({ x: point.x, y, z: point.y }))
 
-  /** The walls of a prism standing on a plan outline. */
+  /**
+   * The walls of a prism standing on a plan outline, drawn as a section: the
+   * walls between the camera and the inside are cut away, so the harp and the
+   * action read from every angle instead of from behind a rim.
+   */
   const walls = (points: readonly Vec2[], top: number, bottom: number) =>
-    points.map((point, index) => {
+    points.flatMap((point, index) => {
       const next = points[(index + 1) % points.length]!
-      return slabPath(
-        [
-          { x: point.x, y: top, z: point.y },
-          { x: next.x, y: top, z: next.y },
-          { x: point.x, y: bottom, z: point.y },
-          { x: next.x, y: bottom, z: next.y },
-        ],
-        camera,
-      )
+      const mid = { x: (point.x + next.x) / 2, z: (point.y + next.y) / 2 }
+      const dx = next.x - point.x
+      const dz = next.y - point.y
+      const run = Math.hypot(dx, dz)
+      if (run < 1e-6) return []
+      const out = { x: dz / run, z: -dx / run }
+      const facing =
+        camera.depth(mid.x + out.x, top, mid.z + out.z) - camera.depth(mid.x, top, mid.z)
+      if (facing > 0) return []
+      return [
+        slabPath(
+          [
+            { x: point.x, y: top, z: point.y },
+            { x: next.x, y: top, z: next.y },
+            { x: point.x, y: bottom, z: point.y },
+            { x: next.x, y: bottom, z: next.y },
+          ],
+          camera,
+        ),
+      ]
     })
 
   /** A box in world space, from its two opposite corners. */
@@ -476,10 +491,13 @@ function RobotGrandPiano({
 
         <path data-soundboard d={outline(raise(soundboard, STRINGS.board))} {...machined} />
 
-        {/* The plate: the struts that carry the pull of the strings. */}
+        {/* The plate: the struts that carry the pull of the strings. Each one
+            stops where the bent side comes in to meet it, so the plate is the
+            shape of the case rather than a rectangle laid over it. */}
         <g data-plate>
-          {[0.26, 0.5, 0.74].map((across) => {
+          {[0.3, 0.46, 0.62].map((across) => {
             const x = (0.5 - across) * CASE.halfWidth * 2
+            const reach = layout.rim.find((point) => point.x > x)?.y ?? layout.depth
             return (
               <path
                 key={across}
@@ -487,8 +505,8 @@ function RobotGrandPiano({
                   [
                     { x: x - 1.1, y: STRINGS.y + 0.7, z: CASE.strike + 2 },
                     { x: x + 1.1, y: STRINGS.y + 0.7, z: CASE.strike + 2 },
-                    { x: x - 1.1, y: STRINGS.y + 0.7, z: layout.depth - CASE.margin - 3 },
-                    { x: x + 1.1, y: STRINGS.y + 0.7, z: layout.depth - CASE.margin - 3 },
+                    { x: x - 1.1, y: STRINGS.y + 0.7, z: reach - CASE.margin },
+                    { x: x + 1.1, y: STRINGS.y + 0.7, z: reach - CASE.margin },
                   ],
                   camera,
                 )}

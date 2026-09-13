@@ -3056,6 +3056,26 @@
       ]
     },
     {
+      "name": "piano-geometry",
+      "type": "registry:lib",
+      "title": "Piano geometry",
+      "description": "The closures in a grand: an action whose ratio is a product of three levers and whose jack lets the hammer go before the blow, a back check, a damper that leaves the string late, a scale that cannot be ideal, a bridge and bent side that are the envelope of it, and a lid solved from its prop stick.",
+      "categories": [
+        "robotics",
+        "geometry"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json"
+      ],
+      "files": [
+        {
+          "path": "src/lib/robocn/piano.ts",
+          "type": "registry:lib",
+          "target": "@lib/robocn/piano.ts"
+        }
+      ]
+    },
+    {
       "name": "turntable-deck",
       "type": "registry:ui",
       "title": "Turntable deck",
@@ -3121,6 +3141,30 @@
           "path": "src/components/ui/music-box-drum.tsx",
           "type": "registry:ui",
           "target": "@ui/music-box-drum.tsx"
+        }
+      ]
+    },
+    {
+      "name": "robot-grand-piano",
+      "type": "registry:ui",
+      "title": "Robot grand piano",
+      "description": "A player grand whose roll drives 88 solved actions: the jack lets each hammer go before it reaches the string, the back check catches it coming down, the dampers leave late, the pedals work, and the bent side of the case is the envelope of the string scale.",
+      "categories": [
+        "robotics",
+        "machines"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/piano-geometry.json",
+        "{REGISTRY_URL}/r/sound-geometry.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/robot-grand-piano.tsx",
+          "type": "registry:ui",
+          "target": "@ui/robot-grand-piano.tsx"
         }
       ]
     },
@@ -3982,6 +4026,122 @@
           "path": "src/components/ui/washing-machine.tsx",
           "type": "registry:ui",
           "target": "@ui/washing-machine.tsx"
+        }
+      ]
+    },
+    {
+      "name": "rail-geometry",
+      "type": "registry:lib",
+      "title": "Rail geometry",
+      "description": "What a track does to the vehicle standing on it: bogies placed on a curve with the centre and end throw that follow, Klingel hunting on a coned wheelset, a pantograph solved to a working height, and turnout lead geometry with blade throw and detection.",
+      "categories": [
+        "robotics",
+        "rail"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json"
+      ],
+      "files": [
+        {
+          "path": "src/lib/robocn/rail.ts",
+          "type": "registry:lib",
+          "target": "@lib/robocn/rail.ts"
+        }
+      ]
+    },
+    {
+      "name": "rail-locomotive",
+      "type": "registry:ui",
+      "title": "Rail locomotive",
+      "description": "An electric locomotive and its train, placed by the track rather than steered along it: each bogie takes the tangent under its own pivot, each body is the chord between two of them, and the centre and end throw fall out of that.",
+      "categories": [
+        "robotics",
+        "rail",
+        "vehicles"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/rail-geometry.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/rail-locomotive.tsx",
+          "type": "registry:ui",
+          "target": "@ui/rail-locomotive.tsx"
+        }
+      ]
+    },
+    {
+      "name": "rail-bogie",
+      "type": "registry:ui",
+      "title": "Rail bogie",
+      "description": "A powered two-axle bogie whose wheelsets hunt because they are coned, at exactly Klingel wavelength, with a frame that is not animated but placed by the two wheelsets it joins.",
+      "categories": [
+        "robotics",
+        "rail",
+        "machines"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/rail-geometry.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/rail-bogie.tsx",
+          "type": "registry:ui",
+          "target": "@ui/rail-bogie.tsx"
+        }
+      ]
+    },
+    {
+      "name": "pantograph-collector",
+      "type": "registry:ui",
+      "title": "Pantograph collector",
+      "description": "A single-arm roof current collector that spends reach to buy height, with a control rod loop that keeps the head level over its working range and a contact wire strung with real stagger.",
+      "categories": [
+        "robotics",
+        "rail",
+        "machines"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/rail-geometry.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/pantograph-collector.tsx",
+          "type": "registry:ui",
+          "target": "@ui/pantograph-collector.tsx"
+        }
+      ]
+    },
+    {
+      "name": "rail-turnout",
+      "type": "registry:ui",
+      "title": "Rail turnout",
+      "description": "A trailing-point turnout on a point machine: two blades on one throw bar, a route that is detection rather than a setting, and a crossing angle that is the turnout number and nothing else.",
+      "categories": [
+        "robotics",
+        "rail",
+        "machines"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/rail-geometry.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/rail-turnout.tsx",
+          "type": "registry:ui",
+          "target": "@ui/rail-turnout.tsx"
         }
       ]
     }
