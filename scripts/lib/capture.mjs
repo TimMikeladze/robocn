@@ -236,11 +236,17 @@ class Page {
     })
   }
 
+  /**
+   * Emulated media features. One call replaces the whole set, so a caller that
+   * wants two of them has to name both.
+   */
+  media(features) {
+    return this.send("Emulation.setEmulatedMedia", { features })
+  }
+
   /** Belt and braces next to the saved theme: `system` resolves off this. */
   colorScheme(mode) {
-    return this.send("Emulation.setEmulatedMedia", {
-      features: [{ name: "prefers-color-scheme", value: mode }],
-    })
+    return this.media([{ name: "prefers-color-scheme", value: mode }])
   }
 
   async goto(url) {

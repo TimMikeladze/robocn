@@ -4,6 +4,10 @@
 and Facebook show when someone pastes a robocn link. It is a **screenshot of a real
 page**, not a drawing of one.
 
+This page is about the site's card. Every docs page has one of its own, drawn from
+the same parts and captured by the same command — [a social card per
+page](per-page-og-images.md).
+
 ## Why a screenshot and not `ImageResponse`
 
 Next's `ImageResponse` renders through satori, which supports a subset of CSS and a
@@ -27,6 +31,7 @@ the composition changes. `pnpm og` does that in one command and the file is smal
 | the route it renders on | `src/app/og/page.tsx` (`noindex`) |
 | the capture | `scripts/build-og.mjs` → `pnpm og`, over `scripts/lib/capture.mjs` |
 | the tags that point at it | `openGraph.images` / `twitter` in `src/app/layout.tsx` |
+| the page cards beside it | [per-page-og-images.md](per-page-og-images.md) |
 
 ## The composition
 
@@ -83,7 +88,8 @@ than square-crop insurance is.
 ## Regenerating
 
 ```bash
-pnpm og
+pnpm og               # this card, and every page card
+pnpm og --only site   # this card alone
 ```
 
 Reuses the `next dev` you already have running — it reads the port out of
@@ -99,6 +105,13 @@ websocket is a fetch that never settles, so the capture hangs forever. The scrip
 speaks the DevTools protocol instead — navigate, await `document.fonts.ready`, settle,
 drop the `<nextjs-portal>` the dev indicator lives in, `Page.captureScreenshot` with
 an explicit 1200 × 630 clip.
+
+The capture also emulates `prefers-reduced-motion: reduce`, which parks every machine
+in the set at its `phase`. That is what pins the 170 page cards, which cannot be posed
+by hand. It barely touches this one — the twelve tiles are pinned already — but it does
+stop the CSS keyframe classes in `globals.css` (the blink, the pulse, the scan), so the
+card moved by a few hundred bytes the first time it ran under the flag. Strictly an
+improvement: those were the last three things on the sheet that were not reproducible.
 
 That driver is `scripts/lib/capture.mjs`, shared with `pnpm shots`, which takes the
 README screenshots the same way — see [the screenshots](screenshots.md). `--url` names

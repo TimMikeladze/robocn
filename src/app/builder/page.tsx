@@ -1,10 +1,17 @@
 import { BuilderWorkspace } from "@/components/builder/builder-workspace"
 import { libraryComponents, loadLibraryComponent } from "@/lib/builder/library"
+import { ogImage } from "@/lib/og"
+import { site } from "@/lib/site"
+
+const description = "Design robotic React components with an AI agent. Edit the code, preview your robot live, and export it for your own project."
+const images = ogImage("builder", "Robot Builder — an articulated arm drawn as a blueprint, with its reach envelope")
 
 export const metadata = {
   title: "Robot Builder",
-  description: "Design robotic React components with an AI agent. Edit the code, preview your robot live, and export it for your own project.",
+  description,
   alternates: { canonical: "/builder" },
+  openGraph: { title: "Robot Builder — robocn", description, url: `${site.url}/builder`, images },
+  twitter: { card: "summary_large_image", images },
 }
 
 export const dynamic = "force-dynamic"

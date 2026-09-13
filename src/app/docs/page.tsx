@@ -1,10 +1,23 @@
 import { DocsCatalogue } from "@/components/site/docs-catalogue"
 import { docGroups, docs } from "@/lib/docs"
+import { ogSize, siteOgImage } from "@/lib/og"
+import { site } from "@/lib/site"
+
+const description = "Browse and search robotic components for shadcn: articulated arms, production machines, mobile robots, sensor displays, and shared foundations."
+/**
+ * The site contact sheet, on purpose. Every docs page below this one has a card
+ * of its own showing its machine, but this page *is* the catalogue, and a
+ * picture of twelve machines is the honest picture of it —
+ * `docs/per-page-og-images.md`.
+ */
+const images = [{ url: siteOgImage, ...ogSize, alt: `${site.name} — twelve robot components on a contact sheet` }]
 
 export const metadata = {
   title: "Components",
-  description: "Browse and search robotic components for shadcn: articulated arms, production machines, mobile robots, sensor displays, and shared foundations.",
+  description,
   alternates: { canonical: "/docs" },
+  openGraph: { title: "Components — robocn", description, url: `${site.url}/docs`, images },
+  twitter: { card: "summary_large_image", images },
 }
 
 export default function DocsIndex() {

@@ -389,7 +389,7 @@ pnpm install
 pnpm dev              # docs site and registry, on http://localhost:3000
 pnpm generate         # builder runtime + the registry→component gallery map
 pnpm registry:build   # writes public/r/*.json
-pnpm og               # recaptures public/og.png, the social card
+pnpm og               # recaptures the social cards: public/og.png and public/og/*.png
 pnpm shots            # recaptures docs/screenshots/*.png, the pictures above
 pnpm test             # kinematics, components, registry integrity
 pnpm typecheck
@@ -404,9 +404,12 @@ another outside shadcn's own registry — so the host is stamped in at build tim
 
 The social card at `public/og.png` is a screenshot of `/og`, which is a real page built
 from real components — see [the social card](docs/og-image.md) for why, and run `pnpm og`
-after changing what it shows. The pictures in this README are captures of the real pages
-for the same reason: `pnpm shots`, and [the screenshots](docs/screenshots.md) for the shot
-list. Both drive headless Chrome through `scripts/lib/capture.mjs`.
+after changing what it shows. Every docs page has a card of its own under `public/og/`
+drawn the same way, so a link to `/docs/micro-duck` previews as the duck rather than as
+the catalogue: [a social card per page](docs/per-page-og-images.md), and `pnpm og --only
+micro-duck` while you are editing one. The pictures in this README are captures of the
+real pages for the same reason: `pnpm shots`, and [the screenshots](docs/screenshots.md)
+for the shot list. All of it drives headless Chrome through `scripts/lib/capture.mjs`.
 
 The project describes itself in three places. `package.json` carries the description,
 keywords, homepage and repository; `src/lib/site.ts` carries the name, tagline,

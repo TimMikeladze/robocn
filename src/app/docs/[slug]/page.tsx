@@ -9,6 +9,7 @@ import { InstallCommand } from "@/components/site/install-command"
 import { PropsTable } from "@/components/site/props-table"
 import { docBySlug, docs } from "@/lib/docs"
 import { libraryComponents } from "@/lib/builder/library"
+import { ogImage } from "@/lib/og"
 import { site } from "@/lib/site"
 
 export function generateStaticParams() {
@@ -23,6 +24,11 @@ export async function generateMetadata({
   const { slug } = await params
   const entry = docBySlug(slug)
   if (!entry) return {}
+  // The page's own card — the machine itself, not the site contact sheet.
+  // `ogImage` falls back for an item that has shipped but not been captured
+  // yet: `docs/per-page-og-images.md`.
+  const images = ogImage(slug, `${entry.title} — ${entry.summary}`)
+
   return {
     title: entry.title,
     description: entry.summary,
@@ -34,7 +40,9 @@ export async function generateMetadata({
       description: entry.summary,
       url: `${site.url}/docs/${slug}`,
       type: "article",
+      images,
     },
+    twitter: { card: "summary_large_image", images },
   }
 }
 
