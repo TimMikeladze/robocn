@@ -282,8 +282,11 @@ export interface RobotCamera {
    * turned `spin` degrees clockwise. Anything flat — a guard ring, a propeller,
    * the deck detail — is exact under it, so one piece of artwork serves every
    * view. In plan the transform is the identity.
+   *
+   * `up` conjugates the transform for a group that has already been mirrored
+   * to draw with `y` pointing up, which is how the arms are written.
    */
-  plane(y?: number, spin?: number): string
+  plane(y?: number, spin?: number, up?: boolean): string
   /**
    * The same thing for artwork drawn in a *vertical* plane — an elevation
    * drawing. The plane stands `offset` world units toward the viewer and is
@@ -296,7 +299,7 @@ export interface RobotCamera {
    * identity; seen edge-on it is singular and the artwork collapses to a line,
    * which is what a wall seen from the side is.
    */
-  wall(offset?: number, spin?: number): string
+  wall(offset?: number, spin?: number, up?: boolean): string
   /** Screen rise per world unit of height. Zero looking straight down. */
   lift: number
   /** How much a horizontal disc keeps of its depth. One looking straight down. */
@@ -325,16 +328,18 @@ export function robotCamera(view: RobotView = "plan"): RobotCamera {
     view,
     project: (x, y, z) => ({ x: x * ca - z * sa, y: x * sa * se - y * ce + z * ca * se }),
     depth: (x, y, z) => x * ce * sa + y * se + z * ce * ca,
-    plane: (y = 0, spin = 0) => {
+    plane: (y = 0, spin = 0, up = false) => {
       // Straight down is the identity, so plan-view drawings stay untouched.
-      const shift = px(-y * ce)
+      const flip = up ? -1 : 1
+      const shift = px(-y * ce) * flip
       const parts = flat
         ? (shift ? [`translate(0 ${shift})`] : [])
-        : [`matrix(${px(ca)} ${px(sa * se)} ${px(-sa)} ${px(ca * se)} 0 ${shift})`]
-      if (spin) parts.push(`rotate(${px(spin)})`)
+        : [`matrix(${px(ca)} ${px(sa * se) * flip} ${px(-sa) * flip} ${px(ca * se)} 0 ${shift})`]
+      if (spin) parts.push(`rotate(${px(spin) * flip})`)
       return parts.join(" ")
     },
-    wall: (offset = 0, spin = 0) => {
+    wall: (offset = 0, spin = 0, up = false) => {
+      const flip = up ? -1 : 1
       const turn = toRadians(spin)
       const cs = Math.cos(turn)
       const sn = Math.sin(turn)
@@ -345,7 +350,7 @@ export function robotCamera(view: RobotView = "plan"): RobotCamera {
       const dy = px(offset * se * (sn * sa - cs * ca))
       // The plane's own view: no transform at all, so the drawing is untouched.
       if (a11 === 1 && a12 === 0 && d === 1 && !dx && !dy) return ""
-      return `matrix(${a11} ${a12} 0 ${d} ${dx} ${dy})`
+      return `matrix(${a11} ${a12 * flip} 0 ${d} ${dx} ${dy * flip})`
     },
     lift: ce,
     flatten: se,
@@ -377,6 +382,16 @@ export function extrudedPath(
   const hull = convexHull2(corners)
   if (hull.length < 3) return ""
   return `${hull.map((p, i) => `${i ? "L" : "M"} ${px(p.x)} ${px(p.y)}`).join(" ")} Z`
+}
+
+/**
+ * A camera transform applied about a point in the drawing rather than about the
+ * viewBox origin, so an existing drawing can be pushed through the camera where
+ * it already stands. Empty in the machine's own view, so nothing is emitted.
+ */
+export function aboutPoint(transform: string, x: number, y: number) {
+  if (!transform) return ""
+  return `translate(${px(x)} ${px(y)}) ${transform} translate(${px(-x)} ${px(-y)})`
 }
 
 /** A circle sampled as a ring of points, ready to extrude: the round parts. */

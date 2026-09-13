@@ -40,20 +40,29 @@ import { UtilityDroid } from "@/components/ui/utility-droid"
  *
  * Everything is rendered parked (`animate={false}`) with every free axis
  * pinned, so the only thing that can move a fixture is the geometry.
+ *
+ * What is compared is the drawing itself — the root element's own attributes
+ * are outside it, because the accessible label has to name the view, and the
+ * `data-view` hook is stripped for the same reason. Neither is geometry.
  */
+const drawing = (container: HTMLElement) =>
+  container
+    .querySelector("svg")!
+    .innerHTML.replaceAll(/ data-view="[a-z]+"/g, "")
+
 const machines: Record<string, () => React.ReactElement> = {
   "robot-arm": () => <RobotArm animate={false} angles={[38, -66, 30]} />,
   "scara-arm": () => <ScaraArm animate={false} behavior="static" />,
   "delta-arm": () => <DeltaArm animate={false} behavior="static" />,
   "gantry-arm": () => <GantryArm animate={false} behavior="static" />,
-  "robot-gripper": () => <RobotGripper animate={false} open={0.4} />,
+  "robot-gripper": () => <RobotGripper animate={false} opening={0.4} />,
   "conveyor-belt": () => <ConveyorBelt animate={false} position={0.3} />,
   "linear-actuator": () => <LinearActuator animate={false} extension={0.6} />,
   "servo-motor": () => <ServoMotor animate={false} angle={35} />,
-  "rotary-table": () => <RotaryTable animate={false} rotation={24} />,
+  "rotary-table": () => <RotaryTable animate={false} angle={24} />,
   "robot-rover": () => <RobotRover animate={false} heading={20} steering={12} wheelTravel={0.2} />,
   "courier-droid": () => <CourierDroid animate={false} heading={20} steering={12} />,
-  "orb-droid": () => <OrbDroid roll={30} />,
+  "orb-droid": () => <OrbDroid look={{ x: 0.3, y: -0.2 }} track={false} />,
   "probe-droid": () => <ProbeDroid animate={false} hover={0.5} />,
   "robot-quadruped": () => <RobotQuadruped animate={false} phase={0.25} />,
   "micro-duck": () => <MicroDuck animate={false} phase={0.25} />,
@@ -80,7 +89,7 @@ describe("native views", () => {
   for (const [name, machine] of Object.entries(machines)) {
     it(`draws ${name} exactly as it did before it had a view axis`, async () => {
       const { container } = render(machine())
-      await expect(container.innerHTML).toMatchFileSnapshot(
+      await expect(drawing(container)).toMatchFileSnapshot(
         `./__snapshots__/views/${name}.html`,
       )
     })

@@ -45,6 +45,35 @@ describe("robot drone", () => {
     expect(container.innerHTML).toContain('#abcdef')
     expect(container.innerHTML).not.toMatch(/NaN|Infinity/)
   })
+
+  it("projects one airframe into every view", () => {
+    const { container, rerender, getByRole } = render(<RobotDrone view="plan" behavior="static" heading={0} rotorAngle={0} />)
+    // Plan is the identity projection: rotors land on the arm circle itself.
+    const plan = Array.from(container.querySelectorAll('[data-rotor] > g')).map(e => e.getAttribute('transform'))
+    expect(plan[0]).toBe('translate(36.77 -36.77)')
+    expect(getByRole('img').getAttribute('aria-label')).toContain('plan view')
+
+    for (const view of ['front', 'profile', 'iso'] as const) {
+      rerender(<RobotDrone view={view} behavior="static" heading={0} rotorAngle={0} />)
+      expect(container.querySelectorAll('[data-rotor]')).toHaveLength(4)
+      // Tipped cameras foreshorten the rotor planes rather than redraw them.
+      expect(container.querySelector('[data-rotor] > g')!.getAttribute('transform')).toMatch(/matrix\(/)
+      expect(container.querySelector('[data-aircraft]')!.getAttribute('data-view')).toBe(view)
+      expect(container.innerHTML).not.toMatch(/NaN|Infinity/)
+    }
+    // A side elevation squashes the ground shadow and lays the aircraft flat.
+    const shadow = container.querySelector('[data-shadow]')!
+    expect(Number(shadow.getAttribute('ry'))).toBeLessThan(Number(shadow.getAttribute('rx')) / 2)
+  })
+
+  it("turns the airframe inside a tipped view instead of rotating the picture", () => {
+    const { container, rerender } = render(<RobotDrone view="iso" behavior="static" heading={0} rotorAngle={0} />)
+    const still = container.querySelector('[data-aircraft]')!.getAttribute('transform')
+    const rotors = Array.from(container.querySelectorAll('[data-rotor] > g')).map(e => e.getAttribute('transform'))
+    rerender(<RobotDrone view="iso" behavior="static" heading={90} rotorAngle={0} />)
+    expect(container.querySelector('[data-aircraft]')!.getAttribute('transform')).toBe(still)
+    expect(Array.from(container.querySelectorAll('[data-rotor] > g')).map(e => e.getAttribute('transform'))).not.toEqual(rotors)
+  })
 })
 
 describe("lidar scan", () => {
