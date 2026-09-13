@@ -50,6 +50,8 @@ Consumers install with `npx shadcn@latest add https://<host>/r/robot-arm.json`, 
 | `arm-controls` | ui | Slider panel that drives an arm in forward kinematics. |
 | `robot-gripper` | ui | Standalone parallel or angular gripper with controlled opening. |
 | `conveyor-belt` | ui | Automatic or controlled conveyor travel with workpieces. |
+| `robot-quadruped` | ui | Four-legged robot with solved controlled gait poses. |
+| `quadruped-kinematics` | lib | Pure planar leg solver and illustrative footfall trajectories. |
 | `linear-actuator` | ui | Cylinder with controlled stroke and piston cutaway. |
 | `servo-motor` | ui | Positional servo with interchangeable horn geometry. |
 | `rotary-table` | ui | Controlled indexing platter, fixtures, and workpieces. |
@@ -133,7 +135,7 @@ The docs demo labels its synthetic room data explicitly.
 
 ### Expanded library verification
 
-The expanded source currently contains 22 registry items. The test suite covers actuator
+The expanded source currently contains 24 registry items. The test suite covers actuator
 poses, rover/drone/lidar geometry, accessible controls, catalogue filtering, mobile
 navigation, registry documentation coverage, and animation scheduling. Motion regressions
 are reproduced with controlled animation frames, including disabled paths, live reduced

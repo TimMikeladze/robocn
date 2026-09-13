@@ -567,6 +567,47 @@
           "target": "@ui/servo-motor.tsx"
         }
       ]
+    },
+    {
+      "name": "quadruped-kinematics",
+      "type": "registry:lib",
+      "title": "Quadruped kinematics",
+      "description": "Pure standing, walking, and trotting pose solver with four planar two-link legs and bounded stance controls.",
+      "categories": [
+        "robotics",
+        "math"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json"
+      ],
+      "files": [
+        {
+          "path": "src/lib/robocn/quadruped.ts",
+          "type": "registry:lib",
+          "target": "@lib/robocn/quadruped.ts"
+        }
+      ]
+    },
+    {
+      "name": "robot-quadruped",
+      "type": "registry:ui",
+      "title": "Robot quadruped",
+      "description": "A four-legged robot with solved leg geometry, controlled gait phase, stance height, stride, foot lift, and contact indicators.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/quadruped-kinematics.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/robot-quadruped.tsx",
+          "type": "registry:ui",
+          "target": "@ui/robot-quadruped.tsx"
+        }
+      ]
     }
   ]
 }

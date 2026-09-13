@@ -108,6 +108,42 @@ const motion: PropRow[] = [
 
 export const docs: DocEntry[] = [
   {
+    slug: "robot-quadruped", item: "robot-quadruped", title: "Robot quadruped", group: "Robots",
+    summary: "A four-legged robot with solved hip, knee, and foot positions. Scrub a walking or trotting cycle, change the stance, and inspect which feet touch the ground.",
+    files: ["components/ui/robot-quadruped.tsx"],
+    usage: `import { RobotQuadruped } from "@/components/ui/robot-quadruped"
+
+<RobotQuadruped gait="trot" phase={0.65} height={0.5} stride={0.8} showContacts />`,
+    props: [
+      { name: "gait", type: '"stand" | "walk" | "trot"', default: '"stand"', description: "Standing pose, staggered single-foot swings, or diagonal-pair swings." },
+      { name: "phase", type: "number", default: "0", description: "Controlled cycle fraction. Wraps in both directions; ignored when standing. Non-finite values use zero." },
+      { name: "height", type: "number", default: "0.5", description: "Normalized stance height, clamped to 0–1 (36–54 world units at the hips). Non-finite values use 0.5." },
+      { name: "stride", type: "number", default: "0.6", description: "Normalized fore/aft foot travel, clamped to 0–1. Zero steps in place. Non-finite values use 0.6." },
+      { name: "lift", type: "number", default: "0.5", description: "Normalized foot clearance, clamped to 0–1. Zero slides feet along the ground. Non-finite values use 0.5." },
+      { name: "showGround", type: "boolean", default: "true", description: "Ground reference plane; blueprint adds its grid." },
+      { name: "showContacts", type: "boolean", default: "false", description: "Mark solved feet that touch the ground plane." },
+      { name: "label", type: "string", description: "Caption underneath the robot." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: ["Phase is controlled and updates immediately; there is no internal animation loop. Connect a timeline or telemetry to animate it, and honor reduced-motion preferences in that driving code.", "All four legs solve two-link inverse kinematics in parallel planes. The illustration preserves link lengths but does not simulate balance, forces, or terrain."],
+  },
+  {
+    slug: "quadruped-kinematics", item: "quadruped-kinematics", title: "Quadruped kinematics", group: "Foundations",
+    summary: "The dependency-free pose solver behind the quadruped. Four legs, three footfall patterns, and bounded controls that keep every foot reachable.",
+    files: ["lib/robocn/quadruped.ts"],
+    usage: `import { solveQuadruped } from "@/lib/robocn/quadruped"
+
+const pose = solveQuadruped({ gait: "walk", phase: 0.4, height: 0.6 })
+pose.legs // id, side, hip, knee, foot, contact
+pose.height // hip height in world units`,
+    api: [
+      { name: "solveQuadruped", type: "(options?: QuadrupedOptions) => QuadrupedPose", description: "Solves hip/knee/foot coordinates for front-left, front-right, rear-left, and rear-right, in that order." },
+      { name: "QuadrupedOptions", type: "{ gait?, phase?, height?, stride?, lift? }", description: "Same gait and normalized stance controls as RobotQuadruped. Defaults to a neutral standing pose." },
+      { name: "QuadrupedLeg", type: "{ id, side, hip: Vec2, knee: Vec2, foot: Vec2, contact }", description: "Coordinates in a sagittal plane: x points forward and y up. Upper links are 30 units, lower links 28. Contact means foot y is within 1e-7 of zero." },
+    ],
+    notes: ["The solver has no React or three.js dependency and does not mutate its inputs. Each side can be projected independently for an SVG or 3D renderer.", "These are illustrative gait trajectories, not a stability or dynamics model. Walk staggers quarter-cycle swings; trot pairs opposite corners."],
+  },
+  {
     slug: "linear-actuator", item: "linear-actuator", title: "Linear actuator", group: "Machines",
     summary: "A linear cylinder with a moving piston and rod. Reveal its internals in cutaway view, or use the complete housing in a production-cell illustration.",
     files: ["components/ui/linear-actuator.tsx"],

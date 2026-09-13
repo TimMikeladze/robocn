@@ -16,6 +16,8 @@ pnpm dlx shadcn@latest add https://robocn.dev/r/robot-arm.json
 
 | Item | What it is |
 |---|---|
+| `robot-quadruped` | Four-legged robot with solved gait poses and controlled stance. |
+| `quadruped-kinematics` | Pure two-link leg solver with standing, walking, and trotting trajectories. |
 | `linear-actuator` | Controlled cylinder stroke with optional piston cutaway. |
 | `servo-motor` | Positional servo with single, double, or cross horns. |
 | `rotary-table` | Rotary indexing platter with controlled angle and up to twelve fixtures. |

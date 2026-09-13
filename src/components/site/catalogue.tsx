@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 
+import { RobotQuadruped } from "@/components/ui/robot-quadruped"
 import { LinearActuator } from "@/components/ui/linear-actuator"
 import { ServoMotor } from "@/components/ui/servo-motor"
 import { RotaryTable } from "@/components/ui/rotary-table"
@@ -21,6 +22,7 @@ import { ScaraArm } from "@/components/ui/scara-arm"
 import { Panel } from "@/components/site/panel"
 
 const entries = [
+  { slug: "robot-quadruped", title: "Robot quadruped", line: "Four solved legs, standing, walking, and trotting.", art: <RobotQuadruped size={240} gait="trot" phase={0.65} /> },
   { slug: "linear-actuator", title: "Linear actuator", line: "Controlled stroke and a piston cutaway.", art: <LinearActuator size={240} cutaway /> },
   { slug: "servo-motor", title: "Servo motor", line: "Positional shaft with three horn styles.", art: <ServoMotor size={150} angle={30} /> },
   { slug: "rotary-table", title: "Rotary table", line: "Indexing platter, fixtures, and workpieces.", art: <RotaryTable size={170} angle={30} /> },

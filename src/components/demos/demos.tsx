@@ -4,6 +4,8 @@
 
 import * as React from "react"
 
+import { RobotQuadruped } from "@/components/ui/robot-quadruped"
+import type { QuadrupedGait } from "@/lib/robocn/quadruped"
 import { LinearActuator } from "@/components/ui/linear-actuator"
 import { ServoMotor, type ServoHorn } from "@/components/ui/servo-motor"
 import { RotaryTable } from "@/components/ui/rotary-table"
@@ -755,7 +757,31 @@ function ServoMotorDemo() {
   )
 }
 
+function RobotQuadrupedDemo() {
+  const [gait, setGait] = React.useState<QuadrupedGait>("trot")
+  const [phase, setPhase] = React.useState(0.65)
+  const [height, setHeight] = React.useState(0.5)
+  const [stride, setStride] = React.useState(0.6)
+  const [lift, setLift] = React.useState(0.5)
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  return (
+    <Bench controls={<>
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="gait" value={gait} options={["stand", "walk", "trot"] as const} onChange={setGait} />
+      <NumberControl label="phase" value={phase} min={0} max={1} step={0.01} onChange={setPhase} format={value => `${Math.round(value * 100)}%`} />
+      <NumberControl label="height" value={height} min={0} max={1} step={0.01} onChange={setHeight} format={value => `${Math.round(value * 100)}%`} />
+      <NumberControl label="stride" value={stride} min={0} max={1} step={0.01} onChange={setStride} format={value => `${Math.round(value * 100)}%`} />
+      <NumberControl label="lift" value={lift} min={0} max={1} step={0.01} onChange={setLift} format={value => `${Math.round(value * 100)}%`} />
+      <p className="text-[11px] text-muted-foreground">Scrub the cycle to inspect footfall timing. Coloured marks identify feet on the ground.</p>
+    </>}>
+      <RobotQuadruped size={420} gait={gait} phase={phase} height={height} stride={stride} lift={lift} variant={variant} showContacts label="QUAD / 11" />
+    </Bench>
+  )
+}
+
 export const demos: Record<string, React.ComponentType> = {
+  "robot-quadruped": RobotQuadrupedDemo,
+  "quadruped-kinematics": RobotQuadrupedDemo,
   "linear-actuator": LinearActuatorDemo,
   "servo-motor": ServoMotorDemo,
   "rotary-table": RotaryTableDemo,
