@@ -1,7 +1,8 @@
-import { render } from "@testing-library/react"
-import { describe, expect, it } from "vitest"
+import { fireEvent, render } from "@testing-library/react"
+import { describe, expect, it, vi } from "vitest"
 
 import { RobotBear, bearBehaviorPose, type BearBehavior } from "@/components/ui/robot-bear"
+import { RobotPanda, pandaBehaviorPose, type PandaBehavior } from "@/components/ui/robot-panda"
 import {
   RobotPolarBear,
   polarBearPose,
@@ -309,5 +310,150 @@ describe("robot polar bear", () => {
     )
     expect(container.innerHTML).not.toMatch(/NaN|Infinity/)
     expect(container.querySelectorAll("[data-sole]")).toHaveLength(4)
+  })
+})
+
+const pandaBehaviors: PandaBehavior[] = ["feed", "sit", "amble", "static"]
+/** Held high enough that both forepaws are off the floor and on the stalk. */
+const HIGH_STALK = { x: 34, y: 34 }
+
+describe("panda behaviours", () => {
+  it("keeps every sampled stance inside its own limits", () => {
+    for (const clock of [0, 0.4, 1.7, 6.2]) {
+      for (const behavior of pandaBehaviors) {
+        const pose = pandaBehaviorPose(behavior, clock)
+        expect(Math.abs(pose.gaze)).toBeLessThanOrEqual(1)
+        for (const cycle of [0, 0.25, 0.5, 0.75, 0.99]) {
+          const stance = pose.stance(cycle)
+          for (const [name, value] of [
+            ["sit", stance.sit],
+            ["grip", stance.grip],
+            ["chew", stance.chew],
+            ["crouch", stance.crouch],
+          ] as const) {
+            expect(value, `${behavior} ${name}`).toBeGreaterThanOrEqual(0)
+            expect(value, `${behavior} ${name}`).toBeLessThanOrEqual(1)
+          }
+          expect(Number.isFinite(stance.stalk.x) && Number.isFinite(stance.stalk.y)).toBe(true)
+        }
+      }
+    }
+  })
+
+  it("gives each behaviour the mechanism it is named for", () => {
+    // Feeding is the only one that moves the stalk and works the jaw.
+    const feed = pandaBehaviorPose("feed", 0)
+    const heights = [0, 0.2, 0.5, 0.8].map((t) => feed.stance(t).stalk.y)
+    expect(Math.max(...heights) - Math.min(...heights)).toBeGreaterThan(10)
+    expect(Math.max(...[0.4, 0.5, 0.6].map((t) => feed.stance(t).chew))).toBeGreaterThan(0.2)
+    expect(feed.stance(0.6).grip).toBeGreaterThan(0.8)
+
+    // Sitting is the same seat with nothing in the hands; ambling stands up.
+    expect(pandaBehaviorPose("sit", 0).stance(0).sit).toBe(1)
+    expect(pandaBehaviorPose("amble", 0).stance(0).sit).toBe(0)
+    expect(pandaBehaviorPose("amble", 0).stance(0.4).stride).not.toBe(
+      pandaBehaviorPose("amble", 0).stance(0).stride,
+    )
+  })
+})
+
+describe("robot panda", () => {
+  it("buys a base of support by putting its seat down", () => {
+    const supportAt = (sit: number) => {
+      const { container, unmount } = render(
+        <RobotPanda behavior="sit" sit={sit} stalk={HIGH_STALK} interactive={false} showSupport />,
+      )
+      const group = container.querySelector("[data-support]")!
+      const state = {
+        base: Number(group.getAttribute("data-base")),
+        margin: Number(group.getAttribute("data-margin")),
+        seat: container.querySelector("[data-seat]")!.getAttribute("data-down"),
+      }
+      unmount()
+      return state
+    }
+    const hovering = supportAt(0.9)
+    const seated = supportAt(1)
+
+    // Just before the seat lands, both forepaws are on the stalk and the two
+    // hind soles are rolled onto their heels: two points at the same place are
+    // not a base, and there is nothing holding the animal up.
+    expect(hovering.seat).toBe("false")
+    expect(hovering.base).toBe(0)
+    // The seat is a third contact with a span of its own, and that is the base.
+    expect(seated.seat).toBe("true")
+    expect(seated.base).toBeGreaterThan(15)
+    expect(seated.margin).toBeGreaterThan(hovering.margin)
+  })
+
+  it("opens the thumb around whatever is in it, at the same grip", () => {
+    const { container, rerender } = render(
+      <RobotPanda behavior="sit" sit={1} grip={1} stalkWidth={1} stalk={HIGH_STALK} interactive={false} />,
+    )
+    const thin = container.querySelector('[data-thumb="left"] path')!.getAttribute("d")
+
+    // Same grip, a fatter stalk: the pad gap is an output of what is held.
+    rerender(
+      <RobotPanda behavior="sit" sit={1} grip={1} stalkWidth={9} stalk={HIGH_STALK} interactive={false} />,
+    )
+    expect(container.querySelector('[data-thumb="left"] path')!.getAttribute("d")).not.toBe(thin)
+
+    // And opening the grip on nothing opens the thumb by itself.
+    rerender(
+      <RobotPanda behavior="sit" sit={1} grip={0} stalkWidth={1} stalk={HIGH_STALK} interactive={false} />,
+    )
+    expect(container.querySelector('[data-thumb="left"] path')!.getAttribute("d")).not.toBe(thin)
+  })
+
+  it("solves both forelimbs to the stalk, and says it is holding one", () => {
+    const { container, getByRole, rerender } = render(
+      <RobotPanda behavior="sit" sit={1} grip={1} stalkWidth={6} stalk={{ x: 26, y: 26 }} interactive={false} />,
+    )
+    const left = container.querySelector('[data-leg="fore-left"] path')!.getAttribute("d")
+    const right = container.querySelector('[data-leg="fore-right"] path')!.getAttribute("d")
+    expect(getByRole("img").getAttribute("aria-label")).toMatch(/sitting, holding a stalk/)
+
+    rerender(
+      <RobotPanda behavior="sit" sit={1} grip={1} stalkWidth={6} stalk={{ x: 44, y: 46 }} interactive={false} />,
+    )
+    expect(container.querySelector('[data-leg="fore-left"] path')!.getAttribute("d")).not.toBe(left)
+    expect(container.querySelector('[data-leg="fore-right"] path')!.getAttribute("d")).not.toBe(right)
+
+    // Closed on nothing, the pads meet and it is not holding anything.
+    rerender(<RobotPanda behavior="sit" sit={1} grip={1} stalkWidth={0} stalk={HIGH_STALK} interactive={false} />)
+    expect(getByRole("img").getAttribute("aria-label")).toMatch(/Robot panda, sitting, side/)
+  })
+
+  it("bites on a click only while it is interactive", () => {
+    const onBite = vi.fn()
+    const { getByRole, rerender } = render(<RobotPanda behavior="sit" onBite={onBite} />)
+    fireEvent.pointerDown(getByRole("img"))
+    expect(onBite).toHaveBeenCalledTimes(1)
+
+    rerender(<RobotPanda behavior="sit" onBite={onBite} interactive={false} />)
+    fireEvent.pointerDown(getByRole("img"))
+    expect(onBite).toHaveBeenCalledTimes(1)
+  })
+
+  it("renders a stable neutral pose for invalid input", () => {
+    const { container } = render(
+      <RobotPanda
+        behavior={"climb" as PandaBehavior}
+        sit={Number.NaN}
+        grip={Number.NaN}
+        stalkWidth={Number.NaN}
+        stalk={{ x: Number.NaN, y: Number.NaN }}
+        chew={Number.NaN}
+        arch={Number.NaN}
+        crouch={Number.NaN}
+        gaze={Number.NaN}
+        phase={Number.NaN}
+        interactive={false}
+        showSupport
+      />,
+    )
+    expect(container.innerHTML).not.toMatch(/NaN|Infinity/)
+    expect(container.querySelectorAll("[data-sole]")).toHaveLength(4)
+    expect(container.querySelectorAll("[data-thumb]")).toHaveLength(2)
   })
 })

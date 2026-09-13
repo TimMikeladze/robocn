@@ -119,13 +119,6 @@ const viewNames: Record<RobotView, string> = {
 
 type LegId = "fore-left" | "fore-right" | "hind-left" | "hind-right"
 
-/** A point in the animal's own frame: nose-ward, up, and off the centre plane. */
-interface Solid {
-  forward: number
-  up: number
-  across: number
-}
-
 interface BearLeg extends SolePose {
   id: LegId
   side: "left" | "right"
@@ -416,7 +409,7 @@ function RobotBear({
 
   /* ---- four plantigrade limbs -------------------------------------------- */
 
-  const soles = legPlan.map(({ id, fore }, index) => {
+  const soles = legPlan.map(({ fore }, index) => {
     const step = steps[index]
     const root = fore ? shoulder : hip
     const links = fore ? FORE : HIND
@@ -496,7 +489,6 @@ function RobotBear({
   const frame = framed ? { transform: framed } : {}
   /** A point in the animal's own frame, `across` units off the centre plane. */
   const at = (p: Vec2, across = 0) => camera.project(across, p.y, -p.x)
-  const solid = (p: Solid) => camera.project(p.across, p.up, -p.forward)
 
   // The topline: level over a deep body, with the hump standing over the
   // withers as the highest point on the animal.

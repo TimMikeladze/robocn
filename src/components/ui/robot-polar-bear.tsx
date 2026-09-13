@@ -113,12 +113,6 @@ const viewNames: Record<RobotView, string> = {
 
 type LegId = "fore-left" | "fore-right" | "hind-left" | "hind-right"
 
-interface Solid {
-  forward: number
-  up: number
-  across: number
-}
-
 interface PolarLeg extends SolePose {
   id: LegId
   side: "left" | "right"
@@ -377,7 +371,7 @@ function RobotPolarBear({
     y: spinePoint(1).y - Math.sin(under) * 8,
   }
 
-  const soles = legPlan.map(({ id, fore, offset: legOffset }, index) => {
+  const soles = legPlan.map(({ id, fore }, index) => {
     const step = steps[index]
     const root = fore ? shoulder : hip
     const links = fore ? FORE : HIND

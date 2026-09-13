@@ -117,19 +117,26 @@ The brown-bear archetype and the flagship. One prop does the thing the family ex
   much shorter*.
 
 That last consequence is the machine. Left alone the margin goes negative and the animal falls
-on its face, so it does what an animal does: it brings the hips back and the belly forward until
-the centre of mass is over the soles again.
+on its face, so it does what an animal does — in two moves, and `balance` is the dial on both:
 
 ```
-shift = −(com − centre) · BALANCE          // world units the trunk moves back along the floor
-carried = lerp(scriptedShift, shift, balance)
+under = clamp(com, ±hindRoom)                        // the hind soles step in under the mass
+shift = clamp(centre − com, ±SHIFT) · balance        // then the body slides over its own feet
+hindRoom = √(reach² − (hip − ankle)²)                // and both are bounded by the limb's reach
 ```
 
-`balance` is the dial, 0 scripted to 1 fully derived. At 1 the standing pose is not a pose
-anybody authored: it is wherever the arithmetic had to put the body to keep `margin` positive,
-and the blueprint variant draws the base, the centre of mass and the margin so you can watch it
-being kept. Rear it with `balance` at 0 and it topples — `stable` goes false, the support marker
-goes red, and that is the honest drawing of what that pose actually is.
+The reach bound is the honest part: a foot the limb cannot get to is not a foot, so neither half
+of the rule may ask for one. At `balance` 1 the standing pose is not a pose anybody authored — it
+is wherever the arithmetic had to put the feet and the body to keep `margin` positive — and the
+blueprint variant draws the base, the centre of mass and the margin so you can watch it being
+kept.
+
+**Where it bites is the middle of the rise.** Halfway up, the forelimbs have left the floor, the
+base is a fifth of what it was, and the mass is still well forward: with `balance` at 0 the centre
+of mass is outside the base, `stable` goes false, the support marker goes red, and the machine is
+drawn toppling, because that is what that pose is. At the top it is over its feet either way —
+a rear that gets all the way to vertical does not need holding, which is exactly why an animal
+rushes the middle of it.
 
 ### The hump
 
@@ -150,10 +157,9 @@ instead of a mechanism.
 
 | `behavior` | What it does |
 |---|---|
-| `amble` | The signature. A **lateral-sequence** plantigrade walk — near fore and near hind swing together, which is the pace-like roll a bear actually has and which no diagonal walker in this set does — with every sole rolling heel to toe. |
-| `rear` | Up onto the hind soles, sways while the balance holds the margin, and comes back down. |
-| `forage` | Head down over the floor, one forepaw digging, the hump working. |
-| `amble`/`rear` under `speed` | One stride or one rise per cycle. |
+| `amble` | The signature. A **lateral-sequence** plantigrade walk — near hind and near fore a tenth of a stride apart, which is the rolling amble a bear actually has and which no diagonal walker in this set does — with every sole rolling heel to toe. |
+| `rear` | Up onto the hind soles and back down, one rise per cycle, with the balance rule holding the margin through the middle of it. |
+| `forage` | Head down over the floor, one forepaw raking, the hump loaded throughout. |
 | `static` | Standing square on four flat soles. |
 
 `interactive`: **drag up and down to rear it** — the bottom of the box is four feet, the top is
@@ -202,8 +208,8 @@ with.
 |---|---|
 | `swim` | The signature: afloat at the waterline, forelimbs alternating, hind trailing. |
 | `plod` | The lateral-sequence plantigrade walk on the floor. |
-| `stalk` | Low and long, head down below the shoulder, soles kept flat — the creep. |
-| `rear` | Up on the hind soles, the same transition the brown bear has. |
+| `stalk` | Low and long, the neck run right down below the shoulder — the creep. |
+| `rear` | Up on the hind soles, the same transition the brown bear has. `rear` is scaled out by `swim`: nothing rears in the water. |
 | `static` | Standing square. |
 
 `interactive`: **drag up and down to work the handover** — floor at the bottom, afloat at the
@@ -213,14 +219,17 @@ top — arrows 10%, shift 25%, Home on the floor and End in the water. `onSwimCh
 
 The bear that sits down to eat, and the reason that is a mechanism rather than a pose:
 
-**`sit`, 0 standing to 1 down on the ischium.** The seat is a *third contact* with a span of its
-own, so `solveSupport` gets three intervals instead of two, the base of support runs from the
-heels to behind the pelvis, and the margin goes strongly positive. That is the arithmetic
-statement of why an animal sits down to use its hands: it buys a base wide enough that the
-forelimbs are not needed to hold it up, and both of them come free in the same moment.
+**`sit`, 0 standing to 1 down on the ischium.** The pelvis is rigid on the body, so where its
+underside ends up is a consequence of the tilt rather than a pose: when it would go through the
+floor, the animal rests on it. It then enters `solveSupport` as a **third contact with a span of
+its own.**
 
-The blueprint variant draws all three spans and the widened hull, because this is the one
-machine in the family where you can see the base being *bought*.
+Why that matters is visible in the numbers on the way down. Once both forepaws are up on the
+stalk, the only things left on the floor are the two hind soles — and by then they have rolled
+back onto their heels, which is *two points in the same place*. A point is not a base: for the
+last tenth of the sit the solver reports no base at all and a margin of −1. Then the seat lands,
+and there is one. That is the arithmetic statement of why an animal sits down to use its hands,
+and `showSupport` draws the whole handover.
 
 ### The pseudo-thumb
 
@@ -241,10 +250,9 @@ the whole forelimb chain, and when it comes within reach of the muzzle the head 
 
 | `behavior` | What it does |
 |---|---|
-| `feed` | The signature: sits, brings the stalk up to the muzzle, works the thumb, chews. |
-| `sit` | Down on the seat, both forelimbs free and idle. |
+| `feed` | The signature: sits, closes the thumb on the stalk, brings it up to the muzzle and works the jaw, then lets it back down. |
+| `sit` | Down on the seat, both forelimbs free and nothing in them. |
 | `amble` | The lateral-sequence plantigrade walk, on all fours. |
-| `roll` | Over onto the back, the four soles up, the seat and the flank carrying it. |
 | `static` | Standing square. |
 
 `interactive`: **the pointer is the stalk.** Both forepaws solve to wherever it is, the head
@@ -256,9 +264,10 @@ gesture is a target rather than a scalar.
 Shared: `view`, `behavior`, `phase`, `speed`, `offset`, `animate`, `paused`, `variant`, `size`,
 `showGround`, `showContacts`, `showSupport`, `label`, and the palette.
 
-- `robot-bear`: `rear`, `balance`, `arch`, `crouch`, `hump`, `gaze`, `ears`, `dig`.
-- `robot-polar-bear`: `swim`, `stroke`, `arch`, `crouch`, `rear`, `gaze`, `neck`.
-- `robot-panda`: `sit`, `grip`, `stalk` (diameter), `reach` (the target), `arch`, `gaze`, `chew`.
+- `robot-bear`: `rear`, `balance`, `arch`, `crouch`, `hump`, `dig`, `ears`, `gaze`.
+- `robot-polar-bear`: `swim`, `strokes`, `rear`, `balance`, `arch`, `crouch`, `neck`, `gaze`.
+- `robot-panda`: `sit`, `grip`, `stalkWidth`, `stalk` (the target, a `Vec2`), `chew`, `arch`,
+  `crouch`, `balance`, `gaze`.
 
 Each is finite-checked and clamped; `NaN` renders the neutral pose. Supplying `phase` stops the
 clock, everywhere, as it does across the set.
@@ -267,12 +276,14 @@ clock, everywhere, as it does across the set.
 
 Shared: `data-bear` / `data-polar-bear` / `data-panda`, `data-view`, `data-solids`, `data-spine`,
 `data-trunk`, `data-neck`, `data-head`, `data-ears`, `data-ear="left|right"`, `data-eyes`,
-`data-muzzle`, `data-leg="fore-left|fore-right|hind-left|hind-right"`, `data-sole="<leg id>"`,
-`data-joint="…"`, `data-support`, `data-com`, `data-contact`, `data-ground`.
+`data-muzzle`, `data-leg="fore-left|fore-right|hind-left|hind-right"`, `data-sole="<leg id>"`
+carrying `data-contact-state` (`flat` / `heel` / `toe` / `airborne`), `data-joint="…"`,
+`data-ground`, `data-contact`, and `data-support` carrying `data-stable`, `data-margin` and
+`data-base` with `data-com` inside it.
 
 Per machine: the bear adds `data-hump` and `data-rear`; the polar bear adds `data-waterline`,
-`data-stroke="left|right"` and `data-swim`; the panda adds `data-seat`, `data-thumb="left|right"`,
-`data-stalk` and `data-grip`.
+`data-stroke="left|right"`, `data-swim` and `data-buoyancy`; the panda adds `data-seat` (with
+`data-down`), `data-thumb="left|right"`, `data-stalk`, `data-jaw`, `data-sit` and `data-grip`.
 
 ## Views
 
