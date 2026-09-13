@@ -393,11 +393,14 @@ export function extrudedPath(
 /**
  * A camera transform applied about a point in the drawing rather than about the
  * viewBox origin, so an existing drawing can be pushed through the camera where
- * it already stands. Empty in the machine's own view, so nothing is emitted.
+ * it already stands. `zoom` pulls the camera back, which is what keeps a
+ * machine inside a frame that was drawn for one view. Empty in the machine's
+ * own view, so nothing is emitted.
  */
-export function aboutPoint(transform: string, x: number, y: number) {
-  if (!transform) return ""
-  return `translate(${px(x)} ${px(y)}) ${transform} translate(${px(-x)} ${px(-y)})`
+export function aboutPoint(transform: string, x: number, y: number, zoom = 1) {
+  if (!transform && zoom === 1) return ""
+  const scale = zoom === 1 ? "" : ` scale(${px(zoom)})`
+  return `translate(${px(x)} ${px(y)})${scale} ${transform} translate(${px(-x)} ${px(-y)})`.replace(/\s+/g, " ")
 }
 
 /** A circle sampled as a ring of points, ready to extrude: the round parts. */

@@ -27,6 +27,10 @@ const HALF_TRACK = 12
 const CENTRE = 100
 const GROUND = 126
 
+/** How far the camera pulls back so the machine still fits a frame that was
+ *  drawn for one view. One in the view it was drawn in. */
+const fits: Record<RobotView, number> = { plan: 0.84, front: 1, profile: 1, iso: 1 }
+
 const viewNames: Record<RobotView, string> = {
   plan: "plan view",
   front: "front elevation",
@@ -134,7 +138,8 @@ function RobotQuadruped({
   // off-axis they are tubes at half a track out, and the body is a box.
   const camera = robotCamera(view)
   const offAxis = view !== NATIVE_VIEW
-  const face = aboutPoint(camera.wall(0, 90), CENTRE, GROUND)
+  const fit = fits[view] ?? 1
+  const face = aboutPoint(camera.wall(0, 90), CENTRE, GROUND, fit)
   const Frame = (face ? "g" : React.Fragment) as React.FC<{
     transform?: string
     children?: React.ReactNode
@@ -179,7 +184,7 @@ function RobotQuadruped({
         <path d="M 25 126 H 176 M 42 110 H 190 M 25 126 L 42 110 M 176 126 L 190 110" fill="none" />
         {variant === "blueprint" && [50, 75, 100, 125, 150].map(x => <path key={x} d={`M ${x} 126 l 16 -16`} strokeDasharray="1 2" />)}
       </g>}
-      {offAxis && <g data-solids transform={`translate(${CENTRE} ${GROUND})`}>
+      {offAxis && <g data-solids transform={`translate(${CENTRE} ${GROUND}) scale(${fit})`}>
         {pose.legs.filter(leg => leg.side !== nearSide).map(legSolid)}
         <path
           d={extrudedPath(roundedFootprint(HALF_TRACK + 2, 53, 5, 4).map(p => ({ x: p.x, y: p.y + CENTRE - 104 })), camera, GROUND - (bodyY - 31), GROUND - (bodyY + 4))}

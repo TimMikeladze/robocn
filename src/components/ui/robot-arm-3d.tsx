@@ -50,6 +50,15 @@ export interface RobotArm3DProps extends RobotPaletteProps {
   phase?: number
   showBase?: boolean
   wireframe?: boolean
+  /**
+   * Press the floor and the tip goes there, dragging with the pointer until
+   * it is released. Hover is not enough on a touch screen, and a stage with
+   * orbit controls has to know the difference between turning the camera and
+   * driving the arm.
+   */
+  interactive?: boolean
+  /** The picked floor position in world units, and null on release. */
+  onTargetChange?: (target: Vec3 | null) => void
   position?: [number, number, number]
   rotation?: [number, number, number]
   scale?: number
@@ -72,6 +81,8 @@ function RobotArm3D({
   phase = 0,
   showBase = true,
   wireframe = false,
+  interactive = false,
+  onTargetChange,
   position = [0, 0, 0],
   rotation = [0, 0, 0],
   scale = 1,
@@ -124,9 +135,11 @@ function RobotArm3D({
   )
   const tip = React.useRef<Vec3>(restTarget(root, reach))
   const clock = React.useRef(phase)
+  // A press outranks both the target and the behaviour for as long as it lasts.
+  const [held, setHeld] = React.useState<Vec3 | null>(null)
   const targetRef = React.useRef(target)
   React.useEffect(() => {
-    targetRef.current = target
+    targetRef.current = held ?? target
   })
 
   useFrame((state, delta) => {
@@ -190,6 +203,37 @@ function RobotArm3D({
 
   return (
     <group position={position} rotation={rotation} scale={scale}>
+      {interactive ? (
+        // An invisible floor to pick against: the tip is placed a little above
+        // whatever point of it the pointer is over.
+        <mesh
+          visible={false}
+          rotation={[-Math.PI / 2, 0, 0]}
+          position={[0, 0.002, 0]}
+          onPointerDown={(event) => {
+            event.stopPropagation()
+            const element = event.target as Element & { setPointerCapture?: (id: number) => void }
+            element.setPointerCapture?.(event.pointerId)
+            const to = { x: event.point.x, y: reach * 0.22, z: event.point.z }
+            setHeld(to)
+            onTargetChange?.(to)
+          }}
+          onPointerMove={(event) => {
+            if (!held) return
+            event.stopPropagation()
+            const to = { x: event.point.x, y: reach * 0.22, z: event.point.z }
+            setHeld(to)
+            onTargetChange?.(to)
+          }}
+          onPointerUp={() => {
+            if (!held) return
+            setHeld(null)
+            onTargetChange?.(null)
+          }}
+        >
+          <planeGeometry args={[reach * 8, reach * 8]} />
+        </mesh>
+      ) : null}
       {showBase ? (
         <group>
           <mesh position={[0, baseHeight * 0.14, 0]} castShadow receiveShadow>

@@ -7,11 +7,16 @@
  * Moods cover the states a product actually needs — waiting, succeeded,
  * thinking, failed, asleep — and the eyes follow the cursor anywhere on the
  * page, which is what makes it read as alive.
+ *
+ * With no cursor to follow it does not freeze: the gaze wanders, and the head
+ * breathes. Poke it and it flinches back, which costs one decaying sine and
+ * buys the whole illusion.
  */
 
 import * as React from "react"
 
 import { usePointerTarget } from "@/hooks/use-pointer-target"
+import { useRobotClock } from "@/hooks/use-robot-motion"
 import { clamp, type Vec2 } from "@/lib/robocn/kinematics"
 import {
   px,
@@ -25,6 +30,8 @@ import {
 import { cn } from "@/lib/utils"
 
 const VIEW = 120
+
+export type FaceBehavior = "wander" | "scan" | "still"
 
 export type RobotMood =
   | "idle"
@@ -43,6 +50,16 @@ export interface RobotFaceProps
   /** Look here instead, in -1..1 on both axes. */
   look?: Vec2 | null
   blink?: boolean
+  /** What the eyes do with no pointer and no `look`. */
+  behavior?: FaceBehavior
+  /** Wander cycles per second. */
+  speed?: number
+  animate?: boolean
+  paused?: boolean
+  phase?: number
+  /** Flinch when poked. */
+  interactive?: boolean
+  onPoke?: () => void
   variant?: RobotVariant
   size?: RobotSize | number
   /** Stencilled under the chin. */
@@ -55,6 +72,13 @@ function RobotFace({
   track = true,
   look = null,
   blink = true,
+  behavior = "wander",
+  speed = 0.18,
+  animate = true,
+  paused = false,
+  phase = 0,
+  interactive = true,
+  onPoke,
   variant = "solid",
   size = "md",
   label,
@@ -68,6 +92,7 @@ function RobotFace({
   palette: paletteOverride,
   className,
   style,
+  onPointerDown,
   ...props
 }: RobotFaceProps) {
   const palette = resolveRobotPalette({
@@ -98,11 +123,28 @@ function RobotFace({
     }, []),
   })
 
-  const gaze = look ?? pointer.target ?? { x: 0, y: 0 }
+  const clock = useRobotClock({
+    speed,
+    animate: animate && !asleep && behavior !== "still",
+    paused,
+    phase,
+  })
+
+  // A poke is a flinch: the head recoils and the eyes squeeze, both decaying
+  // out of the same ring.
+  const [poked, setPoked] = React.useState<number | null>(null)
+  const since = poked === null ? Infinity : (clock - poked) / Math.max(speed, 0.01)
+  const flinch = since >= 0 && since < 1.1 ? Math.exp(-since * 4) * Math.cos(since * 20) : 0
+
+  const wandering = faceGaze(behavior, clock)
+  const gaze = look ?? pointer.target ?? wandering
   const shift = {
     x: clamp(gaze.x, -1, 1) * 3.4,
-    y: clamp(gaze.y, -1, 1) * 2.6,
+    y: clamp(gaze.y, -1, 1) * 2.6 + flinch * 1.6,
   }
+  // Breathing, and the recoil from a poke, ride on the same group so the whole
+  // face moves as one piece.
+  const bob = asleep ? Math.sin(clock * 3) * 1.2 : Math.sin(clock * 2.4) * 0.7 - flinch * 2.4
 
   const shell = robotSurface("shell", variant, palette, 1)
   const metalSurface = robotSurface("metal", variant, palette, 1)
@@ -114,13 +156,20 @@ function RobotFace({
       ref={svgRef}
       role="img"
       aria-label={`Robot face, ${mood}`}
+      onPointerDown={(event) => {
+        onPointerDown?.(event)
+        if (!interactive || event.defaultPrevented) return
+        setPoked(clock)
+        onPoke?.()
+      }}
       viewBox={`0 0 ${VIEW} ${VIEW}`}
       width={width}
       height={width}
-      className={cn("select-none overflow-hidden", className)}
+      className={cn("select-none overflow-hidden", interactive && "cursor-pointer", className)}
       style={{ color: palette.foreground, ...style }}
       {...props}
     >
+      <g data-head transform={`translate(0 ${px(bob)})`}>
       {showAntenna ? (
         <g>
           <line
@@ -226,6 +275,7 @@ function RobotFace({
         />
       ))}
 
+      </g>
       {label ? (
         <text
           x={60}
@@ -241,6 +291,18 @@ function RobotFace({
       ) : null}
     </svg>
   )
+}
+
+/**
+ * Where the eyes rest when nothing is asking for them. Wandering is two slow
+ * sines that never quite repeat; scanning sweeps side to side like a machine
+ * looking for something.
+ */
+export function faceGaze(behavior: FaceBehavior, clock: number): Vec2 {
+  if (behavior === "still" || !Number.isFinite(clock)) return { x: 0, y: 0 }
+  const t = clock * Math.PI * 2
+  if (behavior === "scan") return { x: Math.sin(t) * 0.85, y: Math.sin(t * 2) * 0.12 }
+  return { x: Math.sin(t * 0.7) * 0.5 + Math.sin(t * 0.23) * 0.3, y: Math.sin(t * 0.41) * 0.35 }
 }
 
 function Mouth({ mood, palette }: { mood: RobotMood; palette: ReturnType<typeof resolveRobotPalette> }) {

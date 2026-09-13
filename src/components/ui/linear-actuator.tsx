@@ -28,6 +28,10 @@ const NATIVE_VIEW: RobotView = "profile"
 const CENTRE = 66
 const DATUM = 45
 
+/** How far the camera pulls back so the machine still fits a frame that
+ *  was drawn for one view. One in the view it was drawn in. */
+const fits: Record<RobotView, number> = { plan: 0.52, front: 0.95, profile: 1, iso: 0.76 }
+
 const viewNames: Record<RobotView, string> = {
   plan: "plan view",
   front: "front elevation",
@@ -121,7 +125,8 @@ function LinearActuator({
   // barrel, the rod and the end flanges are tubes down the machine's axis.
   const camera = robotCamera(view)
   const offAxis = view !== NATIVE_VIEW
-  const face = aboutPoint(camera.wall(0, 90), CENTRE, DATUM)
+  const fit = fits[view] ?? 1
+  const face = aboutPoint(camera.wall(0, 90), CENTRE, DATUM, fit)
   const Frame = (face ? "g" : React.Fragment) as React.FC<{
     transform?: string
     children?: React.ReactNode
@@ -172,7 +177,7 @@ function LinearActuator({
       viewBox="0 0 180 100" width={width} height={width * 100 / 180}
       className={cn("max-w-full select-none", interactive && "cursor-grab touch-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[currentColor]", dragging && "cursor-grabbing", className)}
       style={{ color: palette.foreground, ...style }} data-view={view} {...props}>
-      {offAxis && <g data-solids transform={`translate(${CENTRE} ${DATUM})`}>
+      {offAxis && <g data-solids transform={`translate(${CENTRE} ${DATUM}) scale(${fit})`}>
         <path d={tube(16, 28, 45, 7)} {...machined} />
         <path d={tube(28, 104, 45, 17)} {...shell} />
         {[30, 101].map(x => <path key={x} d={tube(x - 4, x + 4, 45, 20)} {...cast} />)}

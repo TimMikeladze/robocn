@@ -6,6 +6,10 @@
  * An arm moves parts from the in-tray to the out-tray on a fixed cycle. Left
  * indeterminate it just keeps working; give it `value` and the trays fill up
  * in proportion, so the same component covers "busy" and "62% done".
+ *
+ * `pauseOnHover` stops the cell under the pointer, which is the only thing
+ * anyone ever wants to do to a loading animation: hold it still long enough to
+ * look at it.
  */
 
 import * as React from "react"
@@ -44,6 +48,8 @@ export interface RobotLoaderProps
   variant?: RobotVariant
   size?: RobotSize | number
   paused?: boolean
+  /** Stop the cycle while the pointer is over the cell. */
+  pauseOnHover?: boolean
   /** Caption under the cell. */
   label?: string
 }
@@ -55,6 +61,7 @@ function RobotLoader({
   variant = "solid",
   size = "md",
   paused = false,
+  pauseOnHover = false,
   label,
   color,
   accent,
@@ -65,8 +72,11 @@ function RobotLoader({
   palette: paletteOverride,
   className,
   style,
+  onPointerEnter,
+  onPointerLeave,
   ...props
 }: RobotLoaderProps) {
+  const [hovered, setHovered] = React.useState(false)
   const palette = resolveRobotPalette({
     color,
     accent,
@@ -87,7 +97,7 @@ function RobotLoader({
   )
   const eased = useEasedPoint(path, cyclePoint(0), {
     speed: 600,
-    paused,
+    paused: paused || (pauseOnHover && hovered),
     animate: true,
   })
 
@@ -114,6 +124,14 @@ function RobotLoader({
           : `Robot arm moving parts, ${Math.round(done * 100)} percent complete`
       }
       aria-busy={done === null || done < 1}
+      onPointerEnter={(event) => {
+        onPointerEnter?.(event)
+        if (pauseOnHover) setHovered(true)
+      }}
+      onPointerLeave={(event) => {
+        onPointerLeave?.(event)
+        if (pauseOnHover) setHovered(false)
+      }}
       viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}
       width={width}
       height={height}

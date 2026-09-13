@@ -7,10 +7,16 @@
  * `angles` array to `RobotArm` and the arm is posed joint by joint instead of
  * chasing a target. Also carries the tool selector and live readouts, because
  * that is what sits next to the sliders on a real pendant.
+ *
+ * A pendant also runs programs, so this one does: play, and it drives the same
+ * `onAnglesChange` a slider does, frame by frame. Touch a slider and playback
+ * stops — whoever has their hand on the machine has control of it.
  */
 
 import * as React from "react"
-import { RotateCcw } from "lucide-react"
+import { Pause, Play, RotateCcw } from "lucide-react"
+
+import { useRobotClock } from "@/hooks/use-robot-motion"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -62,6 +68,17 @@ export interface ArmControlsProps
   readouts?: { label: string; value: React.ReactNode }[]
   /** Shown as a reset button when provided. */
   onReset?: () => void
+  /**
+   * Offer a play button that runs `program` into `onAnglesChange`. Moving a
+   * slider stops it.
+   */
+  playable?: boolean
+  /** Joint angles at `clock` seconds. Defaults to a sweep of every joint. */
+  program?: (clock: number, limits: [number, number][]) => number[]
+  /** Program cycles per second. */
+  speed?: number
+  playing?: boolean
+  onPlayingChange?: (playing: boolean) => void
 }
 
 function ArmControls({
@@ -76,6 +93,11 @@ function ArmControls({
   tools = ALL_TOOLS,
   readouts,
   onReset,
+  playable = false,
+  program = jointSweep,
+  speed = 0.2,
+  playing: playingProp,
+  onPlayingChange,
   className,
   ...props
 }: ArmControlsProps) {
@@ -83,6 +105,26 @@ function ArmControls({
     Array.isArray(limits[0])
       ? ((limits as [number, number][])[index] ?? [-180, 180])
       : (limits as [number, number])
+  const ranges = angles.map((_, index) => rangeFor(index))
+
+  const [playingState, setPlayingState] = React.useState(false)
+  const playing = playingProp ?? playingState
+  const setPlaying = React.useCallback((next: boolean) => {
+    setPlayingState(next)
+    onPlayingChange?.(next)
+  }, [onPlayingChange, setPlayingState])
+
+  const clock = useRobotClock({ speed, animate: playable && playing })
+  // The program drives the same callback the sliders do, so nothing downstream
+  // has to know whether a person or the pendant is moving the arm.
+  const posed = React.useRef<number[] | null>(null)
+  React.useEffect(() => {
+    if (!playable || !playing) return
+    const next = program(clock, ranges)
+    if (posed.current && next.every((angle, i) => angle === posed.current![i])) return
+    posed.current = next
+    onAnglesChange(next)
+  })
 
   return (
     <Card className={cn("w-full max-w-xs", className)} {...props}>
@@ -113,6 +155,8 @@ function ArmControls({
                 step={1}
                 value={[angle]}
                 onValueChange={(next) => {
+                  // A hand on a slider outranks the program.
+                  if (playing) setPlaying(false)
                   const updated = [...angles]
                   updated[index] = Array.isArray(next) ? next[0] : next
                   onAnglesChange(updated)
@@ -159,20 +203,51 @@ function ArmControls({
           </dl>
         ) : null}
 
-        {onReset ? (
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full"
-            onClick={onReset}
-          >
-            <RotateCcw />
-            Home
-          </Button>
+        {playable || onReset ? (
+          <div className="flex gap-2">
+            {playable ? (
+              <Button
+                variant={playing ? "secondary" : "outline"}
+                size="sm"
+                className="flex-1"
+                aria-pressed={playing}
+                onClick={() => setPlaying(!playing)}
+              >
+                {playing ? <Pause /> : <Play />}
+                {playing ? "Stop" : "Run"}
+              </Button>
+            ) : null}
+            {onReset ? (
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1"
+                onClick={() => {
+                  if (playing) setPlaying(false)
+                  onReset()
+                }}
+              >
+                <RotateCcw />
+                Home
+              </Button>
+            ) : null}
+          </div>
         ) : null}
       </CardContent>
     </Card>
   )
 }
 
-export { ArmControls }
+/**
+ * The default program: every joint sweeps its own range, each a little out of
+ * step with the last, which is what a pendant's demo cycle looks like.
+ */
+function jointSweep(clock: number, limits: [number, number][]) {
+  return limits.map(([min, max], index) => {
+    const middle = (min + max) / 2
+    const swing = (max - min) * 0.36
+    return middle + Math.sin((clock + index * 0.17) * Math.PI * 2) * swing
+  })
+}
+
+export { ArmControls, jointSweep }

@@ -44,6 +44,10 @@ const BED_ACROSS = 17
 const CENTRE = VIEW_WIDTH / 2
 const DATUM = BELT_TOP + 4
 
+/** How far the camera pulls back so the machine still fits a frame that
+ *  was drawn for one view. One in the view it was drawn in. */
+const fits: Record<RobotView, number> = { plan: 0.4, front: 0.85, profile: 1, iso: 0.6 }
+
 const viewNames: Record<RobotView, string> = {
   plan: "plan view",
   front: "front elevation",
@@ -181,7 +185,8 @@ function ConveyorBelt({
   // the two side frames only exist once the camera comes round.
   const camera = robotCamera(view)
   const offAxis = view !== NATIVE_VIEW
-  const face = aboutPoint(camera.wall(0, 90), CENTRE, DATUM)
+  const fit = fits[view] ?? 1
+  const face = aboutPoint(camera.wall(0, 90), CENTRE, DATUM, fit)
   const Frame = (face ? "g" : React.Fragment) as React.FC<{
     transform?: string
     children?: React.ReactNode
@@ -241,7 +246,7 @@ function ConveyorBelt({
       {...props}
     >
       {offAxis ? (
-        <g data-solids transform={`translate(${CENTRE} ${DATUM})`}>
+        <g data-solids transform={`translate(${CENTRE} ${DATUM}) scale(${fit})`}>
           <path d={slab(10, VIEW_WIDTH - 10, BED_ACROSS, BELT_TOP + 6, BELT_TOP + 16)} {...shell} />
           {[28, VIEW_WIDTH - 28].map((x) => (
             <path key={x} d={slab(x - 3, x + 3, BED_ACROSS - 3, BELT_TOP + 16, VIEW_HEIGHT - 8)} {...darkSurface} />

@@ -31,6 +31,10 @@ const HEAD_TOP = 126
 const HEAD_FLOOR = 84
 const HEAD_RADIUS = 36
 
+/** How far the camera pulls back so the machine still fits a frame that was
+ *  drawn for one view. One in the view it was drawn in. */
+const fits: Record<RobotView, number> = { plan: 0.82, front: 1, profile: 0.95, iso: 0.93 }
+
 const viewNames: Record<RobotView, string> = {
   plan: "plan view",
   front: "front elevation",
@@ -105,7 +109,8 @@ function OrbDroid({
   // `wall`. The head is a dome, which only reads as one off the front.
   const camera = robotCamera(view)
   const offAxis = view !== NATIVE_VIEW
-  const face = aboutPoint(camera.wall(), CENTRE, GROUND)
+  const fit = fits[view] ?? 1
+  const face = aboutPoint(camera.wall(), CENTRE, GROUND, fit)
   const Frame = (face ? "g" : React.Fragment) as React.FC<{
     transform?: string
     children?: React.ReactNode
@@ -136,7 +141,7 @@ function OrbDroid({
       )}
       {showGround && <ellipse cx={95} cy={166} rx={57} ry={7} fill={palette.dark} opacity={0.14} />}
 
-      {offAxis && <g data-solids transform={`translate(${CENTRE} ${GROUND})`}>
+      {offAxis && <g data-solids transform={`translate(${CENTRE} ${GROUND}) scale(${fit})`}>
         <circle cx={px(at(0, 111).x)} cy={px(at(0, 111).y)} r={BODY_RADIUS} {...shell} />
         <path
           d={extrudedPath(circleFootprint(0, 0, HEAD_RADIUS, 14), camera, HEAD_TOP, HEAD_FLOOR)}

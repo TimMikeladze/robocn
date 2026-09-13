@@ -148,6 +148,11 @@ function RobotSnake({
   const camera = robotCamera(view)
   const offAxis = view !== NATIVE_VIEW
   const ground = camera.plane()
+  // The snake lies along the frame with its head at the right-hand end, so a
+  // camera that mirrors the long axis would swing the body out of the frame.
+  // Anchor the head at the other end in those views instead: the camera moves,
+  // the machine does not.
+  const anchor = px((view === "front" || view === "iso" ? 34 : 202) + strike * 12)
   const at = (joint: SpineJoint) =>
     camera.project(joint.position.x, joint.clearance + bodyWidth(joint.s) * 0.5, -joint.position.y)
 
@@ -179,7 +184,7 @@ function RobotSnake({
       )}
 
       {/* Plan view: the nose sits at the origin pointing along +x, y up. */}
-      {offAxis && <g data-solids transform={`translate(${px(202 + strike * 12)} 104)`}>
+      {offAxis && <g data-solids transform={`translate(${anchor} 104)`}>
         {pose.joints.slice(0, -1).map((joint, index) => (
           <path
             key={joint.s}
@@ -189,7 +194,7 @@ function RobotSnake({
           />
         ))}
       </g>}
-      <g data-snake data-view={view} transform={`translate(${px(202 + strike * 12)} 104) ${ground} scale(1 -1)`.replace(/\s+/g, " ")}>
+      <g data-snake data-view={view} transform={`translate(${anchor} 104) ${ground} scale(1 -1)`.replace(/\s+/g, " ")}>
         {/* Anything off the ground throws a shadow: that is what sidewinding looks like from above. */}
         {lifted && (
           <path

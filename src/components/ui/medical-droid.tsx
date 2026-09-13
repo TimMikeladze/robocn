@@ -182,13 +182,14 @@ function MedicalDroid({
   }>
   const frame = face ? { transform: face } : {}
   const at = (x: number, y: number, deep = 0) => camera.project(-x, -y, -deep)
+  /** A box between two heights above the ground, `deep` either side. */
   const solid = (halfWidth: number, deep: number, top: number, bottom: number, x = 0) =>
     extrudedPath(
       roundedFootprint(halfWidth, deep, Math.min(halfWidth, deep) * 0.4, 5).map(point => ({
         x: point.x - x,
         y: point.y,
       })),
-      camera, -top, -bottom,
+      camera, top, bottom,
     )
 
 

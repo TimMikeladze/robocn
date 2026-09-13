@@ -148,6 +148,18 @@ They therefore take `view` with `iso` as the default, and `iso` means "the free 
 and `tilt`". The other three views are the shared orthographic cameras. It is still one geometry
 — both project the same `Vec3` model — with two projection families, and the docs `notes` say so.
 
+## Two things the backfill does not do
+
+- **Ground decoration does not follow the camera.** The dashed horizon lines, perspective
+  hatching and contact shadows each machine draws under itself are still authored for its
+  native view. The machine above them is projected; they are not. The drone does adapt its
+  ground line, and the rest should follow the same way, but that is a separate pass.
+- **The frame is fixed per component, so the camera has a zoom.** A machine drawn in a
+  letterbox frame for its side elevation stands up the frame when seen from above. Rather than
+  clip it, those components carry a `fits` table — a per-view scale, one in the view the frame
+  was drawn for — and two of them (`robot-fish`, `robot-snake`) also move the camera along the
+  frame so a mirrored long axis does not swing out of it. Camera moves; machine does not.
+
 ## Per component
 
 Every machine in the table gets, in one commit per batch:

@@ -137,9 +137,9 @@ function UtilityDroid({
   const frame = face ? { transform: face } : {}
   /** A point in the frame, `deep` units toward the reader. */
   const at = (x: number, y: number, deep = 0) => camera.project(-x, -y, -deep)
-  /** A drum: round in plan, standing between two heights. */
+  /** A drum: round in plan, standing between two heights above the ground. */
   const drum = (radius: number, top: number, bottom: number, x = 0) =>
-    extrudedPath(circleFootprint(-x, 0, radius, 14), camera, -top, -bottom)
+    extrudedPath(circleFootprint(-x, 0, radius, 14), camera, top, bottom)
 
 
   return (

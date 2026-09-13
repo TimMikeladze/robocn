@@ -26,6 +26,11 @@ export interface RobotStageProps
   /** Drag to orbit. Off makes the stage a static illustration. */
   controls?: boolean
   autoRotate?: boolean
+  /**
+   * Stop the auto-rotation while the pointer is over the stage, so a machine
+   * can be looked at without chasing it round.
+   */
+  pauseOnHover?: boolean
   /** Floor treatment under the machine. */
   floor?: "grid" | "shadow" | "none"
   /** Extra three.js props, e.g. `{ dpr: 2 }`. */
@@ -38,6 +43,7 @@ function RobotStage({
   fov = 40,
   controls = true,
   autoRotate = false,
+  pauseOnHover = true,
   floor = "shadow",
   canvasProps,
   className,
@@ -48,8 +54,11 @@ function RobotStage({
   glow,
   grid,
   palette: paletteOverride,
+  onPointerEnter,
+  onPointerLeave,
   ...props
 }: RobotStageProps) {
+  const [hovered, setHovered] = React.useState(false)
   const palette = resolveRobotPalette({
     color,
     accent,
@@ -64,7 +73,18 @@ function RobotStage({
   const gridColor = useThreeColor(palette.grid, "#8d94a1")
 
   return (
-    <div className={cn("relative h-80 w-full", className)} {...props}>
+    <div
+      className={cn("relative h-80 w-full", className)}
+      onPointerEnter={(event) => {
+        onPointerEnter?.(event)
+        setHovered(true)
+      }}
+      onPointerLeave={(event) => {
+        onPointerLeave?.(event)
+        setHovered(false)
+      }}
+      {...props}
+    >
       <Canvas
         shadows
         camera={{ position: camera, fov }}
@@ -107,7 +127,7 @@ function RobotStage({
         {controls ? (
           <OrbitControls
             makeDefault
-            autoRotate={autoRotate}
+            autoRotate={autoRotate && !(pauseOnHover && hovered)}
             autoRotateSpeed={0.8}
             enablePan={false}
             minPolarAngle={0.2}

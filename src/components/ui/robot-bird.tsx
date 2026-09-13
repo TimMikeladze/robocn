@@ -46,6 +46,10 @@ const HALF_SPAN = 7
 const CENTRE = 110
 const GROUND = 148
 
+/** How far the camera pulls back so the machine still fits a frame that was
+ *  drawn for one view. One in the view it was drawn in. */
+const fits: Record<RobotView, number> = { plan: 0.78, front: 1, profile: 1, iso: 1 }
+
 const viewNames: Record<RobotView, string> = {
   plan: "plan view",
   front: "front elevation",
@@ -200,7 +204,8 @@ function RobotBird({
   // read once the camera comes round.
   const camera = robotCamera(view)
   const offAxis = view !== NATIVE_VIEW
-  const face = aboutPoint(camera.wall(0, 90), CENTRE, GROUND)
+  const fit = fits[view] ?? 1
+  const face = aboutPoint(camera.wall(0, 90), CENTRE, GROUND, fit)
   const Frame = (face ? "g" : React.Fragment) as React.FC<{
     transform?: string
     children?: React.ReactNode
@@ -244,7 +249,7 @@ function RobotBird({
         </g>
       )}
 
-      {offAxis && <g data-solids transform={`translate(${CENTRE} ${GROUND})`}>
+      {offAxis && <g data-solids transform={`translate(${CENTRE} ${GROUND}) scale(${fit})`}>
         {[-HALF_SPAN, HALF_SPAN].map(across => (
           <path
             key={across}

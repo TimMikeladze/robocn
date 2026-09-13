@@ -46,6 +46,10 @@ const NATIVE_VIEW: RobotView = "front"
 const BED_DEEP = 26
 const FRAME_DEEP = 5
 
+/** How far the camera pulls back so the machine still fits a frame that was
+ *  drawn for one view. One in the view it was drawn in. */
+const fits: Record<RobotView, number> = { plan: 0.8, front: 1, profile: 0.88, iso: 0.78 }
+
 const viewNames: Record<RobotView, string> = {
   plan: "plan view",
   front: "front elevation",
@@ -220,7 +224,9 @@ function GantryArm({
   // beam are what the elevation never had to draw.
   const camera = robotCamera(view)
   const offAxis = view !== NATIVE_VIEW
-  const face = camera.wall(0, 0, true)
+  const fit = fits[view] ?? 1
+  const zoom = fit === 1 ? "" : `scale(${fit})`
+  const face = [zoom, camera.wall(0, 0, true)].filter(Boolean).join(" ")
   /** Elevation coordinates: x right, y up, and `z` toward the reader. */
   const at = (x: number, y: number, z = 0) => {
     const point = camera.project(-x, y, -z)
@@ -249,7 +255,7 @@ function GantryArm({
       {...props}
     >
       {offAxis ? (
-        <g data-solids transform={`translate(${VIEW_WIDTH / 2} ${VIEW_HEIGHT - FLOOR}) scale(1 -1)`}>
+        <g data-solids transform={`translate(${VIEW_WIDTH / 2} ${VIEW_HEIGHT - FLOOR}) ${zoom} scale(1 -1)`.replace(/\s+/g, " ")}>
           {showBed ? (
             <path
               d={solid(roundedFootprint(SPAN + 6, BED_DEEP, 3, 4), 2, -6)}

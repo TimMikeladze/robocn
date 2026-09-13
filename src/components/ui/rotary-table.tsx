@@ -46,6 +46,9 @@ const BASE_BOTTOM = -14
 const PLATTER_TOP = 7
 const FIXTURE_TOP = 17
 
+/** How far the camera pulls back so the table still fits its square frame. */
+const fits: Record<RobotView, number> = { plan: 1, front: 0.94, profile: 0.94, iso: 0.9 }
+
 const viewNames: Record<RobotView, string> = {
   plan: "plan view",
   front: "front elevation",
@@ -167,6 +170,8 @@ function RotaryTable({
   // The base, the platter's thickness and the fixtures are solids.
   const camera = robotCamera(view)
   const offAxis = view !== NATIVE_VIEW
+  const fit = fits[view] ?? 1
+  const zoom = fit === 1 ? "" : `scale(${fit})`
   const deck = camera.plane(PLATTER_TOP, readout)
   const solid = (footprint: Vec2[], top: number, bottom: number, spin = 0) =>
     extrudedPath(footprint, camera, top, bottom, spin)
@@ -203,7 +208,7 @@ function RotaryTable({
       viewBox="0 0 180 180" width={width} height={width}
       className={cn("max-w-full select-none", interactive && "cursor-grab touch-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[currentColor]", dragging && "cursor-grabbing", className)}
       style={{ color: palette.foreground, ...style }} {...props}>
-      <g data-view={view} transform="translate(90 86)">
+      <g data-view={view} transform={`translate(90 86) ${zoom}`.trimEnd()}>
         {offAxis ? (
           <g data-solids>
             <path d={solid(roundedFootprint(57, 57, 10, 5), BASE_TOP, BASE_BOTTOM)} {...cast} />

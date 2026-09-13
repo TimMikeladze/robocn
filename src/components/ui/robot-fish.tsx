@@ -42,6 +42,16 @@ const NATIVE_VIEW: RobotView = "profile"
 const CENTRE = 212
 const DATUM = 78
 
+/** How far the camera pulls back so the machine still fits a frame that
+ *  was drawn for one view. One in the view it was drawn in. */
+const fits: Record<RobotView, number> = { plan: 0.72, front: 1, profile: 1, iso: 0.94 }
+
+/** The frame was drawn for the side elevation, where the fish lies along it.
+ *  Seen from above it stands up the frame instead, so the camera moves too. */
+const anchors: Partial<Record<RobotView, { x: number; y: number }>> = {
+  plan: { x: 132, y: 30 },
+}
+
 const viewNames: Record<RobotView, string> = {
   plan: "plan view",
   front: "front elevation",
@@ -153,7 +163,9 @@ function RobotFish({
   // down the solved spine, each as thick as the hull is there.
   const camera = robotCamera(view)
   const offAxis = view !== NATIVE_VIEW
-  const face = aboutPoint(camera.wall(0, 90), CENTRE, DATUM)
+  const fit = fits[view] ?? 1
+  const anchor = anchors[view] ?? { x: CENTRE, y: DATUM }
+  const face = aboutPoint(camera.wall(0, 90), anchor.x, anchor.y, fit)
   const Frame = (face ? "g" : React.Fragment) as React.FC<{
     transform?: string
     children?: React.ReactNode
@@ -197,7 +209,7 @@ function RobotFish({
       )}
 
       {/* Solver coordinates: nose at the origin pointing along +x, y up. */}
-      {offAxis && <g data-solids transform={`translate(${CENTRE} ${DATUM})`}>
+      {offAxis && <g data-solids transform={`translate(${anchor.x} ${anchor.y}) scale(${fit})`}>
         {pose.joints.slice(0, -1).map((joint, index) => (
           <path
             key={joint.s}
@@ -209,7 +221,7 @@ function RobotFish({
         <path d={capsulePath(along(head.position), along(pose.joints[1].position), px(Math.max(halfWidth(0.08), 2)))} {...cast} />
       </g>}
       <Frame {...frame}>
-      <g data-fish data-view={view} transform="translate(212 78) scale(1 -1)">
+      <g data-fish data-view={view} transform={`translate(${anchor.x} ${anchor.y}) scale(1 -1)`}>
         <g data-tail transform={`translate(${px(tail.position.x)} ${px(tail.position.y)}) rotate(${px(tail.angle)})`}>
           <path d="M 0 0 L -26 19 L -16 0 L -26 -19 Z" {...machined} />
           <path d="M -3 0 L -22 14 M -3 0 L -22 -14" fill="none" stroke={palette.dark} strokeWidth={0.8} opacity={0.7} />

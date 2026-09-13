@@ -47,6 +47,10 @@ const HALF_TRACK = 9
 const CENTRE = 56
 const GROUND = 178
 
+/** How far the camera pulls back so the machine still fits a frame that was
+ *  drawn for one view. One in the view it was drawn in. */
+const fits: Record<RobotView, number> = { plan: 0.88, front: 1, profile: 1, iso: 0.96 }
+
 const viewNames: Record<RobotView, string> = {
   plan: "plan view",
   front: "front elevation",
@@ -173,7 +177,8 @@ function MicroDuck({
   // body, neck and head are solids.
   const camera = robotCamera(view)
   const offAxis = view !== NATIVE_VIEW
-  const face = aboutPoint(camera.wall(0, 90), CENTRE, GROUND)
+  const fit = fits[view] ?? 1
+  const face = aboutPoint(camera.wall(0, 90), CENTRE, GROUND, fit)
   const Frame = (face ? "g" : React.Fragment) as React.FC<{
     transform?: string
     children?: React.ReactNode
@@ -222,7 +227,7 @@ function MicroDuck({
           {variant === "blueprint" && [26, 46, 66, 86, 106, 126].map(x => <path key={x} d={`M ${x} 178 l 10 8`} strokeDasharray="1 2" />)}
         </g>
       )}
-      {offAxis && <g data-solids transform={`translate(${CENTRE} ${GROUND})`}>
+      {offAxis && <g data-solids transform={`translate(${CENTRE} ${GROUND}) scale(${fit})`}>
         {legSolid(pose.legs[1], -nearAcross)}
         <path
           d={extrudedPath(
