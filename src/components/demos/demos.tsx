@@ -891,6 +891,7 @@ function ServoMotorDemo() {
 }
 
 function RobotQuadrupedDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
   const [drive, setDrive] = React.useState<QuadrupedBehavior | "manual">("trot")
   const [gait, setGait] = React.useState<QuadrupedGait>("trot")
   const [phase, setPhase] = React.useState(0.65)
@@ -900,6 +901,7 @@ function RobotQuadrupedDemo() {
   const [variant, setVariant] = React.useState<RobotVariant>("solid")
   return (
     <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
       <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
       <Segmented label="drive" value={drive} options={["walk", "trot", "idle", "manual"] as const} onChange={setDrive} />
       {drive === "manual" ? <>
@@ -911,13 +913,14 @@ function RobotQuadrupedDemo() {
       <NumberControl label="lift" value={lift} min={0} max={1} step={0.01} onChange={setLift} format={value => `${Math.round(value * 100)}%`} />
       <p className="text-[11px] text-muted-foreground">Scrub the cycle to inspect footfall timing. Coloured marks identify feet on the ground.</p>
     </>}>
-      <RobotQuadruped size={420} height={height} stride={stride} lift={lift} variant={variant} showContacts label="QUAD / 11"
+      <RobotQuadruped view={view} size={420} height={height} stride={stride} lift={lift} variant={variant} showContacts label="QUAD / 11"
         {...(drive === "manual" ? { gait, phase } : { behavior: drive })} />
     </Bench>
   )
 }
 
 function MicroDuckDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
   const [drive, setDrive] = React.useState<DuckBehavior | "manual">("walk")
   const [gait, setGait] = React.useState<DuckGait>("walk")
   const [phase, setPhase] = React.useState(0.3)
@@ -927,6 +930,7 @@ function MicroDuckDemo() {
   const [variant, setVariant] = React.useState<RobotVariant>("solid")
   return (
     <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
       <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
       <Segmented label="drive" value={drive} options={["walk", "idle", "peck", "manual"] as const} onChange={setDrive} />
       {drive === "manual" ? <>
@@ -938,7 +942,7 @@ function MicroDuckDemo() {
       <NumberControl label="height" value={height} min={0} max={1} step={0.01} onChange={setHeight} format={value => `${Math.round(value * 100)}%`} />
       <p className="text-[11px] text-muted-foreground">Gaze swings the neck between a peck and a craned-up pose on a constant radius. Coloured marks show the foot carrying weight.</p>
     </>}>
-      <MicroDuck size={300} height={height} variant={variant} showContacts label="DUCK / 12"
+      <MicroDuck view={view} size={300} height={height} variant={variant} showContacts label="DUCK / 12"
         {...(drive === "manual" ? { gait, phase, gaze, beak } : { behavior: drive })} />
     </Bench>
   )
@@ -1302,6 +1306,7 @@ function CyberTrooperDemo() {
   )
 }
 function RobotFishDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
   const [drive, setDrive] = React.useState<FishBehavior | "manual">("cruise")
   const [phase, setPhase] = React.useState(0.3)
   const [amplitude, setAmplitude] = React.useState(0.6)
@@ -1310,6 +1315,7 @@ function RobotFishDemo() {
   const [variant, setVariant] = React.useState<RobotVariant>("solid")
   return (
     <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
       <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
       <Segmented label="drive" value={drive} options={["cruise", "dart", "hover", "manual"] as const} onChange={setDrive} />
       {drive === "manual" ? <>
@@ -1320,13 +1326,14 @@ function RobotFishDemo() {
       </> : <Hint>It turns toward your pointer. Click it and it darts off, then settles back into the beat.</Hint>}
       <p className="text-[11px] text-muted-foreground">The hull is the solved spine offset either side, so the outline is the wave rather than artwork beside it.</p>
     </>}>
-      <RobotFish size={360} variant={variant} label="FISH / 22"
+      <RobotFish view={view} size={360} variant={variant} label="FISH / 22"
         {...(drive === "manual" ? { phase, amplitude, waves, turn } : { behavior: drive })} />
     </Bench>
   )
 }
 
 function RobotSnakeDemo() {
+  const [view, setView] = React.useState<RobotView>("plan")
   const [drive, setDrive] = React.useState<SnakeBehavior | "manual">("serpentine")
   const [phase, setPhase] = React.useState(0.2)
   const [amplitude, setAmplitude] = React.useState(0.8)
@@ -1336,6 +1343,7 @@ function RobotSnakeDemo() {
   const [variant, setVariant] = React.useState<RobotVariant>("solid")
   return (
     <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
       <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
       <Segmented label="drive" value={drive} options={["serpentine", "sidewind", "coil", "manual"] as const} onChange={setDrive} />
       {drive === "manual" ? <>
@@ -1347,13 +1355,14 @@ function RobotSnakeDemo() {
       <Segmented label="contacts" value={contacts} options={["off", "on"] as const} onChange={setContacts} />
       <p className="text-[11px] text-muted-foreground">Lifted sections cast an offset shadow and drop out of the contact marks: that is sidewinding.</p>
     </>}>
-      <RobotSnake size={360} variant={variant} showContacts={contacts === "on"} label="SNAKE / 23"
+      <RobotSnake view={view} size={360} variant={variant} showContacts={contacts === "on"} label="SNAKE / 23"
         {...(drive === "manual" ? { phase, amplitude, waves, lift } : { behavior: drive })} />
     </Bench>
   )
 }
 
 function RobotSpiderDemo() {
+  const [view, setView] = React.useState<RobotView>("plan")
   const [drive, setDrive] = React.useState<SpiderBehavior | "manual">("walk")
   const [gait, setGait] = React.useState<HexapodGait>("tripod")
   const [phase, setPhase] = React.useState(0.2)
@@ -1363,6 +1372,7 @@ function RobotSpiderDemo() {
   const [variant, setVariant] = React.useState<RobotVariant>("solid")
   return (
     <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
       <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
       <Segmented label="drive" value={drive} options={["walk", "skitter", "idle", "manual"] as const} onChange={setDrive} />
       {drive === "manual" ? <>
@@ -1373,13 +1383,14 @@ function RobotSpiderDemo() {
       <NumberControl label="height" value={height} min={0} max={1} step={0.01} onChange={setHeight} format={value => `${Math.round(8 + value * 22)}u`} />
       <Segmented label="contacts" value={contacts} options={["off", "on"] as const} onChange={setContacts} />
     </>}>
-      <RobotSpider size={330} legs={legs} height={height} variant={variant} showContacts={contacts === "on"} label="SPIDER / 24"
+      <RobotSpider view={view} size={330} legs={legs} height={height} variant={variant} showContacts={contacts === "on"} label="SPIDER / 24"
         {...(drive === "manual" ? { gait, phase, heading: 0 } : { behavior: drive })} />
     </Bench>
   )
 }
 
 function RobotCrabDemo() {
+  const [view, setView] = React.useState<RobotView>("plan")
   const [drive, setDrive] = React.useState<CrabBehavior | "manual">("scuttle")
   const [phase, setPhase] = React.useState(0.2)
   const [heading, setHeading] = React.useState(90)
@@ -1387,6 +1398,7 @@ function RobotCrabDemo() {
   const [variant, setVariant] = React.useState<RobotVariant>("solid")
   return (
     <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
       <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
       <Segmented label="drive" value={drive} options={["scuttle", "idle", "manual"] as const} onChange={setDrive} />
       {drive === "manual" ? <>
@@ -1396,13 +1408,14 @@ function RobotCrabDemo() {
       </> : <Hint>The eyestalks track your pointer. Click and both claws snap shut, then fall open.</Hint>}
       <p className="text-[11px] text-muted-foreground">The carapace never turns — only the course handed to the gait solver does.</p>
     </>}>
-      <RobotCrab size={360} variant={variant} label="CRAB / 25"
+      <RobotCrab view={view} size={360} variant={variant} label="CRAB / 25"
         {...(drive === "manual" ? { phase, heading, claw, gait: "tripod" as HexapodGait } : { behavior: drive })} />
     </Bench>
   )
 }
 
 function RobotBirdDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
   const [drive, setDrive] = React.useState<BirdBehavior | "manual">("perch")
   const [phase, setPhase] = React.useState(0.25)
   const [spread, setSpread] = React.useState(1)
@@ -1411,6 +1424,7 @@ function RobotBirdDemo() {
   const [variant, setVariant] = React.useState<RobotVariant>("solid")
   return (
     <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
       <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
       <Segmented label="drive" value={drive} options={["perch", "flap", "glide", "manual"] as const} onChange={setDrive} />
       {drive === "manual" ? <>
@@ -1421,7 +1435,7 @@ function RobotBirdDemo() {
       </> : <Hint>Its head follows your pointer. Click it and it launches, then settles back onto the perch.</Hint>}
       <p className="text-[11px] text-muted-foreground">Spread interpolates the whole three-link wing between tucked and extended, so folding and beating are one mechanism.</p>
     </>}>
-      <RobotBird size={330} variant={variant} label="BIRD / 26"
+      <RobotBird view={view} size={330} variant={variant} label="BIRD / 26"
         {...(drive === "manual" ? { phase, spread, tail, altitude } : { behavior: drive })} />
     </Bench>
   )

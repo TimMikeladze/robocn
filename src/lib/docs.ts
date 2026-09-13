@@ -429,6 +429,7 @@ export const docs: DocEntry[] = [
 // Or drive the cycle yourself, the way it has always worked.
 <MicroDuck gait="walk" phase={0.3} gaze={0.4} beak={0.2} showContacts />`,
     props: [
+      view("profile", "duck"),
       { name: "behavior", type: '"walk" | "idle" | "peck" | "static"', default: '"idle"', description: "What it does when phase is not supplied: pace, shift its weight and look around, or work the floor." },
       { name: "gait", type: '"stand" | "walk" | "strut"', description: "Footfall pattern. Omit and the behavior picks one — walking walks, everything else stands." },
       { name: "phase", type: "number", description: "Controlled cycle fraction. Supplying it stops the internal clock. Wraps in both directions; ignored when standing." },
@@ -448,7 +449,7 @@ export const docs: DocEntry[] = [
       { name: "label", type: "string", description: "Caption underneath the robot." },
       ...form.slice(0, 2), ...palette,
     ],
-    notes: ["Supplying phase hands the cycle back to your timeline and stops the internal clock — controlled always wins. Without it the duck runs its own, parked by a reduced-motion preference.", "Legs solve two-link inverse kinematics with the knee breaking rearward, and the neck is a three-link FABRIK chain. The drawing preserves link lengths but does not model balance or ground forces.", "The far leg is drawn behind the body at reduced opacity, which is depth in the illustration rather than a second solve."],
+    notes: ["Side elevation is the drawing it always had, with the far leg slid sideways to fake its depth. Off that axis both legs stand either side of the pelvis, and the body, neck and head are solids.", "Supplying phase hands the cycle back to your timeline and stops the internal clock — controlled always wins. Without it the duck runs its own, parked by a reduced-motion preference.", "Legs solve two-link inverse kinematics with the knee breaking rearward, and the neck is a three-link FABRIK chain. The drawing preserves link lengths but does not model balance or ground forces.", "The far leg is drawn behind the body at reduced opacity, which is depth in the illustration rather than a second solve."],
   },
   {
     slug: "duck-kinematics", item: "duck-kinematics", title: "Duck kinematics", group: "Foundations",
@@ -526,6 +527,7 @@ solution.reachable // false when any leg runs out of travel`,
 // Or scrub the cycle yourself.
 <RobotQuadruped gait="trot" phase={0.65} height={0.5} stride={0.8} showContacts />`,
     props: [
+      view("profile", "robot"),
       { name: "behavior", type: '"walk" | "trot" | "idle" | "static"', default: '"idle"', description: "What it does when phase is not supplied. Idle still breathes: the hips rise and fall." },
       { name: "gait", type: '"stand" | "walk" | "trot"', description: "Footfall pattern. Omit and the behavior picks one." },
       { name: "phase", type: "number", description: "Controlled cycle fraction. Supplying it stops the internal clock. Wraps in both directions; ignored when standing." },
@@ -542,7 +544,7 @@ solution.reachable // false when any leg runs out of travel`,
       { name: "label", type: "string", description: "Caption underneath the robot." },
       ...form.slice(0, 2), ...palette,
     ],
-    notes: ["Supplying phase hands the cycle back to your timeline and stops the internal clock. Without it the robot keeps its own, parked by a reduced-motion preference.", "All four legs solve two-link inverse kinematics in parallel planes. The illustration preserves link lengths but does not simulate balance, forces, or terrain."],
+    notes: ["Side elevation is the drawing it always had, where one pair of legs is drawn behind the other. Off that axis the legs are tubes either side of the body at half a track out, and the body is a box.", "Supplying phase hands the cycle back to your timeline and stops the internal clock. Without it the robot keeps its own, parked by a reduced-motion preference.", "All four legs solve two-link inverse kinematics in parallel planes. The illustration preserves link lengths but does not simulate balance, forces, or terrain."],
   },
   {
     slug: "quadruped-kinematics", item: "quadruped-kinematics", title: "Quadruped kinematics", group: "Foundations",
@@ -571,6 +573,7 @@ pose.height // hip height in world units`,
 // Or drive the beat from your own timeline.
 <RobotFish phase={0.35} amplitude={0.7} waves={1.4} turn={0.3} fins={20} />`,
     props: [
+      view("profile", "fish"),
       { name: "behavior", type: '"cruise" | "dart" | "hover" | "static"', default: '"cruise"', description: "What it does when phase is not supplied: a steady beat, burst-and-glide, or holding station on its fins." },
       { name: "phase", type: "number", description: "Controlled cycle fraction. Supplying it stops the internal clock. Wraps in both directions." },
       { name: "speed", type: "number", default: "1.1", description: "Tail beats per second." },
@@ -587,7 +590,7 @@ pose.height // hip height in world units`,
       { name: "label", type: "string", description: "Caption underneath the fish." },
       ...form.slice(0, 2), ...palette,
     ],
-    notes: ["The hull is the solver's output: `spineOutline` offsets every solved joint by a width profile, so the silhouette cannot drift out of step with the wave.", "Body swing is tapered to the tail, which is what a carangiform swimmer does. Thrust, drag and buoyancy are not modelled — this is a pose, not a simulation."],
+    notes: ["Side elevation is the drawing it always had. A hull is round in section: off-axis the body is a chain of tubes down the solved spine, each as thick as the hull is there.", "The hull is the solver's output: `spineOutline` offsets every solved joint by a width profile, so the silhouette cannot drift out of step with the wave.", "Body swing is tapered to the tail, which is what a carangiform swimmer does. Thrust, drag and buoyancy are not modelled — this is a pose, not a simulation."],
   },
   {
     slug: "robot-snake", item: "robot-snake", title: "Robot snake", group: "Robots",
@@ -600,6 +603,7 @@ pose.height // hip height in world units`,
 // Or scrub the wave yourself.
 <RobotSnake phase={0.4} amplitude={0.9} waves={1.5} lift={1} turn={-0.2} />`,
     props: [
+      view("plan", "crawler"),
       { name: "behavior", type: '"serpentine" | "sidewind" | "coil" | "static"', default: '"serpentine"', description: "What it does when phase is not supplied: an even wave, alternating sections lifted clear, or curled up and breathing." },
       { name: "phase", type: "number", description: "Controlled cycle fraction. Supplying it stops the internal clock. Wraps in both directions." },
       { name: "speed", type: "number", default: "0.6", description: "Wave cycles per second." },
@@ -617,7 +621,7 @@ pose.height // hip height in world units`,
       { name: "label", type: "string", description: "Caption underneath the snake." },
       ...form.slice(0, 2), ...palette,
     ],
-    notes: ["Lifted sections draw an offset shadow and drop out of the contact marks, so sidewinding reads as height rather than as a differently shaped wave.", "The solver integrates a tangent angle instead of moving joints, so every link is exactly the same length at every phase, turn and amplitude."],
+    notes: ["Plan view is the identity projection. The spine solver reports a clearance for every joint, so sidewinding is genuinely off the ground rather than shaded to look it \u2014 from the side the lifted half of the body is visibly clear of it.", "Lifted sections draw an offset shadow and drop out of the contact marks, so sidewinding reads as height rather than as a differently shaped wave.", "The solver integrates a tangent angle instead of moving joints, so every link is exactly the same length at every phase, turn and amplitude."],
   },
   {
     slug: "robot-spider", item: "robot-spider", title: "Robot spider", group: "Robots",
@@ -630,6 +634,7 @@ pose.height // hip height in world units`,
 // Or drive the cycle and the facing yourself.
 <RobotSpider gait="ripple" phase={0.3} heading={40} height={0.7} legs={6} showContacts />`,
     props: [
+      view("plan", "walker"),
       { name: "behavior", type: '"walk" | "skitter" | "idle" | "static"', default: '"walk"', description: "What it does when phase is not supplied: a tripod walk, a fast ripple, or standing and breathing." },
       { name: "gait", type: '"stand" | "tripod" | "wave" | "ripple"', description: "Footfall pattern. Omit and the behavior picks one." },
       { name: "phase", type: "number", description: "Controlled cycle fraction. Supplying it stops the internal clock. Wraps in both directions." },
@@ -648,7 +653,7 @@ pose.height // hip height in world units`,
       { name: "label", type: "string", description: "Caption underneath the robot." },
       ...form.slice(0, 2), ...palette,
     ],
-    notes: ["Stance is pulled in far enough that a full stride still lands inside each leg's reach, so no requested foot is ever out of range.", "The view is plan: raised knees and swinging feet are offset up the screen in proportion to their solved height, which is a depth cue rather than a projection. The leg lengths themselves are solved."],
+    notes: ["Plan view is the identity projection, facing included. The gait solver already works in three dimensions, so off-axis the legs are simply the solve drawn at the knee heights and foot clearances the plan view could only hint at by sliding them up the screen.", "Stance is pulled in far enough that a full stride still lands inside each leg's reach, so no requested foot is ever out of range.", "The view is plan: raised knees and swinging feet are offset up the screen in proportion to their solved height, which is a depth cue rather than a projection. The leg lengths themselves are solved."],
   },
   {
     slug: "robot-crab", item: "robot-crab", title: "Robot crab", group: "Robots",
@@ -661,6 +666,7 @@ pose.height // hip height in world units`,
 // Or drive the cycle, the course and the claws yourself.
 <RobotCrab phase={0.25} heading={270} claw={0.8} eyes={-0.5} showContacts />`,
     props: [
+      view("plan", "walker"),
       { name: "behavior", type: '"scuttle" | "idle" | "static"', default: '"scuttle"', description: "What it does when phase is not supplied: runs one way, stops, runs back, or stands and works its claws." },
       { name: "gait", type: '"stand" | "tripod" | "wave" | "ripple"', description: "Footfall pattern. Omit and the behavior picks one." },
       { name: "phase", type: "number", description: "Controlled cycle fraction. Supplying it stops the internal clock. Wraps in both directions." },
@@ -681,7 +687,7 @@ pose.height // hip height in world units`,
       { name: "label", type: "string", description: "Caption underneath the robot." },
       ...form.slice(0, 2), ...palette,
     ],
-    notes: ["The carapace never turns: only the travel direction handed to the gait solver does, which is the whole mechanical difference between this and the spider.", "Claws are illustrated linkages with one solved degree of freedom — the hinged jaw. The walking legs are the solved part."],
+    notes: ["Plan view is the identity projection. Off-axis the legs are the solve at its own heights, the carapace has a real thickness and the chelipeds are tubes rather than outlines.", "The carapace never turns: only the travel direction handed to the gait solver does, which is the whole mechanical difference between this and the spider.", "Claws are illustrated linkages with one solved degree of freedom — the hinged jaw. The walking legs are the solved part."],
   },
   {
     slug: "robot-bird", item: "robot-bird", title: "Robot bird", group: "Robots",
@@ -694,6 +700,7 @@ pose.height // hip height in world units`,
 // Or drive the beat and the pose yourself.
 <RobotBird phase={0.25} spread={1} tail={0.8} altitude={0.6} headAngle={-20} />`,
     props: [
+      view("profile", "bird"),
       { name: "behavior", type: '"perch" | "flap" | "glide" | "static"', default: '"perch"', description: "What it does when phase is not supplied: sits folded and looks around, beats, or holds the wings out and trims with the tail." },
       { name: "phase", type: "number", description: "Controlled wingbeat fraction. Supplying it stops the internal clock. Wraps in both directions." },
       { name: "speed", type: "number", default: "1.6", description: "Wingbeats per second." },
@@ -709,7 +716,7 @@ pose.height // hip height in world units`,
       { name: "label", type: "string", description: "Caption underneath the bird." },
       ...form.slice(0, 2), ...palette,
     ],
-    notes: ["Folding and beating are the same chain at different angles, so a wing never has two sets of artwork: spread interpolates the whole linkage between tucked and extended.", "The wing is an illustrated linkage driven by angles rather than an inverse-kinematic solve — there is no target for it to reach. The feather fan opens on the downstroke and closes coming up, which is what a real primary fan does."],
+    notes: ["Side elevation is the drawing it always had. The wings are either side of the torso rather than one behind the other, which only reads once the camera comes round.", "Folding and beating are the same chain at different angles, so a wing never has two sets of artwork: spread interpolates the whole linkage between tucked and extended.", "The wing is an illustrated linkage driven by angles rather than an inverse-kinematic solve — there is no target for it to reach. The feather fan opens on the downstroke and closes coming up, which is what a real primary fan does."],
   },
   {
     slug: "fabricator", item: "fabricator", title: "Fabricator", group: "Machines",
