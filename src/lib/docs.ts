@@ -821,6 +821,79 @@ solution.reachable // false when any leg runs out of travel`,
     notes: ["Anchors sit in three pairs 120° apart on both rings and each leg crosses to the far anchor of its pair, so every leg has the same home length.", "Out-of-range poses still return complete geometry with reachable false, so a UI can draw the fault instead of handling an exception."],
   },
   {
+    slug: "animatronic-face", item: "animatronic-face", title: "Animatronic face", group: "Robots",
+    summary: "An expressive humanoid head where every feature is a servo: paired brows, lids, cheeks and lip corners, a hinged jaw, and nine expressions that blend rather than swap.",
+    files: ["components/ui/animatronic-face.tsx"],
+    usage: `import { AnimatronicFace } from "@/components/ui/animatronic-face"
+
+<AnimatronicFace behavior="converse" />
+
+// An expression is a blend, so intensity is a real dial, not a fade.
+<AnimatronicFace expression="doubt" intensity={0.6} showActuators />
+
+// Or drive a servo yourself; it wins over the expression.
+<AnimatronicFace expression="joy" channels={{ jaw: 0.4, left: { browOuter: -0.8 } }} />`,
+    props: [
+      view("front", "head"),
+      { name: "expression", type: '"neutral" | "joy" | "surprise" | "sorrow" | "anger" | "fear" | "disgust" | "doubt" | "sleep"', description: "Which expression the rig drives toward. Omit and the behavior picks one." },
+      { name: "intensity", type: "number", default: "1", description: "How far it drives there, clamped to 0–1. The whole channel vector scales, so half a smile is a different face rather than a faded one." },
+      { name: "behavior", type: '"idle" | "converse" | "listen" | "emote" | "static"', default: '"idle"', description: "What the head does with anything you have not supplied: breathe and glance about, talk, attend to you, or walk the whole expression set." },
+      { name: "speed", type: "number", default: "0.3", description: "Cycles per second." },
+      ...loop,
+      { name: "blink", type: "number", description: "Lid closure over the expression, clamped to 0–1. Omit and it blinks on an irregular cycle of its own." },
+      { name: "speech", type: "number", description: "Speech level, clamped to 0–1: opens the jaw and slackens the lips on top of whatever the face is holding." },
+      { name: "yaw / pitch / roll", type: "number", description: "Neck angles in degrees, clamped to ±34, ±28, ±26. Omit and the head turns toward the pointer." },
+      { name: "look", type: "Vec2 | null", default: "null", description: "Pupil aim in −1..1 on both axes. Set it to drive the gaze; leave it null to track the pointer." },
+      { name: "track", type: "boolean", default: "true", description: "Follow the pointer anywhere on the page while look is null." },
+      { name: "interactive", type: "boolean", default: "true", description: "Turn the head toward the pointer, and react when clicked — a start, a blink, and a warming toward pleased." },
+      { name: "onReact", type: "() => void", description: "Fired on the click that starts a reaction." },
+      { name: "channels", type: "Partial<FaceChannels>", description: "Drive individual servos: jaw, lipPress, lipPucker, noseWrinkle, and a left / right object each carrying browInner, browOuter, lidUpper, lidLower, cheek and lipCorner. These win over the expression." },
+      { name: "showActuators", type: "boolean", default: "false", description: "Draw the sixteen push-rods from the frame ring to the parts they drive." },
+      { name: "showNeck", type: "boolean", default: "true", description: "Neck column and shoulder plate under the head." },
+      { name: "showGround", type: "boolean", default: "true", description: "Contact shadow." },
+      { name: "geometry", type: "Partial<HeadGeometry>", description: "Override the skull half-axes, the servo gain, or the stroke the servos have." },
+      { name: "label", type: "string", description: "Caption under the head." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "Nothing in the drawing branches on an expression name. Every expression resolves to the same ten-channel vector — six of them paired left and right — and the face reads channels, which is why intensity, blink and speech compose instead of one winning.",
+      "The skull is an ellipsoid and its silhouette is projected exactly: composing the camera, the neck rotation and the radii gives a 2×3 matrix whose shape matrix eigen-decomposes into one ellipse. Four cameras, no per-angle artwork.",
+      "Features are curves drawn in the face's own chart and pushed onto that surface, so the brow wraps the temple and the far eye turns away by itself. A patch whose normal points away from the camera fades out — which is why the face is gone in plan view, looking at the crown.",
+      "The jaw is a hinge on a real axis through the ear servos, and the lower lip rides the jaw plate, so the mouth opens because the mechanism moved rather than because a second mouth was drawn.",
+      "showActuators draws one rod per servo and paints it in the accent colour when it runs out of stroke. The component clamps its own inputs, so the only way to see a fault is to tighten geometry.travel.",
+      "Gaze is illustrated, not solved — the eyes are discs on the surface, not a solved eyeball in a socket. Everything else the rig reports is a channel value the drawing is bound to.",
+    ],
+  },
+  {
+    slug: "face-actuation", item: "face-actuation", title: "Face actuation", group: "Foundations",
+    summary: "The rig behind the animatronic face: ten servo channels, nine blendable expressions, per-servo stroke against travel, and the ellipsoid maths that puts a feature on a skull.",
+    files: ["lib/robocn/face.ts"],
+    usage: `import { blendFace, faceShape, solveFace, onFace, ellipsoidOutline } from "@/lib/robocn/face"
+
+const solution = solveFace({ expression: "doubt", intensity: 0.7, speech: 0.4 })
+solution.left.browOuter   // the left brow's servo
+solution.actuators        // id, value, stroke, travel, withinLimits
+solution.withinLimits     // false when any servo ran out of stroke
+
+// Expressions mix channel by channel, which is what an ease between them is.
+const halfway = blendFace(faceShape("neutral"), faceShape("joy"), 0.5)`,
+    api: [
+      { name: "solveFace", type: "(input?: FaceInput, geometry?: HeadGeometry) => FaceSolution", description: "Expression scaled by intensity, then blink and speech added on top, then explicit channels last. Every channel is clamped, and each one reports its servo stroke." },
+      { name: "faceShape", type: "(expression: FaceExpression) => FaceChannels", description: "The full-intensity channel vector for one of the nine expressions. Six channels are paired, so doubt can raise one brow and level the other." },
+      { name: "blendFace", type: "(a: FaceChannels, b: FaceChannels, t: number) => FaceChannels", description: "Channel-by-channel mix. An ease between expressions is this, not a cross-fade of two drawings." },
+      { name: "onFace", type: "(x: number, y: number, radii: Vec3, outset?: number) => Vec3", description: "Solves the ellipsoid for z, so a feature placed on the front elevation lands on the skull. Outside the silhouette it lands on the equator rather than returning NaN." },
+      { name: "ellipsoidOutline", type: "(radii: Vec3, pose: HeadPose, camera: RobotCamera, center?: Vec3) => EllipseOutline", description: "The exact silhouette of an ellipsoid under an orthographic camera: cx, cy, the two semi-axes and the tilt of the major one." },
+      { name: "rotateHead", type: "(point: Vec3, pose: HeadPose) => Vec3", description: "Neck rotation in degrees, applied roll, then pitch, then yaw." },
+      { name: "defaultHeadGeometry", type: "HeadGeometry", description: "Skull half-axes, servo gain in world units per unit of channel, and the stroke the servos have." },
+    ],
+    notes: [
+      "A channel is a servo. Ten of them: browInner, browOuter, lidUpper, lidLower, cheek and lipCorner on each side, plus noseWrinkle, lipPress, lipPucker and jaw on the centreline.",
+      "lidUpper is the one lid channel that runs both ways — a lid retracts past open, which is what makes surprise and fear read as wide-eyed rather than merely un-blinked.",
+      "Blink takes the larger of itself and the expression's own lid rather than summing, because a lid cannot close twice; speech takes the larger jaw and slackens the lips, because a pressed mouth is not also speaking.",
+      "Out-of-travel channels still return complete values with withinLimits false, so a UI draws the fault instead of handling an exception.",
+    ],
+  },
+  {
     slug: "robot-quadruped", item: "robot-quadruped", title: "Robot quadruped", group: "Robots",
     summary: "A four-legged robot with solved hip, knee, and foot positions. Scrub a walking or trotting cycle, change the stance, and inspect which feet touch the ground.",
     files: ["components/ui/robot-quadruped.tsx"],
@@ -2050,6 +2123,48 @@ pose.height // body height in world units`,
       ...form.slice(0, 2), ...palette,
     ],
     notes: ["Front elevation is the drawing it always had. The can, the mounting tabs and the output boss have a depth through the machine that only reads once the camera comes round.", "A supplied angle always wins and stops the loop. The step behavior deliberately jumps its goal: the 210°/s slew rate is what draws the travel between positions, and what carries a released horn back into the sweep.", "The drawing's travel limits are illustrative and do not specify the limits of a particular physical servo."],
+  },
+  {
+    slug: "radial-bloom", item: "radial-bloom", title: "Radial bloom", group: "Machines",
+    summary: "A hub of telescoping rams pointed outward in one plane: closed it is an even star, driven out it is a ragged burst. Four guided stages per ram, and a vector of strokes drives each ram on its own.",
+    files: ["components/ui/radial-bloom.tsx"],
+    usage: `import { RadialBloom } from "@/components/ui/radial-bloom"
+
+<RadialBloom rams={12} />
+
+// The whole stroke, open and closed.
+<RadialBloom behavior="bloom" />
+
+// Controlled as one array, as a vector of rams, or as a dial you can pull open.
+<RadialBloom extension={0.8} />
+<RadialBloom strokes={[1, 0.4, 0.9, 0.2, 0.7, 0.55]} />
+<RadialBloom interactive onExtensionChange={setExtension} />`,
+    props: [
+      view("plan", "array"),
+      { name: "extension", type: "number", description: "Controlled extension of the whole array, 0 closed to 1 open. Supplying it stops the loop." },
+      { name: "strokes", type: "number[]", description: "Controlled extension per ram, 0 to 1. Its length sets the ram count, so a six-value vector builds a six-ram hub." },
+      { name: "behavior", type: '"bloom" | "ripple" | "index" | "flutter" | "static"', default: '"flutter"', description: "The default holds station near full travel with a small dither, which is the array working. bloom runs the whole stroke open and closed, ripple sends a travelling wave round the ring, index drives one ram at a time with the rest parked back." },
+      { name: "rams", type: "number", default: "12", description: "How many rams on the hub, clamped to 0–24. Ignored when strokes is supplied." },
+      { name: "pitch", type: "number", default: "13", description: "Half-angle of the two ranks either side of the hub plane, in degrees, clamped to 0–40. Zero is a genuinely flat array." },
+      { name: "spin", type: "number", default: "0", description: "Turn of the whole array about its own axis, in degrees. Independent of view." },
+      { name: "speed", type: "number", default: "0.3", description: "Opens and closes, or passes round the ring, per second." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Drag out from the hub to pull the array open; arrows step 5%, with shift 15%, Home closes and End opens." },
+      { name: "onExtensionChange", type: "(extension: number) => void", description: "Fired throughout a drag or a key press, in controlled mode too." },
+      { name: "signal", type: '"idle" | "ready" | "warning"', default: '"ready"', description: "Hub lamp: metal when idle, accent when ready, shell for a warning." },
+      { name: "showEnvelope", type: "boolean", description: "Dashed circles at the closed and full reach radii. Defaults on in blueprint and off elsewhere." },
+      { name: "showGround", type: "boolean", default: "true", description: "Draw the contact shadow under the hub." },
+      { name: "label", type: "string", description: "Caption under the array." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "One ram is four concentric stages: a fixed sleeve and three that slide, each moving a third of the tip's travel. Six world units of overlap remain between consecutive stages at full extension, so no stage ever leaves the one guiding it.",
+      "The rams have different strokes on purpose — twelve identical telescopes cannot nest around one hub. Closed, every tip sits at the same radius; it is the extension that is ragged.",
+      "Rams alternate above and below the hub plane by pitch, so plan view is unchanged and the array opens into two cones as the camera tips. At pitch 0 the tipped views collapse to a line, which is what a flat array seen edge-on is.",
+      "Stage positions, overlaps and every projection are solved. The hub's face detail and the collars at each stage mouth are drawn, not driven.",
+      "The three moving stages are one painted member stepping down through three diameters, not four differently coloured parts: a telescope reads as one spoke that gets thinner, and the collar at each mouth is what says where the joints are.",
+      "Non-finite strokes render that ram closed rather than clamped onto the ring — a missing reading is not a zero reading.",
+    ],
   },
   {
     slug: "rotary-table", item: "rotary-table", title: "Rotary table", group: "Machines",

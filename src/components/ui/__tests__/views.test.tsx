@@ -28,6 +28,7 @@ import { ProbeDroid } from "@/components/ui/probe-droid"
 import { ProtocolDroid } from "@/components/ui/protocol-droid"
 import { PylonDroid } from "@/components/ui/pylon-droid"
 import { ReachyMini } from "@/components/ui/reachy-mini"
+import { AnimatronicFace } from "@/components/ui/animatronic-face"
 import { RobotArm } from "@/components/ui/robot-arm"
 import { RobotBird } from "@/components/ui/robot-bird"
 import { RobotCrab } from "@/components/ui/robot-crab"
@@ -57,6 +58,7 @@ import { ScaraArm } from "@/components/ui/scara-arm"
 import { SecurityDroid } from "@/components/ui/security-droid"
 import { SentinelConsole } from "@/components/ui/sentinel-console"
 import { ServoMotor } from "@/components/ui/servo-motor"
+import { RadialBloom } from "@/components/ui/radial-bloom"
 import { SolenoidValve } from "@/components/ui/solenoid-valve"
 import { ElectromagneticRelay } from "@/components/ui/electromagnetic-relay"
 import { InductionMotor } from "@/components/ui/induction-motor"
@@ -128,6 +130,7 @@ const machines: Record<string, (view?: RobotView) => React.ReactElement> = {
   "conveyor-belt": (view) => <ConveyorBelt animate={false} position={0.3} view={view} />,
   "linear-actuator": (view) => <LinearActuator animate={false} extension={0.6} view={view} />,
   "servo-motor": (view) => <ServoMotor animate={false} angle={35} view={view} />,
+  "radial-bloom": (view) => <RadialBloom animate={false} extension={0.72} view={view} />,
   "solenoid-valve": (view) => <SolenoidValve animate={false} position={0.65} view={view} />,
   "electromagnetic-relay": (view) => <ElectromagneticRelay animate={false} energized={0.8} view={view} />,
   "induction-motor": (view) => <InductionMotor animate={false} angle={38} view={view} />,
@@ -187,6 +190,7 @@ const machines: Record<string, (view?: RobotView) => React.ReactElement> = {
   "sentinel-console": (view) => <SentinelConsole animate={false} aperture={0.55} voice={0.4} track={false} look={{ x: 0.3, y: -0.2 }} view={view} />,
   "bellows-droid": (view) => <BellowsDroid animate={false} inflation={0.62} pleats={7} view={view} />,
   "reachy-mini": (view) => <ReachyMini animate={false} view={view} />,
+  "animatronic-face": (view) => <AnimatronicFace animate={false} track={false} expression="doubt" yaw={12} view={view} />,
   "robot-sunflower": (view) => <RobotSunflower animate={false} track={false} daylight={0.42} view={view} />,
   "celestial-planet": (view) => <CelestialPlanet animate={false} spin={38} sun={44} view={view} />,
   "celestial-moon": (view) => <CelestialMoon animate={false} phase={0.28} view={view} />,
@@ -221,6 +225,7 @@ const natives: Partial<Record<keyof typeof machines, RobotView>> = {
   "conveyor-belt": "profile",
   "linear-actuator": "profile",
   "servo-motor": "front",
+  "radial-bloom": "plan",
   "solenoid-valve": "profile",
   "electromagnetic-relay": "profile",
   "induction-motor": "front",

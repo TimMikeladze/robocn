@@ -508,6 +508,30 @@
       ]
     },
     {
+      "name": "animatronic-face",
+      "type": "registry:ui",
+      "title": "Animatronic face",
+      "description": "An expressive humanoid head driven as servo channels: paired brows, lids, cheeks and lip corners, a hinged jaw, nine blendable expressions, pointer-tracked gaze, and drawable push-rods. One ellipsoid geometry, four camera angles.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/face-actuation.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/animatronic-face.tsx",
+          "type": "registry:ui",
+          "target": "@ui/animatronic-face.tsx"
+        }
+      ]
+    },
+    {
       "name": "stewart-kinematics",
       "type": "registry:lib",
       "title": "Stewart kinematics",
@@ -524,6 +548,27 @@
           "path": "src/lib/robocn/stewart.ts",
           "type": "registry:lib",
           "target": "@lib/robocn/stewart.ts"
+        }
+      ]
+    },
+    {
+      "name": "face-actuation",
+      "type": "registry:lib",
+      "title": "Face actuation",
+      "description": "An animatronic face rig: ten servo channels, six of them paired left and right, nine blendable expressions, per-servo stroke against travel, and exact ellipsoid silhouette projection for the skull.",
+      "categories": [
+        "robotics",
+        "math"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json"
+      ],
+      "files": [
+        {
+          "path": "src/lib/robocn/face.ts",
+          "type": "registry:lib",
+          "target": "@lib/robocn/face.ts"
         }
       ]
     },
@@ -4328,6 +4373,28 @@
           "path": "src/components/ui/ball-launcher.tsx",
           "type": "registry:ui",
           "target": "@ui/ball-launcher.tsx"
+        }
+      ]
+    },
+    {
+      "name": "radial-bloom",
+      "type": "registry:ui",
+      "title": "Radial bloom",
+      "description": "A hub of up to twenty-four telescoping rams pointed outward in one plane. Four guided stages per ram, so the star opens to more than twice its closed radius and every stage stays in its sleeve. Takes one extension or a vector of them.",
+      "categories": [
+        "robotics",
+        "actuators"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/radial-bloom.tsx",
+          "type": "registry:ui",
+          "target": "@ui/radial-bloom.tsx"
         }
       ]
     }

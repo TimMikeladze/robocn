@@ -34,6 +34,8 @@ import { ProbeDroid , type ProbeDroidBehavior} from "@/components/ui/probe-droid
 import { ProtocolDroid, type ProtocolDroidGesture, type ProtocolDroidPose , type ProtocolDroidBehavior} from "@/components/ui/protocol-droid"
 import type { DuckGait } from "@/lib/robocn/duck"
 import { ReachyMini, type ReachyBehavior } from "@/components/ui/reachy-mini"
+import { AnimatronicFace, type AnimatronicBehavior } from "@/components/ui/animatronic-face"
+import { defaultHeadGeometry, solveFace, type FaceExpression } from "@/lib/robocn/face"
 import { SecurityDroid, type SecurityDroidBehavior, type SecurityDroidPose } from "@/components/ui/security-droid"
 import { UtilityDroid, type UtilityDroidSeries, type UtilityDroidTool , type UtilityDroidBehavior} from "@/components/ui/utility-droid"
 import { defaultStewartGeometry, solveStewart } from "@/lib/robocn/stewart"
@@ -71,6 +73,7 @@ import type { HexapodGait } from "@/lib/robocn/hexapod"
 import type { QuadrupedGait } from "@/lib/robocn/quadruped"
 import { LinearActuator, type ActuatorBehavior } from "@/components/ui/linear-actuator"
 import { ServoMotor, type ServoBehavior, type ServoHorn } from "@/components/ui/servo-motor"
+import { RadialBloom, type BloomBehavior } from "@/components/ui/radial-bloom"
 import { SolenoidValve, type SolenoidValveBehavior } from "@/components/ui/solenoid-valve"
 import { ElectromagneticRelay, type ElectromagneticRelayBehavior } from "@/components/ui/electromagnetic-relay"
 import { InductionMotor, type InductionMotorBehavior } from "@/components/ui/induction-motor"
@@ -1078,6 +1081,42 @@ function LinearActuatorDemo() {
   )
 }
 
+/** A twelve-value reading, shown as machined travel rather than as bars. */
+const bloomVector = [1, 0.35, 0.82, 0.2, 0.95, 0.5, 0.7, 0.28, 0.9, 0.42, 0.6, 0.75]
+
+function RadialBloomDemo() {
+  const [view, setView] = React.useState<RobotView>("plan")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<BloomBehavior | "manual" | "vector">("flutter")
+  const [rams, setRams] = React.useState(12)
+  const [pitch, setPitch] = React.useState(13)
+  const [spin, setSpin] = React.useState(0)
+  const [extension, setExtension] = React.useState(0.7)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["bloom", "ripple", "index", "flutter", "static", "manual", "vector"] as const} onChange={setDrive} />
+      <NumberControl label="rams" value={rams} min={0} max={24} onChange={setRams} />
+      <NumberControl label="pitch" value={pitch} min={0} max={40} onChange={setPitch} format={v => `${v}°`} />
+      <NumberControl label="spin" value={spin} min={0} max={360} step={5} onChange={setSpin} format={v => `${v}°`} />
+      {drive === "manual"
+        ? <NumberControl label="extension" value={extension} min={0} max={1} step={0.02} onChange={setExtension} format={v => `${Math.round(v * 100)}%`} />
+        : drive === "vector"
+          ? <Hint>Every ram is on its own number. A non-finite reading leaves that ram closed rather than clamping it onto the ring.</Hint>
+          : <Hint>Drag out from the hub to pull the array open, or arrow-key it. Let go and it eases back into the behaviour.</Hint>}
+    </>}>
+      <RadialBloom view={view} size={330} variant={variant} rams={rams} pitch={pitch} spin={spin}
+        label="BLOOM / 12R" interactive onExtensionChange={setExtension}
+        {...(drive === "manual"
+          ? { extension }
+          : drive === "vector"
+            ? { strokes: bloomVector.slice(0, rams) }
+            : { behavior: drive })} />
+    </Bench>
+  )
+}
+
 function ServoMotorDemo() {
   const [view, setView] = React.useState<RobotView>("front")
   const [drive, setDrive] = React.useState<ServoBehavior | "manual">("sweep")
@@ -1191,6 +1230,50 @@ function ReachyMiniDemo() {
     </>}>
       <ReachyMini view={view} size={320} geometry={{ travel }} showLinkage={linkage === "on"} variant={variant} label="MINI / 13"
         {...(drive === "manual" ? { yaw, pitch, roll, heave, track: false } : { behavior: drive })} />
+    </Bench>
+  )
+}
+
+const expressions: FaceExpression[] = ["neutral", "joy", "surprise", "sorrow", "anger", "fear", "disgust", "doubt", "sleep"]
+
+function AnimatronicFaceDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<AnimatronicBehavior | "manual">("emote")
+  const [expression, setExpression] = React.useState<FaceExpression>("doubt")
+  const [intensity, setIntensity] = React.useState(0.85)
+  const [speech, setSpeech] = React.useState(0)
+  const [jaw, setJaw] = React.useState(0)
+  const [travel, setTravel] = React.useState(6)
+  const [rods, setRods] = React.useState<"on" | "off">("off")
+  const manual = drive === "manual"
+  const solution = solveFace(
+    { expression, intensity, speech, channels: jaw ? { jaw } : undefined },
+    { ...defaultHeadGeometry, travel },
+  )
+  const worst = solution.actuators.reduce((a, b) => (Math.abs(a.stroke) >= Math.abs(b.stroke) ? a : b))
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="rods" value={rods} options={["off", "on"] as const} onChange={setRods} />
+      <Segmented label="drive" value={drive} options={["idle", "converse", "listen", "emote", "manual"] as const} onChange={setDrive} />
+      {manual ? <>
+        <Segmented label="expression" value={expression} options={expressions} onChange={setExpression} />
+        <NumberControl label="intensity" value={intensity} min={0} max={1} step={0.01} onChange={setIntensity} format={value => `${Math.round(value * 100)}%`} />
+        <NumberControl label="speech" value={speech} min={0} max={1} step={0.01} onChange={setSpeech} format={value => `${Math.round(value * 100)}%`} />
+        <NumberControl label="jaw" value={jaw} min={0} max={1} step={0.01} onChange={setJaw} format={value => `${Math.round(value * 100)}%`} />
+      </> : <Hint>The head turns to follow your pointer, not just the pupils. Click and it starts, blinks, and warms up.</Hint>}
+      <NumberControl label="travel" value={travel} min={1} max={8} step={0.5} onChange={setTravel} format={value => `${value} u`} />
+      <Readout rows={[
+        ["busiest servo", worst.id],
+        ["stroke", `${worst.stroke.toFixed(1)} u`],
+        ["within travel", solution.withinLimits ? "yes" : "no"],
+      ]} />
+      <Hint>An expression is a blend of sixteen servo channels, not a second drawing. Lower the travel until a rod turns accent-coloured and the fault lamp lights.</Hint>
+    </>}>
+      <AnimatronicFace view={view} size={320} variant={variant} showActuators={rods === "on"} geometry={{ travel }} label="FACE / 07"
+        {...(manual ? { expression, intensity, speech, channels: jaw ? { jaw } : undefined, behavior: "static" as const, track: false } : { behavior: drive })} />
     </Bench>
   )
 }
@@ -4867,11 +4950,14 @@ export const demos: Record<string, React.ComponentType<DemoProps>> = {
   "micro-duck": MicroDuckDemo,
   "duck-kinematics": MicroDuckDemo,
   "reachy-mini": ReachyMiniDemo,
+  "animatronic-face": AnimatronicFaceDemo,
+  "face-actuation": AnimatronicFaceDemo,
   "stewart-kinematics": ReachyMiniDemo,
   "robot-quadruped": RobotQuadrupedDemo,
   "quadruped-kinematics": RobotQuadrupedDemo,
   "linear-actuator": LinearActuatorDemo,
   "servo-motor": ServoMotorDemo,
+  "radial-bloom": RadialBloomDemo,
   "rotary-table": RotaryTableDemo,
   "robot-rover": RobotRoverDemo,
   "robot-drone": RobotDroneDemo,

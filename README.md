@@ -93,7 +93,9 @@ installs at.
 | `micro-duck` | Bipedal duck robot: solved legs, a craning neck, and a beak that opens. |
 | `duck-kinematics` | Pure biped pose solver: footfall cycle, S-curve neck chain, hinged beak. |
 | `reachy-mini` | Companion head on a six-rod parallel platform, with tracking eyes and antennas. |
+| `animatronic-face` | Expressive humanoid head: paired brow, lid, cheek and lip servos, a hinged jaw, and nine expressions that blend. |
 | `stewart-kinematics` | Closed-form six-degree-of-freedom Stewart platform IK with stroke limits. |
+| `face-actuation` | The animatronic face rig: sixteen servo channels, nine blendable expressions, and exact ellipsoid silhouettes. |
 | `robot-quadruped` | Four-legged robot with solved gait poses and controlled stance. |
 | `quadruped-kinematics` | Pure two-link leg solver with standing, walking, and trotting trajectories. |
 | `fabricator` | Additive build cell: a three-axis head laying a sampled solid voxel by voxel, six shapes, a resolution axis, four camera angles. |
@@ -103,6 +105,7 @@ installs at.
 | `voxel-geometry` | Continuous occupancy fields sampled into buildable voxels, in deposition order, with the buried cells dropped, and the paths to draw them. |
 | `linear-actuator` | Controlled cylinder stroke with optional piston cutaway. |
 | `servo-motor` | Positional servo with single, double, or cross horns. |
+| `radial-bloom` | Radial array of four-stage telescoping rams on one hub: closed it is an even star, driven out it is a ragged burst, and a vector of strokes drives each ram on its own. |
 | `rotary-table` | Rotary indexing platter with controlled angle and up to twelve fixtures. |
 | `robot-rover` | Four- or six-wheel ground robot with controlled heading, steering, and tread travel. |
 | `robot-drone` | Quad- or hexacopter with counter-rotating propellers and optional guards. |

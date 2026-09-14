@@ -54,6 +54,7 @@ import { OrbDroid } from "@/components/ui/orb-droid"
 import { ProbeDroid } from "@/components/ui/probe-droid"
 import { ProtocolDroid } from "@/components/ui/protocol-droid"
 import { ReachyMini } from "@/components/ui/reachy-mini"
+import { AnimatronicFace } from "@/components/ui/animatronic-face"
 import { SecurityDroid } from "@/components/ui/security-droid"
 import { UtilityDroid } from "@/components/ui/utility-droid"
 import { RobotBird } from "@/components/ui/robot-bird"
@@ -102,6 +103,7 @@ import { StrikeStarfighter } from "@/components/ui/strike-starfighter"
 import { IonInterceptor } from "@/components/ui/ion-interceptor"
 import { LinearActuator } from "@/components/ui/linear-actuator"
 import { ServoMotor } from "@/components/ui/servo-motor"
+import { RadialBloom } from "@/components/ui/radial-bloom"
 import { SolenoidValve } from "@/components/ui/solenoid-valve"
 import { ElectromagneticRelay } from "@/components/ui/electromagnetic-relay"
 import { InductionMotor } from "@/components/ui/induction-motor"
@@ -275,6 +277,8 @@ const art: Record<string, Art> = {
   "robot-inchworm": { line: "No wave at all: two anchors and an arch.", art: <RobotInchworm size={200} interactive={false} /> },
   "micro-duck": { line: "A biped that walks, pecks, and quacks.", art: <MicroDuck size={132} gait="walk" /> },
   "reachy-mini": { line: "A head on six solved rods, eyes that follow.", art: <ReachyMini size={165} track={false} /> },
+  "animatronic-face": { line: "Every feature is a servo; an expression is a blend of them.", art: <AnimatronicFace size={170} track={false} behavior="emote" speed={0.5} showGround={false} /> },
+  "face-actuation": { line: "Sixteen channels, nine expressions, one hinged jaw.", art: <AnimatronicFace size={170} track={false} variant="blueprint" behavior="emote" speed={0.5} showActuators showGround={false} /> },
   "robot-quadruped": { line: "Four solved legs, standing, walking, and trotting.", art: <RobotQuadruped size={240} gait="trot" /> },
   "robot-rover": { line: "Four or six wheels, heading, and steering.", art: <RobotRover size={170} wheels={6} /> },
   "robot-drone": { line: "Four or six rotors, guards, and blade angles.", art: <RobotDrone size={170} /> },
@@ -310,6 +314,7 @@ const art: Record<string, Art> = {
   "drone-fabricator": { line: "A repulsor platform building with no envelope at all.", art: <DroneFabricator size={180} resolution={6} shape="vessel" showReadout={false} /> },
   "linear-actuator": { line: "Controlled stroke and a piston cutaway.", art: <LinearActuator size={240} cutaway /> },
   "servo-motor": { line: "Positional shaft with three horn styles.", art: <ServoMotor size={150} /> },
+  "radial-bloom": { line: "Twelve telescopes on one hub, each on its own number.", art: <RadialBloom size={190} speed={0.5} /> },
   "solenoid-valve": { line: "A winding, return spring, plunger, and switched flow path.", art: <SolenoidValve size={210} ports={3} /> },
   "electromagnetic-relay": { line: "A visible armature switching two contact sets.", art: <ElectromagneticRelay size={205} poles={2} /> },
   "induction-motor": { line: "Three phases circling a squirrel-cage rotor.", art: <InductionMotor size={152} poles={4} showField /> },

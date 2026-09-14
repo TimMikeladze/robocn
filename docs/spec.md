@@ -63,6 +63,8 @@ Consumers install with `npx shadcn@latest add https://<host>/r/robot-arm.json`, 
 | `duck-kinematics` | lib | Pure biped pose solver: footfall cycle, neck chain, beak. |
 | `reachy-mini` | ui | Companion head on a solved six-rod parallel platform. |
 | `stewart-kinematics` | lib | Closed-form 6-DOF Stewart platform IK with stroke limits. |
+| `animatronic-face` | ui | Expressive humanoid head: every feature a servo, expressions that blend. |
+| `face-actuation` | lib | The face rig: 16 servo channels, 9 blendable expressions, exact ellipsoid silhouettes. |
 | `robot-quadruped` | ui | Four-legged robot that walks, trots, and notices the pointer. |
 | `robot-cat` | ui | Legs hung off a solved spine: the arch moves the shoulder and the hip, and the legs answer. |
 | `robot-dog` | ui | The same spine with a floating shoulder, a solved neck, and a tail solved across the centre plane. |
@@ -197,6 +199,7 @@ Consumers install with `npx shadcn@latest add https://<host>/r/robot-arm.json`, 
 | `tower-block` | ui | Storeys as height and travel at once, with a car and counterweight on one rope. |
 | `espresso-machine` | ui | A spring-lever group solved as a slider-crank: the declining pressure is the spring. |
 | `refrigerator` | ui | Solved leaves on vertical hinges, an interior the swing reveals, and a lamp on a real door switch. |
+| `radial-bloom` | ui | Four guided stages per ram, so the star opens past twice its closed radius without a stage ever leaving its sleeve. |
 | `washing-machine` | ui | Wash and spin either side of a Froude number of one, over a tub that resonates on the way up. |
 | `rail-geometry` | lib | Bogies placed on a curve and the centre and end throw that follow, Klingel hunting on a coned wheelset, a pantograph solved to a working height, and a turnout's lead, crossing angle and blade throw. |
 | `rail-locomotive` | ui | The inverse of every other vehicle here: nothing on board steers, the track places it — bogies on the tangent, the body the chord, the throw the answer. |
@@ -1311,3 +1314,72 @@ Chrome at the eight docs pages: every behaviour, variant and view switched throu
 grabbed with a pointer and released back into its behaviour, reduced motion forced on to confirm
 the loops park, the catalogue cards at 150–210px, and the pages at 390px with no horizontal
 overflow.
+
+## The radial bloom
+
+One machine, `docs/radial-bloom.md`: a hub of telescoping rams pointed outward in one plane.
+It came from a reference image of a twelve-armed starburst, and what was taken from it is
+written down there — the silhouette, the proportions as ratios, the unequal spoke lengths and
+the off-centre chisel point. The paint scheme, the badge around it and the mark's identity were
+not taken; the component is named for its job and nothing in it, the docs, the demo label or the
+catalogue line refers to a brand or a product.
+
+The mechanism is the point. A single ram cannot show three times its retracted length without
+leaving its sleeve, so each ram is four concentric stages — one fixed and three sliding, each
+travelling a third of the tip's travel. Six world units of overlap remain between consecutive
+stages at full extension, so the array is guided at every stroke rather than only at the ends.
+The rams are built to different strokes on purpose: twelve identical telescopes cannot nest
+around one hub, and that is what makes the open star ragged while the closed one stays even.
+
+Ranks alternate `±pitch` out of the hub plane, so plan view is untouched and the array opens
+into two cones once the camera tips. `strokes` takes a vector of readings and shows it as real
+machined travel; a non-finite entry leaves that ram closed rather than clamping it onto the ring.
+
+### Verification for this item
+
+`vitest` — 11 tests: every ram driven out by a rising extension and two different rams moving
+by different amounts, the tip radius measurably further out at full extension than at rest, a
+stroke vector setting the ram count, `spin` turning the array, all four cameras producing
+different drawings with no `NaN` in the DOM, the ram count clamped at 24 and 0 rams rendering a
+bare hub, the label naming the machine, its extension and its view, the slider surface appearing
+only when interactive, and a palette override landing. The behaviour samplers at fixed phases:
+inside 0..1, repeating in both directions after whole cycles, `bloom` moving every ram by the
+same amount while `ripple` and `index` spread them apart, and a bad clock or extension giving
+the neutral pose. Plus the set-wide view harness: the plan drawing snapshotted as the one it was
+designed as, and the isometric one snapshotted separately.
+
+`tsc --noEmit`, `eslint`, `pnpm registry:build` and `pnpm build` clean. Driven in Chrome at
+`/docs/radial-bloom`: every behaviour, every variant and every view switched through, the array
+dragged open with a pointer and released back into its behaviour, arrow keys and Home/End, the
+stroke vector, `pitch` taken to 0 and 40, reduced motion forced on to confirm the loop parks, the
+catalogue card at 150px, and the page at 390px with no horizontal overflow.
+
+### Verification for the animatronic face
+
+`vitest`: the rig on its own — every expression resolving to finite channels, joy and sorrow
+driving the lip corner opposite ways and sorrow and anger the inner brow opposite ways, doubt
+coming out genuinely lopsided, intensity scaling the whole vector rather than fading it, blink
+and speech composing on top of an expression instead of replacing it, an explicit channel
+beating the expression on one side only, every channel clamped and junk falling back to the
+documented defaults, a servo stroke per channel with the out-of-travel flag, a channel-by-
+channel blend, a feature point landing on the ellipsoid and collapsing to the equator rather
+than `NaN` outside the silhouette, the neck rotating a point through yaw and pitch, and the
+skull's projected silhouette coming out as the exact x/y section face-on and the z/y section
+side-on and turning with roll. Then the component: brows, mouth and the hinged jaw all moving
+on a changed expression, the same expression at a lower intensity being a different drawing,
+the two brows genuinely different under `doubt` with the camera square on, both lids closing on
+a controlled blink and the pupils aiming from `look`, the skull reprojecting between views with
+the far eye turning away in `profile`, sixteen push-rods and the fault lamp under a tightened
+travel, and the label, a colour override and `NaN` on every numeric prop. The behaviours go
+through the exported samplers: the jaw only opening while conversing, `static` parking every
+axis, `emote` easing rather than cutting between expressions, and the blink staying inside
+0..1 and firing irregularly. `views.test.tsx` covers all four cameras.
+
+`tsc --noEmit`, `eslint`, `pnpm registry:build` and `next build` clean; 2302 tests pass.
+Driven in a browser on desktop and at 390px: the docs page, all nine expressions, all four
+behaviours, all four variants and all four views, the jaw swept 0→1, the actuator rods on, the
+head tracking the pointer to ±25° and reacting to a click, and reduced motion forced on — which
+parks the loop and leaves pointer tracking working. The browser caught three things the tests
+could not: eyelids whose outlines read as spectacles when the eye was open (they are painted in
+the band's own colour now), a jaw hinge rotating the wrong way, and a nose drawn flat on the
+surface that vanished in `profile` — it has volume now, and breaks the silhouette.
