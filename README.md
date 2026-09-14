@@ -8,7 +8,7 @@ accept controlled poses or sensor data. Components are procedural SVG or WebGL, 
 sheets.
 
 [**robocn.dev**](https://robocn.dev) · [Components](https://robocn.dev/docs) ·
-[Builder](https://robocn.dev/builder) · [Install](https://robocn.dev/docs/installation) ·
+[Workbench](https://robocn.dev/workbench) · [Install](https://robocn.dev/docs/installation) ·
 MIT licensed
 
 <picture>
@@ -42,6 +42,7 @@ installs at.
 | `robot-strawberry` | Berry-shelled field unit whose sensor studs are placed by the golden angle over *equal areas* of its own skin and run out along their own surface normals, under a calyx of rigid blades on one hinge. |
 | `robot-tomato` | Truss-hung crop unit: a clamp, a peduncle with two hinges sharing one swing angle, a lobed shell, and a ripening front that is real coverage of the surface rather than a colour ramp. The only machine here that hangs. |
 | `robot-sunflower` | Heliotropic collector mast: a golden-angle floret lattice on a dished head, aimed at the light by a solved two-axis tracker, on a stem that leans toward it while the gimbal collar takes up exactly what the stem did not. The spiral arms are found in the lattice, not placed in it. |
+| `robot-cactus` | Potted columnar collector. The ribbed column and both arms are *one* continuum solver at different settings — a centreline integrated from its own curvature, exactly as long bent as it was straight, so `sweep === emergence` ends a limb vertical whatever the elbow. Areoles and spine fans sit on the solved crests, and a rigid corolla opens at the crown. |
 | `protocol-droid` | Humanoid translator with controlled postures, gestures, head angle, and optional exposed wiring. |
 | `security-droid` | Tall angular guard frame with patrol poses, pointer-tracking sensor bar, and alert state. |
 | `medical-droid` | Clinical assistant with diagnostic readout and independently selected instrument arms. |
@@ -56,6 +57,9 @@ installs at.
 | `robot-hound` | Boxy companion tracker on a concealed drive: one attention number runs the collar out, lifts the nose, pricks the ear dishes and raises the telescoping probe; the only animal in the set with no legs. |
 | `guide-droid` | Rotor-lifted visitor guide: one hover number flies it and stretches the coil springs its hands and feet ride on, with ring optics, a speaker grille, and a drag to fly it by hand. |
 | `monolith-droid` | Slab-bodied walker with no limbs: a rectangular column sliced into parallel slabs, each hinged at its own top face, that splay into a braced stance and stride half a cycle apart. |
+| `scout-walker` | Two-legged reconnaissance walker: with one foot down the support polygon is that foot, so the cab — a mass well above the hips — rolls the whole machine over the leg that is staying put, and says so when the roll stop runs out first. |
+| `siege-walker` | Four-legged armoured transport walker on the same solver: four feet at the corners of a long rectangle already hold the mass, so it walks nearly level — and pacing, both legs of a side at once, leaves a line down one flank it cannot roll far enough to reach. |
+| `tripod-droid` | Stubby three-legged survey walker: lift one leg and the base of support collapses to a line, so the body moves onto that line before the foot leaves the floor — and the stability margin it reports goes negative when it cannot. |
 | `custodian-droid` | Floating armoured custodian: the casing is a ring of armour segments on radial rails, and one number blooms them into a corona off a lit chassis, with a gimballed optic behind a three-arm bracket cage. |
 | `sentinel-console` | Bulkhead-mounted watch station: an identity strip, a gimballed optic on visible trunnions, a solved iris diaphragm that stops down to a pinhole, and a voice grille. The one machine that is part of the ship. |
 | `robot-fish` | Swimming fish in profile: a tail-weighted body wave, working fins, pointer steering, a dart on click. |
@@ -65,6 +69,8 @@ installs at.
 | `robot-spider` | Eight-legged walker in plan with solved knees, three gaits, and a crouch on click. |
 | `robot-crab` | Sideways walker: the same gait turned across the body, hinged claws, tracking eyestalks. |
 | `hexapod-kinematics` | Radial four-to-ten-leg walker solver: tripod, wave and ripple gaits, knees solved per leg. |
+| `walker-kinematics` | Two- or four-legged solver for machines that carry their mass above the hips: a footfall schedule, the support polygon it leaves, and the hull roll and pitch that are the only way such a machine can move its centre of mass over a foot. |
+| `tripod-kinematics` | Three-legged balance solver: a load schedule per foot, the body position that schedule demands, and the support polygon it has to stay inside. |
 | `robot-bird` | Perching flyer: three-link wings carrying fanned feathers, a beat cycle, a takeoff on click. |
 | `robot-dragonfly` | Four-winged flyer in plan: fore and hind pairs half a cycle apart, a solved abdomen, a dart on click. |
 | `robot-bat` | Membrane flyer: four finger struts with the skin drawn through their tips, an inverted roost, a drop on click. |
@@ -112,7 +118,7 @@ installs at.
 | `lidar-scan` | Polar range display for supplied angle-distance samples. |
 | `vehicle-geometry` | The constraints a vehicle works against: Ackermann steering, steady-state articulation, the coordinated bank, a rigid body on N axles, the rocket equation, and surface-piercing foil lift. |
 | `robot-car` | An autonomous road car whose two front wheels are solved from one steering angle, with the lean the turn radius implies and a body that rides the road on its own axles. |
-| `transit-bus` | An articulated city bus whose rear section angle is solved from the hitch, with plug doors, a concertina at the joint, and a kneel that rides on the doors' own number. |
+| `transit-bus` | An articulated city bus whose rear section angle is solved from the hitch, with plug doors, a concertina at the joint, and a kneel that rides on the doors' own number — which stops the wheels too. |
 | `rail-geometry` | What a track does to the vehicle on it: bogies placed on a curve with the centre and end throw that follow, Klingel hunting on a coned wheelset, a pantograph solved to a working height, and a turnout's lead, crossing angle and blade throw. |
 | `rail-locomotive` | An electric locomotive and its train, placed by the track rather than steered along it: each bogie takes the tangent under its own pivot, each body is the chord between two of them, and the sideways throw of the middle and the ends falls out. |
 | `rail-bogie` | A powered two-axle bogie, and the only self-excited motion in the set: nothing commands the wheelsets to wander, they wander because they are coned — at exactly Klingel's wavelength, until the flange stops them. |
@@ -162,7 +168,7 @@ installs at.
 | `inductive-sensor` | A metal target moving through the qualitative lobe of an oscillator coil. |
 | `resolver` | A rotary transformer producing ideal sine and cosine position channels. |
 | `transformer-core` | EI and toroidal cores with selectable winding ratios and reversible flux. |
-| `device-geometry` | The mechanisms in a machine you carry: a hinge, a kickstand that has to close, rotary detents that wrap, a constant-pitch link band, and a screen on a plane at any attitude. |
+| `device-geometry` | The mechanisms in a machine you carry: a hinge, a book fold whose display keeps its length, a kickstand that has to close, rotary detents that wrap, a constant-pitch link band, and a screen on a plane at any attitude. |
 | `keyboard-geometry` | The mechanisms under a machine you type on: travel with real hysteresis, an asymmetric keystroke, a unit-pitch deck with a stagger, matrix scan order, and caps standing on a raked face. |
 | `key-switch` | One mechanical keyswitch, sectioned: a stem on a coil spring whose contact closes partway down the travel and opens again higher than it closed. |
 | `robot-keypad` | A raked bench entry pad on a scanned matrix: the key that is down and the cell the scan is reading are two different things, and both are drawn. |
@@ -172,6 +178,7 @@ installs at.
 | `slate-tablet` | A slate and its kickstand on one recline axis, with the foot solved onto the desk — and folded flat when the leg is too short to reach. |
 | `wheel-player` | A pocket media player whose click wheel is geared to its list: one turn is one pass, the detents wrap, and the hold switch is a real interlock. |
 | `slab-handset` | A touchscreen slab turned about its own axis: edge on at a quarter, back and camera array at a half, and a display re-laid-out rather than rotated for landscape. |
+| `folding-handset` | A book fold whose display keeps its own length as it bends: a real crease radius, leaves that roll on it rather than pivot, and a cover display when it is shut. |
 | `wrist-terminal` | A wrist display with a crown geared to its dial and a link band that keeps its length however far it is opened. |
 | `sound-geometry` | The closures in a machine that makes a sound by moving something: a spiral groove, a pivoted tonearm's tracking error, an exponential horn, a spring governor, a tuned comb, and a pinned barrel. |
 | `piano-geometry` | The closures in a grand: an action whose ratio is a product of three levers and whose jack lets the hammer go before the blow, a back check, a late damper, a scale that cannot be ideal, and the bent side that is the envelope of it. |
@@ -212,7 +219,7 @@ installs at.
 | `wellhead-tree` | The valve stack on a well: rising stems show their state, and the accent follows only the bore the open valves leave through. |
 | `storage-tank` | A floating roof riding the liquid, with a rolling ladder solved from wherever the roof is. Or a cone roof, which tells you nothing. |
 | `oil-tanker` | The one machine whose ground plane cuts through it: cargo carries the boot top and the load line under the waterline. |
-| `tanker-truck` | Two rigid bodies on one kingpin, where the hitch is a real yaw in world space and the compartments empty from the rear. |
+| `tanker-truck` | A tractor unit and a road tanker on one kingpin, where the trailer's yaw is solved from the steer rather than chosen, so it off-tracks inside the tractor's line — and the compartments empty from the rear. |
 | `flare-stack` | A knockout drum, a derrick-supported riser and a lit tip, under a plume whose length is a proportion and whose lean is the wind. |
 | `fractionating-column` | A crude tower whose tray count rebuilds the column — spacing, seams and draw heights all come off it. Four named cuts. |
 | `jackup-rig` | Fixed-length legs and a hull that climbs them: one number is both the air gap above the water and the stick-up above the deck. |
@@ -405,7 +412,7 @@ pnpm dlx shadcn@latest add @robocn/robot-arm @robocn/delta-arm
 ```bash
 pnpm install
 pnpm dev              # docs site and registry, on http://localhost:3000
-pnpm generate         # builder runtime + the registry→component gallery map
+pnpm generate         # workbench control manifest + the registry→component gallery map
 pnpm registry:build   # writes public/r/*.json
 pnpm og               # recaptures the social cards: public/og.png and public/og/*.png
 pnpm shots            # recaptures docs/screenshots/*.png, the pictures above
@@ -467,21 +474,53 @@ the source. See [gallery coverage](docs/gallery-coverage.md).
 The whole path — solver, component, camera angles, motion, registry, docs, demo, catalogue,
 README row, tests — is written up as an agent skill at `.claude/skills/ship-robot/`.
 
-## Robot builder
+## The workbench
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/builder-dark.png">
-  <img alt="The robocn builder: a design-partner conversation panel on the left with starting-point prompts, and a live sandboxed preview of the robot arm on the right over a dotted grid" src="docs/screenshots/builder-light.png">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/workbench-dark.png">
+  <img alt="The robocn workbench: the component index on the left, a robot arm on a dotted stage in the middle, and a panel of controls derived from the component's props on the right" src="docs/screenshots/workbench-light.png">
 </picture>
 
-Open `/builder` to load any component from the library, edit its actual React source,
-and preview it in an isolated browser sandbox. Connect an OpenAI API key to design new
-robots or ask the agent to revise an existing one. Drafts and versions stay in your
-browser; export TSX or a shadcn registry item when ready.
+`/workbench` is a Storybook for robots, run from this repository's own source. No stories,
+no `argTypes`: a build step reads each component's props interface and turns every prop into
+a knob — string-literal unions become pickers, numbers become sliders ranged from the prop's
+own name and doc, palette props become colour wells — with the component's own destructuring
+defaults as the starting pose.
 
-See [builder setup and architecture](docs/builder.md) for local/server agent configuration
-and deployment. `pnpm dev`, `pnpm build`, `pnpm test`, and `pnpm typecheck` prepare the
-builder's runtime from the current library automatically.
+Matrix mode draws one machine across the cross product of two props: every variant against
+every camera view, every gait against every tool. The stage has backgrounds, zoom, an
+outline overlay and a callback log. The pose lives in the query string, so
+`/workbench?c=robot-arm&p.variant=blueprint&p.view=iso` is a drawing you can bookmark.
+
+There is no agent in it. The loop is **HMR plus the agent you already have**:
+
+```bash
+git clone https://github.com/TimMikeladze/robocn.git
+cd robocn
+pnpm install
+pnpm dev          # http://localhost:3000/workbench
+```
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/workbench-setup-dark.png">
+  <img alt="The workbench setup panel: four numbered steps — clone and run the dev server, open claude, codex or opencode in the same directory, pose the machine and copy the handoff brief, then watch the edit land" src="docs/screenshots/workbench-setup-light.png">
+</picture>
+
+Then open `claude`, `codex` or `opencode` in the same directory. That is the whole
+integration — no key, no bridge, nothing sent anywhere. Pose a machine, copy the brief from
+the **Handoff** panel (file path, export, the pose as JSX), paste it into the agent with
+what you want changed, and Fast Refresh lands the edit on the stage without a reload and
+without losing the pose. The page carries these instructions itself: a setup panel opens on
+a first visit and comes back from the toolbar or `?`.
+
+**Building a new robot works the same way.** `New` writes the brief — file path, export
+name, item name, the nearest existing machine to follow — and points your agent at the
+`ship-robot` skill in the repo. The workbench picks the component up the moment the file
+exists, registry entry or not: it appears as a **draft** at the top of the index, with knobs
+already derived from whatever props it declares, so you can pose it while the agent is still
+writing the docs, the demo and the tests.
+
+See [the workbench](docs/workbench.md) for the architecture and what it replaced.
 
 ## Credits
 

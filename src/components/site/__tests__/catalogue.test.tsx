@@ -88,10 +88,11 @@ describe("landing catalogue", () => {
 
   it("groups the cards in the docs' own group order", () => {
     const { container } = render(<Catalogue entries={cards} />)
-    expect(container.querySelectorAll("section")).toHaveLength(docGroups.length)
-    expect([...container.querySelectorAll("section h3")].map((n) => n.textContent)).toEqual([
-      ...docGroups,
-    ])
+    const groups = container.querySelectorAll('[data-slot="catalogue-group"]')
+    expect(groups).toHaveLength(docGroups.length)
+    expect([...groups].map((group) => group.querySelector("h3")?.textContent)).toEqual(
+      docGroups,
+    )
   })
 
   it("mounts a card's art only once it is near the viewport", () => {
@@ -142,9 +143,12 @@ describe("landing catalogue", () => {
     // assertion in this file looking at real art.
     expect(typeof IntersectionObserver).toBe("undefined")
     const { container } = render(<Catalogue entries={cards} />)
-    const drawn = cards.filter(
-      (entry) => container.querySelector(`a[href="/docs/${entry.slug}"] svg`),
-    )
+    const drawn = cards.filter((entry) => {
+      const card = container.querySelector(`a[href="/docs/${entry.slug}"]`)
+      return entry.group === "Interfaces"
+        ? card?.querySelector('[data-slot^="robotic-"]')
+        : card?.querySelector("svg")
+    })
     // The two WebGL cards hold their "3D" placeholder here rather than a canvas.
     expect(cards.length - drawn.length).toBe(2)
   })

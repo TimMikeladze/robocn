@@ -19,7 +19,7 @@ function SiteHeader() {
           href="/"
           className="flex items-center gap-2.5 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <Logo className="size-7 shrink-0" />
+          <Logo className="size-9 shrink-0" />
           {/* `leading-none` so `items-center` centres the letters against the
               square mark rather than centring a line box that sits low. */}
           <span className="text-[16px] font-semibold leading-none tracking-[-0.02em]">

@@ -18,9 +18,16 @@ const resolved = await resolveGallery(registry)
 // handful of machines that exercise them.
 const modules = [...new Set(resolved.filter((e) => !e.webgl).map((e) => e.module))]
 const named = new Map()
+const interfaceModules = new Set()
 for (const entry of resolved) {
-  if (!entry.webgl) named.set(entry.module, entry.export)
+  if (!entry.webgl) {
+    named.set(entry.module, entry.export)
+    if (entry.interface) interfaceModules.add(entry.module)
+  }
 }
+
+const previewName = (entry) =>
+  entry.interface ? `${entry.export}Preview` : entry.export
 
 const lines = [
   `"use client"`,
@@ -37,7 +44,12 @@ const lines = [
   "",
   `import type { RobotSize, RobotVariant } from "@/lib/robocn/style"`,
   "",
-  ...modules.map((module) => `import { ${named.get(module)} } from "${module}"`),
+  ...modules.map((module) => {
+    const exported = named.get(module)
+    return interfaceModules.has(module)
+      ? `import { ${exported} as ${exported}Source } from "${module}"`
+      : `import { ${exported} } from "${module}"`
+  }),
   "",
   "/** All a fallback card or demo needs to set. Everything else is the",
   " *  component's own default, which is the pose and the cycle its author wrote. */",
@@ -45,6 +57,16 @@ const lines = [
   "  size?: RobotSize | number",
   "  variant?: RobotVariant",
   "}",
+  "",
+  "/** Interfaces do not share machine-only gallery props. Their wrappers make",
+  " *  the generated component type honest while preserving each useful default. */",
+  ...resolved
+    .filter((entry) => entry.interface && !entry.webgl)
+    .map(
+      (entry) =>
+        `const ${previewName(entry)}: React.ComponentType<GalleryProps> = () => ` +
+        `<${entry.export}Source />`,
+    ),
   "",
   "export interface GalleryEntry {",
   "  /** Registry item name, which is also the doc slug. */",
@@ -55,6 +77,8 @@ const lines = [
   "  blueprint: boolean",
   "  /** Needs a WebGL context, so the grid lazy-loads it instead. */",
   "  webgl: boolean",
+  "  /** A control or application frame that must not receive machine props. */",
+  "  interface: boolean",
   "  component: React.ComponentType<GalleryProps> | null",
   "}",
   "",
@@ -63,7 +87,8 @@ const lines = [
     (entry) =>
       `  ${JSON.stringify(entry.item)}: { item: ${JSON.stringify(entry.item)}, ` +
       `draws: ${JSON.stringify(entry.draws)}, blueprint: ${entry.blueprint}, ` +
-      `webgl: ${entry.webgl}, component: ${entry.webgl ? "null" : entry.export} },`,
+      `webgl: ${entry.webgl}, interface: ${entry.interface}, ` +
+      `component: ${entry.webgl ? "null" : previewName(entry)} },`,
   ),
   "}",
   "",

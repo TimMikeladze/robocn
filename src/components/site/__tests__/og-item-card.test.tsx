@@ -57,7 +57,7 @@ describe("page social card", () => {
   it("draws a machine on every card", () => {
     // Including the pages that have no machine of their own: they fall back to
     // the arm the whole set is built around.
-    for (const slug of ["robot-arm", "installation", "builder", "household-geometry"]) {
+    for (const slug of ["robot-arm", "installation", "workbench", "household-geometry"]) {
       expect(card(slug).container.querySelector("svg"), slug).not.toBeNull()
     }
   })

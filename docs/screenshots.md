@@ -18,7 +18,8 @@ pnpm shots --url http://localhost:3001
 | `landing` | `/` | the hero: pitch, install line, the three-link arm tracking, the fact strip |
 | `catalogue` | `/` | the grid of every registry item, live — the thing that makes the size of the set legible |
 | `docs` | `/docs/robot-arm` | one component page: the demo, its controls, the install line, the props table |
-| `builder` | `/builder` | the editor: source on the left, sandboxed preview on the right |
+| `workbench` | `/workbench?setup=0` | the workbench: the component index, a machine on the stage, its derived controls |
+| `workbench-setup` | `/workbench?setup=1` | the setup panel: clone, run, open your agent, hand over the brief |
 
 Each is captured twice, `-light` and `-dark`, and the README pairs them in a `<picture>`
 so GitHub serves whichever matches the reader's theme.

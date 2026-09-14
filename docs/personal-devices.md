@@ -18,6 +18,9 @@ from four camera angles.
 | `slate-tablet` | a kickstand whose foot has to reach the desk | `profile` |
 | `wrist-terminal` | a digital crown geared to a dial, on a band that keeps its length | `front` |
 
+A sixth machine, `folding-handset`, was added to the family later, with `foldPose` under it.
+Its own note is [folding-handset.md](folding-handset.md).
+
 ## Originality
 
 The brief named a manufacturer. What ships is the *archetype* each of those products made

@@ -54,8 +54,8 @@ export default function Home() {
             >
               How installing works
             </Button>
-            <Button size="sm" variant="outline" nativeButton={false} render={<Link href="/builder" />}>
-              Build your own robot ↗
+            <Button size="sm" variant="outline" nativeButton={false} render={<Link href="/workbench" />}>
+              Open the workbench ↗
             </Button>
           </div>
         </div>

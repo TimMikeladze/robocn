@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+/.agents/
 /.pnp
 .pnp.*
 .yarn/*
@@ -41,7 +42,6 @@ yarn-error.log*
 next-env.d.ts
 /public/r
 registry.build.json
-/public/builder-runtime.js
-/public/builder-runtime.css
-/src/lib/builder/generated.json
+/src/lib/workbench/generated.json
+/src/components/workbench/registry.generated.tsx
 /src/components/site/gallery.generated.tsx

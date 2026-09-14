@@ -1463,6 +1463,46 @@
       ]
     },
     {
+      "name": "walker-kinematics",
+      "type": "registry:lib",
+      "title": "Walker kinematics",
+      "description": "A two- or four-legged walking solver for machines that carry their mass above the hips: a footfall schedule, the support polygon it leaves, and the hull roll and pitch that are the only way such a machine can move its centre of mass over a foot.",
+      "categories": [
+        "robotics",
+        "math"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json"
+      ],
+      "files": [
+        {
+          "path": "src/lib/robocn/walker.ts",
+          "type": "registry:lib",
+          "target": "@lib/robocn/walker.ts"
+        }
+      ]
+    },
+    {
+      "name": "tripod-kinematics",
+      "type": "registry:lib",
+      "title": "Tripod kinematics",
+      "description": "A three-legged walking solver: a load schedule per foot, the body position that schedule demands, the support polygon it has to stay inside, and knees solved in each leg's own vertical plane.",
+      "categories": [
+        "robotics",
+        "math"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json"
+      ],
+      "files": [
+        {
+          "path": "src/lib/robocn/tripod.ts",
+          "type": "registry:lib",
+          "target": "@lib/robocn/tripod.ts"
+        }
+      ]
+    },
+    {
       "name": "linear-actuator",
       "type": "registry:ui",
       "title": "Linear actuator",
@@ -2050,6 +2090,29 @@
       ]
     },
     {
+      "name": "folding-handset",
+      "type": "registry:ui",
+      "title": "Folding handset",
+      "description": "A book-fold handset whose display keeps its own length as it bends: the crease is a real radius, the bend takes that length off the panels, and the leaves roll on the bend the way a water-drop hinge does rather than pivoting on a pin. Cover display shut, one display across both leaves open.",
+      "categories": [
+        "robotics",
+        "devices"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/device-geometry.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/folding-handset.tsx",
+          "type": "registry:ui",
+          "target": "@ui/folding-handset.tsx"
+        }
+      ]
+    },
+    {
       "name": "wrist-terminal",
       "type": "registry:ui",
       "title": "Wrist terminal",
@@ -2076,7 +2139,7 @@
       "name": "device-geometry",
       "type": "registry:lib",
       "title": "Device geometry",
-      "description": "The mechanisms in a machine you carry: a hinge that keeps the lid's length, a kickstand whose foot has to reach the desk, rotary detents that wrap in both directions, a constant-pitch link band, and the projection that puts a screen on a plane at any attitude.",
+      "description": "The mechanisms in a machine you carry: a hinge that keeps the lid's length, a book fold whose display keeps its own length as it bends, a kickstand whose foot has to reach the desk, rotary detents that wrap in both directions, a constant-pitch link band, and the projection that puts a screen on a plane at any attitude.",
       "categories": [
         "robotics",
         "geometry"
@@ -3080,6 +3143,51 @@
       ]
     },
     {
+      "name": "cactus-geometry",
+      "type": "registry:lib",
+      "title": "Cactus geometry",
+      "description": "Dependency-free continuum limbs solved from their own curvature — exact length at every bend — with ribbed sections, crest lines, a staggered areole lattice, taper-true skin normals, rigid spine fans and rigid hinged petals.",
+      "categories": [
+        "robotics",
+        "math"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json"
+      ],
+      "files": [
+        {
+          "path": "src/lib/robocn/cactus.ts",
+          "type": "registry:lib",
+          "target": "@lib/robocn/cactus.ts"
+        }
+      ]
+    },
+    {
+      "name": "robot-cactus",
+      "type": "registry:ui",
+      "title": "Robot cactus",
+      "description": "A potted columnar collector: a ribbed column and two arms solved as one continuum limb that lifts and curls, areoles and spine fans placed on the crests, and a rigid corolla that opens at the crown. Four camera angles, and a drag to work the flowering.",
+      "categories": [
+        "robotics",
+        "robots",
+        "plants"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/cactus-geometry.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/robot-cactus.tsx",
+          "type": "registry:ui",
+          "target": "@ui/robot-cactus.tsx"
+        }
+      ]
+    },
+    {
       "name": "sound-geometry",
       "type": "registry:lib",
       "title": "Sound geometry",
@@ -3233,6 +3341,81 @@
           "path": "src/components/ui/busker-droid.tsx",
           "type": "registry:ui",
           "target": "@ui/busker-droid.tsx"
+        }
+      ]
+    },
+    {
+      "name": "scout-walker",
+      "type": "registry:ui",
+      "title": "Scout walker",
+      "description": "A two-legged reconnaissance walker whose cab is a mass well above its hips: with one foot down the support is that foot, so every step is paid for by rolling the whole machine over the leg that stays put. Push it past the roll stops and it says it is off balance. Drawn from any of four camera angles.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/walker-kinematics.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/use-robot-arm.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/scout-walker.tsx",
+          "type": "registry:ui",
+          "target": "@ui/scout-walker.tsx"
+        }
+      ]
+    },
+    {
+      "name": "siege-walker",
+      "type": "registry:ui",
+      "title": "Siege walker",
+      "description": "A four-legged armoured transport walker on the same solver as the scout: four feet at the corners of a long rectangle contain its mass, so it walks nearly level — until it is asked to pace, when the support collapses to a line down one flank it cannot roll far enough to reach. Drawn from any of four camera angles.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/walker-kinematics.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/use-robot-arm.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/siege-walker.tsx",
+          "type": "registry:ui",
+          "target": "@ui/siege-walker.tsx"
+        }
+      ]
+    },
+    {
+      "name": "tripod-droid",
+      "type": "registry:ui",
+      "title": "Tripod droid",
+      "description": "A stubby three-legged survey walker: a chamfered slab body on solved legs that has to move its own mass onto the line between two feet before it can lift the third. Push it off balance with the pointer and the reported stability margin goes negative. Drawn from any of four camera angles.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/tripod-kinematics.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/use-robot-arm.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/tripod-droid.tsx",
+          "type": "registry:ui",
+          "target": "@ui/tripod-droid.tsx"
         }
       ]
     },
@@ -3606,7 +3789,7 @@
       "name": "tanker-truck",
       "type": "registry:ui",
       "title": "Tanker truck",
-      "description": "A tractor and a bulkheaded road tanker on one kingpin, where the hitch is a real yaw in world space: the barrel foreshortens in side elevation as it turns and swings properly in plan. Compartments discharge from the rear.",
+      "description": "A tractor unit and a road tanker on one kingpin, where the trailer's yaw is solved from the steer by true articulation geometry rather than chosen: it off-tracks inside the tractor's line, the barrel foreshortens as it turns, and the compartments discharge from the rear.",
       "categories": [
         "robotics",
         "machines"
@@ -3614,6 +3797,7 @@
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
         "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/vehicle-geometry.json",
         "{REGISTRY_URL}/r/use-robot-motion.json"
       ],
       "files": [

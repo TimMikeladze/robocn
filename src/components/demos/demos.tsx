@@ -24,6 +24,9 @@ import { CustodianDroid, type CustodianDroidBehavior } from "@/components/ui/cus
 import { GuideDroid, type GuideDroidBehavior, type GuideDroidLimbs } from "@/components/ui/guide-droid"
 import { RobotHound, type RobotHoundBehavior, type RobotHoundEars, type RobotHoundProbe } from "@/components/ui/robot-hound"
 import { MonolithDroid, type MonolithDroidBehavior } from "@/components/ui/monolith-droid"
+import { TripodDroid, type TripodBehavior } from "@/components/ui/tripod-droid"
+import { ScoutWalker, type ScoutWalkerBehavior, type ScoutWalkerGait } from "@/components/ui/scout-walker"
+import { SiegeWalker, type SiegeWalkerBehavior, type SiegeWalkerGait } from "@/components/ui/siege-walker"
 import { PylonDroid, type PylonDroidBehavior, type PylonDroidStance } from "@/components/ui/pylon-droid"
 import { SentinelConsole, type SentinelBehavior } from "@/components/ui/sentinel-console"
 import { InfantryDroid, type InfantryDroidEquipment, type InfantryDroidFrame, type InfantryDroidPose , type InfantryDroidBehavior} from "@/components/ui/infantry-droid"
@@ -104,6 +107,7 @@ import {
 } from "@/components/ui/robot-grand-piano"
 import { BuskerDroid, type BuskerBehavior } from "@/components/ui/busker-droid"
 import { SlabHandset, type HandsetBehavior, type HandsetOrientation, type HandsetScreen } from "@/components/ui/slab-handset"
+import { FoldingHandset, type FoldBehavior, type FoldCover, type FoldScreen } from "@/components/ui/folding-handset"
 import { WristTerminal, type TerminalBehavior, type TerminalScreen } from "@/components/ui/wrist-terminal"
 import { KeySwitch, type KeySwitchAction, type KeySwitchBehavior } from "@/components/ui/key-switch"
 import { RobotKeypad, type KeypadBehavior, type KeypadOutcome } from "@/components/ui/robot-keypad"
@@ -116,6 +120,7 @@ import { VoxelForm } from "@/components/ui/voxel-form"
 import type { VoxelBehavior, VoxelShape } from "@/lib/robocn/voxel"
 
 import { RobotSunflower, type SunflowerBehavior } from "@/components/ui/robot-sunflower"
+import { RobotCactus, cactusArmPose, type CactusBehavior } from "@/components/ui/robot-cactus"
 import { CelestialPlanet, type PlanetBehavior, type PlanetSurface } from "@/components/ui/celestial-planet"
 import { CelestialMoon, type MoonBehavior } from "@/components/ui/celestial-moon"
 import { CelestialStar, type StarBehavior, type StarClass } from "@/components/ui/celestial-star"
@@ -154,7 +159,7 @@ import { MudPump, type MudPumpBehavior, type MudPumpCylinders } from "@/componen
 import { WellheadTree, type WellheadBehavior, type WellheadService } from "@/components/ui/wellhead-tree"
 import { StorageTank, type StorageTankBehavior, type StorageTankRoof } from "@/components/ui/storage-tank"
 import { OilTanker, type OilTankerBehavior } from "@/components/ui/oil-tanker"
-import { TankerTruck, type TankerTruckBehavior } from "@/components/ui/tanker-truck"
+import { TankerTruck, tankerTruckLevel, type TankerTruckBehavior } from "@/components/ui/tanker-truck"
 import { FlareStack, type FlareStackBehavior } from "@/components/ui/flare-stack"
 import { FractionatingColumn, type ColumnBehavior } from "@/components/ui/fractionating-column"
 import { JackupRig, type JackupBehavior } from "@/components/ui/jackup-rig"
@@ -1820,6 +1825,103 @@ function MonolithDroidDemo() {
     </Bench>
   )
 }
+function TripodDroidDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<TripodBehavior | "manual">("trundle")
+  const [height, setHeight] = React.useState(0.4)
+  const [stride, setStride] = React.useState(0.35)
+  const [lean, setLean] = React.useState({ x: 0, y: 0 })
+  const [support, setSupport] = React.useState(true)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["trundle", "scurry", "survey", "settle", "static", "manual"] as const} onChange={setDrive} />
+      <NumberControl label="height" value={height} min={0} max={1} step={0.02} onChange={setHeight} format={value => `${Math.round(value * 100)}%`} />
+      {drive === "manual"
+        ? <NumberControl label="stride" value={stride} min={0} max={1} step={0.01} onChange={setStride} format={value => `${Math.round(value * 100)}%`} />
+        : <Hint>Drag across it to push the body over its feet, or focus it and use the arrow keys — far enough and the centre of mass leaves the support and the lamp turns. It eases back into the gait when you let go.</Hint>}
+      <Segmented label="support" value={support ? "show" : "hide"} options={["show", "hide"] as const} onChange={value => setSupport(value === "show")} />
+      <Readout rows={[
+        ["lean x", `${Math.round(lean.x * 100)}%`],
+        ["lean y", `${Math.round(lean.y * 100)}%`],
+      ]} />
+    </>}>
+      <TripodDroid view={view} size={300} variant={variant} height={height} showSupport={support} label="TRIPOD / 03"
+        interactive onLeanChange={setLean}
+        {...(drive === "manual"
+          ? { gait: "creep" as const, stride, behavior: "static" as const }
+          : { behavior: drive })} />
+    </Bench>
+  )
+}
+function ScoutWalkerDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<ScoutWalkerBehavior | "manual">("patrol")
+  const [gait, setGait] = React.useState<ScoutWalkerGait>("walk")
+  const [height, setHeight] = React.useState(0.55)
+  const [stride, setStride] = React.useState(0.25)
+  const [lean, setLean] = React.useState({ x: 0, y: 0 })
+  const [support, setSupport] = React.useState(true)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["patrol", "advance", "watch", "static", "manual"] as const} onChange={setDrive} />
+      {drive === "manual"
+        ? <>
+            <Segmented label="gait" value={gait} options={["stand", "walk", "stride"] as const} onChange={setGait} />
+            <NumberControl label="stride" value={stride} min={0} max={1} step={0.01} onChange={setStride} format={value => `${Math.round(value * 100)}%`} />
+          </>
+        : <Hint>Drag across it to push the cab off its feet, or focus it and use the arrow keys — past the roll stop the mass leaves the support and the lamp turns. It eases back into the gait when you let go.</Hint>}
+      <NumberControl label="height" value={height} min={0} max={1} step={0.02} onChange={setHeight} format={value => `${Math.round(value * 100)}%`} />
+      <Segmented label="support" value={support ? "show" : "hide"} options={["show", "hide"] as const} onChange={value => setSupport(value === "show")} />
+      <Readout rows={[
+        ["lean x", `${Math.round(lean.x * 100)}%`],
+        ["lean y", `${Math.round(lean.y * 100)}%`],
+      ]} />
+    </>}>
+      <ScoutWalker view={view} size={300} variant={variant} height={height} showSupport={support} label="SCOUT / 02"
+        interactive onLeanChange={setLean}
+        {...(drive === "manual" ? { gait, stride, behavior: "static" as const } : { behavior: drive })} />
+    </Bench>
+  )
+}
+function SiegeWalkerDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<SiegeWalkerBehavior | "manual">("march")
+  const [gait, setGait] = React.useState<SiegeWalkerGait>("walk")
+  const [height, setHeight] = React.useState(0.55)
+  const [stride, setStride] = React.useState(0.2)
+  const [lean, setLean] = React.useState({ x: 0, y: 0 })
+  const [support, setSupport] = React.useState(true)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="drive" value={drive} options={["march", "haul", "pace", "halt", "static", "manual"] as const} onChange={setDrive} />
+      {drive === "manual"
+        ? <>
+            <Segmented label="gait" value={gait} options={["stand", "walk", "creep", "pace"] as const} onChange={setGait} />
+            <NumberControl label="stride" value={stride} min={0} max={1} step={0.01} onChange={setStride} format={value => `${Math.round(value * 100)}%`} />
+          </>
+        : <Hint>March and haul keep three feet down, so the hull stays near level. Pace swings both legs of a side together and the support becomes a line it cannot roll far enough to reach. Drag across it to push the hull off its feet.</Hint>}
+      <NumberControl label="height" value={height} min={0} max={1} step={0.02} onChange={setHeight} format={value => `${Math.round(value * 100)}%`} />
+      <Segmented label="support" value={support ? "show" : "hide"} options={["show", "hide"] as const} onChange={value => setSupport(value === "show")} />
+      <Readout rows={[
+        ["lean x", `${Math.round(lean.x * 100)}%`],
+        ["lean y", `${Math.round(lean.y * 100)}%`],
+      ]} />
+    </>}>
+      <SiegeWalker view={view} size={360} variant={variant} height={height} showSupport={support} label="SIEGE / 01"
+        interactive onLeanChange={setLean}
+        {...(drive === "manual" ? { gait, stride, behavior: "static" as const } : { behavior: drive })} />
+    </Bench>
+  )
+}
 function CustodianDroidDemo() {
   const [view, setView] = React.useState<RobotView>("front")
   const [variant, setVariant] = React.useState<RobotVariant>("solid")
@@ -3179,6 +3281,35 @@ function SlabHandsetDemo() {
   )
 }
 
+function FoldingHandsetDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<FoldBehavior | "manual">("unfold")
+  const [fold, setFold] = React.useState(108)
+  const [travel, setTravel] = React.useState(180)
+  const [radius, setRadius] = React.useState(3)
+  const [screen, setScreen] = React.useState<FoldScreen>("split")
+  const [cover, setCover] = React.useState<FoldCover>("clock")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="screen" value={screen} options={["canvas", "split", "gallery", "off"] as const} onChange={setScreen} />
+      <Segmented label="cover" value={cover} options={["clock", "alerts", "off"] as const} onChange={setCover} />
+      <Segmented label="drive" value={drive} options={["unfold", "flex", "static", "manual"] as const} onChange={setDrive} />
+      <NumberControl label="travel" value={travel} min={90} max={180} onChange={setTravel} format={v => `${v}°`} />
+      <NumberControl label="bend" value={radius} min={2} max={14} onChange={setRadius} />
+      {drive === "manual"
+        ? <NumberControl label="fold" value={fold} min={0} max={180} onChange={setFold} format={v => `${v}°`} />
+        : <Hint>Drag up inside the frame to open it. Wind the bend radius up and watch the display give the length back to the crease — past what the leaves have, it says pinched.</Hint>}
+    </>}>
+      <FoldingHandset view={view} size={330} variant={variant} screen={screen} cover={cover} travel={travel} radius={radius}
+        label="FOLD / 06"
+        {...(drive === "manual" ? { fold } : { behavior: drive })} interactive />
+    </Bench>
+  )
+}
+
 function WristTerminalDemo() {
   const [view, setView] = React.useState<RobotView>("front")
   const [variant, setVariant] = React.useState<RobotVariant>("solid")
@@ -3526,8 +3657,67 @@ function OilTankerDemo() {
 }
 
 function TankerTruckDemo() {
-  const [view, setView] = React.useState<RobotView>("profile"); const [variant, setVariant] = React.useState<RobotVariant>("solid"); const [behavior, setBehavior] = React.useState<TankerTruckBehavior>("haul"); const [compartments, setCompartments] = React.useState(4); const [hitch, setHitch] = React.useState(0)
-  return <Bench controls={<><Segmented label="view" value={view} options={views} onChange={setView} /><Segmented label="variant" value={variant} options={variants} onChange={setVariant} /><Segmented label="motion" value={behavior} options={["haul", "discharge", "static"]} onChange={setBehavior} /><NumberControl label="pots" value={compartments} min={2} max={6} onChange={setCompartments} /><NumberControl label="hitch" value={hitch} min={-60} max={60} onChange={setHitch} format={(v) => `${v}°`} /><Hint>Turn the hitch and switch to plan: the trailer yaws about the kingpin in world space, so both cameras agree.</Hint></>}><TankerTruck size={400} view={view} variant={variant} behavior={behavior} compartments={compartments} hitch={hitch} interactive label="RT-26" /></Bench>
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [behavior, setBehavior] = React.useState<TankerTruckBehavior>("manoeuvre")
+  const [compartments, setCompartments] = React.useState(4)
+  const [steer, setSteer] = React.useState(14)
+  const [pinned, setPinned] = React.useState(false)
+  const [hitch, setHitch] = React.useState(30)
+  // The truck's own geometry: steer axle to drive tandem, the kingpin just
+  // ahead of the tandem, and the trailer's own wheelbase behind it.
+  const solved = -hitchAngle(steer, { wheelbase: 74, track: 37, hitch: -14 }, 150)
+  return (
+    <Bench
+      controls={
+        <>
+          <Segmented label="view" value={view} options={views} onChange={setView} />
+          <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+          <Segmented
+            label="motion"
+            value={behavior}
+            options={["haul", "manoeuvre", "discharge", "static"] as const}
+            onChange={setBehavior}
+          />
+          <NumberControl label="pots" value={compartments} min={2} max={6} onChange={setCompartments} />
+          <Segmented
+            label="hitch"
+            value={pinned ? "pinned" : "solved"}
+            options={["solved", "pinned"] as const}
+            onChange={(next) => setPinned(next === "pinned")}
+          />
+          {pinned ? (
+            <NumberControl label="yaw" value={hitch} min={-60} max={60} onChange={setHitch} format={(v) => `${v}°`} />
+          ) : (
+            <NumberControl label="steer" value={steer} min={-26} max={26} onChange={setSteer} format={(v) => `${v}°`} />
+          )}
+          <Hint>
+            Steer the tractor and switch to plan: the trailer&rsquo;s angle is solved from
+            the turn, so it off-tracks inside the tractor&rsquo;s line. Pin the hitch to
+            override it.
+          </Hint>
+          <Readout
+            rows={[
+              ["articulation", `${(pinned ? hitch : solved).toFixed(1)}°`],
+              ["load", `${Math.round(tankerTruckLevel(behavior, 0) * 100)}%`],
+            ]}
+          />
+        </>
+      }
+    >
+      <TankerTruck
+        size={400}
+        view={view}
+        variant={variant}
+        behavior={behavior}
+        compartments={compartments}
+        steer={pinned ? undefined : steer}
+        hitch={pinned ? hitch : undefined}
+        interactive
+        label="RT-26"
+      />
+    </Bench>
+  )
 }
 
 function FlareStackDemo() {
@@ -3575,6 +3765,43 @@ function RobotSunflowerDemo() {
         track={light === "pointer"} label="SUNFLOWER / 01"
         interactive onDaylightChange={setDaylight}
         {...(drive === "manual" ? { daylight, behavior: "static" as const } : { behavior: drive })} />
+    </Bench>
+  )
+}
+
+function RobotCactusDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<CactusBehavior | "manual">("flower")
+  const [bloom, setBloom] = React.useState(0.6)
+  const [ribs, setRibs] = React.useState(13)
+  const [areoles, setAreoles] = React.useState(4)
+  const [spines, setSpines] = React.useState(6)
+  const [arms, setArms] = React.useState(2)
+  const [petals, setPetals] = React.useState(16)
+  const [attention, setAttention] = React.useState<"pointer" | "wander">("pointer")
+  const pose = cactusArmPose(bloom)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <NumberControl label="ribs" value={ribs} min={5} max={28} onChange={setRibs} />
+      <NumberControl label="areoles" value={areoles} min={0} max={12} onChange={setAreoles} />
+      <NumberControl label="spines" value={spines} min={0} max={10} onChange={setSpines} />
+      <NumberControl label="arms" value={arms} min={0} max={4} onChange={setArms} />
+      <NumberControl label="petals" value={petals} min={0} max={36} onChange={setPetals} />
+      <Segmented label="attention" value={attention} options={["pointer", "wander"] as const} onChange={setAttention} />
+      <Segmented label="drive" value={drive} options={["breathe", "flower", "reach", "static", "manual"] as const} onChange={setDrive} />
+      {drive === "manual"
+        ? <NumberControl label="bloom" value={bloom} min={0} max={1} step={0.01} onChange={setBloom} format={value => `${Math.round(value * 100)}%`} />
+        : <Hint>Drag up and down to work the flowering, or focus it and use the arrow keys. With attention on the pointer the whole column leans toward you and carries the arms and the flower with it.</Hint>}
+      <Readout rows={[["lift", `${Math.round(pose.lift * 100)}%`], ["curl", `${Math.round(pose.curl * 100)}%`]]} />
+    </>}>
+      <RobotCactus view={view} size={300} variant={variant} ribs={ribs} areoles={areoles}
+        spines={spines} arms={arms} petals={petals} label="CACTUS / 01"
+        track={attention === "pointer"}
+        interactive onBloomChange={setBloom}
+        {...(drive === "manual" ? { bloom, behavior: "static" as const } : { behavior: drive })} />
     </Bench>
   )
 }
@@ -3744,7 +3971,8 @@ function RobotCarDemo() {
   const [steer, setSteer] = React.useState(26)
   const [roughness, setRoughness] = React.useState(0.35)
   const [driven, setDriven] = React.useState(true)
-  const rack = ackermann(steer, { wheelbase: 120, track: 62 })
+  // The car's own geometry, so the readout is the machine's answer and not a guess.
+  const rack = ackermann(steer, { wheelbase: 126, track: 76 })
   return (
     <Bench
       controls={
@@ -3811,8 +4039,10 @@ function TransitBusDemo() {
   const [steer, setSteer] = React.useState(30)
   const [doors, setDoors] = React.useState(0)
   const [articulated, setArticulated] = React.useState(true)
+  // The bus's own geometry: front axle to drive axle, the pivot behind the
+  // drive axle, and the trailer's own wheelbase behind that.
   const bend = articulated
-    ? hitchAngle(steer, { wheelbase: 106, track: 60, hitch: 29 }, 57)
+    ? hitchAngle(steer, { wheelbase: 88, track: 29, hitch: 34 }, 58)
     : 0
   return (
     <Bench
@@ -3849,14 +4079,14 @@ function TransitBusDemo() {
           <Readout
             rows={[
               ["articulation", `${bend.toFixed(1)}°`],
-              ["kneel", `${(doors * 5).toFixed(1)} u`],
+              ["kneel", `${(doors * 3.4).toFixed(1)} u`],
             ]}
           />
         </>
       }
     >
       <TransitBus
-        size={360}
+        size={420}
         view={view}
         variant={variant}
         behavior={behavior}
@@ -4833,6 +5063,8 @@ export const demos: Record<string, React.ComponentType<DemoProps>> = {
   "household-geometry": WashingMachineDemo,
   "robot-sunflower": RobotSunflowerDemo,
   "phyllotaxis-geometry": RobotSunflowerDemo,
+  "robot-cactus": RobotCactusDemo,
+  "cactus-geometry": RobotCactusDemo,
   "celestial-planet": CelestialPlanetDemo,
   "celestial-moon": CelestialMoonDemo,
   "celestial-star": CelestialStarDemo,
@@ -4864,6 +5096,7 @@ export const demos: Record<string, React.ComponentType<DemoProps>> = {
   "slate-tablet": SlateTabletDemo,
   "wheel-player": WheelPlayerDemo,
   "slab-handset": SlabHandsetDemo,
+  "folding-handset": FoldingHandsetDemo,
   "wrist-terminal": WristTerminalDemo,
   "key-switch": KeySwitchDemo,
   "robot-keypad": RobotKeypadDemo,
@@ -4920,6 +5153,11 @@ export const demos: Record<string, React.ComponentType<DemoProps>> = {
   "robot-spider": RobotSpiderDemo,
   "robot-crab": RobotCrabDemo,
   "hexapod-kinematics": RobotSpiderDemo,
+  "tripod-droid": TripodDroidDemo,
+  "tripod-kinematics": TripodDroidDemo,
+  "scout-walker": ScoutWalkerDemo,
+  "siege-walker": SiegeWalkerDemo,
+  "walker-kinematics": SiegeWalkerDemo,
   "robot-bird": RobotBirdDemo,
   "robot-dragonfly": RobotDragonflyDemo,
   "robot-bat": RobotBatDemo,
@@ -5020,6 +5258,15 @@ function AutoDemo({ slug }: DemoProps) {
   const [view, setView] = React.useState<RobotView>("front")
   const Machine = entry?.component
   if (!Machine) return null
+  if (slug.startsWith("robotic-")) {
+    return (
+      <div className="flex min-h-72 items-center justify-center overflow-auto p-6">
+        <div className="w-full max-w-2xl">
+          <Machine />
+        </div>
+      </div>
+    )
+  }
   return (
     <Bench controls={<>
       <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />

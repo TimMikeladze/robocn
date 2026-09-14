@@ -3,10 +3,11 @@
 /**
  * The mark is a machine in its cell.
  *
- * Not a drawing of an arm — an arm: a three-link chain solved every frame by
- * the same `useRobotArm` core that drives `robot-arm` and `robot-arm-3d`. It
- * aims at the cursor anywhere on the page, drifts when left alone, and fires
- * its welder when the thing it sits in is pressed or focused.
+ * Not a drawing of an arm — an arm: a three-link chain solved by the same
+ * `useRobotArm` core that drives `robot-arm` and `robot-arm-3d`. It takes its
+ * pose from where the page was last clicked, keeps it — across routes and
+ * across reloads — until the next click, and fires its welder while the thing
+ * it sits in is pressed or focused.
  *
  * It is drawn inside a rounded square — a work cell — because a bare stick
  * figure has no silhouette at 16 px and nothing for a wordmark to align to. The
@@ -53,22 +54,44 @@ const TOOL = 1.5
 /** Reach the goal is held between, so the pose never folds or over-extends. */
 const MIN_REACH = 6.5
 const MAX_REACH = 12
-/** Extra reach per pixel of cursor distance: the arm stretches for a far cursor. */
-const PER_PIXEL = 0.022
+/**
+ * Click distance, in pixels, that buys the whole of that reach — a fraction of
+ * the viewport rather than a fixed number, so a click halfway across the page
+ * puts the arm at full stretch on any screen.
+ */
+function reachSpan() {
+  return Math.max(320, Math.min(window.innerWidth, window.innerHeight) * 0.5)
+}
 /** The goal stays this far inside the box, so no elbow leaves the cell. */
 const INSET = 3.6
-/** Radians above each horizon the arm refuses to drop below — it sits on a plinth. */
+/**
+ * Radians above each horizon the arm refuses to drop below — it works the half
+ * plane above its own shoulder, because anything lower folds the chain over its
+ * own pedestal and the mark turns to mush at 36 px.
+ */
 const HORIZON = 0.06
-/** How long a cursor position is worth holding before the arm goes back to drifting. */
-const HOLD = 2400
+/**
+ * How much of a click's vertical distance survives into the aim angle, once
+ * that distance has been turned into elevation. The page is almost entirely
+ * below a header-height shoulder, so taking the bearing literally would flatten
+ * nearly every click to the same horizontal pose; at a third, a click far down
+ * the page raises the arm a little, one just under the header barely at all,
+ * and left-to-right still gets the whole sweep.
+ */
+const DOWNWEIGHT = 0.34
+/**
+ * Where the aim is kept. The pose is the visitor's, not the page's: it survives
+ * a route change (the header never unmounts) and a reload (this).
+ */
+const STORE = "robocn:logo-aim"
 
 export type LogoBehavior = "pointer" | "idle" | "static"
 
 export interface LogoProps extends Omit<React.ComponentProps<"svg">, "children"> {
   /**
-   * `pointer` aims at the cursor and drifts when it goes quiet, `idle` only
-   * drifts, `static` parks at the mark pose and runs no loop — which is what
-   * the social card captures.
+   * `pointer` re-aims on every click and holds that pose, `idle` drifts around
+   * the parked pose, `static` parks at the mark pose and runs no loop — which
+   * is what the social card captures.
    */
   behavior?: LogoBehavior
   /** Off draws the bare machine, for a ground that already supplies the frame. */
@@ -83,63 +106,119 @@ function clampGoal(goal: Vec2): Vec2 {
   }
 }
 
-/** Where the cursor puts the tool tip, in world units. */
-function aimAt(event: PointerEvent, rect: DOMRect): Vec2 {
+/**
+ * Where a click puts the tool tip, in world units.
+ *
+ * Bearing gives the side, distance gives the reach, and vertical distance is
+ * folded into elevation rather than taken literally: the arm works the half
+ * plane above its shoulder, so a click below it is answered by raising the arm
+ * on that side rather than by driving the chain through its own plinth. Two
+ * clicks a little apart give two poses a little apart, everywhere on the page.
+ */
+function aimAt(event: { clientX: number; clientY: number }, rect: DOMRect): Vec2 {
   const shoulder = {
     x: rect.left + (SHOULDER.x / VIEW) * rect.width,
     y: rect.top + (SHOULDER.y / VIEW) * rect.height,
   }
   const away = { x: event.clientX - shoulder.x, y: event.clientY - shoulder.y }
-  // The arm stands on a base: it works the half-plane above its own shoulder,
-  // and a cursor below that is served by the nearer horizon rather than ignored.
-  const raw = Math.atan2(away.y, away.x)
-  const angle =
-    raw >= 0
-      ? raw < Math.PI / 2
-        ? -HORIZON
-        : -Math.PI + HORIZON
-      : clamp(raw, -Math.PI + HORIZON, -HORIZON)
-  const stretch = clamp(MIN_REACH + Math.hypot(away.x, away.y) * PER_PIXEL, MIN_REACH, MAX_REACH)
+  // Above the shoulder the arm points straight at the click; below it, the drop
+  // is weighted and turned into lift on the same side.
+  const rise = away.y > 0 ? -away.y * DOWNWEIGHT : away.y
+  const angle = clamp(Math.atan2(rise, away.x), -Math.PI + HORIZON, -HORIZON)
+  const reach = MIN_REACH + (MAX_REACH - MIN_REACH) * clamp(Math.hypot(away.x, away.y) / reachSpan(), 0, 1)
   return clampGoal({
-    x: SHOULDER.x + Math.cos(angle) * stretch,
-    y: SHOULDER.y + Math.sin(angle) * stretch,
+    x: SHOULDER.x + Math.cos(angle) * reach,
+    y: SHOULDER.y + Math.sin(angle) * reach,
   })
+}
+
+/**
+ * The aim is kept in `localStorage` and read as an external store, so the pose
+ * is shared state rather than component state: every mark on the page agrees,
+ * a second tab picks up a re-aim through the `storage` event, and React does
+ * the hydration dance itself — the server renders the parked pose, the client
+ * swaps in the stored one on its own first pass.
+ */
+const watchers = new Set<() => void>()
+
+function subscribeAim(onChange: () => void) {
+  watchers.add(onChange)
+  window.addEventListener("storage", onChange)
+  return () => {
+    watchers.delete(onChange)
+    window.removeEventListener("storage", onChange)
+  }
+}
+
+/** The raw stored string: a value React can compare between renders. */
+function readAim(): string | null {
+  try {
+    return window.localStorage.getItem(STORE)
+  } catch {
+    // Private windows and blocked storage both throw on read; the mark parks.
+    return null
+  }
+}
+
+function writeAim(goal: Vec2) {
+  try {
+    window.localStorage.setItem(STORE, JSON.stringify(goal))
+  } catch {
+    // Storage full or blocked: the arm still moves, it just forgets on reload.
+  }
+  // `storage` only fires in *other* tabs, so this one is told directly.
+  for (const watcher of watchers) watcher()
+}
+
+/** A stored aim, if there is one and it is still a point in the cell. */
+function parseAim(raw: string | null): Vec2 | null {
+  if (!raw) return null
+  try {
+    const held = JSON.parse(raw) as Partial<Vec2>
+    if (typeof held?.x !== "number" || typeof held?.y !== "number") return null
+    return clampGoal({ x: held.x, y: held.y })
+  } catch {
+    return null
+  }
 }
 
 function Logo({ behavior = "pointer", cell = true, className, ...props }: LogoProps) {
   const ref = React.useRef<SVGSVGElement>(null)
-  /** Written by the pointer listener and read by the loop, so tracking the
-   *  cursor across the whole page costs the header no React renders. */
-  const aim = React.useRef<Vec2 | null>(null)
-  const aimedAt = React.useRef(0)
   const [firing, setFiring] = React.useState(false)
 
   const live = behavior !== "static"
 
+  /** The last place the page was clicked, in world units. */
+  const stored = React.useSyncExternalStore(subscribeAim, readAim, () => null)
+  const aim = React.useMemo(
+    () => (behavior === "pointer" ? parseAim(stored) : null),
+    [behavior, stored],
+  )
+
   React.useEffect(() => {
     const svg = ref.current
     if (behavior !== "pointer" || !svg) return
-    // The mark is 28 px across; the thing worth pressing is whatever it sits
-    // in — the home link in the header.
+    // The mark is a 36 px square in the header; the thing worth pressing is
+    // whatever it sits in — the home link.
     const zone = svg.closest("a") ?? svg
 
-    const move = (event: PointerEvent) => {
+    const take = (event: PointerEvent) => {
       const rect = svg.getBoundingClientRect()
       if (rect.width === 0 || rect.height === 0) return
-      aim.current = aimAt(event, rect)
-      aimedAt.current = performance.now()
+      writeAim(aimAt(event, rect))
     }
     const fire = () => setFiring(true)
     const stop = () => setFiring(false)
 
-    window.addEventListener("pointermove", move, { passive: true })
+    // Capture, so a click on something that stops propagation still re-aims.
+    window.addEventListener("pointerdown", take, { capture: true, passive: true })
     window.addEventListener("pointerup", stop)
     zone.addEventListener("pointerdown", fire)
     zone.addEventListener("pointerleave", stop)
     zone.addEventListener("focusin", fire)
     zone.addEventListener("focusout", stop)
     return () => {
-      window.removeEventListener("pointermove", move)
+      window.removeEventListener("pointerdown", take, { capture: true })
       window.removeEventListener("pointerup", stop)
       zone.removeEventListener("pointerdown", fire)
       zone.removeEventListener("pointerleave", stop)
@@ -150,27 +229,30 @@ function Logo({ behavior = "pointer", cell = true, className, ...props }: LogoPr
   }, [behavior])
 
   /**
-   * A path rather than a point, so the loop re-reads the cursor every frame and
-   * a fresh aim never rebuilds the effect. A clock of zero is the parked pose,
-   * which is what the server renders.
+   * Until the page has been clicked the mark drifts around its parked pose, so
+   * a first visit still shows a machine rather than a diagram. A clock of zero
+   * is the parked pose exactly, which is what the server renders.
    */
-  const path = React.useCallback((clock: number) => {
-    const held = aim.current
-    if (held && performance.now() - aimedAt.current < HOLD) return held
-    return {
+  const drift = React.useCallback(
+    (clock: number) => ({
       x: REST.x + Math.sin(clock * 0.62) * 1.2,
       y: REST.y + Math.sin(clock * 0.94) * 0.8,
-    }
-  }, [])
+    }),
+    [],
+  )
 
   const pose = useRobotArm({
     links: LINKS,
     root: SHOULDER,
-    target: live ? path : REST,
+    // A held aim is a fixed target: the arm travels to it, then the loop stops
+    // and the pose stands until the next click.
+    target: aim ?? (live ? drift : REST),
     // Elbow up and over rather than curled: the silhouette of a machine that
     // stands on a plinth, and the one that survives being 28 px tall.
     bend: "down",
-    speed: 32,
+    // Fast enough that the arm answers the click rather than creeping there:
+    // the whole envelope in about a fifth of a second.
+    speed: 96,
     animate: live,
   })
 

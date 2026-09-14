@@ -25,6 +25,11 @@ is the family.
 | `strike-starfighter` | split-foil attack fighter | Four wings on two hinges that open from cruise into an X about the fore-aft axis |
 | `ion-interceptor` | twin ion-drive interceptor | Hexagonal panels pitching on lateral pylons, with a pod that turns *inside* them |
 
+The bodies were refitted after the first draft: `slabPath` is a convex hull, so a body drawn
+as one call to it can have no wheel arch, no bonnet step and no skirt. What ships now is an
+assembly of convex parts with the gaps left open, at the real vehicle's proportions.
+`docs/vehicle-refit.md` is the record of that, and of the tanker joining this family's solver.
+
 Named for the job. These are genre archetypes — a split-wing attack fighter and a panelled
 ion interceptor are as old as the genre — and nothing here carries a franchise name, a logo,
 a paint scheme or a character marking, in the component, the docs or a demo label.
@@ -80,8 +85,8 @@ Modelled once in world units — **x** starboard, **y** up, **z** aft — and pu
 
 | Machine | Attributes |
 |---|---|
-| `robot-car` | `data-body` `data-wheel="front-left"` … `data-steer` `data-roll` `data-lamp` |
-| `transit-bus` | `data-tractor` `data-trailer` `data-hitch` `data-door="front"` `data-kneel` `data-wheel` |
+| `robot-car` | `data-body` `data-fender` `data-arch` `data-wheel="front-left"` … `data-steer` `data-roll` `data-lamp` `data-mirror` `data-lane-dash` |
+| `transit-bus` | `data-tractor` `data-trailer` `data-hitch` `data-door="front"` `data-leaf` `data-glazing` `data-arch` `data-kneel` `data-wheel` `data-rib` |
 | `cargo-plane` | `data-airframe` `data-wing="port"` `data-aileron="port"` `data-flap` `data-gear` `data-prop` |
 | `hydrofoil-craft` | `data-hull` `data-strut="fore"` `data-foil` `data-waterline` `data-spray` `data-rise` |
 | `launch-vehicle` | `data-stack` `data-stage="first"` `data-engine` `data-gimbal` `data-plume` `data-fin` `data-readout` |

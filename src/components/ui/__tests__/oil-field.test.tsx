@@ -9,7 +9,12 @@ import { MudPump, mudPumpCrank, mudPumpFlow } from "@/components/ui/mud-pump"
 import { WellheadTree, wellheadChoke } from "@/components/ui/wellhead-tree"
 import { StorageTank, storageTankLadder, storageTankLevel } from "@/components/ui/storage-tank"
 import { OilTanker, oilTankerCargo } from "@/components/ui/oil-tanker"
-import { TankerTruck, tankerTruckLevel } from "@/components/ui/tanker-truck"
+import {
+  TankerTruck,
+  tankerTruckLevel,
+  tankerTruckRoadSpeed,
+  tankerTruckSteer,
+} from "@/components/ui/tanker-truck"
 import { FlareStack, flareStackFlow } from "@/components/ui/flare-stack"
 import { FractionatingColumn, columnHeat } from "@/components/ui/fractionating-column"
 import { JackupRig, jackupElevation } from "@/components/ui/jackup-rig"
@@ -332,6 +337,51 @@ describe("tanker truck", () => {
     expect(container.querySelector("[data-trailer]")!.getAttribute("data-hitch")).toBe("40")
   })
 
+  it("solves the trailer's angle from the steer, and signs it with the turn", () => {
+    const { container, rerender } = render(<TankerTruck animate={false} steer={0} />)
+    expect(container.querySelector("[data-trailer]")!.getAttribute("data-hitch")).toBe("0")
+
+    rerender(<TankerTruck animate={false} steer={40} />)
+    const right = Number(container.querySelector("[data-trailer]")!.getAttribute("data-hitch"))
+    expect(Math.abs(right)).toBeGreaterThan(5)
+
+    rerender(<TankerTruck animate={false} steer={-40} />)
+    expect(
+      Number(container.querySelector("[data-trailer]")!.getAttribute("data-hitch")),
+    ).toBeCloseTo(-right, 1)
+  })
+
+  it("lets a supplied hitch override the solution", () => {
+    const { container } = render(<TankerTruck animate={false} steer={40} hitch={12} />)
+    expect(container.querySelector("[data-trailer]")!.getAttribute("data-hitch")).toBe("12")
+  })
+
+  it("turns the inner steer wheel harder than the outer one", () => {
+    const { container } = render(<TankerTruck animate={false} steer={30} />)
+    const left = Number(
+      container.querySelector('[data-wheel="steer-left"]')!.getAttribute("data-angle"),
+    )
+    const right = Number(
+      container.querySelector('[data-wheel="steer-right"]')!.getAttribute("data-angle"),
+    )
+    // Starboard turn: the off-side wheel is the inside one.
+    expect(right).toBeGreaterThan(left)
+    expect(
+      container.querySelector('[data-wheel="drive-1-left"]')!.getAttribute("data-angle"),
+    ).toBe("0")
+  })
+
+  it("samples a rack that only the yard manoeuvre really works, and a road that stops", () => {
+    expect(Math.abs(tankerTruckSteer("manoeuvre", 0.5))).toBeGreaterThan(
+      Math.abs(tankerTruckSteer("haul", 0.5)),
+    )
+    expect(tankerTruckSteer("discharge", 0.4)).toBe(0)
+    expect(tankerTruckSteer("static", 0.4)).toBe(tankerTruckSteer("static", Number.NaN))
+    expect(tankerTruckRoadSpeed("haul")).toBeGreaterThan(tankerTruckRoadSpeed("manoeuvre"))
+    expect(tankerTruckRoadSpeed("discharge")).toBe(0)
+    expect(tankerTruckRoadSpeed("static")).toBe(0)
+  })
+
   it("empties the compartments from the rear", () => {
     const { container } = render(<TankerTruck animate={false} level={0.5} compartments={4} />)
     const gauges = [...container.querySelectorAll("[data-compartment]")]
@@ -341,6 +391,13 @@ describe("tanker truck", () => {
     expect(filled.every((count) => count === 2)).toBe(true)
     const heights = gauges.map((node) => node.querySelectorAll("path")[1].getAttribute("d"))
     expect(new Set(heights).size).toBeGreaterThan(1)
+    // Half a load leaves the front pots full and the rear ones empty, which is
+    // the order a road tanker actually discharges in. The dome collars say so
+    // without having to measure a gauge.
+    const collars = [...container.querySelectorAll("[data-charged]")].map((node) =>
+      node.getAttribute("data-charged"),
+    )
+    expect(collars).toEqual(["true", "true", "false", "false"])
   })
 
   it("clamps a silly hitch and stays finite", () => {

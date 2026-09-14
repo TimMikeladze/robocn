@@ -23,9 +23,6 @@ importers:
       cn:
         specifier: ^0.2.6
         version: 0.2.6
-      esbuild:
-        specifier: ^0.28.2
-        version: 0.28.2
       lucide-react:
         specifier: ^1.45.0
         version: 1.45.0(react@19.2.8)
@@ -5693,6 +5690,7 @@ snapshots:
       '@esbuild/win32-arm64': 0.28.2
       '@esbuild/win32-ia32': 0.28.2
       '@esbuild/win32-x64': 0.28.2
+    optional: true
 
   escalade@3.2.0: {}
 

@@ -43,7 +43,7 @@ truck's compartments fill, the column's flash zone moves. That is the axis this 
 | `wellhead-tree` | valve stack + variable choke bean | a pressure-control *assembly*, where `solenoid-valve` is one valve |
 | `storage-tank` | roof floating on the liquid | a body with no fixed height: the level carries it |
 | `oil-tanker` | cargo sets the draft | the only machine where the ground plane cuts the body |
-| `tanker-truck` | articulated hitch + compartment fill | two bodies on one kingpin, each compartment its own quantity |
+| `tanker-truck` | solved articulation + compartment fill | the trailer's yaw comes out of the steer, and each compartment is its own quantity |
 | `flare-stack` | plume length from flow | an emissive process, drawn as one and labelled as one |
 | `fractionating-column` | trays and side draws | a count axis that changes the separation, like `resolution` on the fabricator |
 | `jackup-rig` | fixed legs, climbing hull | one number is both the air gap above the water and the leg left below it |
@@ -142,7 +142,7 @@ These are API. A test asserts a prop moved one of them.
 | `wellhead-tree` | `data-choke` (+`data-opening`) `data-valve="master\|swab\|wing-left\|wing-right"` (+`data-open`) `data-flow` `data-outlet` `data-gauge` (+`data-reading`) `data-cross` |
 | `storage-tank` | `data-roof` (+`data-height`) `data-liquid` `data-seal` `data-ladder` `data-stair` `data-gauge` |
 | `oil-tanker` | `data-hull` (+`data-draft`) `data-waterline` `data-sea` `data-boot` `data-cargo` `data-manifold` `data-house` |
-| `tanker-truck` | `data-tractor` `data-trailer` (+`data-hitch`) `data-barrel` `data-cabinet` `data-compartment="n"` `data-wheel="n"` |
+| `tanker-truck` | `data-tractor` `data-trailer` (+`data-hitch`) `data-barrel` `data-bogie` `data-cabinet` `data-compartment="n"` `data-dome="n"` (+`data-charged`) `data-wheel="steer-left"` … `data-steer` |
 | `flare-stack` | `data-plume` (+`data-flow`) `data-pilot` `data-tip` `data-riser` `data-boom` `data-knockout` |
 | `fractionating-column` | `data-shell` `data-tray="n"` `data-draw="n"` (+`data-live`) `data-flash` `data-overhead` `data-reboiler` |
 | `jackup-rig` | `data-hull` (+`data-elevation`) `data-leg` `data-jack="n"` `data-cantilever` `data-string` |
@@ -160,7 +160,7 @@ the tests.
 | `wellhead-tree` | `throttle` `shut-in` `static` | choke opening |
 | `storage-tank` | `fill` `draw` `static` | liquid level |
 | `oil-tanker` | `laden` `swell` `static` | cargo, or a gentle heave at constant cargo |
-| `tanker-truck` | `haul` `discharge` `static` | wheel phase and suspension, or compartments emptying |
+| `tanker-truck` | `haul` `discharge` `manoeuvre` `static` | the road going by, the compartments emptying, or the rack — which is what the hitch is solved from |
 | `flare-stack` | `flare` `pilot` `static` | flow to the tip |
 | `fractionating-column` | `run` `swing` `static` | heat into the flash zone |
 | `jackup-rig` | `jack` `preload` `static` | hull elevation up the legs |

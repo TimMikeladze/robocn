@@ -83,6 +83,11 @@ Consumers install with `npx shadcn@latest add https://<host>/r/robot-arm.json`, 
 | `robot-spider` | ui | Eight-legged plan-view walker with solved knees and three gaits. |
 | `robot-crab` | ui | Sideways walker on the same gait solver, with hinged claws. |
 | `hexapod-kinematics` | lib | Radial four-to-ten-leg gait solver, knees solved per leg. |
+| `walker-kinematics` | lib | Two or four legs carrying their mass above the hips: a footfall schedule, the support polygon it leaves, and the hull attitude that is the only way to move that mass over a foot. |
+| `scout-walker` | ui | Two legs, so the support is one foot: the cab rolls the whole machine over the leg that stays put, and reports it when the roll stop runs out first. |
+| `siege-walker` | ui | The same solver with four feet at the corners of a long rectangle, which already hold the mass — until it paces, and the support is a line down one flank. |
+| `tripod-kinematics` | lib | Three legs: a load schedule, the body position that schedule demands, and the support polygon it has to stay inside. |
+| `tripod-droid` | ui | Stubby three-legged survey walker that leans onto two feet before it lifts the third, and says how much room it has left. |
 | `robot-bird` | ui | Perching flyer with three-link wings and a fanning tail. |
 | `robot-dragonfly` | ui | Four-winged flyer in plan: fore and hind pairs beating half a cycle apart. |
 | `robot-bat` | ui | Membrane flyer: finger struts with the skin drawn through their tips, and an inverted roost. |
@@ -104,6 +109,8 @@ Consumers install with `npx shadcn@latest add https://<host>/r/robot-arm.json`, 
 | `robot-tomato` | ui | Truss-hung fruit on a two-hinge peduncle, with a ripening front that is coverage rather than a ramp. |
 | `phyllotaxis-geometry` | lib | Golden-angle disc lattices, the Fibonacci arms that fall out of them, a dished face, and a two-axis aim solved from a direction. |
 | `robot-sunflower` | ui | Heliotropic collector mast: a floret lattice on a dished head aimed by a solved tracker, on a stem that leans while the collar takes the remainder. |
+| `cactus-geometry` | lib | Continuum limbs solved from their own curvature, ribbed sections and crest lines, a staggered areole lattice, taper-true skin normals, rigid spine fans and petals. |
+| `robot-cactus` | ui | Potted columnar collector: one continuum solver for the column and both arms, areoles and spines on the solved crests, a rigid corolla at the crown. |
 | `casing-droid` | ui | Armoured conical casing unit: dome, skirt, neck cage, eyestalk, manipulator, emitter. |
 | `astromech-droid` | ui | Barrel repair unit: ride heights, dome, livery, feet, antenna, ports, periscope, holo. |
 | `attendant-droid` | ui | Plated etiquette humanoid: builds, faceplates, hands, collar, plating teardown. |
@@ -154,11 +161,12 @@ Consumers install with `npx shadcn@latest add https://<host>/r/robot-arm.json`, 
 | `resolver` | ui | A rotary transformer producing ideal sine and cosine position channels. |
 | `transformer-core` | ui | Coupled primary and secondary windings around EI or toroidal cores. |
 | `use-robot-motion` | hook | The clock every machine runs on, and the handle you grab it by. |
-| `device-geometry` | lib | Hinge closure, kickstand triangle, rotary detents, constant-pitch band, panels at any attitude. |
+| `device-geometry` | lib | Hinge closure, book fold, kickstand triangle, rotary detents, constant-pitch band, panels at any attitude. |
 | `clamshell-laptop` | ui | A portable workstation on one solved hinge, with the screen drawn only where a camera can see it. |
 | `slate-tablet` | ui | A slate and the kickstand whose foot has to reach the desk — or fold. |
 | `wheel-player` | ui | A pocket player whose click wheel is geared to its list, with a hold switch that is a real interlock. |
 | `slab-handset` | ui | One slab turned about its own axis: screen, edge, then the back and its camera array. |
+| `folding-handset` | ui | A book fold whose display keeps its own length as it bends, on leaves that roll rather than pivot. |
 | `wrist-terminal` | ui | A crown geared to a dial, on a link band that keeps its length. |
 | `keyboard-geometry` | lib | Key travel with hysteresis, an asymmetric keystroke, a unit-pitch deck, matrix scan order, and caps as solids on a raked face. |
 | `key-switch` | ui | One switch, sectioned: a contact that closes partway down the travel and opens again higher than it closed. |
@@ -190,7 +198,7 @@ Consumers install with `npx shadcn@latest add https://<host>/r/robot-arm.json`, 
 | `wellhead-tree` | ui | A valve stack whose line-up decides which bore is live. |
 | `storage-tank` | ui | A floating roof on the liquid, and a rolling ladder solved from it. |
 | `oil-tanker` | ui | Cargo sets the draft, so the sea line cuts a hull that moves. |
-| `tanker-truck` | ui | Tractor and trailer on one kingpin, yawed in world space. |
+| `tanker-truck` | ui | Tractor and trailer on one kingpin, with the trailer's yaw solved from the steer. |
 | `flare-stack` | ui | A modelled stack under an illustrated plume, and it says which is which. |
 | `fractionating-column` | ui | Tray count as an axis: spacing, seams and draw heights all come off it. |
 | `jackup-rig` | ui | Fixed legs, a climbing hull: one number is the air gap and the stick-up. |
@@ -214,6 +222,38 @@ Consumers install with `npx shadcn@latest add https://<host>/r/robot-arm.json`, 
 | `gridiron-kicker` | ui | A swing leg that meets a ball, and a parabola that starts where the strike did. Clearing the bar is computed. |
 | `blocking-sled` | ui | Static equilibrium against a return spring, on a frame with a friction threshold it will not move below. |
 | `ball-launcher` | ui | Mean of the two surface speeds out, difference as spin. Both numbers, one pair of inputs. |
+
+### The armoured walkers
+
+Two machines on one new solver (`walker-kinematics`), on an axis the set did not have: a hull
+carried well above its hips, which cannot slide over its feet and has to buy every lateral
+move with roll. Design note: [armoured-walkers.md](armoured-walkers.md).
+
+`vitest` over the solver and the two machines: femur and tibia exact in every gait, at every
+height and phase, for both leg counts; the loads summing to one body whenever anything is down
+and to nothing in a flight phase; the achieved centre of mass equal to `hull · sin(roll)` and
+`hull · cos(roll) · sin(pitch)` — read off the pose rather than off the input — with both
+angles inside their stops; a biped in single support rolling its mass exactly onto the stance
+foot and standing level in double support, and a taller hull reaching the same foot with less
+roll; a quadruped's lateral-sequence walk never dropping below three feet down and never
+rolling past four degrees, while `pace` clamps at the stop and goes negative; the stride's
+flight phase reported rather than hidden, and claiming no margin either way; the hip dropping
+on the side the hull rolls onto, with the pair still averaging the ride height; the loads
+following the mass — four square feet at a quarter each, and the near side taking more than
+half when it is pushed; the ride height falling when short legs cannot reach; a gait the leg
+count does not have falling back to standing; and `walkerHullPoint` putting a hull-mounted
+part exactly where the solver put the hips, which is the contract that keeps the drawing on
+the machine.
+
+The margin helper separately: positive inside a square, exactly the distance to the edge, and
+negative outside, whichever way the polygon is wound; zero at best on a line; and a single
+contact measured as a point.
+
+Driven in a browser through all four views and all four variants at each step, which is what
+caught the two a drawing only shows: a knee solved in the plane of the *step* rather than the
+plane of the *machine*, so a foot passing under its own hip threw the knee forward and the leg
+read as a broken chair; and a neck that projected as a rod with a box on the end until it was
+given the droop that puts the head under the hull's nose.
 
 ### The rail machines
 
@@ -720,15 +760,20 @@ electromagnetic suites are green.
 
 ## Personal devices
 
-Five machines you carry, on one new solver. The set had machines that make something, machines
+Six machines you carry, on one new solver. The set had machines that make something, machines
 that move something and the parts a machine is assembled from, and nothing that sits in a hand —
-but a hinge, a kickstand, a click wheel and a link band are mechanisms in exactly the sense the
-rest of the set means it: one degree of freedom, visible, and honest from four camera angles.
-Design note: [personal-devices.md](personal-devices.md).
+but a hinge, a book fold, a kickstand, a click wheel and a link band are mechanisms in exactly the
+sense the rest of the set means it: one degree of freedom, visible, and honest from four camera
+angles. Design notes: [personal-devices.md](personal-devices.md) and, for the sixth,
+[folding-handset.md](folding-handset.md).
 
-`device-geometry` carries four closures and a wrap that a drawing can get wrong, and each has an
+`device-geometry` carries five closures and a wrap that a drawing can get wrong, and each has an
 invariant the tests hold it to: the hinge keeps the lid's length at every angle and reports when
-it has passed vertical; the kickstand's foot is solved onto the desk with the leg at its real
+it has passed vertical; the book fold spends `radius × (180 − fold)` of display on the bend and
+takes it off the straight runs, so `2 × run + arc` is the sheet's length at every angle while the
+panels stay rigid, and both leaf faces stay tangent to the bend circle so the leaves roll on it
+instead of pivoting on a pin — a bend too big for the leaves comes back `pinched`; the kickstand's
+foot is solved onto the desk with the leg at its real
 length, and a leg too short to reach comes back `folded` rather than stretched, the way
 `motion-platform` reports a leg out of travel; the detents wrap in both directions so a full turn
 of a list lands on the row it started on; and the band keeps its link count and its pitch at every
@@ -739,9 +784,9 @@ looking at its front, its back, or its edge. Screens are drawn only when a camer
 see them, because a screen sheared to a sliver is a picture of a screen rather than a projection
 of one.
 
-None of it is dynamics: no friction in the hinge, no detent force on the crown, no material or
-clasp in the band, no contact model under the stand's foot, and nothing that plays, senses or
-knows which way up it is. Each machine's docs `notes` say so. The `screen` prop draws structure
+None of it is dynamics: no friction in the hinge, no detent force on the crown, no crease memory
+in the folding display, no material or clasp in the band, no contact model under the stand's foot,
+and nothing that plays, senses or knows which way up it is. Each machine's docs `notes` say so. The `screen` prop draws structure
 in palette roles — a list, a dial, a keyboard, a window — never an application's own artwork, and
 nothing in the set reproduces a manufacturer, product line, wordmark or paint scheme, in the
 components, the demos or the labels.
@@ -750,7 +795,8 @@ Verified with `vitest` (the solver invariants above, each machine's controlled a
 mechanism, the screen appearing only from a camera that can see it, the stand folding, the wheel
 wrapping in both directions and its hold switch taking pointer, key and behaviour away together,
 the handset's silhouette correctly *not* changing through a half turn while its faces and keys
-do, the band's length at every closure, the crown ribs that face you, invalid input on every
+do, the folding display's own length conserved at every angle with the panels still rigid and the
+held leaf still, the band's length at every closure, the crown ribs that face you, invalid input on every
 numeric axis, accessible labels, palette overrides, and the behaviour samplers at fixed phases),
 `tsc --noEmit`, `eslint`, `pnpm registry:build`, `next build`, and driven in a browser across
 every view, variant and behaviour, grabbed with a pointer, at 150px and at a 390px viewport.
@@ -1383,3 +1429,140 @@ parks the loop and leaves pointer tracking working. The browser caught three thi
 could not: eyelids whose outlines read as spectacles when the eye was open (they are painted in
 the band's own colour now), a jaw hinge rotating the wrong way, and a nose drawn flat on the
 surface that vanished in `profile` — it has volume now, and breaks the silhouette.
+
+## The tripod droid
+
+Two items, `docs/tripod-droid.md`: `tripod-kinematics` and the walker on it. It came from a
+reference image of a stubby, wide-bodied three-legged creature, and what was taken is written
+down there — the silhouette, the proportions as ratios of the body width, the chamfered slab,
+the two tall slot optics, the side nubs and the three legs in a row. No colour was sampled, no
+character is reproduced, and the image is not committed anywhere in this repo.
+
+Three legs is the mechanism, and it is the one thing no other walker here does. Every other
+one stands on an even number of legs and keeps half of them planted; with six that is free,
+because three feet are always down. With three it is not: lift one and the base of support
+collapses from a triangle to a **segment**, so the machine has to move its own mass onto that
+segment before the foot can leave the floor.
+
+`bear-kinematics` asks the opposite question in one dimension — given a centre of mass, what is
+each sole carrying. `solveTripod` runs the same relation forwards in two. A leg's load is handed
+over on a ramp inside the three-foot overlap its duty cycle buys, the loads sum to one body, and
+the static condition then says the centre of mass **is** the load-weighted mean of the contacts.
+That mean is where the body stands, and the waddle is the consequence rather than an animation.
+
+How far it may go is derived, not chosen: sway is whatever reach is left in a leg once a planted
+foot has been paid for. `creep` fits inside it and holds a non-negative margin the whole way
+round; `amble` asks the body to stand over a single foot, which it cannot reach, so the clamp
+bites, the centre of mass leaves the polygon and the reported margin goes negative. Longer links
+or a lower ride height buy the room back, which makes ride height a stability control rather than
+a styling prop.
+
+### Verification for this item
+
+`vitest` — 11 solver tests: femur and tibia lengths held across every gait, height and phase;
+the loads summing to one with an airborne foot carrying nothing; the body sitting exactly at the
+load-weighted mean while it can reach it; `amble` losing the polygon on stubby legs and holding
+it on long ones; the standing triangle with a positive margin; `pivot` turning the body and the
+others leaving it alone; the heading moving the swinging foot; a lean clamped to the sway disc
+and carrying the hips with it; whole cycles repeating in both directions; and garbage input
+giving a neutral stance with no `NaN`. Then 9 component tests: the cycle moving the legs *and*
+the body and returning after a whole cycle, the support polygon and the stability flag going
+false under `amble`, a lean moving the body and the stubs, the optics aiming, invalid props
+rendering the neutral stance, a colour override landing, and the slider surface appearing only
+when interactive — plus the behaviour samplers and the set-wide view harness, which snapshots
+the front elevation it was designed as and the isometric one separately. 2332 tests pass.
+
+`tsc --noEmit`, `eslint`, `pnpm registry:build` and `pnpm build` clean. Driven in Chrome at
+`/docs/tripod-droid`: all four views, all four variants, all five behaviours — `scurry` reporting
+"off balance" for the whole cycle and `trundle` "balanced" for the whole cycle, which is the
+claim the solver makes — the body dragged over its feet with a pointer and released, arrow keys
+with `Home` and `End` (which pushes it forward past its forefeet and turns the lamp), reduced
+motion forced on to confirm the loop parks while the keyboard still works, both catalogue cards,
+and the page at 390px with no horizontal overflow.
+
+Rendering the machine beside the reference caught what the tests could not: a panel seam under
+the optics that read as a mouth, a blank flank and roof that left plan and side elevation with
+nothing on them, and a side nub drawn behind the body so it vanished in profile. The browser
+caught one more — mapping the drag straight onto the ground plane made the fore-and-aft axis,
+which is nearly edge-on in front elevation, swing the machine end to end for a few pixels. It is
+a damped least-squares solve now, anchored on the body's own centre, so a drag pushes the body
+where the pointer goes from every camera, including plan view where starboard is on the other
+side of the picture.
+
+## The ribbed column
+
+One machine on one new solver: `robot-cactus` on `cactus-geometry`. What the set did not have
+is a **limb with no joints** — a continuum member that bends along its whole length and has to
+stay exactly as long bent as it was straight. Design note:
+[ribbed-column.md](ribbed-column.md).
+
+The tangent angle off vertical is `θ(s) = emergence − sweep · W(s)`, where `W` is the
+normalised integral of a bell centred on the elbow, and the joints are walked off that angle at
+each **link's midpoint**, one fixed link at a time. Integrating the angle rather than displacing
+joints is the only reason the length is exact rather than nearly exact, and `W(1) = 1` is why
+`sweep === emergence` ends a limb vertical *whatever* the elbow or the spread — which is the
+whole of "lift and curl" in one number. A column is `emergence 0` with a wide spread, so it
+leans progressively; an arm is `emergence 88°` with a narrow one, so it leaves the trunk flat,
+turns hard at one place and runs up parallel to it. One mechanism, two settings, no second
+drawing.
+
+The second new thing is a surface whose detail is part of the solve. Because a limb bends in
+exactly one vertical plane its binormal is constant along it, so the frame is already
+parallel-transported and a rib crest cannot drift round the limb between stations. The ribs are
+a modulation of the section radius, which makes a crest a *line on the solved surface*; the
+areoles sit on those crests at even arc spacing, staggered half a step on alternate ribs; and
+each carries the skin's own normal with the taper leant into it (`radial − (dr/ds)·tangent`),
+which is what makes the crown's spines point up and out instead of sideways. The spine fans and
+the corolla are both rigid — every needle exactly its length at every splay, every petal exactly
+its length at every pitch — so shutting the flower into a bud shortens the silhouette and not
+the petal.
+
+The lean is the one thing that is not a pose. The pointer and the idle wander add into one
+bearing and one magnitude handed to the column's `sweep`, and the arms and the flower are
+*carried* by that bend rather than aimed separately, so they cannot disagree with it. The rib
+pattern is anchored to the world rather than to the bend plane, or it would spin round the
+column every time the machine changed its mind about which way to lean.
+
+Illustrated: the pot, the soil, the stamen speckle, the status lamp and the blueprint's lean
+line. There is no botany — nothing grows and `bloom` is a shaped number, not a phenology.
+
+`vitest` — 16 solver tests: the contour length exact and every link identical at five sweeps ×
+three elbows; the tip vertical whenever the sweep takes back the emergence, at four elbows; the
+frame orthonormal with a constant binormal; the bend confined to its own plane with no sideways
+drift; an interpolated station still orthonormal; crests at every `360/ribs` with the furrows
+between them; a crest standing exactly the radius off its own centreline at every station; the
+ring closed and never inside the deepest furrow; the normal leaning up a taper and purely
+radial without one; areoles on the crests, staggered on alternate ribs and evenly spaced within
+one; rigid needles on a cone about the pad's normal with a centre needle at exactly 0°; rigid
+petals at four pitches; a bud taller than it is wide and an open corolla more than twice as
+wide; and garbage input giving finite geometry. Then 14 component tests: bloom moving the arms
+and the corolla but *not* the column, the pointer leaning the column and carrying the arms, the
+lean reported on `data-lean` and mirrored exactly either side of centre, the
+rib/areole/arm/petal counts, the pot and the fans coming away, one geometry projected to two
+cameras, the drag and the keyboard reporting through `onBloomChange`, the plain-image
+semantics, `NaN` everywhere rendering a neutral machine, and a colour override landing — plus
+the behaviour samplers, the arm-pose mapping, the two-rate wander and the pointer lean. 2312
+tests pass.
+
+`tsc --noEmit`, `eslint` and `pnpm registry:build` clean. Driven in Chrome at
+`/docs/robot-cactus`: all four views, all four variants, all four behaviours, the flowering
+dragged from 10% at the bottom of the frame to 92% at the top and released to ease back into
+the cycle, `Home` and the arrow keys from the keyboard, reduced motion forced on to confirm the
+loop parks, both catalogue cards, and the page at 390px with no horizontal overflow. Pointer
+tracking was driven with real mouse moves against `data-lean`: 14.13° on bearing 69.11° at the
+far left and 14.13° on −69.11° at the far right — an exact mirror — with the pull growing from
+13.62° to 14.82° as the pointer came down the frame, and the machine handing itself back to the
+behaviour when the pointer left. `data-lean` exists because the root group carries no transform
+at rest, so there was otherwise nothing on the machine to diff attention against.
+
+The browser caught what the tests could not: the pot drawn at the viewBox origin instead of the
+machine's (`frustumPath` returns raw projected coordinates, and `at()` is what adds the origin);
+per-segment silhouette hulls leaving a ladder of seams across the column, replaced by one path
+walked up the extreme points of each section and back down the other side; arms bearing ±90°,
+which put both of them square to the profile camera and lost them; and a viewBox half again as
+wide as the machine needed, which rendered a tall thin plant small for its own `size`. The last
+was a design error rather than a bug: the corolla opened its rigid blades to *flat*, which is
+the obvious reading of a flower opening and is wrong for this camera — the front elevation sits
+ten degrees above horizontal, so an open corolla projected to a line and the machine lost the
+one event it has in its own native view. It opens into a funnel now, and the silhouette flips
+from a tall narrow bud to a wide shallow cup.

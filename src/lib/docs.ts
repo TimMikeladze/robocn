@@ -2072,6 +2072,56 @@ pose.height // body height in world units`,
     notes: ["Femur and tibia hold their lengths in every pose, because the stance radius is capped so a full stride still lands inside the leg's reach.", "Illustrative trajectories, not dynamics: no balance, no ground reaction, and the body never translates — the feet do."],
   },
   {
+    slug: "walker-kinematics", item: "walker-kinematics", title: "Walker kinematics", group: "Foundations",
+    summary: "Two or four legs on a rectangular hip base, for machines that carry their mass above the hips: the footfall schedule, the support polygon it leaves, and the hull attitude that is the only way such a machine can move its mass over a foot.",
+    files: ["lib/robocn/walker.ts"],
+    usage: `import { solveWalker, walkerHullPoint } from "@/lib/robocn/walker"
+
+const pose = solveWalker({ legs: 2, gait: "walk", phase: 0.25 })
+pose.roll     // degrees of roll the load demanded — an output, not an input
+pose.centre   // where that attitude actually got the mass, in plan
+pose.margin   // room left inside the support polygon; negative is over the edge
+walkerHullPoint(pose, { x: 0, y: 30, z: 12 }) // a hull-mounted part, in the world`,
+    api: [
+      { name: "solveWalker", type: "(options?: WalkerOptions) => WalkerPose", description: "Runs the footfall schedule, takes the support polygon it leaves, works out the nearest place inside it the mass can stand, and buys that offset with roll and pitch — then solves each knee as a two-link chain in its own vertical plane, from a hip the attitude has moved." },
+      { name: "WalkerOptions", type: "{ legs?, gait?, phase?, height?, step?, lift?, halfWidth?, halfLength?, femur?, tibia?, hull?, rollLimit?, pitchLimit?, inset?, knee?, lean? }", description: "`legs` is 2 or 4; `hull` is how far the centre of mass sits above the hip line, which is what sets the price of every lateral move; `lean` pushes the demand in −1..1 of each attitude stop before it is clamped." },
+      { name: "WalkerPose", type: "{ count, gait, ride, roll, pitch, demand, centre, legs, support, margin, airborne, stable, hull, femur, tibia, rollLimit, pitchLimit }", description: "Plan positions are x starboard, y toward the nose. `demand` is where the load asked the mass to be and `centre` where the attitude got it; `margin` is the signed distance from that to the edge of the support." },
+      { name: "WalkerGait", type: '"stand" | "walk" | "stride" | "creep" | "pace"', description: "Per leg count: a biped has stand, walk and stride (which has a flight phase); a quadruped has stand, walk and creep in lateral sequence, and pace, which swings both legs of a side together. A gait the leg count does not have falls back to stand." },
+      { name: "walkerHullPoint", type: "(pose: WalkerPose, local: Vec3) => Vec3", description: "Where a point bolted to the hull ends up in the world, in the hull's own frame — origin at the hip centre, x starboard, y up, z toward the nose. The solver places the hips with this same transform, which is what keeps a drawing on the machine it was solved for." },
+      { name: "supportMargin", type: "(centre: Vec2, support: readonly Vec2[]) => number", description: "Room inside the convex hull of the contacts: positive inside a polygon, zero at best on a segment, negative outside either." },
+      { name: "walkerGaits", type: "(legs: 2 | 4) => WalkerGait[]", description: "Which gaits a leg count actually has, for building a control that cannot offer a nonsense one." },
+    ],
+    notes: [
+      "The relation the family is built on: the mass is `hull` above the hip line, so a lateral offset costs `asin(offset / hull)` of roll and a fore-aft one the same in pitch, measured on the hull the roll already left. Roll and pitch are outputs. Past the stops the mass cannot reach the polygon at all, and the margin goes negative.",
+      "The inverse of `tripod-kinematics`, which moves the body itself over its feet. A hull bolted to its hips cannot slide, so the same static condition has to be paid for with attitude — which is why a biped heaves over every step and a quadruped on a lateral-sequence walk hardly moves at all.",
+      "Illustrative, not dynamics: the footfall pattern is a chosen schedule, each foot's share is that schedule weighted by how near the mass ended up rather than a ground-reaction solve, and there is no mass, inertia or overturning moment. A negative margin says the machine could not hold that pose standing still. A taller hull needing less roll is a fact about this static geometry and not a claim about a tall machine in motion.",
+      "A flight phase is reported (`airborne`) rather than hidden, and it claims no margin either way, because there is then no support to be inside of.",
+    ],
+  },
+  {
+    slug: "tripod-kinematics", item: "tripod-kinematics", title: "Tripod kinematics", group: "Foundations",
+    summary: "The three-legged balance solver: a load schedule per foot, the body position that schedule demands, and the support polygon it has to stay inside.",
+    files: ["lib/robocn/tripod.ts"],
+    usage: `import { solveTripod, supportMargin } from "@/lib/robocn/tripod"
+
+const pose = solveTripod({ gait: "creep", phase: 0.35 })
+pose.centre   // where the body has to stand to hold that load split
+pose.margin   // room left inside the support polygon; negative is over the edge
+pose.legs     // hip, knee, foot, kneeHeight, clearance, contact, load`,
+    api: [
+      { name: "solveTripod", type: "(options?: TripodOptions) => TripodPose", description: "Schedules the load across three feet, solves the body position that schedule demands, clamps it to what the legs can follow, and solves each knee as a two-link chain in its own vertical plane." },
+      { name: "TripodOptions", type: "{ gait?, phase?, height?, step?, lift?, heading?, turn?, sway?, lean?, femur?, tibia? }", description: "Normalized height, step and lift; heading and turn in degrees; sway in world units, clamped to what the legs can reach; lean in −1..1 of that limit." },
+      { name: "TripodPose", type: "{ gait, height, centre, yaw, legs, support, margin, stable, sway, femur, tibia }", description: "Plan positions are x starboard, y toward the nose. `centre` is the body over its feet, `margin` the signed distance from it to the edge of the support polygon." },
+      { name: "TripodGait", type: '"stand" | "creep" | "amble" | "pivot"', description: "Creep keeps a three-foot overlap to hand the load across; amble takes two feet off at once; pivot runs the creep pattern as a turn on the spot." },
+      { name: "supportMargin", type: "(centre: Vec2, support: readonly Vec2[]) => number", description: "How much room a centre of mass has inside a polygon of contacts: positive inside a triangle, zero at best on a segment, negative outside either." },
+    ],
+    notes: [
+      "The inverse of `bear-kinematics`: that one is given a centre of mass and works out the loads, in one dimension. This one is given the loads and works out the centre of mass, in two — which is the only way a three-legged machine can take a step.",
+      "Sway is derived, not chosen: it is what is left of a leg's reach once a planted foot has been paid for, so femur, tibia and ride height all change whether a gait is statically holdable. An explicit `sway` can only make it smaller.",
+      "Illustrative trajectories, not dynamics: the load ramp is a schedule, there is no ground reaction or inertia, and the feet travel rather than the world.",
+    ],
+  },
+  {
     slug: "linear-actuator", item: "linear-actuator", title: "Linear actuator", group: "Machines",
     summary: "A linear cylinder with a moving piston and rod. Reveal its internals in cutaway view, or use the complete housing in a production-cell illustration.",
     files: ["components/ui/linear-actuator.tsx"],
@@ -2299,12 +2349,12 @@ pose.height // body height in world units`,
       ...loop,
       { name: "interactive", type: "boolean", default: "false", description: "Press and drag across the car to steer it; arrow keys turn the rack 4° at a time, Home centres it, Escape hands it back." },
       { name: "showSensor", type: "boolean", default: "true", description: "The roof sensor drum." },
-      { name: "showGround", type: "boolean", default: "true", description: "The road surface the wheels are standing on." },
+      { name: "showGround", type: "boolean", default: "true", description: "The carriageway the wheels are standing on, its lane markings, and the shadow under the car. The markings stand still in the world, so they say how fast it is going." },
       { name: "active", type: "boolean", description: "Light the lamps. Omit and they light while it is driving." },
       { name: "label", type: "string", description: "Caption underneath the car." },
       ...form.slice(0, 2), ...palette,
     ],
-    notes: ["Solved: the two front wheel angles and the turn radius, from `ackermann()` — the inner wheel always turns harder, because it runs on the smaller circle. The body's heave and pitch are the least-squares line through the axle contacts, which is what a rigid body on springs actually settles to.", "Stated rather than solved: the body leans a fixed fraction of the lateral-acceleration angle, outward, the way a car rolls — there is no roll stiffness and no weight transfer. The road is an illustrative profile, not a measured surface.", "Nothing integrates a path. The steering angle is a pose, not a trajectory, and the car never goes anywhere."],
+    notes: ["Solved: the two front wheel angles and the turn radius, from `ackermann()` — the inner wheel always turns harder, because it runs on the smaller circle. The body's heave and pitch are the least-squares line through the axle contacts, which is what a rigid body on springs actually settles to.", "Stated rather than solved: the body leans outward at a roll gradient of 5.5° per g, the way a car on road springs does, off a lateral acceleration capped at 0.8 g — a car at a real rack angle has slowed for the corner. There is no roll stiffness and no weight transfer, and the road is an illustrative profile rather than a measured surface.", "Nothing integrates a path. The steering angle is a pose, not a trajectory, and the car never goes anywhere."],
   },
   {
     slug: "transit-bus", item: "transit-bus", title: "Transit bus", group: "Robots",
@@ -2321,18 +2371,18 @@ pose.height // body height in world units`,
       view("profile", "bus"),
       { name: "steer", type: "number", description: "Front-axle steering in degrees, positive to starboard, clamped to ±42. Omit it and the behaviour drives it." },
       { name: "onSteerChange", type: "(steer: number) => void", description: "The commanded angle, while a person is steering it." },
-      { name: "doors", type: "number", description: "Doors, 0 shut to 1 open. The bus kneels on the same number, because a bus kneels to open. Omit it and the behaviour works the stop." },
+      { name: "doors", type: "number", description: "Doors, 0 shut to 1 open. The bus kneels — and stops — on the same number, because a bus kneels to open and a bus with its doors open is standing. Omit it and the behaviour works the stop." },
       { name: "behavior", type: '"route" | "service" | "static"', default: '"route"', description: "Running a route, or working a stop: pull in, kneel, open, stand, shut, pull away." },
       { name: "articulated", type: "boolean", default: "true", description: "A rear section on a turntable, or one rigid body. Turning it off removes the hitch and the concertina." },
       { name: "speed", type: "number", default: "0.3", description: "Steering cycles per second." },
       ...loop,
       { name: "interactive", type: "boolean", default: "false", description: "Press and drag across the bus to steer it; arrow keys turn the rack 3° at a time." },
-      { name: "showGround", type: "boolean", default: "true", description: "The kerb it pulls up to." },
+      { name: "showGround", type: "boolean", default: "true", description: "The carriageway, and the kerb it pulls up to." },
       { name: "active", type: "boolean", description: "Light the destination sign. Omit and it lights in service." },
       { name: "label", type: "string", description: "Caption underneath the bus." },
       ...form.slice(0, 2), ...palette,
     ],
-    notes: ["Solved: the articulation angle, from `hitchAngle()`. The pivot rides a circle behind the drive axle and the towed axle cannot slide sideways, which fixes the angle between the sections. It is a steady state with no history, so a bus that has been round a roundabout comes out of it straight rather than unwinding.", "The concertina ribs belong half to each section, so the fold genuinely opens on the outside of the bend. The plug doors stand off the side before their leaves part.", "Illustrated: the kneel is a stated drop and roll on the doors' own number. No tyre model, no load, no swept-path envelope, and nothing integrates a manoeuvre."],
+    notes: ["Solved: the articulation angle, from `hitchAngle()`. The pivot rides a circle behind the drive axle and the towed axle cannot slide sideways, which fixes the angle between the sections. It is a steady state with no history, so a bus that has been round a roundabout comes out of it straight rather than unwinding.", "The concertina ribs belong half to each section, so the fold genuinely opens on the outside of the bend. The plug doors stand off the side before their leaves part, and the wheels stop turning while they are open.", "Illustrated: the kneel is a stated drop and roll on the doors' own number. No tyre model, no load, no swept-path envelope, and nothing integrates a manoeuvre."],
   },
   {
     slug: "cargo-plane", item: "cargo-plane", title: "Cargo plane", group: "Robots",
@@ -3134,6 +3184,42 @@ footRoll(0.9)  // { angle, contact, heelLoad, ballLoad, toeLoad }`,
     ],
   },
   {
+    slug: "folding-handset", item: "folding-handset", title: "Folding handset", group: "Machines",
+    summary: "A book-fold handset and the display that has to survive it. The crease is a real bend radius, the sheet keeps its own length, and the leaves roll on the bend rather than pivoting on a pin.",
+    files: ["components/ui/folding-handset.tsx"],
+    usage: `import { FoldingHandset } from "@/components/ui/folding-handset"
+
+<FoldingHandset screen="split" cover="clock" />
+
+// Controlled, or a machine you can open yourself.
+<FoldingHandset fold={108} radius={4} />
+<FoldingHandset interactive onFoldChange={setFold} />`,
+    props: [
+      view("front", "machine"),
+      { name: "fold", type: "number", description: "Controlled fold in degrees: 0 shut, 180 flat. Omit it and the fold runs behavior." },
+      { name: "behavior", type: '"unfold" | "flex" | "static"', default: '"unfold"', description: "Run a whole session — open it, use it, shut it — or leave it half open and work the angle." },
+      { name: "travel", type: "number", default: "180", description: "How far the hinge opens, degrees, clamped to 90–180. Ask for more and it stops here." },
+      { name: "radius", type: "number", default: "3", description: "The crease's bend radius in world units, clamped to 1.5–40. It sets the gap the shut machine leaves and the display the bend spends." },
+      { name: "speed", type: "number", default: "0.2", description: "Open-and-shut cycles per second." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Drag up inside the frame to open it, or arrow-key it ten degrees at a time." },
+      { name: "onFoldChange", type: "(fold: number) => void", description: "Fold in degrees throughout a drag or a key press." },
+      { name: "screen", type: '"canvas" | "split" | "gallery" | "off"', default: '"canvas"', description: "What the inner display is showing. Structure in palette roles, laid out across both leaves — never an application's own artwork." },
+      { name: "cover", type: '"clock" | "alerts" | "off"', default: '"clock"', description: "What the cover display on the outside of the swinging leaf is showing." },
+      { name: "label", type: "string", description: "Caption below the state readout." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "The display cannot stretch and cannot be creased to a knife edge, so the bend costs `radius × (180 − fold)` of sheet and that length comes off the panels: the display peels away from the inner end of each leaf as the machine shuts. `2 × run + arc` is the sheet's length at every angle, and the peeled strip is the teardrop cavity you can see in the gap.",
+      "The leaves roll on the bend rather than pivoting on a pin — both faces stay tangent to the bend circle, which is what the cams in a water-drop hinge are for, and what leaves the shut leaves `2 × radius` apart with the bend tucked inside instead of pinched flat.",
+      "The panel is rigid whatever the display is doing: hinge to tip is exactly one leaf at every angle. Ask for a bend too big for the leaves and the machine reports `pinched` with the straight run clamped to zero, the way `slate-tablet` reports a stand that cannot reach the desk.",
+      "The solver works in the fold's own symmetric frame; the component turns the whole pose by the swing so one leaf is held still, which is how a hand opens it — and what puts the flat inner display and the shut cover display face-on to the same camera. The one face none of the four cameras can see is the back of the leaf that is held, so nothing is modelled there.",
+      "A display half is drawn only when the camera can see it and is not behind the other leaf: shut, both halves are inside the sandwich. The bend is drawn as the cylinder patch it is, at the two heights of one arc.",
+      "No dynamics — no hinge friction, no detent, no torque, no crease memory, and no material in the sheet beyond its length and its radius. The bend is a circular arc rather than a real teardrop spline, and both displays draw structure only.",
+      "An original archetype. No manufacturer, product line, wordmark or paint scheme is reproduced here or in the demo.",
+    ],
+  },
+  {
     slug: "wrist-terminal", item: "wrist-terminal", title: "Wrist terminal", group: "Machines",
     summary: "A wrist display on two solved mechanisms: a crown geared to the dial, and a constant-pitch link band that keeps its length however far it is opened.",
     files: ["components/ui/wrist-terminal.tsx"],
@@ -3170,17 +3256,19 @@ footRoll(0.9)  // { angle, contact, heelLoad, ballLoad, toeLoad }`,
   },
   {
     slug: "device-geometry", item: "device-geometry", title: "Device geometry", group: "Foundations",
-    summary: "The mechanisms in a machine you carry: a hinge, a kickstand that has to close, rotary detents that wrap, a band that keeps its length, and a screen on a plane at any attitude.",
+    summary: "The mechanisms in a machine you carry: a hinge, a book fold whose display keeps its length, a kickstand that has to close, rotary detents that wrap, a band that keeps its length, and a screen on a plane at any attitude.",
     files: ["lib/robocn/device.ts"],
-    usage: `import { hingePose, standPose, detent, bandLinks, panelTransform } from "@/lib/robocn/device"
+    usage: `import { hingePose, foldPose, standPose, detent, bandLinks, panelTransform } from "@/lib/robocn/device"
 
 const lid = hingePose(105, 84, 78)          // lid keeps its length; facing says what you see
+const book = foldPose(60, 60, 3)            // 2 * run + arc is the sheet, at every angle
 const stand = standPose(0.7, 78, 46, 44)    // foot solved onto the desk, or folded
 const dial = detent(450, 8, 45)             // -> { index: 2, offset, turns }
 const band = bandLinks(7, 6.4, 0.8)         // constant pitch, curvature varies
 const panel = panelTransform(camera, corner, along, down, 104, 78)`,
     api: [
       { name: "hingePose", type: "(angle, base, lid, options?) => HingePose", description: "One revolute joint in side elevation. The lid is `lid` long from the pivot in every pose, `facing` says how much of the screen is toward the front, and `overCentre` says when it has passed vertical." },
+      { name: "foldPose", type: "(angle, leaf, radius, options?) => FoldPose", description: "A book fold: the bend spends `radius × (180 − angle)` of display, the straight run gives it up so the sheet keeps its length, and both leaf faces stay tangent to the bend circle so the leaves roll rather than pivot. Returns `pinched` for a bend too big for the leaves." },
       { name: "standPose", type: "(recline, slate, leg, mount, options?) => StandPose", description: "The kickstand triangle: given the tilt, the drop from the hinge to the desk decides the horizontal run. Returns `folded` when the leg cannot reach, instead of stretching it." },
       { name: "detent", type: "(rotation, steps, degreesPerStep) => DetentPose", description: "A rotary input divided into steps, wrapping in both directions. The click wheel and the digital crown are the same mechanism at different scales." },
       { name: "wheelSegment", type: "(degrees) => \"menu\" | \"next\" | \"play\" | \"previous\" | null", description: "Which quarter of a ring a thumb at this angle is on. Null for a non-finite angle." },
@@ -3190,7 +3278,7 @@ const panel = panelTransform(camera, corner, along, down, 104, 78)`,
       { name: "panelPath", type: "(camera, corner, along, down) => string", description: "The same panel's outline, projected." },
     ],
     notes: [
-      "Pure functions over plain objects. No React, no dependencies, and no dynamics — no friction in the hinge, no detent force on the crown, no material in the band, and no contact between the stand's foot and the desk beyond the requirement that it be there.",
+      "Pure functions over plain objects. No React, no dependencies, and no dynamics — no friction in the hinge, no detent force on the crown, no crease memory in the folding display, no material in the band, and no contact between the stand's foot and the desk beyond the requirement that it be there.",
       "`camera.plane` covers artwork in the horizontal plane and `camera.wall` covers a vertical one. `panelTransform` is for everything in between — a lid, a propped slate, a turned handset — which is where the screens in this family actually live.",
       "Panel axes follow what a reader of the panel sees rather than the world: a screen facing the front camera runs its own left-to-right from +x to −x, because from nose-on the machine's starboard side is on your left.",
     ],
@@ -4677,6 +4765,115 @@ const channels = resolverSignals(37)`,
     ],
   },
   {
+    slug: "scout-walker", item: "scout-walker", title: "Scout walker", group: "Robots",
+    summary: "A two-legged reconnaissance walker whose cab is a mass above its hips: with one foot down the support is that foot, so it rolls the whole machine over the leg that is staying put.",
+    files: ["components/ui/scout-walker.tsx"],
+    usage: `import { ScoutWalker } from "@/components/ui/scout-walker"
+
+<ScoutWalker behavior="patrol" showSupport />
+
+// Or scrub the gait and push the cab off its feet yourself.
+<ScoutWalker gait="walk" stride={0.25} lean={{ x: 1, y: 0 }} view="front" />`,
+    props: [
+      view("front", "walker"),
+      { name: "behavior", type: '"patrol" | "advance" | "watch" | "static"', default: '"patrol"', description: "Patrol walks a line with a real double support; advance is a low, quick stride with a flight phase; watch stands and scans." },
+      { name: "gait", type: '"stand" | "walk" | "stride"', description: "Footfall pattern. Omit and the behaviour picks one." },
+      { name: "stride", type: "number", description: "Controlled gait cycle, 0–1. Supplying it stops the clock." },
+      { name: "speed", type: "number", default: "0.5", description: "Gait cycles per second." },
+      ...loop,
+      { name: "lean", type: "Vec2 | null", default: "null", description: "Controlled attitude push, −1..1 of each stop: x rolls it, y pitches it. It beats the drag, and the gait still runs underneath." },
+      { name: "onLeanChange", type: "(lean: Vec2) => void", description: "The lean a drag or a key moved it to, reported in controlled mode too." },
+      { name: "interactive", type: "boolean", default: "true", description: "Press and drag to push the cab off its feet, or use the arrow keys; Home re-centres. Release eases it back into the gait." },
+      { name: "height", type: "number", description: "Ride height 0–1, clamped to what the legs can still reach once the stride and the attitude stops are paid for." },
+      { name: "step", type: "number", description: "Foot travel, 0–1." },
+      { name: "lift", type: "number", default: "0.55", description: "Swing clearance, 0–1." },
+      { name: "look", type: "Vec2 | null", default: "null", description: "Controlled aim in −1..1: x yaws the cab on its hips, y tips the chin pods." },
+      { name: "track", type: "boolean", default: "true", description: "The cab follows the page pointer while look is null." },
+      { name: "showSupport", type: "boolean", default: "false", description: "Draw the support, a ring at each loaded foot sized by its share, and the mass on the plumb line down to where it falls." },
+      ...droidForm,
+    ],
+    notes: [
+      "The roll is the machine. `solveWalker` takes the support polygon the footfall leaves, works out the nearest place inside it the mass can stand, and buys that offset with attitude: the cab sits `hull` above the hip line, so getting the mass over a foot costs `asin(offset / hull)` of roll. In double support the mass is already between the feet and the cab stands level; in single support it heaves over.",
+      "Front elevation is the view it is drawn in, because a roll is a thing a front elevation shows. Every part of the cab goes through the same hull transform the solver put the hips on, so the dropped hip on the loaded side is geometry rather than a drawn pose.",
+      "`advance` runs a duty under a half, which means a flight phase: both feet leave the floor, and the machine reports itself airborne with no margin claimed either way rather than pretending it is balanced.",
+      "Illustrative where it says so: the footfall is a schedule, the load share is that schedule weighted by how near the mass is, and there is no inertia or overturning moment. Off balance means it could not hold that pose standing still.",
+      "An original archetype — a two-legged scout walker — named for its job. No franchise, insignia or paint scheme, here or in the demo; the default palette is the theme's.",
+    ],
+  },
+  {
+    slug: "siege-walker", item: "siege-walker", title: "Siege walker", group: "Robots",
+    summary: "A four-legged armoured transport walker on the same solver: four feet at the corners of a long rectangle already contain its mass, so it walks nearly level — and cannot pace at all.",
+    files: ["components/ui/siege-walker.tsx"],
+    usage: `import { SiegeWalker } from "@/components/ui/siege-walker"
+
+<SiegeWalker behavior="march" showSupport />
+
+// The gait it cannot hold: both legs of a side swing together.
+<SiegeWalker gait="pace" stride={0.25} view="front" showSupport />`,
+    props: [
+      view("profile", "walker"),
+      { name: "behavior", type: '"march" | "haul" | "pace" | "halt" | "static"', default: '"march"', description: "March is a lateral-sequence walk; haul is slow and low with three feet always down; pace swings both legs of a side together, which this hull cannot hold; halt stands and scans." },
+      { name: "gait", type: '"stand" | "walk" | "creep" | "pace"', description: "Footfall pattern. Omit and the behaviour picks one." },
+      { name: "stride", type: "number", description: "Controlled gait cycle, 0–1. Supplying it stops the clock." },
+      { name: "speed", type: "number", default: "0.32", description: "Gait cycles per second." },
+      ...loop,
+      { name: "lean", type: "Vec2 | null", default: "null", description: "Controlled attitude push, −1..1 of each stop: x rolls it, y pitches it. It beats the drag, and the gait still runs underneath." },
+      { name: "onLeanChange", type: "(lean: Vec2) => void", description: "The lean a drag or a key moved it to, reported in controlled mode too." },
+      { name: "interactive", type: "boolean", default: "true", description: "Press and drag to push the hull off its feet, or use the arrow keys; Home re-centres. Release eases it back into the gait." },
+      { name: "height", type: "number", description: "Ride height 0–1, clamped to what the legs can still reach once the stride and the attitude stops are paid for." },
+      { name: "step", type: "number", description: "Foot travel, 0–1." },
+      { name: "lift", type: "number", default: "0.5", description: "Swing clearance, 0–1." },
+      { name: "look", type: "Vec2 | null", default: "null", description: "Controlled aim in −1..1: x yaws the head on the neck, y raises and lowers it." },
+      { name: "track", type: "boolean", default: "true", description: "The head follows the page pointer while look is null." },
+      { name: "showSupport", type: "boolean", default: "false", description: "Draw the support polygon, a ring at each loaded foot sized by its share, and the mass on the plumb line down to where it falls." },
+      ...droidForm,
+    ],
+    notes: [
+      "The same solver as the scout walker, and the contrast is the point: four feet at the corners of a long rectangle almost always contain the mass already, so the demanded attitude is small and this machine walks nearly level. Its walk is a lateral sequence — hind, then the fore on that side, then the other — which never leaves fewer than three feet down.",
+      "`pace` throws that away. Swinging both legs of a side together leaves a support that is a line down one flank, half a hull width out, and a hull this shape cannot roll far enough to put its mass on it: the roll clamps at the stop, the margin goes negative and the lamp turns. Nothing scripts that; it falls out of the footfall order.",
+      "Side elevation is the view it is drawn in, because a long hull is a side elevation. The head is carried on a drooping segmented neck and yaws with the aim; the hull, the flank plating and the hips all ride the one transform the solver used.",
+      "Illustrative where it says so: the footfall is a schedule, the load share is that schedule weighted by how near the mass is, and there is no inertia, payload or overturning moment. Off balance means it could not hold that pose standing still.",
+      "An original archetype — a four-legged siege transport — named for its job. No franchise, insignia or paint scheme, here or in the demo; the default palette is the theme's.",
+    ],
+  },
+  {
+    slug: "tripod-droid", item: "tripod-droid", title: "Tripod droid", group: "Robots",
+    summary: "A stubby three-legged survey walker that has to move its own mass onto the line between two feet before it can lift the third — and reports how much room it has left.",
+    files: ["components/ui/tripod-droid.tsx"],
+    usage: `import { TripodDroid } from "@/components/ui/tripod-droid"
+
+<TripodDroid behavior="trundle" showSupport />
+
+// Or scrub the gait and push the body over its feet yourself.
+<TripodDroid gait="creep" stride={0.35} lean={{ x: 0.6, y: 0 }} view="iso" />`,
+    props: [
+      view("front", "walker"),
+      { name: "behavior", type: '"trundle" | "scurry" | "survey" | "settle" | "static"', default: '"trundle"', description: "Trundle creeps about, wandering off course and back; scurry ambles flat out on a gait it cannot hold; survey turns on the spot; settle stands and breathes." },
+      { name: "gait", type: '"stand" | "creep" | "amble" | "pivot"', description: "Footfall pattern. Omit and the behaviour picks one." },
+      { name: "stride", type: "number", description: "Controlled gait cycle, 0–1. Supplying it stops the clock." },
+      { name: "speed", type: "number", default: "0.45", description: "Gait cycles per second." },
+      ...loop,
+      { name: "lean", type: "Vec2 | null", default: "null", description: "Controlled body offset over the feet, −1..1 on each axis. It beats the drag, and the gait still runs underneath." },
+      { name: "onLeanChange", type: "(lean: Vec2) => void", description: "The lean a drag or a key moved it to, reported in controlled mode too." },
+      { name: "interactive", type: "boolean", default: "true", description: "Press and drag to push the body over its feet, or use the arrow keys; Home re-centres and End pushes it forward to the stop. Release eases it back into the gait." },
+      { name: "height", type: "number", description: "Ride height 0–1. It is also a stability control: standing tall leaves less leg to move the body with, so there is less sway to walk on." },
+      { name: "step", type: "number", description: "Foot travel, 0–1." },
+      { name: "lift", type: "number", default: "0.5", description: "Swing clearance, 0–1." },
+      { name: "heading", type: "number", description: "Travel direction in degrees: 0 walks toward the nose, 90 to starboard." },
+      { name: "look", type: "Vec2 | null", default: "null", description: "Controlled optic aim in −1..1; overrides pointer tracking." },
+      { name: "track", type: "boolean", default: "true", description: "The slot optics follow the page pointer while look is null." },
+      { name: "showSupport", type: "boolean", default: "false", description: "Draw the support polygon, a ring at each loaded foot sized by its share, and the centre of mass." },
+      ...droidForm,
+    ],
+    notes: [
+      "Three legs is the mechanism. Lift one and the base of support collapses from a triangle to a line, so the body has to be over that line before the foot leaves the floor. `solveTripod` schedules the load, the static condition puts the centre of mass at the load-weighted mean of the contacts, and that mean is where the body stands.",
+      "How far it may move is not a magic number: it is whatever reach is left in a leg once a planted foot has been paid for. Creep fits inside it; amble asks the body to stand over a single foot, which it cannot reach, so the clamp bites and the margin goes negative. Longer links or a lower ride height buy the room back.",
+      "Front elevation is the view it is drawn in. The slab is three stacked solids so the chamfer is geometry rather than paint, and the face marks are flat rectangles on the nose panel — they foreshorten in iso and collapse to a line in plan, which is what marks on a face do.",
+      "Illustrative where it says so: the load ramp is a chosen schedule and not a ground-reaction solve, there is no mass or inertia anywhere, and the stub arms are counterweights in appearance only — they carry nothing in the solve. A negative margin means it could not hold that pose standing still, not that it has been simulated falling over.",
+      "An original archetype — a three-legged survey walker — named for its job. No franchise, no insignia, no paint scheme; the default palette is the theme's and the label is the caller's.",
+    ],
+  },
+  {
     slug: "robot-grand-piano", item: "robot-grand-piano", title: "Robot grand piano", group: "Machines",
     summary: "A player grand whose roll drives 88 solved actions. The jack lets each hammer go before it reaches the string, because you cannot hold a hammer against one.",
     files: ["components/ui/robot-grand-piano.tsx"],
@@ -4840,6 +5037,71 @@ const frame = trackerFrame(aimFrom({ x: 0.3, y: 0.8, z: -0.5 }))`,
       "Solved: the lattice and its spacing, the dish surface and its normals, the aim and its frame, the stem — every link exactly the same length at every lean — the collar remainder, the leaf panels' corners, the ray length at every pitch, the projection, and the facing cull on florets, rays and leaves.",
       "Illustrated: the hub speckle, the anchor feet, and the incidence ray the blueprint variant draws. There is no photometry, no ephemeris and no plant model: `daylight` is a shaped number, not a solar position for a date and a latitude, and the disc collects nothing.",
       "A generic field machine and a generic flower. No cultivar, grower or product artwork anywhere.",
+    ],
+  },
+  {
+    slug: "cactus-geometry", item: "cactus-geometry", title: "Cactus geometry", group: "Foundations",
+    summary: "Continuum limbs solved from their own curvature — exactly as long bent as straight — with ribbed sections, crest lines, a staggered areole lattice, taper-true skin normals, and rigid spine fans and petals.",
+    files: ["lib/robocn/cactus.ts"],
+    usage: `import { solveCactusLimb, areoleSites, spineFan } from "@/lib/robocn/cactus"
+
+// emergence 88 and sweep 88: leaves the trunk flat, ends up vertical.
+const arm = solveCactusLimb({ length: 54, emergence: 88, sweep: 88, elbow: 0.34 })
+areoleSites(arm, { ribs: 10, depth: 0.2, perRib: 4 }).map((pad) => spineFan(pad))`,
+    api: [
+      { name: "solveCactusLimb(options)", type: "CactusLimb", description: "A centreline solved from its curvature: `θ(s) = emergence − sweep · W(s)`, walked off at each link's midpoint. Every link exactly the same length at every bend, and `sweep === emergence` ends the limb vertical whatever the elbow." },
+      { name: "stationAt(limb, s)", type: "CactusStation", description: "The station anywhere along it, with the frame rebuilt from the interpolated angle rather than lerped, so it stays orthonormal wherever it is sampled." },
+      { name: "ribFactor(angle, ribs, depth)", type: "number", description: "How much of its radius the skin keeps at a roll angle. Crests are exactly 1, at every 360/ribs." },
+      { name: "limbPoint / limbRing / ribCrest", type: "Vec3 | Vec3[]", description: "A point on the skin, the closed section, and one crest run the length of the limb — a line on the solved surface rather than a stripe drawn on a silhouette." },
+      { name: "areoleSites(limb, options)", type: "CactusAreole[]", description: "Pads on the crests, evenly spaced in station and staggered half a step on alternate ribs, each carrying the skin's own normal." },
+      { name: "skinNormal(limb, s, angle)", type: "Vec3", description: "That normal: the radial direction with the taper leant into, which is what makes a pad near a tapering crown point up and out rather than sideways." },
+      { name: "spineFan(areole, options)", type: "CactusSpine[]", description: "Needles on a cone about the normal. Every needle exactly its length at every splay, and the basis is taken from the world rather than seeded, so a fan is deterministic." },
+      { name: "corollaPetals(count, station, options)", type: "CactusPetal[]", description: "Rigid blades hinged on a ring in a station's own plane. Shutting the flower into a bud shortens the silhouette, not the petal." },
+      { name: "rollToward(station, azimuth)", type: "number", description: "The roll angle on a limb that faces a world azimuth — how an arm finds its seat on a column." },
+      { name: "cactusBearing(azimuth)", type: "Vec3", description: "The outward horizontal direction of an azimuth. 0 faces the front camera, matching `phyllotaxis.ts`." },
+    ],
+    notes: [
+      "Pure functions over plain `{x, y, z}` in the set's world axes. No React, no camera, no dependencies.",
+      "The angle is integrated and the joints are walked, never displaced — which is the only reason the length is exact rather than nearly exact. A limb bends in one vertical plane, so its binormal is constant along it and the frame is already parallel-transported.",
+      "No botany. Nothing grows, nothing transpires, and there is no plant model here — these are trajectories and surfaces. Design note: `docs/ribbed-column.md`.",
+    ],
+  },
+  {
+    slug: "robot-cactus", item: "robot-cactus", title: "Robot cactus", group: "Robots",
+    summary: "A potted columnar collector: the ribbed column and both arms are one continuum solver at different settings, the areoles and spine fans sit on the solved crests, and a rigid corolla opens at the crown.",
+    files: ["components/ui/robot-cactus.tsx"],
+    usage: `import { RobotCactus } from "@/components/ui/robot-cactus"
+
+<RobotCactus behavior="flower" ribs={15} arms={2} />
+<RobotCactus bloom={0.7} interactive onBloomChange={setBloom} />`,
+    props: [
+      view("front", "machine"),
+      { name: "bloom", type: "number", description: "Controlled flowering, 0 shut and low to 1 wide and lifted. Supplying it stops the loop." },
+      { name: "behavior", type: '"breathe" | "flower" | "reach" | "static"', default: '"breathe"', description: "Breathe leaves it shut and idling, so the wander is the motion; flower runs the whole flowering and shuts again; reach works the arms with the corolla never more than ajar." },
+      { name: "speed", type: "number", default: "0.12", description: "One whole flowering per second at 1. It also scales the idle wander." },
+      ...loop,
+      { name: "interactive", type: "boolean", default: "false", description: "Drag up and down to work the flowering; arrows step 5 percent, shift 15, Home shut and End wide." },
+      { name: "onBloomChange", type: "(bloom: number) => void", description: "Fires on every drag and key press, in controlled mode too." },
+      { name: "track", type: "boolean", default: "true", description: "Lean toward the pointer while it is over the drawing. Suppressed while a drag is in progress." },
+      { name: "look", type: "Vec2 | null", default: "null", description: "Controlled attention in −1..1; overrides pointer tracking." },
+      { name: "ribs", type: "number", default: "13", description: "Rib crests round the column, clamped to 5..28. The areoles are placed on them." },
+      { name: "ribDepth", type: "number", default: "0.2", description: "How deep the furrows cut, as a fraction of the radius; 0 leaves the column round." },
+      { name: "areoles", type: "number", default: "4", description: "Areoles on each crest, clamped to 0..12. The column takes two more than the arms." },
+      { name: "spines", type: "number", default: "6", description: "Needles in each areole\u2019s fan, clamped to 0..10. Above three it also grows one straight out of the pad." },
+      { name: "arms", type: "number", default: "2", description: "Arms grown off the column, clamped to 0..4. Each leaves at its own station and bearing." },
+      { name: "petals", type: "number", default: "16", description: "Petals in the outer rank of the corolla, clamped to 0..36. The inner rank takes about six in ten of them." },
+      { name: "sway", type: "number", default: "1", description: "How much of the idle wander it runs, 0 rigid to 1 full." },
+      { name: "showPot", type: "boolean", default: "true", description: "The pot, its lip and the soil." },
+      ...droidForm,
+    ],
+    notes: [
+      "The column and both arms are the same solver. A column is `emergence 0` with a wide spread, so it leans progressively; an arm is `emergence 88°` with a narrow one, so it leaves the trunk flat, turns hard at one place and runs up parallel to it. `sweep === emergence` ends a limb vertical whatever the elbow, which is the whole of lift and curl in one number.",
+      "The ribs are a modulation of the section radius, so a crest is a line on the solved surface rather than a stripe drawn on a silhouette — and the areoles sit on those crests with the skin\u2019s own normal, taper included, which is what leans the crown\u2019s spines up and out.",
+      "The lean is not a pose: the pointer and the idle wander add into one bearing and one magnitude handed to the column, and the arms and the flower are carried by that bend rather than aimed separately. The rib pattern is anchored to the world, or it would spin every time the machine changed its mind.",
+      "Solved: the centreline and its exact length at every bend, the frame at every station, the ribbed sections, the crests, the areole lattice and its stagger, the skin normals, the spine fans, the petal length at every pitch, the arms\u2019 seats on the column, the silhouette, the projection and the facing culls.",
+      "The corolla opens into a funnel rather than a disc. The front camera sits ten degrees above horizontal, so rigid blades opened flat would project to a line and the machine’s own native view would lose the one event it has; stopping at 32 degrees keeps a bowl with real height, and the silhouette flips from a tall narrow bud to a wide shallow cup.",
+      "Illustrated: the pot, the soil, the stamen speckle, the status lamp and the lean line the blueprint variant draws. There is no botany — nothing grows and `bloom` is a shaped number, not a phenology.",
+      "A generic potted machine and a generic flower. No species, grower or product artwork anywhere.",
     ],
   },
   {
@@ -5296,24 +5558,33 @@ const block = tacklePosition(3, { lines: 8, drumRadius: 11, topHeight: 204, floo
   {
     slug: "tanker-truck", item: "tanker-truck", title: "Tanker truck", group: "Machines",
     summary:
-      "Two rigid bodies on one kingpin. The hitch is a real yaw in world space, so the barrel foreshortens in side elevation as it turns and swings properly in plan.",
+      "A tractor unit and a road tanker on one kingpin. Steer the front axle and the trailer's yaw is solved, not chosen — so it off-tracks inside the tractor's line, and the barrel foreshortens in side elevation as it turns.",
     files: ["components/ui/tanker-truck.tsx"],
     usage: `import { TankerTruck } from "@/components/ui/tanker-truck"
 
 <TankerTruck behavior="haul" compartments={5} />
+
+// Manoeuvre is the behaviour that gives the hitch something to solve.
+<TankerTruck behavior="manoeuvre" view="plan" />
+
+// A pinned hitch overrides the solution.
 <TankerTruck level={0.4} hitch={30} view="plan" />`,
     props: [
       { name: "level", type: "number", description: "Controlled cargo, 0 empty to 1 full. Supplying it stops the loop." },
-      { name: "behavior", type: `"haul" | "discharge" | "static"`, default: `"haul"`, description: "Rolling with a full barrel, or a delivery round emptying a compartment at a time." },
+      { name: "behavior", type: `"haul" | "discharge" | "manoeuvre" | "static"`, default: `"haul"`, description: "Rolling with a full barrel, a delivery round emptying a compartment at a time, or a yard manoeuvre that works the articulation." },
       { name: "compartments", type: "number", default: "4", description: "Bulkheaded compartments, which discharge from the rear. Clamped to 2–6." },
-      { name: "hitch", type: "number", default: "0", description: "Trailer yaw about the kingpin in degrees, clamped to ±60." },
+      { name: "steer", type: "number", description: "Front-axle steering in degrees, positive to starboard, clamped to ±26 — past that the kingpin’s circle closes inside the trailer’s wheelbase and there is no steady articulation to solve for. Omit it and the behaviour drives the rack." },
+      { name: "hitch", type: "number", description: "Trailer yaw about the kingpin in degrees, clamped to ±60. Omit it and it is solved from the steer; supply it and the solution is overridden." },
       { name: "showCabinet", type: "boolean", default: "true", description: "The discharge cabinet, the hose reel, and a gauge per compartment." },
+      { name: "showGround", type: "boolean", default: "true", description: "The carriageway and its lane markings, which run with the road speed." },
       { name: "interactive / onLevelChange", type: "boolean / (level: number) => void", description: "Drag or arrow-key the load in and out." },
       view("profile", "road tanker"), ...loop, ...form.slice(0, 2), ...palette,
     ],
     notes: [
+      "Solved: the two steer-wheel angles from `ackermann()`, and the articulation angle from `hitchAngle()` — the kingpin rides a circle of its own and the bogie cannot slide sideways, which fixes the angle between the units. It is a steady state with no history, so a truck that has been round a corner comes out of it straight.",
+      "The yaw is a real rotation about the kingpin's vertical axis in world space, not a rotation of the drawing, so the bogie goes round with the barrel instead of staying behind.",
       "The barrel is opaque, so each compartment's contents are read off the cabinet gauges and its dome collar rather than drawn through the shell.",
-      "No suspension, mass, load transfer, steering geometry or fluid is computed.",
+      "No suspension, mass, load transfer or fluid is computed, and nothing accumulates where it has driven.",
     ],
   },
   {

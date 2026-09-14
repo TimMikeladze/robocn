@@ -11,7 +11,7 @@ import {
   starfighterBank,
   starfighterFoils,
 } from "@/components/ui/strike-starfighter"
-import { TransitBus, busDoors, busSteer } from "@/components/ui/transit-bus"
+import { TransitBus, busDoors, busRoadSpeed, busSteer } from "@/components/ui/transit-bus"
 
 /**
  * The vehicle family: docs/vehicle-robots.md.
@@ -68,6 +68,24 @@ describe("robot car", () => {
 
     rerender(<RobotCar steer={0} roughness={1} animate={false} phase={0.3} />)
     expect(Number(attribute(container, "[data-body]", "data-pitch"))).not.toBe(0)
+  })
+
+  it("rolls the wheels and the lane markings at the road speed, and parks them", () => {
+    expect(carRoadSpeed("cruise")).toBeGreaterThan(carRoadSpeed("park"))
+    expect(carRoadSpeed("static")).toBe(0)
+
+    const drawing = (behavior: "cruise" | "static", phase: number) => {
+      const { container } = render(
+        <RobotCar behavior={behavior} roughness={0} phase={phase} animate={false} />,
+      )
+      const wheel = container.querySelector('[data-wheel="rear-left"]')!.innerHTML
+      const dash = container.querySelector("[data-lane-dash]")!.getAttribute("d")
+      cleanup()
+      return `${wheel}|${dash}`
+    }
+    expect(drawing("cruise", 0.1)).not.toBe(drawing("cruise", 0.6))
+    // A road that is not moving leaves both of them exactly where they were.
+    expect(drawing("static", 0.1)).toBe(drawing("static", 0.6))
   })
 
   it("names itself and its camera, and projects a different drawing per view", () => {
@@ -132,6 +150,26 @@ describe("transit bus", () => {
     expect(Number(attribute(container, "[data-kneel]", "data-kneel"))).toBeGreaterThan(0)
     expect(attribute(container, '[data-leaf="front-fore"]')).not.toBe(shut)
     expect(attribute(container, '[data-door="front"]', "data-open")).toBe("1")
+  })
+
+  it("stops the wheels while it is standing with its doors open", () => {
+    // The road speed is the same either way; the doors are what takes it away,
+    // so a bus at a stop is stopped rather than rolling on the spot.
+    expect(busRoadSpeed("route")).toBeGreaterThan(busRoadSpeed("service"))
+    expect(busRoadSpeed("static")).toBe(0)
+
+    // Shut, the wheel has turned between two points on the clock; open, it is
+    // the same drawing at both, because the doors take the road speed away.
+    const spoke = (doors: number, phase: number) => {
+      const { container } = render(
+        <TransitBus behavior="service" doors={doors} phase={phase} animate={false} />,
+      )
+      const drawing = container.querySelector('[data-wheel="drive-left"]')!.innerHTML
+      cleanup()
+      return drawing
+    }
+    expect(spoke(0, 0.2)).not.toBe(spoke(0, 0.8))
+    expect(spoke(1, 0.2)).toBe(spoke(1, 0.8))
   })
 
   it("names itself, its doors and its camera", () => {

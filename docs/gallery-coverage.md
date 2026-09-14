@@ -42,7 +42,7 @@ any item with no authored entry gets one built from its registry `title`,
 all read, so one join covers every list at once.
 
 **Cards and demos.** `scripts/build-gallery.mjs` runs inside `pnpm generate` —
-the step that already builds the builder runtime, and which `dev`, `build`,
+the step that already builds the workbench manifest, and which `dev`, `build`,
 `test` and `typecheck` all run first — and emits
 `src/components/site/gallery.generated.tsx`, mapping every registry item to the
 component that draws it:
@@ -55,7 +55,7 @@ component that draws it:
 | `registry:lib`, `registry:hook` | the machine that exercises it, in `blueprint` |
 
 The generated file is gitignored and rebuilt by `pnpm generate`, like
-`src/lib/builder/generated.json`. The PascalCase of the item name is the export
+`src/lib/workbench/generated.json`. The PascalCase of the item name is the export
 name — `robot-cat` → `RobotCat` — and the generator **throws** if a component
 does not export it, so a renamed export is a build failure rather than a missing
 card.

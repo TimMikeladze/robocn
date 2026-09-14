@@ -27,11 +27,11 @@ export interface OgPage {
  */
 const sitePages: OgPage[] = [
   {
-    slug: "builder",
+    slug: "workbench",
     eyebrow: "Tool",
-    title: "Robot Builder",
+    title: "Robot Workbench",
     summary:
-      "Design robotic React components with an AI agent. Edit the code, preview your robot live, and export it for your own project.",
+      "A Storybook for robots. Every component, every prop on a knob, and a matrix across two props at once — running from the repository's own source.",
     item: null,
   },
 ]

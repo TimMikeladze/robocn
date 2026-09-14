@@ -2,6 +2,7 @@ import { fireEvent, render } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 
 import { ClamshellLaptop, laptopGoal } from "@/components/ui/clamshell-laptop"
+import { FoldingHandset, foldGoal } from "@/components/ui/folding-handset"
 import { SlateTablet, tabletGoal } from "@/components/ui/slate-tablet"
 import { SlabHandset, handsetGoal } from "@/components/ui/slab-handset"
 import { WheelPlayer, playerGoal } from "@/components/ui/wheel-player"
@@ -369,5 +370,104 @@ describe("wrist terminal", () => {
     expect(terminalGoal("dial", 1)).toBe(360)
     expect(terminalGoal("pulse", 0.25)).toBeCloseTo(90, 6)
     expect(terminalGoal("pulse", 0.75)).toBeCloseTo(-90, 6)
+  })
+})
+
+describe("folding handset", () => {
+  it("folds the leaves and takes the bend out of the display's own length", () => {
+    const { container, rerender } = render(<FoldingHandset fold={180} view="front" />)
+    const flat = container.querySelector("[data-body]")!
+    const heading = container.querySelector('[data-leaf="starboard"]')!.getAttribute("data-heading")
+    expect(flat.getAttribute("data-fold")).toBe("180")
+    // Flat, there is no bend to spend display on.
+    expect(container.querySelector("[data-bend]")!.getAttribute("data-arc")).toBe("0")
+    const run = Number(flat.getAttribute("data-run"))
+
+    rerender(<FoldingHandset fold={60} view="front" />)
+
+    const folded = container.querySelector("[data-body]")!
+    expect(folded.getAttribute("data-fold")).toBe("60")
+    expect(container.querySelector('[data-leaf="starboard"]')!.getAttribute("data-heading")).not.toBe(heading)
+    expect(Number(container.querySelector("[data-bend]")!.getAttribute("data-arc"))).toBeGreaterThan(0)
+    // The sheet cannot stretch, so the straight run has to give.
+    expect(Number(folded.getAttribute("data-run"))).toBeLessThan(run)
+  })
+
+  it("holds one leaf still, the way a hand opens it", () => {
+    const { container, rerender } = render(<FoldingHandset fold={180} view="front" />)
+    const port = container.querySelector('[data-leaf="port"]')!.getAttribute("data-heading")
+    rerender(<FoldingHandset fold={40} view="front" />)
+    expect(container.querySelector('[data-leaf="port"]')!.getAttribute("data-heading")).toBe(port)
+  })
+
+  it("shows the inner display open and the cover display shut", () => {
+    const { container, rerender } = render(<FoldingHandset fold={180} screen="canvas" view="front" />)
+    expect(container.querySelectorAll("[data-screen]")).toHaveLength(2)
+    expect(container.querySelector("[data-cover]")).toBeNull()
+
+    rerender(<FoldingHandset fold={0} screen="canvas" cover="clock" view="front" />)
+
+    // Shut, the leaves are face to face: the inner display is inside.
+    expect(container.querySelectorAll("[data-screen]")).toHaveLength(0)
+    expect(container.querySelector("[data-cover]")).not.toBeNull()
+  })
+
+  it("keeps the fixed leaf's half readable while the other is edge on", () => {
+    const { container } = render(<FoldingHandset fold={90} screen="canvas" view="front" />)
+    const halves = [...container.querySelectorAll("[data-screen]")].map((node) =>
+      node.getAttribute("data-half"),
+    )
+    expect(halves).toEqual(["1"])
+  })
+
+  it("stops at the travel the hinge has and says so", () => {
+    const { container, getByRole } = render(<FoldingHandset fold={180} travel={120} />)
+    expect(container.querySelector("[data-body]")!.getAttribute("data-fold")).toBe("120")
+    expect(getByRole("img").getAttribute("aria-label")).toContain("120 degrees")
+  })
+
+  it("reports a bend too big for the leaves instead of stretching the sheet", () => {
+    const { container, getByRole } = render(<FoldingHandset fold={0} radius={40} />)
+    expect(container.querySelector("[data-body]")!.getAttribute("data-pinched")).toBe("true")
+    expect(getByRole("img").getAttribute("aria-label")).toContain("pinched")
+  })
+
+  it("projects a different drawing from a different camera and names it", () => {
+    const { container, getByRole, rerender } = render(<FoldingHandset fold={110} view="front" />)
+    const front = shape(container, '[data-leaf="starboard"] path')
+    rerender(<FoldingHandset fold={110} view="iso" />)
+    expect(shape(container, '[data-leaf="starboard"] path')).not.toBe(front)
+    expect(getByRole("img").getAttribute("aria-label")).toContain("isometric view")
+  })
+
+  it("is a slider you can open by hand when it is interactive", () => {
+    const onFoldChange = vi.fn()
+    const { getByRole } = render(
+      <FoldingHandset interactive fold={90} onFoldChange={onFoldChange} />,
+    )
+    const slider = getByRole("slider")
+    expect(slider.getAttribute("aria-valuenow")).toBe("90")
+    expect(slider.getAttribute("aria-valuemax")).toBe("180")
+    fireEvent.keyDown(slider, { key: "ArrowRight" })
+    expect(onFoldChange).toHaveBeenCalledWith(100)
+  })
+
+  it("stays neutral on nonsense and takes a colour override", () => {
+    const { container } = render(
+      <FoldingHandset fold={Number.NaN} travel={Number.NaN} radius={Number.NaN} color="#aabbcc" />,
+    )
+    expect(container.innerHTML).not.toMatch(/NaN|Infinity/)
+    expect(container.innerHTML).toContain("#aabbcc")
+  })
+
+  it("runs the fold from the clock and parks shut when static", () => {
+    expect(foldGoal("static", 0.4)).toBe(0)
+    expect(foldGoal("unfold", Number.NaN)).toBe(0)
+    expect(foldGoal("unfold", 0.4)).toBeCloseTo(foldGoal("unfold", 1.4), 6)
+    expect(foldGoal("unfold", 0.05)).toBeGreaterThan(0)
+    expect(foldGoal("unfold", 0.4)).toBe(180)
+    expect(foldGoal("unfold", 0.99)).toBeLessThan(10)
+    expect(foldGoal("flex", 0)).toBeGreaterThan(60)
+    expect(foldGoal("flex", 0)).toBeLessThan(180)
   })
 })

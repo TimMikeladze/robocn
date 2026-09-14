@@ -45,7 +45,11 @@ const droidCollection = [
   "sentinel-console",
   "monolith-droid",
   "busker-droid",
+  "tripod-droid",
 ] as const
+
+/** The two armoured walkers, both on the one attitude solver. */
+const walkerCollection = ["scout-walker", "siege-walker"] as const
 
 /** The equine pair and the footfall solver under them. */
 const equineCollection = [
@@ -145,6 +149,7 @@ const deviceCollection = [
   "slate-tablet",
   "wheel-player",
   "slab-handset",
+  "folding-handset",
   "wrist-terminal",
 ] as const
 
@@ -222,11 +227,27 @@ describe("registry.json", () => {
     expect(item?.files[0]?.path).toBe("src/components/ui/robot-sunflower.tsx")
   })
 
+  it("publishes robot-cactus on the cactus solver", () => {
+    const item = registry.items.find((candidate) => candidate.name === "robot-cactus")
+    expect(item?.type).toBe("registry:ui")
+    expect(item?.files).toHaveLength(1)
+    expect(item?.files[0]?.path).toBe("src/components/ui/robot-cactus.tsx")
+    expect(item?.registryDependencies).toContain("{REGISTRY_URL}/r/cactus-geometry.json")
+  })
+
   it.each(droidCollection)("publishes %s as one UI source file", (name) => {
     const item = registry.items.find((candidate) => candidate.name === name)
     expect(item?.type).toBe("registry:ui")
     expect(item?.files).toHaveLength(1)
     expect(item?.files[0]?.path).toBe(`src/components/ui/${name}.tsx`)
+  })
+
+  it.each(walkerCollection)("publishes %s on the walker solver", (name) => {
+    const item = registry.items.find((candidate) => candidate.name === name)
+    expect(item?.type).toBe("registry:ui")
+    expect(item?.files).toHaveLength(1)
+    expect(item?.files[0]?.path).toBe(`src/components/ui/${name}.tsx`)
+    expect(item?.registryDependencies).toContain("{REGISTRY_URL}/r/walker-kinematics.json")
   })
 
   it.each(equineCollection)("publishes %s as one UI source file", (name) => {

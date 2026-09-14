@@ -1,9 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   reactCompiler: true,
-  serverExternalPackages: ["esbuild"],
+  /** `/builder` was the agent workspace the workbench replaced. */
+  redirects: async () => [
+    { source: "/builder", destination: "/workbench", permanent: true },
+  ],
 };
 
 export default nextConfig;

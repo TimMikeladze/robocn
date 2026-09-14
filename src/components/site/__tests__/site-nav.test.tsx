@@ -8,7 +8,7 @@ describe("header nav", () => {
     expect(activeHref("/docs/installation")).toBe("/docs/installation")
     expect(activeHref("/docs")).toBe("/docs")
     expect(activeHref("/docs/robot-arm")).toBe("/docs")
-    expect(activeHref("/builder")).toBe("/builder")
+    expect(activeHref("/workbench")).toBe("/workbench")
   })
 
   it("lights nothing off the nav's own routes", () => {

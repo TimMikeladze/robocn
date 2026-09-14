@@ -45,6 +45,9 @@ import { RobotHorse } from "@/components/ui/robot-horse"
 import { RobotHound } from "@/components/ui/robot-hound"
 import { RobotPegasus } from "@/components/ui/robot-pegasus"
 import { MonolithDroid } from "@/components/ui/monolith-droid"
+import { TripodDroid } from "@/components/ui/tripod-droid"
+import { ScoutWalker } from "@/components/ui/scout-walker"
+import { SiegeWalker } from "@/components/ui/siege-walker"
 import { PylonDroid } from "@/components/ui/pylon-droid"
 import { SentinelConsole } from "@/components/ui/sentinel-console"
 import { InfantryDroid } from "@/components/ui/infantry-droid"
@@ -130,6 +133,7 @@ import { MusicBoxDrum } from "@/components/ui/music-box-drum"
 import { RobotGrandPiano } from "@/components/ui/robot-grand-piano"
 import { BuskerDroid } from "@/components/ui/busker-droid"
 import { SlabHandset } from "@/components/ui/slab-handset"
+import { FoldingHandset } from "@/components/ui/folding-handset"
 import { WristTerminal } from "@/components/ui/wrist-terminal"
 import { KeySwitch } from "@/components/ui/key-switch"
 import { RobotKeypad } from "@/components/ui/robot-keypad"
@@ -161,6 +165,7 @@ import { RobotSkeleton } from "@/components/ui/robot-skeleton"
 import { SuctionGripper } from "@/components/ui/suction-gripper"
 import { ToolChanger } from "@/components/ui/tool-changer"
 import { RobotSunflower } from "@/components/ui/robot-sunflower"
+import { RobotCactus } from "@/components/ui/robot-cactus"
 import { CelestialPlanet } from "@/components/ui/celestial-planet"
 import { CelestialMoon } from "@/components/ui/celestial-moon"
 import { CelestialStar } from "@/components/ui/celestial-star"
@@ -217,7 +222,7 @@ const art: Record<string, Art> = {
   "wellhead-tree": { line: "Open valves decide which bore is live.", art: <WellheadTree size={140} phase={0.5} /> },
   "storage-tank": { line: "The roof floats, and the ladder answers.", art: <StorageTank size={200} courses={5} phase={0.6} /> },
   "oil-tanker": { line: "The cargo sets how deep she sits.", art: <OilTanker size={280} behavior="swell" phase={0.2} /> },
-  "tanker-truck": { line: "Two bodies, one kingpin, a real yaw.", art: <TankerTruck size={300} phase={0.3} /> },
+  "tanker-truck": { line: "Steer the tractor; the trailer\u2019s angle is solved.", art: <TankerTruck size={300} behavior="manoeuvre" phase={0.3} /> },
   "flare-stack": { line: "A plume that is a length, not a rate.", art: <FlareStack size={118} phase={0.25} /> },
   "fractionating-column": { line: "The tray count rebuilds the whole tower.", art: <FractionatingColumn size={124} behavior="swing" trays={18} cut={2} phase={0.4} /> },
   "jackup-rig": { line: "One number: the air gap and the stick-up.", art: <JackupRig size={150} phase={0.35} /> },
@@ -243,6 +248,9 @@ const art: Record<string, Art> = {
   "robot-hound": { line: "A wedge on a drive, and a head on a collar that runs out.", art: <RobotHound size={215} track={false} interactive={false} /> },
   "guide-droid": { line: "Rotor overhead, hands and feet on springs.", art: <GuideDroid size={150} track={false} interactive={false} /> },
   "monolith-droid": { line: "Four hinged slabs; that is the whole machine.", art: <MonolithDroid size={150} interactive={false} /> },
+  "tripod-droid": { line: "Three legs, so it leans onto two before it lifts the third.", art: <TripodDroid size={195} interactive={false} track={false} /> },
+  "scout-walker": { line: "One foot down, so the whole cab rolls over onto it.", art: <ScoutWalker size={175} behavior="patrol" phase={0.6} interactive={false} track={false} look={{ x: 0.3, y: 0 }} /> },
+  "siege-walker": { line: "Four feet at the corners: it hardly leans at all.", art: <SiegeWalker size={240} behavior="march" phase={0.4} interactive={false} track={false} look={{ x: 0.25, y: 0.1 }} /> },
   "custodian-droid": { line: "Armour on rails: the shell blooms off a lit chassis.", art: <CustodianDroid size={150} track={false} interactive={false} /> },
   "sentinel-console": { line: "A wall fixture that watches: one solved iris, one gimballed optic.", art: <SentinelConsole size={88} track={false} interactive={false} plate="SENTINEL" /> },
   "robot-fish": { line: "A body wave with the beat piled at the tail.", art: <RobotFish size={215} fins={22} interactive={false} showGround={false} /> },
@@ -361,6 +369,7 @@ const art: Record<string, Art> = {
   "busker-droid": { line: "A droid whose pose comes from a step pattern.", art: <BuskerDroid size={168} phase={0.4} /> },
   "wheel-player": { line: "A click wheel geared to the list it scrolls.", art: <WheelPlayer size={130} rows={8} /> },
   "slab-handset": { line: "One slab, turned: screen, edge, then the array.", art: <SlabHandset size={150} screen="map" /> },
+  "folding-handset": { line: "A crease with a radius, and a sheet that keeps its length.", art: <FoldingHandset size={190} behavior="flex" view="front" screen="canvas" /> },
   "wrist-terminal": { line: "A crown geared to the dial, on a band that holds its length.", art: <WristTerminal size={132} closure={0.8} /> },
   "key-switch": { line: "A contact that closes partway down, not at the bottom.", art: <KeySwitch size={150} action="tactile" /> },
   "robot-keypad": { line: "A scanned matrix: the key down and the cell read are not the same.", art: <RobotKeypad size={150} view="iso" showScan /> },
@@ -378,6 +387,7 @@ const art: Record<string, Art> = {
   "battle-station": { line: "A hull that comes apart into the plates it was made of.", art: <BattleStation size={168} behavior="detonate" phase={0.18} courses={9} perCourse={12} spread={0.5} /> },
   "debris-field": { line: "A population, depth-sorted: near covers far.", art: <DebrisField size={168} behavior="drift" showTrails /> },
   "robot-sunflower": { line: "A golden-angle head, aimed at the light by a solved tracker.", art: <RobotSunflower size={176} track={false} florets={140} arms={8} /> },
+  "robot-cactus": { line: "A ribbed column and two arms, one continuum limb apiece.", art: <RobotCactus size={172} track={false} behavior="flower" phase={0.25} ribs={11} areoles={3} spines={5} /> },
 
   // Foundations — the machine that exercises the file, drawn as a drawing.
   "robot-kinematics": { line: "Two-link cosines and FABRIK, with the envelope drawn.", art: <RobotArm size={190} variant="blueprint" behavior="idle" phase={0.9} showEnvelope tool="welder" /> },
@@ -393,11 +403,14 @@ const art: Record<string, Art> = {
   "gait-kinematics": { line: "Six footfall sequences, and the beat counted off them.", art: <RobotHorse size={225} variant="blueprint" behavior="canter" interactive={false} showContacts /> },
   "spine-kinematics": { line: "A serpenoid travelling wave with taper and steady turn.", art: <RobotSnake size={195} variant="blueprint" waves={1.4} interactive={false} showGround={false} /> },
   "hexapod-kinematics": { line: "Radial legs, knees solved in each leg's own plane.", art: <RobotSpider size={168} variant="blueprint" gait="ripple" interactive={false} /> },
+  "walker-kinematics": { line: "The mass is above the hips, so moving it costs roll.", art: <SiegeWalker size={240} variant="blueprint" behavior="pace" phase={0.3} view="front" showSupport interactive={false} track={false} /> },
+  "tripod-kinematics": { line: "The load says where the body has to stand to hold it.", art: <TripodDroid size={195} variant="blueprint" showSupport interactive={false} track={false} /> },
   "device-geometry": { line: "Hinges, kickstands, detents and bands, solved.", art: <SlateTablet size={195} variant="blueprint" view="profile" screen="home" /> },
   "keyboard-geometry": { line: "Travel, hysteresis, a unit-pitch deck and a raked face.", art: <RobotKeyboard size={170} variant="blueprint" showScan /> },
   "sound-geometry": { line: "A spiral groove, and the arm angle it fixes.", art: <TurntableDeck size={190} variant="blueprint" behavior="scratch" phase={0.3} /> },
   "piano-geometry": { line: "An escapement, and the scale the case is drawn around.", art: <RobotGrandPiano size={190} variant="blueprint" view="iso" phase={0.62} /> },
   "produce-geometry": { line: "Profiles revolved, a lattice by area, halves that reassemble.", art: <RobotStrawberry size={150} variant="blueprint" seeds={34} interactive={false} /> },
+  "cactus-geometry": { line: "A limb solved from its curvature, as long bent as straight.", art: <RobotCactus size={168} variant="blueprint" track={false} behavior="reach" phase={0.4} ribs={11} areoles={3} spines={5} showPot={false} /> },
   "transmission-geometry": { line: "Meshing teeth, taut belts, and a chain over its bend.", art: <PlanetaryGearbox size={158} variant="blueprint" sunTeeth={20} planetTeeth={14} planets={4} showRatio={false} /> },
   "electromagnetism-geometry": { line: "Windings, three-phase vectors, and resolver quadrature.", art: <InductionMotor size={152} variant="blueprint" poles={4} /> },
   "voxel-geometry": { line: "Occupancy fields turned into cells in deposition order.", art: <VoxelForm size={150} variant="blueprint" resolution={6} shape="lattice" showPlate={false} /> },
@@ -430,8 +443,9 @@ const firstClause = (summary: string) => {
 }
 
 /**
- * A card for an item nobody hand-posed: its own component, with nothing set
- * but a size, so the default behaviour its author wrote is what runs.
+ * A card for an item nobody hand-posed: its own component. Machines receive
+ * the art-well size; Interfaces render their useful default without machine
+ * props, inside an inert wrapper because the whole card is already a link.
  */
 export function fallbackArt(card: CatalogueCard): Art | null {
   const entry = galleryEntries[card.slug]
@@ -439,6 +453,16 @@ export function fallbackArt(card: CatalogueCard): Art | null {
   const line = card.summary ? firstClause(card.summary) : card.title
   if (!entry.component) return { line, art: <CatalogueStage floor="shadow" /> }
   const Machine = entry.component
+  if (card.group === "Interfaces") {
+    return {
+      line,
+      art: (
+        <div inert aria-hidden="true" className="pointer-events-none w-full max-w-64 p-4">
+          <Machine />
+        </div>
+      ),
+    }
+  }
   return {
     line,
     art: <Machine size={FALLBACK_SIZE} {...(entry.blueprint ? { variant: "blueprint" as const } : {})} />,
@@ -451,8 +475,8 @@ export function cardArt(card: CatalogueCard): Art | null {
 }
 
 /**
- * The posed cards, for the animation test. Every one of these has to move on
- * its own: see `docs/gallery-coverage.md`.
+ * The posed machine cards, for the animation test. Interfaces use the quiet
+ * generated preview above and are intentionally absent from this map.
  */
 export const catalogueArt = art
 
@@ -488,7 +512,7 @@ function Catalogue({ entries }: { entries: CatalogueCard[] }) {
         const cards = entries.filter((entry) => entry.group === group)
         if (!cards.length) return null
         return (
-          <section key={group} className="space-y-3">
+          <section key={group} data-slot="catalogue-group" className="space-y-3">
             <div className="flex items-baseline gap-2">
               <h3 className="text-[13px] font-medium text-muted-foreground">{group}</h3>
               <span className="font-mono text-[12px] tabular-nums text-muted-foreground opacity-65">

@@ -26,7 +26,7 @@ describe("page social cards", () => {
   })
 
   it("keeps the site pages out of the registry's namespace", () => {
-    // `/og/builder` and `/docs/builder` would otherwise write the same PNG.
+    // `/og/workbench` and `/docs/workbench` would otherwise write the same PNG.
     for (const slug of ogSitePageSlugs) {
       expect(registryItems, slug).not.toContain(slug)
       expect(docs.map((entry) => entry.slug), slug).not.toContain(slug)

@@ -25,7 +25,11 @@ const droidSlugs = [
   "sentinel-console",
   "monolith-droid",
   "busker-droid",
+  "tripod-droid",
 ] as const
+
+/** The two armoured walkers and the attitude solver under them. */
+const walkerSlugs = ["scout-walker", "siege-walker", "walker-kinematics"] as const
 
 /** The equine pair and the footfall solver under them. */
 const equineSlugs = [
@@ -165,6 +169,7 @@ const deviceSlugs = [
   "slate-tablet",
   "wheel-player",
   "slab-handset",
+  "folding-handset",
   "wrist-terminal",
   "device-geometry",
 ] as const
@@ -199,6 +204,8 @@ const celestialSlugs = [
   "celestial-geometry",
   "robot-sunflower",
   "phyllotaxis-geometry",
+  "robot-cactus",
+  "cactus-geometry",
   "battle-station",
   "debris-field",
   "hull-geometry",
@@ -223,6 +230,12 @@ const entries: CatalogueEntry[] = [
 describe('docs catalogue', () => {
   it.each(celestialSlugs)("documents and demos %s", (slug) => {
     expect(docs.some((entry) => entry.slug === slug && entry.item === slug)).toBe(true)
+    expect(demoFor(slug)).toBeTruthy()
+  })
+
+  it.each(walkerSlugs)("documents and demos %s", (slug) => {
+    const entry = docs.find((candidate) => candidate.slug === slug)
+    expect(entry?.item).toBe(slug)
     expect(demoFor(slug)).toBeTruthy()
   })
 

@@ -16,7 +16,6 @@ export const capturedOgSlugs: string[] = [
   "bear-kinematics",
   "bellows-droid",
   "belt-drive",
-  "builder",
   "busker-droid",
   "cable-carrier",
   "cargo-plane",
@@ -178,5 +177,6 @@ export const capturedOgSlugs: string[] = [
   "washing-machine",
   "wellhead-tree",
   "wheel-player",
+  "workbench",
   "wrist-terminal",
 ]

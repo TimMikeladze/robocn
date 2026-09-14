@@ -49,7 +49,7 @@ the arm runs corner to corner instead of hugging one diagonal.
 
 | | before | after |
 | --- | --- | --- |
-| mark | 28 px, no footprint | 28 px cell |
+| mark | 28 px, no footprint | 36 px cell |
 | wordmark | 17 px / 600 / default tracking | 16 px / 600 / `-0.02em`, `leading-none` |
 | mark -> wordmark | 8 px | 10 px |
 | wordmark -> nav | 24 px | 16 px, a hairline rule, 16 px |

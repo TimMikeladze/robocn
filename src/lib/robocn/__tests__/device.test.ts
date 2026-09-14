@@ -4,6 +4,7 @@ import { distance2 } from "@/lib/robocn/kinematics"
 import {
   bandLinks,
   detent,
+  foldPose,
   hingePose,
   listWindow,
   panelPath,
@@ -179,5 +180,89 @@ describe("panelTransform", () => {
 
   it("emits nothing for a panel with no size", () => {
     expect(panelTransform(robotCamera("front"), corner, along, down, 0, 20).transform).toBe("")
+  })
+})
+
+describe("foldPose", () => {
+  const LEAF = 60
+  const R = 3
+
+  it("keeps the display's own length at every angle it folds through", () => {
+    for (let angle = 0; angle <= 180; angle += 7.5) {
+      const pose = foldPose(angle, LEAF, R)
+      expect(pose.run * 2 + pose.arc).toBeCloseTo(pose.sheet, 6)
+      expect(pose.sheet).toBeCloseTo(LEAF * 2, 6)
+      // The sheet shortens; the panels never do.
+      for (const leaf of pose.leaves) {
+        expect(distance2(leaf.hinge, leaf.tip)).toBeCloseTo(LEAF, 6)
+        expect(distance2(leaf.root, leaf.hinge)).toBeCloseTo(pose.bare, 6)
+      }
+    }
+  })
+
+  it("rolls the leaves on the bend rather than pivoting them on a pin", () => {
+    for (let angle = 0; angle <= 180; angle += 15) {
+      const pose = foldPose(angle, LEAF, R)
+      for (const leaf of pose.leaves) {
+        // Every leaf face stays tangent to the bend circle: the root is a
+        // radius from the centre, square to the face.
+        expect(Math.hypot(leaf.root.x, leaf.root.y)).toBeCloseTo(R, 6)
+        expect(leaf.axis.x * leaf.normal.x + leaf.axis.y * leaf.normal.y).toBeCloseTo(0, 6)
+        expect(leaf.root.x * leaf.axis.x + leaf.root.y * leaf.axis.y).toBeCloseTo(0, 6)
+      }
+    }
+  })
+
+  it("opens a real gap when shut and closes it flat", () => {
+    const shut = foldPose(0, LEAF, R)
+    expect(shut.swing).toBe(90)
+    expect(shut.gap).toBeCloseTo(R * 2, 6)
+    expect(shut.arc).toBeCloseTo(Math.PI * R, 6)
+    // Both leaves point the same way, their faces toward each other.
+    expect(shut.leaves[0].heading).toBeCloseTo(shut.leaves[1].heading, 6)
+    expect(shut.leaves[0].normal.x).toBeCloseTo(-shut.leaves[1].normal.x, 6)
+
+    const flat = foldPose(180, LEAF, R)
+    expect(flat.swing).toBe(0)
+    expect(flat.gap).toBeCloseTo(0, 6)
+    expect(flat.arc).toBeCloseTo(0, 6)
+    expect(flat.run).toBeCloseTo(LEAF, 6)
+    expect(flat.bare).toBeCloseTo(0, 6)
+    // Flat, the two halves meet at the spine and the display is continuous.
+    expect(distance2(flat.leaves[0].root, flat.leaves[1].root)).toBeCloseTo(0, 6)
+    expect(flat.leaves[0].heading).toBeCloseTo(180, 6)
+    expect(flat.leaves[1].heading).toBeCloseTo(0, 6)
+  })
+
+  it("samples the bend between the two tangent points", () => {
+    const pose = foldPose(60, LEAF, R, { steps: 48 })
+    expect(pose.bend).toHaveLength(48)
+    expect(pose.bend[0]!.x).toBeCloseTo(pose.leaves[0].root.x, 6)
+    expect(pose.bend[0]!.y).toBeCloseTo(pose.leaves[0].root.y, 6)
+    expect(pose.bend.at(-1)!.x).toBeCloseTo(pose.leaves[1].root.x, 6)
+    const chords = pose.bend
+      .slice(1)
+      .reduce((sum, point, index) => sum + distance2(pose.bend[index]!, point), 0)
+    // A chain of chords is shorter than the arc it samples, and close to it.
+    expect(chords).toBeLessThan(pose.arc)
+    expect(chords).toBeGreaterThan(pose.arc * 0.999)
+  })
+
+  it("reports a bend too big for the leaves instead of stretching the sheet", () => {
+    const pinched = foldPose(0, 3, 12)
+    expect(pinched.pinched).toBe(true)
+    expect(pinched.run).toBe(0)
+    // The panel is rigid whatever the display is doing.
+    expect(distance2(pinched.leaves[0].hinge, pinched.leaves[0].tip)).toBeCloseTo(3, 6)
+    expect(foldPose(0, LEAF, R).pinched).toBe(false)
+  })
+
+  it("stops at the travel the hinge has, and stays neutral on nonsense", () => {
+    expect(foldPose(180, LEAF, R, { maxAngle: 120 }).angle).toBe(120)
+    const bad = foldPose(Number.NaN, Number.NaN, Number.NaN, { maxAngle: Number.NaN })
+    expect(bad.angle).toBe(0)
+    expect(bad.sheet).toBe(0)
+    expect(Number.isFinite(bad.gap)).toBe(true)
+    expect(bad.bend.every((p) => Number.isFinite(p.x) && Number.isFinite(p.y))).toBe(true)
   })
 })

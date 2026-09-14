@@ -42,7 +42,8 @@ const SHOTS = [
   { name: "landing", route: "/", width: 1280, height: 812 },
   { name: "catalogue", route: "/", width: 1280, height: 900, scrollTo: "#catalogue" },
   { name: "docs", route: "/docs/robot-arm", width: 1280, height: 900 },
-  { name: "builder", route: "/builder", width: 1440, height: 900, settleMs: 5000 },
+  { name: "workbench", route: "/workbench?setup=0", width: 1440, height: 900, settleMs: 5000 },
+  { name: "workbench-setup", route: "/workbench?setup=1", width: 1440, height: 900, settleMs: 3000 },
 ]
 
 const THEMES = ["light", "dark"]

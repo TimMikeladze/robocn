@@ -40,6 +40,7 @@ export const exercises = {
   "use-robot-motion": "robot-loader",
   "use-pointer-target": "robot-face",
   "phyllotaxis-geometry": "robot-sunflower",
+  "cactus-geometry": "robot-cactus",
   "celestial-geometry": "celestial-planet",
   "hull-geometry": "battle-station",
 }
@@ -58,7 +59,7 @@ export const isWebgl = (source) =>
 export const pascalCase = (name) =>
   name.split("-").map((part) => part[0].toUpperCase() + part.slice(1)).join("")
 
-const exportedNames = (source) => [
+export const exportedNames = (source) => [
   ...[...source.matchAll(/export\s*\{([^}]*)\}/g)].flatMap((match) =>
     match[1].split(",").map((part) => part.trim().split(/\s+as\s+/).pop().trim()),
   ),
@@ -98,6 +99,7 @@ export async function resolveGallery(registry) {
       export: match,
       module: file.path.replace(/^src\//, "@/").replace(/\.tsx?$/, ""),
       webgl: isWebgl(source),
+      interface: item.categories?.includes("interfaces") ?? false,
     })
   }
 
@@ -118,6 +120,7 @@ export async function resolveGallery(registry) {
       item: item.name,
       draws: alias,
       blueprint: item.type !== "registry:ui",
+      interface: false,
       ...drawn,
     }
   })

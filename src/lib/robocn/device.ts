@@ -1,15 +1,17 @@
 /**
  * robocn — device geometry.
  *
- * The mechanisms in a machine you carry. Four closures and a wrap, none of
+ * The mechanisms in a machine you carry. Five closures and a wrap, none of
  * which a drawing is allowed to fake: a hinge that keeps the lid's length, a
- * kickstand whose foot has to reach the desk, a rotary input divided into
- * detents that wraps in both directions, and a band that keeps its link count
- * and its pitch however far it is opened.
+ * book fold whose display keeps its own length as it bends, a kickstand whose
+ * foot has to reach the desk, a rotary input divided into detents that wraps in
+ * both directions, and a band that keeps its link count and its pitch however
+ * far it is opened.
  *
  * Pure functions over plain objects. No React, no dependencies, and no
- * dynamics — there is no friction in the hinge, no detent force on the crown
- * and no material in the band. Geometry only.
+ * dynamics — there is no friction in the hinge, no detent force on the crown,
+ * no crease memory in the folding display and no material in the band.
+ * Geometry only.
  */
 
 import {
@@ -248,6 +250,143 @@ export function bandLinks(
     position = { x: position.x + Math.cos(a) * span, y: position.y + Math.sin(a) * span }
   }
   return result
+}
+
+/* -------------------------------------------------------------------------- */
+/* the book fold                                                               */
+/* -------------------------------------------------------------------------- */
+
+export interface FoldLeaf {
+  /** Which leaf: −1 to port, +1 to starboard, naming where it lies when flat. */
+  side: -1 | 1
+  /** Unit direction from the spine outward, along the leaf. */
+  axis: Vec2
+  /** Unit outward normal of the face the display is bonded to. */
+  normal: Vec2
+  /** Where the display leaves the bend and becomes straight. */
+  root: Vec2
+  /** The panel's inner edge, `bare` behind the root, at the spine. */
+  hinge: Vec2
+  /** The panel's outer, free edge. Always `leaf` from `hinge`, pinched or not. */
+  tip: Vec2
+  /** Heading of `axis`, degrees from `+x` toward `+y`. */
+  heading: number
+}
+
+export interface FoldPose {
+  /** Fold actually used: clamped travel, degrees. 0 shut, 180 flat. */
+  angle: number
+  /** How far each leaf has swung back from flat, degrees: `(180 - angle) / 2`. */
+  swing: number
+  /** Bend radius used. */
+  radius: number
+  /** Straight display run on each leaf. */
+  run: number
+  /** Display the bend consumes. `2 * run + arc` is `sheet` at every angle. */
+  arc: number
+  /** The display's own length: `2 * leaf`, always. */
+  sheet: number
+  /** Panel the display has peeled off at the spine: `arc / 2`. The cavity. */
+  bare: number
+  /** Across the mouth of the bend, root to root: `2 * radius` shut, 0 flat. */
+  gap: number
+  /** The bend, sampled from the port leaf's root to the starboard leaf's. */
+  bend: Vec2[]
+  /** Port leaf first. */
+  leaves: [FoldLeaf, FoldLeaf]
+  /** True when the bend has eaten the whole sheet and `run` is clamped to 0. */
+  pinched: boolean
+}
+
+export interface FoldOptions {
+  /** How far the fold opens. 180 is flat. */
+  maxAngle?: number
+  /** Points sampled along the bend, clamped 3–48. */
+  steps?: number
+}
+
+/**
+ * A book fold — two leaves and the display bent between them — in the plane
+ * the fold turns in: `x` across the machine, `y` toward its back. The fold
+ * axis is perpendicular to both, so this one plane is the whole mechanism. The
+ * leaves close toward the front, so the bend's cavity is at the back and the
+ * face that ends up outermost is the one a front camera is looking at.
+ *
+ * Two facts about a folding display do all the work here. It cannot stretch,
+ * and it cannot be creased to a knife edge: it bends through `radius`. So the
+ * bend consumes `radius × (180 - angle)` of sheet, that length comes off the
+ * panels rather than out of nowhere — the display peels away from the inner
+ * end of each leaf, which is the teardrop cavity — and `2 * run + arc` is the
+ * sheet's length at every angle.
+ *
+ * Both leaf planes stay tangent to the bend circle, so the leaves roll around
+ * it instead of pivoting on a pin. That is what the cams in a water-drop hinge
+ * do, and it is what leaves the shut leaves `2 * radius` apart with the bend
+ * tucked inside rather than pinched flat at the spine.
+ *
+ * The frame is the fold's own: both leaves swing by half the closure, so the
+ * pose is symmetric about `+y`. A machine that holds one leaf still turns the
+ * whole result by `swing`.
+ */
+export function foldPose(
+  angle: number,
+  leaf: number,
+  radius: number,
+  { maxAngle = 180, steps = 13 }: FoldOptions = {},
+): FoldPose {
+  const limit = clamp(finite(maxAngle, 180), 0, 180)
+  const open = clamp(finite(angle, 0), 0, limit)
+  const span = Math.max(0, finite(leaf, 0))
+  const r = Math.max(0, finite(radius, 0))
+  const swing = (180 - open) / 2
+  const sigma = toRadians(swing)
+  const sheet = span * 2
+  const wanted = r * 2 * sigma
+  const pinched = wanted > sheet
+  const arc = Math.min(wanted, sheet)
+  const run = (sheet - arc) / 2
+  const bare = arc / 2
+
+  const count = clamp(Math.round(finite(steps, 13)) || 13, 3, 48)
+  const bend = Array.from({ length: count }, (_, index) => {
+    // From the port leaf's tangent point round to the starboard leaf's.
+    const at = toRadians(90 + swing - (index / (count - 1)) * swing * 2)
+    return { x: r * Math.cos(at), y: r * Math.sin(at) }
+  })
+
+  const make = (side: -1 | 1): FoldLeaf => {
+    // The leaves close toward −y, the front of the machine, so the face that
+    // ends up outermost is the one a camera at the front is looking at.
+    const axis: Vec2 = { x: side * Math.cos(sigma), y: -Math.sin(sigma) }
+    // The tangent point: a radius in from the centre, against the leaf's face.
+    const root: Vec2 = { x: side * r * Math.sin(sigma), y: r * Math.cos(sigma) }
+    const hinge: Vec2 = { x: root.x - axis.x * bare, y: root.y - axis.y * bare }
+    return {
+      side,
+      axis,
+      normal: { x: -side * Math.sin(sigma), y: -Math.cos(sigma) },
+      root,
+      hinge,
+      tip: { x: hinge.x + axis.x * span, y: hinge.y + axis.y * span },
+      // `|| 0` so a leaf lying flat reads 180 rather than −180: the sign of
+      // a negative zero is not a direction.
+      heading: toDegrees(Math.atan2(axis.y || 0, axis.x)),
+    }
+  }
+
+  return {
+    angle: open,
+    swing,
+    radius: r,
+    run,
+    arc,
+    sheet,
+    bare,
+    gap: 2 * r * Math.sin(sigma),
+    bend,
+    leaves: [make(-1), make(1)],
+    pinched,
+  }
 }
 
 /* -------------------------------------------------------------------------- */

@@ -23,6 +23,9 @@ import { LinearActuator } from "@/components/ui/linear-actuator"
 import { MedicalDroid } from "@/components/ui/medical-droid"
 import { MicroDuck } from "@/components/ui/micro-duck"
 import { MonolithDroid } from "@/components/ui/monolith-droid"
+import { TripodDroid } from "@/components/ui/tripod-droid"
+import { ScoutWalker } from "@/components/ui/scout-walker"
+import { SiegeWalker } from "@/components/ui/siege-walker"
 import { OrbDroid } from "@/components/ui/orb-droid"
 import { ProbeDroid } from "@/components/ui/probe-droid"
 import { ProtocolDroid } from "@/components/ui/protocol-droid"
@@ -186,6 +189,9 @@ const machines: Record<string, (view?: RobotView) => React.ReactElement> = {
   "robot-hound": (view) => <RobotHound animate={false} attention={0.7} track={false} look={{ x: 0.3, y: -0.2 }} view={view} />,
   "guide-droid": (view) => <GuideDroid animate={false} height={0.6} rotorAngle={24} voice={0.4} track={false} look={{ x: 0.3, y: -0.2 }} view={view} />,
   "monolith-droid": (view) => <MonolithDroid animate={false} splay={0.6} stride={0.25} panel={0.5} lean={0} view={view} />,
+  "scout-walker": (view) => <ScoutWalker animate={false} gait="walk" stride={0.28} lean={{ x: 0.2, y: 0 }} track={false} look={{ x: 0.3, y: -0.2 }} showSupport view={view} />,
+  "siege-walker": (view) => <SiegeWalker animate={false} gait="walk" stride={0.18} lean={{ x: 0.2, y: 0 }} track={false} look={{ x: 0.3, y: -0.2 }} showSupport view={view} />,
+  "tripod-droid": (view) => <TripodDroid animate={false} gait="creep" stride={0.35} lean={{ x: 0.2, y: 0 }} track={false} look={{ x: 0.3, y: -0.2 }} showSupport view={view} />,
   "custodian-droid": (view) => <CustodianDroid animate={false} open={0.55} voice={0.4} track={false} look={{ x: 0.3, y: -0.2 }} view={view} />,
   "sentinel-console": (view) => <SentinelConsole animate={false} aperture={0.55} voice={0.4} track={false} look={{ x: 0.3, y: -0.2 }} view={view} />,
   "bellows-droid": (view) => <BellowsDroid animate={false} inflation={0.62} pleats={7} view={view} />,
@@ -280,6 +286,9 @@ const natives: Partial<Record<keyof typeof machines, RobotView>> = {
   "robot-hound": "profile",
   "guide-droid": "front",
   "monolith-droid": "front",
+  "tripod-droid": "front",
+  "scout-walker": "front",
+  "siege-walker": "profile",
   "pylon-droid": "front",
   "custodian-droid": "front",
   "sentinel-console": "front",

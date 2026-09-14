@@ -34,7 +34,7 @@ The site card's layout, with the contact sheet replaced by one machine:
   registry item name in 10 px mono at the bottom left — the tile label off the
   contact sheet, kept so a card is recognisably from the same set.
 
-A page that installs nothing — `installation`, `/builder` — gets the tagline in
+A page that installs nothing — `installation`, `/workbench` — gets the tagline in
 place of the install box, and the arm the whole set is built around, drawn as a
 drawing, in place of a machine of its own.
 
@@ -82,21 +82,21 @@ file has to be posed twice.
 ## Which pages
 
 Every entry in `docs` — which is every registry item plus the written pages —
-and `/builder`, which is not a docs page:
+and `/workbench`, which is not a docs page:
 
 | page | card |
 | --- | --- |
 | `/` | `public/og.png` — the contact sheet |
 | `/docs` | `public/og.png` — see below |
-| `/builder` | `public/og/builder.png` |
+| `/workbench` | `public/og/workbench.png` |
 | `/docs/<slug>` | `public/og/<slug>.png` |
 
 `/` and `/docs` share the contact sheet on purpose. It is a picture of twelve
 machines, and those two pages *are* the catalogue — a card of one machine would
 be a worse picture of either than the sheet already is.
 
-`builder` is not a registry item name, and `og.test.ts` fails if it ever becomes
-one: `/og/builder` and a docs page called `builder` would write the same PNG.
+`workbench` is not a registry item name, and `og.test.ts` fails if it ever becomes
+one: `/og/workbench` and a docs page called `workbench` would write the same PNG.
 The same test pins `pages`, which `/og/pages` needs as a static segment.
 
 ## The manifest
