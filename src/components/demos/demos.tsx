@@ -42,7 +42,7 @@ import { defaultHeadGeometry, solveFace, type FaceExpression } from "@/lib/roboc
 import { SecurityDroid, type SecurityDroidBehavior, type SecurityDroidPose } from "@/components/ui/security-droid"
 import { UtilityDroid, type UtilityDroidSeries, type UtilityDroidTool , type UtilityDroidBehavior} from "@/components/ui/utility-droid"
 import { defaultStewartGeometry, solveStewart } from "@/lib/robocn/stewart"
-import { defaultCamGeometry, reeveStack, solveCam } from "@/lib/robocn/gym"
+import { defaultCamGeometry, defaultTrainerGeometry, reeveStack, solveCam, solveSled, trainerFootPath } from "@/lib/robocn/gym"
 import { RobotQuadruped, type QuadrupedBehavior } from "@/components/ui/robot-quadruped"
 import { RobotBird, type BirdBehavior } from "@/components/ui/robot-bird"
 import { RobotCrab, type CrabBehavior } from "@/components/ui/robot-crab"
@@ -213,6 +213,8 @@ import { routeNames, type FacemaskStyle, type GridironStance, type RouteName } f
 import { Slider } from "@/components/ui/slider"
 import { CableStation, type CableStationBehavior } from "@/components/ui/cable-station"
 import { ResistanceCam, type ResistanceCamBehavior } from "@/components/ui/resistance-cam"
+import { LegPress, type LegPressBehavior } from "@/components/ui/leg-press"
+import { CrossTrainer, type CrossTrainerBehavior } from "@/components/ui/cross-trainer"
 import { oklchToHex } from "@/lib/robocn/color"
 import {
   chainAngles2,
@@ -2570,7 +2572,7 @@ function RobotPolarBearDemo() {
   const [swim, setSwim] = React.useState(0.5)
   const [neck, setNeck] = React.useState(0.2)
   const [crouch, setCrouch] = React.useState(0.2)
-  const [strokes, setStrokes] = React.useState(1)
+  const [strokes, setTravels] = React.useState(1)
   const [variant, setVariant] = React.useState<RobotVariant>("solid")
   return (
     <Bench controls={<>
@@ -2582,7 +2584,7 @@ function RobotPolarBearDemo() {
         <NumberControl label="neck" value={neck} min={-1} max={1} step={0.01} onChange={setNeck} format={value => value.toFixed(2)} />
         <NumberControl label="crouch" value={crouch} min={0} max={1} step={0.01} onChange={setCrouch} format={value => `${Math.round(value * 100)}%`} />
       </> : <Hint>Drag up and down to work the handover: the floor at the bottom of the box, afloat at the top.</Hint>}
-      <NumberControl label="strokes" value={strokes} min={0.25} max={4} step={0.25} onChange={setStrokes} format={value => `${value}×`} />
+      <NumberControl label="strokes" value={strokes} min={0.25} max={4} step={0.25} onChange={setTravels} format={value => `${value}×`} />
       <p className="text-[11px] text-muted-foreground">One number moves the weight from four soles to the water. The forelimbs do not switch animation — the same solve follows the paw onto a stroke path.</p>
     </>}>
       <RobotPolarBear view={view} size={360} variant={variant} strokes={strokes} showContacts label="URSUS / 02"
@@ -3626,7 +3628,7 @@ function RobotKeyboardDemo() {
   const [layout, setLayout] = React.useState<KeyboardLayoutName>("compact")
   const [profile, setProfile] = React.useState<KeycapSculpt>("sculpted")
   const [rake, setRake] = React.useState(6)
-  const [strokes, setStrokes] = React.useState(16)
+  const [strokes, setTravels] = React.useState(16)
   const [typed, setTyped] = React.useState(35)
   const [scan, setScan] = React.useState(false)
   return (
@@ -3637,7 +3639,7 @@ function RobotKeyboardDemo() {
       <Segmented label="caps" value={profile} options={["sculpted", "flat"] as const} onChange={setProfile} />
       <Segmented label="drive" value={drive} options={["type", "ripple", "scan", "idle", "static", "manual"] as const} onChange={setDrive} />
       <Segmented label="scan" value={scan ? "on" : "off"} options={["on", "off"] as const} onChange={(next) => setScan(next === "on")} />
-      <NumberControl label="strokes" value={strokes} min={4} max={40} onChange={setStrokes} />
+      <NumberControl label="strokes" value={strokes} min={4} max={40} onChange={setTravels} />
       <NumberControl label="rake" value={rake} min={0} max={16} onChange={setRake} format={v => `${v}°`} />
       {drive === "manual"
         ? <NumberControl label="passage" value={typed} min={0} max={100} onChange={setTyped} format={v => `${v}%`} />
@@ -5168,6 +5170,64 @@ function ResistanceCamDemo() {
   )
 }
 
+function LegPressDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [behavior, setBehavior] = React.useState<LegPressBehavior>("press")
+  const [railAngle, setRailAngle] = React.useState(38)
+  const [plates, setPlates] = React.useState(3)
+  // The readout is the solver's. The stroke is deliberately not in it: moving
+  // the sled does not move the load, and only the frame does.
+  const pose = solveSled(1, { railAngle, travel: 96, foot: { x: -40, y: 14 }, weight: plates * 20 * 2 })
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="motion" value={behavior} options={["press", "partials", "hold", "static"] as const} onChange={setBehavior} />
+      <NumberControl label="rail angle" value={railAngle} min={0} max={90} step={1} onChange={setRailAngle} format={value => `${value}°`} />
+      <NumberControl label="discs a side" value={plates} min={0} max={5} step={1} onChange={setPlates} format={value => `${value}`} />
+      <Readout rows={[
+        ["on the sled", `${plates * 40}`],
+        ["along the rails", `${Math.round(pose.load * 10) / 10}`],
+        ["share", `${Math.round(pose.fraction * 100)}%`],
+      ]} />
+      <Hint>Drag across it, or focus it and use the arrow keys. Lay the rails down and the same plates weigh less; the stroke never changes the number.</Hint>
+    </>}>
+      <LegPress size={300} view={view} variant={variant} behavior={behavior} railAngle={railAngle} plates={plates} interactive label="PRESS / 03" />
+    </Bench>
+  )
+}
+
+function CrossTrainerDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [behavior, setBehavior] = React.useState<CrossTrainerBehavior>("stride")
+  const [crank, setCrank] = React.useState(defaultTrainerGeometry.crank)
+  const [padAlong, setPadAlong] = React.useState(defaultTrainerGeometry.padAlong)
+  const [path, setPath] = React.useState(true)
+  // Stride and rise come off the solved loop, so the readout cannot claim a
+  // number the drawing does not have.
+  const track = trainerFootPath({ ...defaultTrainerGeometry, crank, padAlong }, 72)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="motion" value={behavior} options={["stride", "sprint", "coast", "static"] as const} onChange={setBehavior} />
+      <NumberControl label="crank" value={crank} min={22} max={46} step={1} onChange={setCrank} format={value => `${value}`} />
+      <NumberControl label="pad along" value={padAlong} min={100} max={170} step={2} onChange={setPadAlong} format={value => `${value}`} />
+      <Segmented label="path" value={path ? "show" : "hide"} options={["show", "hide"] as const} onChange={value => setPath(value === "show")} />
+      <Readout rows={[
+        ["stride", `${Math.round(track.stride * 10) / 10}`],
+        ["rise", `${Math.round(track.rise * 10) / 10}`],
+        ["crank diameter", `${crank * 2}`],
+      ]} />
+      <Hint>Drag around the wheel to turn it by hand, or focus it and use the arrow keys. The stride is not the crank diameter — the linkage decides it.</Hint>
+    </>}>
+      <CrossTrainer size={300} view={view} variant={variant} behavior={behavior} crank={crank} padAlong={padAlong} showPath={path} interactive label="TRAINER / 04" />
+    </Bench>
+  )
+}
+
 export const demos: Record<string, React.ComponentType<DemoProps>> = {
   "robot-football": RobotFootballDemo,
   "gridiron-geometry": RobotFootballDemo,
@@ -5370,6 +5430,8 @@ export const demos: Record<string, React.ComponentType<DemoProps>> = {
   "cable-station": CableStationDemo,
   "gym-geometry": CableStationDemo,
   "resistance-cam": ResistanceCamDemo,
+  "leg-press": LegPressDemo,
+  "cross-trainer": CrossTrainerDemo,
 }
 
 /**

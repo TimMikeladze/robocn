@@ -4766,6 +4766,52 @@
           "target": "@ui/resistance-cam.tsx"
         }
       ]
+    },
+    {
+      "name": "leg-press",
+      "type": "registry:ui",
+      "title": "Leg press",
+      "description": "A sled on inclined rails: only the component of the load along the rails resists, so the rail angle is the resistance and the frame decides the weight.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json",
+        "{REGISTRY_URL}/r/gym-geometry.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/leg-press.tsx",
+          "type": "registry:ui",
+          "target": "@ui/leg-press.tsx"
+        }
+      ]
+    },
+    {
+      "name": "cross-trainer",
+      "type": "registry:ui",
+      "title": "Cross trainer",
+      "description": "A crank and rocker whose footpad rides the coupler: the stride and the shape of the foot path are what the link lengths produce, not a traced ellipse.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json",
+        "{REGISTRY_URL}/r/gym-geometry.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/cross-trainer.tsx",
+          "type": "registry:ui",
+          "target": "@ui/cross-trainer.tsx"
+        }
+      ]
     }
   ]
 }

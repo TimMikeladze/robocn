@@ -2131,7 +2131,7 @@ pose.legs     // hip, knee, foot, kneeHeight, clearance, contact, load`,
 
 // Controlled, or a control:
 <LinearActuator extension={0.75} />
-<LinearActuator interactive onExtensionChange={setStroke} />`,
+<LinearActuator interactive onExtensionChange={setTravel} />`,
     props: [
       view("profile", "cylinder"),
       { name: "extension", type: "number", description: "Controlled stroke, clamped to 0–1. Zero retracts and one fully extends. Omit it and the cylinder runs behavior." },
@@ -6721,6 +6721,86 @@ download(await encodeFrames(frames, "webp"), "robot-arm.webp")`,
       "Solved: the payout. Cable off the cam is the integral of r dθ, so the stack does not rise in step with the lever. Turn the cam through its fat part and the stack runs away from the handle.",
       "Solved: the profile. The outline is `camRadius` in polar, turned to where the lever has put it — the drawn cam is the resistance curve rather than a picture of one. The cam is keyed to the lever and turns forward with it.",
       "Illustrated: the strength curve the profile is shaped to is a raised cosine chosen for the drawing, not a measurement of any joint. Frictionless, and the cable does not stretch.",
+      "Design note: docs/gym-machines.md.",
+    ],
+  },
+  {
+    slug: "leg-press", item: "leg-press", title: "Leg press", group: "Machines",
+    summary:
+      "A sled on inclined rails: only the component of the load along the rails resists, so the rail angle is the resistance and the frame decides the weight.",
+    files: ["components/ui/leg-press.tsx"],
+    usage: `import { LegPress } from "@/components/ui/leg-press"
+
+// Runs its own set.
+<LegPress behavior="press" />
+
+// Lay the frame down and the same plates weigh less along the rails.
+<LegPress railAngle={20} plates={4} />
+
+// Or drive the sled, which stops the loop.
+<LegPress travel={0.6} onTravelChange={setTravel} interactive />`,
+    props: [
+      { name: "travel", type: "number", description: "Travel along the rails, 0 racked at the bottom to 1 fully extended. Supplying it stops the loop. Named for the rails rather than for the rep, because `stroke` is an SVG attribute this component passes through." },
+      { name: "onTravelChange", type: "(travel: number) => void", description: "Fires while it is dragged or keyed, so interaction works in controlled mode too." },
+      { name: "behavior", type: `"press" | "partials" | "hold" | "static"`, default: `"press"`, description: "What it does with nobody driving it." },
+      { name: "railAngle", type: "number", default: "38", description: "The rails' inclination from horizontal, in degrees. This is the resistance: the load along the rails is the weight times its sine." },
+      { name: "plates", type: "number", default: "3", description: "Discs on the loading horns, per side." },
+      { name: "plateWeight", type: "number", default: "20", description: "What one disc weighs, for the readout in the accessible label." },
+      { name: "interactive", type: "boolean", default: "false", description: "Hand it to a person: drag across it, or focus it and use the arrow keys. It eases back into the behaviour on release." },
+      { name: "showGround", type: "boolean", default: "true", description: "Draw the contact shadow and the ground line beneath it." },
+      { name: "label", type: "string", description: "Optional technical caption under the drawing." },
+      view("profile", "machine"),
+      { name: "speed", type: "number", default: "0.32", description: "Cycles per second." },
+      ...loop,
+      ...form.slice(0, 2),
+      ...palette,
+    ],
+    notes: [
+      "Solved: the load. Only the component of the weight that lies along the rails resists, so the sled load is `weight · sin(railAngle)` — 30 degrees hands back half the plates, 45 degrees 0.71 of them, and flat rails nothing at all. The two lines drawn under the sled are those two vectors.",
+      "The load is never a prop. Change `railAngle` and read it back off the accessible label. This is the only machine in the family where changing the frame changes the weight, which is why a leg press number does not compare with anyone else's.",
+      "The travel does not change the load — the sled weighs the same everywhere on the rails. Only the frame moves that number.",
+      "Illustrated: frictionless. No rail friction, no roller drag, no bearing loss, and no dynamics — this is what the sled weighs standing still on the rails.",
+      "The framing follows the rail angle, because that is a thing somebody bolted together; it never follows the travel, so it cannot breathe as the machine works.",
+      "Design note: docs/gym-machines.md.",
+    ],
+  },
+  {
+    slug: "cross-trainer", item: "cross-trainer", title: "Cross trainer", group: "Machines",
+    summary:
+      "A crank and rocker whose footpad rides the coupler: the stride and the shape of the foot path are what the link lengths produce, not a traced ellipse.",
+    files: ["components/ui/cross-trainer.tsx"],
+    usage: `import { CrossTrainer } from "@/components/ui/cross-trainer"
+
+// Runs its own stride.
+<CrossTrainer behavior="stride" />
+
+// Change a link length and the path changes shape, not just size.
+<CrossTrainer crank={44} coupler={96} padAlong={150} />
+
+// Or turn the crank by hand, which stops the loop.
+<CrossTrainer crankAngle={140} onCrankAngleChange={setCrankAngle} interactive />`,
+    props: [
+      { name: "crankAngle", type: "number", description: "Crank angle in degrees. Supplying it stops the loop." },
+      { name: "onCrankAngleChange", type: "(crankAngle: number) => void", description: "Fires while it is dragged or keyed, so interaction works in controlled mode too. Dragging turns the wheel by its bearing about the crank centre." },
+      { name: "behavior", type: `"stride" | "sprint" | "coast" | "static"`, default: `"stride"`, description: "What it does with nobody driving it. `coast` is a run-down that slows without stopping." },
+      { name: "crank", type: "number", default: "36", description: "The driven link. A longer crank lengthens the stride — but not by twice it, because the linkage is what decides." },
+      { name: "coupler", type: "number", default: "80", description: "The pedal arm, between the crank pin and the swing arm." },
+      { name: "padAlong", type: "number", default: "140", description: "How far along the pedal arm the footpad is fixed. Past the coupler pin, so the arm is carried on and the path is amplified." },
+      { name: "showPath", type: "boolean", default: "true", description: "Draw the closed path the footpad actually follows." },
+      { name: "interactive", type: "boolean", default: "false", description: "Hand it to a person: drag across it, or focus it and use the arrow keys. It eases back into the behaviour on release." },
+      { name: "showGround", type: "boolean", default: "true", description: "Draw the contact shadow and the ground line beneath it." },
+      { name: "label", type: "string", description: "Optional technical caption under the drawing." },
+      view("profile", "machine"),
+      { name: "speed", type: "number", default: "0.3", description: "Cycles per second." },
+      ...loop,
+      ...form.slice(0, 2),
+      ...palette,
+    ],
+    notes: [
+      "Solved: the path. The pedal arm is the coupler of a four-bar and the footpad is a point rigidly fixed on it, so what it draws is a coupler curve — closed, egg-shaped and not an ellipse. `trainerFootPath` samples the solved loop over a whole revolution.",
+      "Solved: the stride. It is the horizontal extent of that curve, and the rise is its vertical extent. Neither is a prop; change a link length and both move, and so does the shape between them.",
+      "Solved: the phase. The two sides are the same linkage half a revolution apart, and the grip is the swing arm carried on past its pivot — so arms and feet cannot drift out of step.",
+      "Illustrated: there is no resistance model here at all. The flywheel is drawn, not spun — nothing computes inertia, brake torque or what the path costs. `rowing-erg` is the machine in this family that does dynamics.",
       "Design note: docs/gym-machines.md.",
     ],
   },

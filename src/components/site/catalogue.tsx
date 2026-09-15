@@ -193,6 +193,8 @@ import { FractionatingColumn } from "@/components/ui/fractionating-column"
 import { JackupRig } from "@/components/ui/jackup-rig"
 import { CableStation } from "@/components/ui/cable-station"
 import { ResistanceCam } from "@/components/ui/resistance-cam"
+import { LegPress } from "@/components/ui/leg-press"
+import { CrossTrainer } from "@/components/ui/cross-trainer"
 import { galleryEntries } from "@/components/site/gallery.generated"
 import { Panel } from "@/components/site/panel"
 
@@ -437,6 +439,8 @@ const art: Record<string, Art> = {
   "cable-station": { line: "The pin picks the weight; the reeving decides what you hold.", art: <CableStation size={150} pin={6} phase={0.35} /> },
   "gym-geometry": { line: "Five reasons the felt load is not the selected load.", art: <ResistanceCam size={150} variant="blueprint" phase={0.15} /> },
   "resistance-cam": { line: "The moment arm is the cam radius, so the cam is the resistance curve.", art: <ResistanceCam size={150} phase={0.3} /> },
+  "leg-press": { line: "The rail angle is the resistance: the frame decides the weight.", art: <LegPress size={150} railAngle={44} phase={0.3} /> },
+  "cross-trainer": { line: "The foot path is a coupler curve, so the stride is an output.", art: <CrossTrainer size={150} phase={0.4} /> },
 }
 
 /** Exported for the coverage test — a card that exists nowhere else is a bug. */

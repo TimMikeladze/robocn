@@ -243,6 +243,8 @@ installs at.
 | `cable-station` | Selectorised weight stack reeved through pulleys: the pin picks what rises, and the reeving sets both the handle force and how far the stack travels. |
 | `gym-geometry` | Five mechanisms that stand between a selected weight and a felt load: rope reeving, a variable-radius cam, an inclined rail, a coupler curve and velocity-squared air drag. |
 | `resistance-cam` | A lever on a variable-radius cam: the cable leaves at a radius that changes with the angle, so the moment arm is the cam profile and the stack does not rise linearly. |
+| `leg-press` | A sled on inclined rails: only the component of the load along the rails resists, so the rail angle is the resistance and the frame decides the weight. |
+| `cross-trainer` | A crank and rocker whose footpad rides the coupler: the stride and the shape of the foot path are what the link lengths produce, not a traced ellipse. |
 
 Installing a component pulls in what it needs: `robot-arm` brings `robot-kinematics`,
 `robot-style` and both hooks, and the theme variables ride along with `robot-style`.

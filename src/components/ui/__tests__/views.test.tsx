@@ -95,6 +95,8 @@ import { JackupRig } from "@/components/ui/jackup-rig"
 import { UtilityDroid } from "@/components/ui/utility-droid"
 import { CableStation } from "@/components/ui/cable-station"
 import { ResistanceCam } from "@/components/ui/resistance-cam"
+import { LegPress } from "@/components/ui/leg-press"
+import { CrossTrainer } from "@/components/ui/cross-trainer"
 
 /**
  * The native view is the default, and adding the `view` axis to a machine is
@@ -209,6 +211,8 @@ const machines: Record<string, (view?: RobotView) => React.ReactElement> = {
   "debris-field": (view) => <DebrisField animate={false} spread={0.5} showTrails view={view} />,
   "cable-station": (view) => <CableStation animate={false} draw={0.4} view={view} />,
   "resistance-cam": (view) => <ResistanceCam animate={false} angle={0.4} view={view} />,
+  "leg-press": (view) => <LegPress animate={false} travel={0.4} view={view} />,
+  "cross-trainer": (view) => <CrossTrainer animate={false} crankAngle={140} view={view} />,
 }
 
 /**
@@ -308,6 +312,8 @@ const natives: Partial<Record<keyof typeof machines, RobotView>> = {
   "debris-field": "front",
   "cable-station": "profile",
   "resistance-cam": "profile",
+  "leg-press": "profile",
+  "cross-trainer": "profile",
 }
 
 const tippedFrom = (native: RobotView): RobotView =>
