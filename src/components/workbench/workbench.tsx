@@ -597,7 +597,7 @@ function Bench({ initialQuery }: WorkbenchProps) {
                   </label>
                 ))}
                 <span className="font-mono text-[11px] text-muted-foreground">
-                  click a cell to send it to the stage
+                  every cell is live — drive it here, or send one to the stage from its corner
                 </span>
               </div>
               <Matrix
@@ -605,7 +605,7 @@ function Bench({ initialQuery }: WorkbenchProps) {
                 pose={pose}
                 x={axes.x}
                 y={axes.y}
-                cell={Math.round(140 * zoom)}
+                zoom={zoom}
                 onCellClick={(next) => {
                   setPose(next)
                   setMatrix(false)
@@ -631,7 +631,9 @@ function Bench({ initialQuery }: WorkbenchProps) {
           )}
 
           {sourceOpen ? (
-            <div className="h-80 shrink-0 overflow-hidden">
+            // Capped as a fraction too: on a laptop the stage, and the whole
+            // matrix, matter more than a taller paste box.
+            <div className="h-80 max-h-[45%] shrink-0 overflow-hidden">
               <SourcePanel component={component} pose={pose} search={search} />
             </div>
           ) : null}

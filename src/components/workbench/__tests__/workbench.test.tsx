@@ -186,6 +186,25 @@ describe("the workbench", () => {
     })
   })
 
+  it("leaves a clicked cell on the grid, and sends one on from its corner", async () => {
+    open()
+    await screen.findByRole("img", { name: /robotic arm/i })
+    fireEvent.click(screen.getByRole("button", { name: /Matrix/ }))
+    await waitFor(() => {
+      expect(screen.getAllByRole("img", { name: /robotic arm/i }).length).toBeGreaterThan(4)
+    })
+
+    // The machines are live: a click on one drives it, and the grid stays put.
+    fireEvent.click(screen.getAllByRole("img", { name: /robotic arm/i })[0])
+    expect(screen.getByRole("combobox", { name: "Matrix columns" })).toBeTruthy()
+
+    // The corner button is the one that means "put this on the stage".
+    fireEvent.click(screen.getAllByRole("button", { name: /send .* to the stage/i })[0])
+    await waitFor(() => {
+      expect(screen.queryByRole("combobox", { name: "Matrix columns" })).toBeNull()
+    })
+  })
+
   it("keeps the search box filtering the index", async () => {
     open()
     await screen.findByRole("img", { name: /robotic arm/i })

@@ -36,7 +36,11 @@ adds a knob; no second file to update.
 
 **Matrix mode.** Pick a prop for the columns and a prop for the rows and the stage draws the
 whole cross product — all four variants against all four camera views, every `behavior`
-against every `tool`. This is the view that finds the pose that is broken from the back.
+against every `tool`. This is the view that finds the pose that is broken from the back. The
+grid sizes its cells to fit the pane, so the whole cross product is on screen without
+scrolling; zoom multiplies that fit rather than replacing it. Every cell is the live module,
+so the pointer drives the machine in place — the corner button is what sends one to the
+stage.
 
 **A stage that is a drawing board.** Backgrounds (panel, grid, blueprint, dark, checker),
 zoom, a size control, motion pause, a phase scrubber for components that take one, and an
