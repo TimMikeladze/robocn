@@ -101,7 +101,27 @@ describe("the workbench", () => {
   it("opens on the component the URL names and draws it", async () => {
     open()
     expect(await screen.findByRole("img", { name: /robotic arm/i })).toBeTruthy()
-    expect(screen.getByText("src/components/ui/robot-arm.tsx")).toBeTruthy()
+    // The status bar names the file; so does the handoff panel, which is open.
+    expect(screen.getAllByText("src/components/ui/robot-arm.tsx").length).toBeGreaterThan(0)
+  })
+
+  it("shows the handoff without being asked, and takes no for an answer", async () => {
+    // Handing a pose to an agent is the loop, so the panel is the default.
+    const first = open()
+    await screen.findByRole("img", { name: /robotic arm/i })
+    expect(screen.getByText(/paste this into an agent/i)).toBeTruthy()
+
+    fireEvent.keyDown(window, { key: "s" })
+    await waitFor(() => {
+      expect(new URLSearchParams(window.location.search).get("panel")).toBe("none")
+    })
+    expect(screen.queryByText(/paste this into an agent/i)).toBeNull()
+
+    // And a link that says so opens closed.
+    first.unmount()
+    open({ panel: "none" })
+    await screen.findByRole("img", { name: /robotic arm/i })
+    expect(screen.queryByText(/paste this into an agent/i)).toBeNull()
   })
 
   it("derives its knobs from the component's own props", async () => {

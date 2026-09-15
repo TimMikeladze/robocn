@@ -129,7 +129,10 @@ function Bench({ initialQuery }: WorkbenchProps) {
   )
   const [zoom, setZoom] = React.useState(() => Number(params.get("zoom")) || 1)
   const [outline, setOutline] = React.useState(params.get("outline") === "1")
-  const [sourceOpen, setSourceOpen] = React.useState(params.get("panel") === "source")
+  // Handoff is the point of the tool, so the panel is open unless the URL says
+  // otherwise. `panel=none` is what a closed one writes; `panel=source` still
+  // reads as open, because links from before the default flipped say that.
+  const [sourceOpen, setSourceOpen] = React.useState(params.get("panel") !== "none")
   const [exportOpen, setExportOpen] = React.useState(false)
   const [listOpen, setListOpen] = React.useState(false)
   // The guide opens itself once, for someone who has never seen the loop. After
@@ -173,7 +176,7 @@ function Bench({ initialQuery }: WorkbenchProps) {
     if (background !== "grid") next.set("bg", background)
     if (zoom !== 1) next.set("zoom", String(zoom))
     if (outline) next.set("outline", "1")
-    if (sourceOpen) next.set("panel", "source")
+    if (!sourceOpen) next.set("panel", "none")
     return writePose(next, pose).toString()
   }, [component.id, pose, matrix, axes, background, zoom, outline, sourceOpen])
 

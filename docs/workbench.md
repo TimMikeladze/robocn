@@ -83,6 +83,7 @@ things an agent needs, on the clipboard: the component's file path, a JSX snippe
 pose currently on screen, the props as JSON, the rendered SVG, and a prepared prompt naming
 the file, the export and the current pose. Paste it into Claude Code or Codex in the same
 repository, let the agent edit `src/components/ui/<item>.tsx`, and watch the stage update.
+The panel is open on arrival — `s` closes it, and a closed one says `panel=none` in the URL.
 
 **The URL is the pose.** Component, mode, matrix axes, stage settings and every non-default
 prop live in the query string, so a pose can be reloaded, bookmarked, or pasted to someone
