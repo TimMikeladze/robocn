@@ -191,7 +191,7 @@ function PosePanel({ component, search, onOpen, onClose }: PosePanelProps) {
             ))}
             {listed.length === 0 ? (
               <li className="px-1.5 py-2 text-[12px] leading-snug text-muted-foreground">
-                Nothing saved yet. A pose kept here stays in this browser — it is not a link, and
+                Nothing saved yet. Saved poses stay in this browser. They are not links and
                 nothing is uploaded.
               </li>
             ) : null}
@@ -200,8 +200,8 @@ function PosePanel({ component, search, onOpen, onClose }: PosePanelProps) {
         </>
       ) : (
         <p className="p-1 text-[12px] leading-snug text-muted-foreground">
-          This browser has no origin private file system, so there is nowhere to keep a shelf.
-          The URL is still the pose — bookmark it.
+          This browser has no origin private file system, so poses cannot be saved here. The
+          URL is still the pose, so bookmark it instead.
         </p>
       )}
     </div>

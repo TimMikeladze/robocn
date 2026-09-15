@@ -32,15 +32,15 @@ afterEach(() => {
 })
 
 describe("setup", () => {
-  it("explains the loop the first time, and not after it is dismissed", async () => {
+  it("explains how to run it the first time, and not after it is dismissed", async () => {
     const first = open()
-    const guide = await screen.findByRole("dialog", { name: /the loop: a pose here/i })
+    const guide = await screen.findByRole("dialog", { name: /getting started/i })
     expect(within(guide).getByText(/git clone/)).toBeTruthy()
     // Every agent this loop is written for is named, with the command to run.
     for (const command of ["claude", "codex", "opencode"]) {
       expect(within(guide).getByRole("link", { name: new RegExp(command) })).toBeTruthy()
     }
-    fireEvent.click(within(guide).getByRole("button", { name: /start posing/i }))
+    fireEvent.click(within(guide).getByRole("button", { name: /open the workbench/i }))
     expect(screen.queryByRole("dialog")).toBeNull()
 
     first.unmount()
@@ -50,7 +50,7 @@ describe("setup", () => {
 
   it("takes an explicit answer from the URL, either way", async () => {
     const asked = open({ setup: "1" })
-    expect(screen.getByRole("dialog", { name: /the loop: a pose here/i })).toBeTruthy()
+    expect(screen.getByRole("dialog", { name: /getting started/i })).toBeTruthy()
     asked.unmount()
     // A first visit that says no: what a screenshot of the tool itself needs.
     open({ setup: "0" })
@@ -62,33 +62,33 @@ describe("setup", () => {
     open()
     await screen.findByRole("img", { name: /robotic arm/i })
     fireEvent.click(screen.getByRole("button", { name: /Setup/ }))
-    expect(screen.getByRole("dialog", { name: /the loop: a pose here/i })).toBeTruthy()
+    expect(screen.getByRole("dialog", { name: /getting started/i })).toBeTruthy()
   })
 })
 
-describe("starting a new machine", () => {
+describe("starting a new component", () => {
   beforeEach(() => {
     window.localStorage.setItem("robocn-workbench-setup", "1")
   })
 
-  it("writes the brief for a machine that does not exist yet", async () => {
+  it("writes the brief for a component that does not exist yet", async () => {
     open()
     await screen.findByRole("img", { name: /robotic arm/i })
     fireEvent.click(screen.getByRole("button", { name: /New/ }))
-    const dialog = screen.getByRole("dialog", { name: /name it/i })
-    fireEvent.change(within(dialog).getByRole("textbox", { name: /what is it called/i }), {
+    const dialog = screen.getByRole("dialog", { name: /write the brief for a new component/i })
+    fireEvent.change(within(dialog).getByRole("textbox", { name: /^name$/i }), {
       target: { value: "Harbour crane" },
     })
     const brief = within(dialog).getByText(/build-robot skill/)
     expect(brief.textContent).toContain("src/components/ui/harbour-crane.tsx")
     expect(brief.textContent).toContain("HarbourCrane")
-    // The machine on the stage is offered as the one to follow.
+    // The component on the stage is offered as the one to follow.
     expect(brief.textContent).toContain("src/components/ui/robot-arm.tsx")
   })
 
   it("opens from the URL as well as the toolbar", async () => {
     open({ new: "1" })
-    expect(screen.getByRole("dialog", { name: /name it/i })).toBeTruthy()
+    expect(screen.getByRole("dialog", { name: /write the brief for a new component/i })).toBeTruthy()
   })
 })
 

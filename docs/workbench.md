@@ -58,10 +58,11 @@ loaded appears without restarting anything; it is a dev-server, same-machine con
 refuses anywhere else.
 
 **It tells you how to run it.** A setup panel opens on a first visit and comes back from
-the toolbar, the `?` key, or `?setup=1` in the URL: clone, `pnpm install`, `pnpm dev`, then open `claude`, `codex` or
-`opencode` in the same checkout — which is the entire integration — and hand the agent the
-brief from the Handoff panel. On robocn.dev it says so plainly: every control works, but
-nothing hosted can edit your files.
+the toolbar, the `?` key, or `?setup=1` in the URL. Five steps: clone and `pnpm dev`; open
+`claude`, `codex` or `opencode` in the same checkout, which is the entire integration; pose a
+component and copy the handoff; watch the edit land; and, optionally, open a folder. On
+robocn.dev it says so plainly: every control works, but nothing hosted can rebuild your
+components. The wording of every dialog is set by `docs/workbench-copy.md`.
 
 **Export what is on the stage.** The toolbar's `Export` menu (`e`) records the stage — the
 machine, the background, the zoom, and the whole grid in matrix mode — as an animated WebP,
@@ -144,7 +145,8 @@ repo, so an agent opened here knows the house rules.
 
 It works when deployed too — it is an ordinary Next page — but the point of it is local,
 where the file you are reading on the stage is the file the agent is editing. The same
-instructions live in the page itself: `src/components/workbench/setup-guide.tsx`.
+instructions live in the page itself: `src/components/workbench/setup-guide.tsx`, written to
+the voice in `docs/workbench-copy.md`.
 
 ## Verification
 

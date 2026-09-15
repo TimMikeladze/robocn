@@ -121,12 +121,12 @@ export const exportName = (slug: string) =>
     .join("")
 
 /**
- * The brief for a machine that does not exist yet.
+ * The brief for a component that does not exist yet.
  *
- * It does not try to restate the house rules — the `build-robot` skill is
- * 190 lines of them and is already in the repo. It names the file, the export,
- * the subject and the nearest machine to follow, and points the agent at the
- * skill that knows the other ten touchpoints.
+ * It does not restate the project's conventions. The `build-robot` skill is 190
+ * lines of them and is already in the repository. The brief names the file, the
+ * export, the subject and the component to follow, and points the agent at that
+ * skill for the other ten touchpoints.
  */
 export function newRobotPrompt({
   name,
@@ -154,12 +154,12 @@ export function newRobotPrompt({
     `- export: \`${exportName(slug)}\``,
     `- item:   \`${slug}\``,
     ...(reference
-      ? [`- nearest existing machine to follow: \`${reference.file}\` (\`${reference.export}\`)`]
+      ? [`- component to follow: \`${reference.file}\` (\`${reference.export}\`)`]
       : []),
     "",
     subject?.trim()
       ? subject.trim()
-      : "What it is: <describe the machine — what it does, what moves, what it should read as>",
+      : "What it is: <describe the component: what it does, what moves, what it should read as>",
     "",
     ...(drafted
       ? [
@@ -174,12 +174,12 @@ export function newRobotPrompt({
           "item and its view fixture.",
         ]),
     "",
-    "Then write the mechanism, and the solver first if it has real kinematics. The docs entry,",
-    "the demo bench and the catalogue card are optional; write them once it works. Verify with",
+    "Then write the mechanism. Write the solver first if it has real kinematics. The docs entry,",
+    "the demo bench and the catalogue card are optional; add them once it works. Verify with",
     `\`pnpm robot:check ${slug}\`.`,
     "",
-    "Save the component file first and tell me — it shows up in the workbench as a draft as soon",
-    "as it exists, and I will pose it there while you finish the rest.",
+    "Save the component file first and tell me. The workbench lists it as a draft as soon as the",
+    "file exists, so I can pose it there while you finish the rest.",
   ].join("\n")
 }
 
@@ -188,11 +188,11 @@ export function shipDraftPrompt(component: WorkbenchComponent) {
   return [
     "Use the build-robot skill.",
     "",
-    `\`${component.file}\` exists and draws, but nothing else does: it has no registry item, so`,
-    "it does not install, has no docs page, no demo, no catalogue card and no tests.",
+    `\`${component.file}\` exists and renders, but nothing points at it. It has no registry item,`,
+    "so it cannot be installed, and it has no docs page, no demo, no catalogue card and no tests.",
     "",
-    `Ship \`${component.export}\` the rest of the way — registry item \`${component.id}\`, tests, and`,
-    "the docs entry, demo and catalogue card it deserves — then `pnpm robot:check` it.",
+    `Finish \`${component.export}\`: registry item \`${component.id}\`, tests beside the component, a`,
+    `docs entry, a demo and a catalogue card. Then run \`pnpm robot:check ${component.id}\`.`,
   ].join("\n")
 }
 
@@ -310,9 +310,9 @@ export function jsxSnippet(component: WorkbenchComponent, pose: Pose) {
 }
 
 /**
- * The handoff. The workbench never talks to an agent; it writes the brief the
- * agent needs — which file, which export, which pose — and you paste it into
- * Claude Code or Codex running in this same checkout.
+ * The handoff. The workbench never talks to an agent. It writes the brief the
+ * agent needs — the file, the export and the pose — and you paste that into an
+ * agent running in the same checkout.
  */
 export function agentPrompt(
   component: WorkbenchComponent,
@@ -322,7 +322,7 @@ export function agentPrompt(
   const lines = [
     `Edit \`${component.file}\` in robocn — the \`${component.export}\` component (${component.title}).`,
     "",
-    "I am looking at it in the workbench, posed like this:",
+    "The component is posed like this in the workbench:",
     "",
     "```tsx",
     jsxSnippet(component, pose),
@@ -335,7 +335,7 @@ export function agentPrompt(
       ? options.request.trim()
       : "What I want changed: <describe it>",
     "",
-    "Keep the prop contract, the camera views and the motion hooks intact, and keep its tests and docs in step.",
+    "Keep the prop contract, the camera views and the motion hooks intact, and update its tests and docs to match.",
   )
   return lines.join("\n")
 }

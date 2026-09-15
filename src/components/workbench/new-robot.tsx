@@ -1,23 +1,21 @@
 "use client"
 
 /**
- * Starting a machine that does not exist yet.
+ * Creating a component that does not exist yet.
  *
- * Two ways out of this dialog, and which one you get depends on whether the
- * workbench is holding a folder.
+ * Two outcomes, and which one you get depends on whether a folder is open.
  *
- * **With a folder** it writes `src/components/ui/<slug>.tsx` itself, seeded
- * from a real robocn skeleton — props destructured with defaults, palette,
- * camera, a clock. The draft appears in the index, and the agent is handed a
- * file to change rather than a blank page.
+ * **With a folder** the workbench writes `src/components/ui/<slug>.tsx` itself,
+ * seeded from a real robocn skeleton: props destructured with defaults, the
+ * palette, the camera and a clock. The draft is listed straight away, and the
+ * agent is handed a file to change instead of a blank page.
  *
- * **Without one** it does what it always did: write the brief precisely — file
- * path, export name, item name, the nearest machine to follow — and let the
- * agent in the other terminal create the file. The workbench picks it up the
- * moment it exists.
+ * **Without one** it writes the brief: file path, export name, item name and
+ * the nearest component to follow. The agent creates the file in the checkout
+ * and the workbench lists it as soon as it exists.
  *
- * Either way the brief is produced, because the template is a starting point
- * and `build-robot` is the rest of the way.
+ * The brief is produced either way, because the skeleton is a starting point
+ * and `build-robot` is the rest of the way. Voice: `docs/workbench-copy.md`.
  */
 
 import * as React from "react"
@@ -37,9 +35,9 @@ import {
 
 export interface NewRobotProps {
   onClose: () => void
-  /** The machine on the stage, offered as the thing to follow. */
+  /** The component on the stage, offered as the one to follow. */
   current: WorkbenchComponent
-  /** Re-reads the library from disk; null where that cannot work. */
+  /** Re-reads the components from disk; null where that cannot work. */
   onScan: (() => void) | null
   scanning: boolean
   scanMessage: string
@@ -91,23 +89,24 @@ function NewRobot({ onClose, current, onScan, scanning, scanMessage }: NewRobotP
 
   return (
     <WorkbenchDialog
-      eyebrow="New machine"
-      title={canWrite ? "Name it, and the workbench writes the file." : "Name it, then hand the build to your agent."}
+      eyebrow="New component"
+      title={canWrite ? "Create a component" : "Write the brief for a new component"}
       onClose={onClose}
     >
       <p className="text-[13px] leading-relaxed text-muted-foreground">
         {canWrite ? (
           <>
-            A skeleton that already draws — props, palette, camera, clock — written into{" "}
-            <strong className="text-foreground">{checkout.root}</strong>. Your agent replaces the
-            body; it does not have to work out the house idiom first.
+            The workbench writes the file into{" "}
+            <strong className="text-foreground">{checkout.root}</strong>. It is a working
+            skeleton: the shared props with their defaults, the palette, the camera and a clock.
+            Your agent replaces the body instead of starting from an empty file.
           </>
         ) : (
           <>
-            No folder is open, so this writes the brief rather than the file. Your agent builds
-            the component in this checkout; the workbench picks it up{" "}
-            <strong className="text-foreground">as soon as the file exists</strong> — registry
-            entry or not — so you can pose it while the rest of the work is still going on.
+            No folder is open, so this writes a brief instead of the file. Give it to an agent
+            running in your checkout and it creates the component. The workbench lists it{" "}
+            <strong className="text-foreground">as soon as the file exists</strong>, registry
+            entry or not, so you can pose it while the rest is still being written.
           </>
         )}
       </p>
@@ -115,7 +114,7 @@ function NewRobot({ onClose, current, onScan, scanning, scanMessage }: NewRobotP
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="space-y-1">
           <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-            What is it called
+            Name
           </span>
           <input
             autoFocus
@@ -127,7 +126,7 @@ function NewRobot({ onClose, current, onScan, scanning, scanMessage }: NewRobotP
         </label>
         <label className="space-y-1">
           <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-            Nearest machine to follow
+            Component to follow
           </span>
           <select
             className={field}
@@ -152,9 +151,9 @@ function NewRobot({ onClose, current, onScan, scanning, scanMessage }: NewRobotP
             src/components/ui/<span className="text-foreground">{slug}</span>.tsx ·{" "}
             <span className="text-foreground">{exportName(slug)}</span>
             {taken ? (
-              <span className="ml-2 text-destructive">that name is already taken</span>
+              <span className="ml-2 text-destructive">name already taken</span>
             ) : onDisk ? (
-              <span className="ml-2 text-destructive">that file is already on disk</span>
+              <span className="ml-2 text-destructive">file already on disk</span>
             ) : null}
           </>
         ) : (
@@ -170,24 +169,24 @@ function NewRobot({ onClose, current, onScan, scanning, scanMessage }: NewRobotP
           rows={3}
           className="w-full rounded-sm border border-border bg-background p-2 text-[13px] outline-none focus-visible:ring-2 focus-visible:ring-ring"
           value={subject}
-          placeholder="A quayside container crane: a portal on rails, a trolley that runs the boom, a spreader on cables. Profile and iso views, a load cycle it runs on its own."
+          placeholder="A quayside container crane. A portal on rails, a trolley that runs along the boom, a spreader on cables. Profile and iso views, and a load cycle it runs on its own."
           onChange={(event) => setSubject(event.target.value)}
         />
       </label>
 
-      <Command code={prompt} label="paste into Claude Code, Codex or opencode" />
+      <Command code={prompt} label="paste into your agent" />
 
       {failure ? <p className="text-[12px] text-destructive">{failure}</p> : null}
       {written ? (
         <p className="inline-flex items-center gap-1.5 font-mono text-[11px] text-foreground">
           <Check className="size-3.5 text-emerald-500" />
-          wrote {written} — it is in the index under drafts
+          wrote {written} · listed under drafts
         </p>
       ) : null}
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
         <span className="font-mono text-[11px] text-muted-foreground">
-          {scanMessage || "Drafts appear in the index under “drafts”."}
+          {scanMessage || "Drafts are listed at the top of the index."}
         </span>
         <div className="flex items-center gap-2">
           {onScan ? (
@@ -202,7 +201,7 @@ function NewRobot({ onClose, current, onScan, scanning, scanMessage }: NewRobotP
               ) : (
                 <RefreshCw className="size-3.5" />
               )}
-              Rescan the library
+              Rescan components
             </button>
           ) : null}
           {canWrite ? (
@@ -225,7 +224,7 @@ function NewRobot({ onClose, current, onScan, scanning, scanMessage }: NewRobotP
             onClick={onClose}
             className="rounded-sm border border-border bg-foreground px-3 py-1.5 font-mono text-[11px] text-background transition-opacity hover:opacity-90"
           >
-            Done
+            Close
           </button>
         </div>
       </div>

@@ -435,7 +435,7 @@ function Bench({ initialQuery }: WorkbenchProps) {
           className={button}
           aria-pressed={creating}
           onClick={() => setCreating(true)}
-          title="Start a new machine (n)"
+          title="New component (n)"
         >
           <Plus className="size-3.5" /> New
         </button>
@@ -517,7 +517,7 @@ function Bench({ initialQuery }: WorkbenchProps) {
           className={button}
           aria-pressed={outline}
           onClick={() => setOutline((value) => !value)}
-          title="Outline the drawing (o)"
+          title="Draw the bounding box (o)"
         >
           <SquareDashed className="size-3.5" /> Box
         </button>
@@ -562,7 +562,7 @@ function Bench({ initialQuery }: WorkbenchProps) {
             className={button}
             aria-pressed={guideOpen}
             onClick={() => setGuide(!guideOpen)}
-            title="How to run this and connect your agent (?)"
+            title="Getting started: run this and connect your agent (?)"
           >
             <HelpCircle className="size-3.5" /> Setup
           </button>
@@ -706,7 +706,7 @@ function Bench({ initialQuery }: WorkbenchProps) {
                 type="button"
                 onClick={() => void scan()}
                 disabled={scanning}
-                title="Re-read src/components/ui — picks up a component created since this page loaded"
+                title="Re-read src/components/ui. Picks up a component created since this page loaded."
                 className="ml-auto inline-flex items-center gap-1 rounded-sm px-1.5 transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50"
               >
                 <RefreshCw className={cn("size-3", scanning && "animate-spin")} />

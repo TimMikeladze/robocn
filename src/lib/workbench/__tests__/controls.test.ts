@@ -83,7 +83,7 @@ describe("the manifest", () => {
   })
 })
 
-describe("a machine that does not exist yet", () => {
+describe("a component that does not exist yet", () => {
   it("turns a name into the file, the item and the export", () => {
     expect(slugify("  Harbour Crane  ")).toBe("harbour-crane")
     expect(slugify("Robot Arm 3D!")).toBe("robot-arm-3d")
@@ -106,8 +106,8 @@ describe("a machine that does not exist yet", () => {
 
   it("leaves the subject as a blank to fill, and skips a reference nobody picked", () => {
     const prompt = newRobotPrompt({ name: "Harbour crane" })
-    expect(prompt).toContain("<describe the machine")
-    expect(prompt).not.toContain("nearest existing machine")
+    expect(prompt).toContain("<describe the component")
+    expect(prompt).not.toContain("component to follow")
   })
 
   it("asks for the ten touchpoints a draft is still missing", () => {
@@ -116,6 +116,7 @@ describe("a machine that does not exist yet", () => {
     expect(prompt).toContain("build-robot skill")
     expect(prompt).toContain("src/components/ui/test-bot.tsx")
     expect(prompt).toContain("registry item `test-bot`")
+    expect(prompt).toContain("pnpm robot:check test-bot")
   })
 
   it("puts drafts at the top of the index", () => {

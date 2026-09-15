@@ -1,20 +1,17 @@
 "use client"
 
 /**
- * Source and handoff.
+ * Source and handoff. Two ways to change a component, for two sizes of change.
  *
- * Two ways to change a machine, and they are for different sizes of change.
- *
- * **Handoff** is the big one: everything an agent needs on the clipboard — the
- * file to edit, the pose on screen written as JSX, and a brief naming both.
- * Paste that into Claude Code or Codex running in this same checkout, let it
- * work, and the stage redraws through Fast Refresh.
+ * **Handoff** is the large one. It puts everything an agent needs on the
+ * clipboard: the file to edit, the pose on screen as JSX, and a brief naming
+ * both. Paste it into an agent running in this checkout and the stage redraws
+ * when the agent saves.
  *
  * **Source** is the small one. With a folder open (`docs/checkout.md`) the tab
- * is an editor over the real file rather than a read-only fetch: nudge a
- * number, fix a path, delete the line you can see is wrong, ⌘S. Without a
- * folder it falls back to the route and stays read-only, which is what Firefox
- * and Safari get.
+ * is an editor over the real file: change a number, fix a path, delete a line,
+ * ⌘S. Without a folder it reads the file through a route and stays read-only,
+ * which is what Firefox and Safari get.
  */
 
 import * as React from "react"
@@ -180,20 +177,21 @@ function SourcePanel({ component, pose, search }: SourcePanelProps) {
         {tab === "handoff" ? (
           <div className="space-y-3">
             <p className="text-[12px] leading-snug text-muted-foreground">
-              Paste this into Claude Code, Codex or opencode running in this checkout. It
-              edits <code className="font-mono text-foreground">{component.file}</code>, and the
-              stage redraws on save. <strong className="text-foreground">Setup</strong> in the
-              toolbar has the clone-and-run steps.
+              Paste this into an agent running in this checkout. It edits{" "}
+              <code className="font-mono text-foreground">{component.file}</code>, and the stage
+              redraws when the agent saves.{" "}
+              <strong className="text-foreground">Setup</strong> in the toolbar has the clone and
+              run steps.
             </p>
             <div>
               <p className="mb-1 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                This pose
+                Current pose
               </p>
               <CodeBlock code={explicit} caption="explicit props" scroll />
             </div>
             <div>
               <p className="mb-1 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                With the component&rsquo;s own defaults filled in
+                Every prop, defaults included
               </p>
               <CodeBlock code={full} caption="every prop" scroll />
             </div>
@@ -215,20 +213,20 @@ function SourcePanel({ component, pose, search }: SourcePanelProps) {
             </div>
             <div>
               <p className="mb-1 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                Prompt for Claude Code or Codex
+                Prompt
               </p>
               <CodeBlock code={prompt} caption="paste into your agent" scroll />
             </div>
             {component.draft ? (
               <div>
                 <p className="mb-1 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                  This one is still a draft
+                  This component is a draft
                 </p>
                 <p className="mb-1.5 text-[12px] leading-snug text-muted-foreground">
-                  It draws, but no registry item claims it — so it does not install, and it has
-                  no docs page, demo or tests. When the shape is right, hand this over.
+                  The file renders, but no registry item points at it. It cannot be installed and
+                  has no docs page, demo or tests. Hand this prompt over once the shape is right.
                 </p>
-                <CodeBlock code={shipDraftPrompt(component)} caption="ship it the rest of the way" scroll />
+                <CodeBlock code={shipDraftPrompt(component)} caption="finish the component" scroll />
               </div>
             ) : null}
           </div>
@@ -264,15 +262,15 @@ function SourcePanel({ component, pose, search }: SourcePanelProps) {
                 className="min-h-72 w-full flex-1 resize-none rounded-sm border border-border bg-panel p-2 font-mono text-[11.5px] leading-[1.55] outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
               <p className="font-mono text-[10px] text-muted-foreground">
-                {dirty ? "unsaved · ⌘S to write" : "in step with disk"} · {checkout.root}/
+                {dirty ? "unsaved · ⌘S to save" : "matches disk"} · {checkout.root}/
                 {component.file}
               </p>
             </div>
           ) : (
             <p className="text-[12px] leading-snug text-muted-foreground">
               <code className="font-mono text-foreground">{component.file}</code> is not in the
-              folder you opened. Open the robocn checkout itself — the folder with{" "}
-              <code className="font-mono text-foreground">registry.json</code> in it.
+              folder you opened. Open the robocn checkout itself, the directory containing{" "}
+              <code className="font-mono text-foreground">registry.json</code>.
             </p>
           )
         ) : loaded?.error ? (

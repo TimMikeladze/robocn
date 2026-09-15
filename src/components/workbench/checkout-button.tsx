@@ -4,9 +4,9 @@
  * The toolbar's end of the checkout.
  *
  * Four states, and the button says which one it is in: no picker in this
- * browser, nothing held, a folder remembered but not yet re-granted, and a
- * folder open. The fourth one names the folder, because "a folder" is not
- * enough information to write files into.
+ * browser, no folder open, a folder remembered but not yet re-granted, and a
+ * folder open. The last one names the folder, because "a folder" is not enough
+ * information to write files into.
  */
 
 import * as React from "react"
@@ -33,7 +33,7 @@ function CheckoutButton({ className }: CheckoutButtonProps) {
           className={cn(className, "max-w-44")}
           aria-pressed={open}
           onClick={() => setOpen((value) => !value)}
-          title={`Holding ${checkout.root} — ${checkout.files.size} files watched`}
+          title={`${checkout.root} · ${checkout.files.size} files watched`}
         >
           <FolderCheck className="size-3.5 shrink-0 text-emerald-500" />
           <span className="truncate">{checkout.root}</span>
@@ -46,7 +46,7 @@ function CheckoutButton({ className }: CheckoutButtonProps) {
             <span className="px-1 font-mono text-[11px] break-all">{checkout.root}</span>
             <span className="px-1 font-mono text-[11px] text-muted-foreground">
               {checkout.files.size} files watched
-              {checkout.isRobocn ? "" : " · this does not look like a robocn checkout"}
+              {checkout.isRobocn ? "" : " · does not look like a robocn checkout"}
             </span>
             <button
               type="button"
@@ -73,8 +73,8 @@ function CheckoutButton({ className }: CheckoutButtonProps) {
       onClick={() => void (restoring ? checkout.reconnect() : checkout.connect())}
       title={
         restoring
-          ? `Reopen ${checkout.pending} — browsers drop the grant when they restart`
-          : "Hold a folder: read and write this checkout from the page"
+          ? `Reopen ${checkout.pending}. Browsers drop file access when they restart.`
+          : "Open a folder to read and write this checkout from the page"
       }
     >
       {checkout.busy ? (
