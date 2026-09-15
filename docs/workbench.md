@@ -78,10 +78,6 @@ swapped, which is why the local loop is still the loop. Chrome, Edge and Opera o
 elsewhere the button does not appear and everything falls back to what it did before. Notes:
 `docs/checkout.md`.
 
-**A shelf for poses.** The URL is still the pose. `Poses` (or `b`) saves the one on screen
-under a name, in the origin private file system — no picker, no permission, and it works in
-Safari and Firefox too. Nothing is uploaded and nothing leaves that browser.
-
 **Handoff, not integration.** The workbench does not talk to an agent. It gives you the
 things an agent needs, on the clipboard: the component's file path, a JSX snippet of the
 pose currently on screen, the props as JSON, the rendered SVG, and a prepared prompt naming

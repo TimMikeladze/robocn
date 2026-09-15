@@ -46,8 +46,11 @@ function Matrix({ component, pose, x, y, cell, onCellClick }: MatrixProps) {
   })
 
   return (
-    <div className="min-h-0 flex-1 overflow-auto p-4">
-      <table className="border-separate border-spacing-0">
+    // `m-auto` rather than `justify-center`: auto margins collapse to zero once
+    // the grid is wider than the pane, so a big matrix still scrolls from its
+    // first column instead of having it cut off.
+    <div className="flex min-h-0 flex-1 overflow-auto p-4">
+      <table className="m-auto border-separate border-spacing-0">
         <thead>
           <tr>
             <th className="sticky left-0 z-20 bg-panel px-2 py-1 text-left font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">

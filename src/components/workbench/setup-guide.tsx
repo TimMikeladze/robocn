@@ -171,7 +171,7 @@ Give the gripper a third finger, and keep the iso view honest.`}
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
         <span className="font-mono text-[11px] text-muted-foreground">
-          ? reopens this · / search · m matrix · s handoff · n new · b poses
+          ? reopens this · / search · m matrix · s handoff · n new
         </span>
         <button
           type="button"

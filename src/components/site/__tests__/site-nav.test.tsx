@@ -9,6 +9,7 @@ describe("header nav", () => {
     expect(activeHref("/docs")).toBe("/docs")
     expect(activeHref("/docs/robot-arm")).toBe("/docs")
     expect(activeHref("/workbench")).toBe("/workbench")
+    expect(activeHref("/about")).toBe("/about")
   })
 
   it("lights nothing off the nav's own routes", () => {

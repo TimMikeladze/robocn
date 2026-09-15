@@ -103,14 +103,7 @@ the *detection* instant; the generator stays where it is.
 download folder. With a checkout the same blob can be written to
 `docs/screenshots/<name>.webp` instead — which is where it was going anyway.
 
-### 6. A pose shelf in browser storage
-
-The URL is the pose, and that is right: a pose should be a link. But a *set* of poses — the
-six angles you keep comparing, the matrix you keep re-deriving — wants a shelf. OPFS is that
-shelf: a private per-origin directory that needs no permission and no user gesture, and
-works in Safari and Firefox where the disk picker does not.
-
-### 7. Fewer routes in the way
+### 6. Fewer routes in the way
 
 `GET /api/workbench/source` and `POST /api/workbench/scan` both stay, because Firefox and
 Safari have no picker and the local loop must work with no grant at all. But neither is on
@@ -125,12 +118,10 @@ src/lib/fs/paths.ts         use-fs keys files by root name; the repo speaks repo
 src/lib/fs/handles.ts       IndexedDB, so a grant survives a reload
 src/lib/fs/probe.ts         reading and writing a folder without watching it
 src/lib/fs/install.ts       a registry item -> the files to write, and the primitives we cannot
-src/lib/fs/poses.ts         the OPFS shelf
 src/lib/workbench/draft.ts  the skeleton `New` writes
 
 src/components/workbench/checkout.tsx         one useFs for the page, as context
 src/components/workbench/checkout-button.tsx  the toolbar's four states
-src/components/workbench/poses.tsx            the shelf, and its own useFs over OPFS
 src/components/site/install-to-folder.tsx     the installer, under the install command
 ```
 
@@ -186,7 +177,6 @@ than pretending to still hold the folder.
 | | Chrome / Edge / Opera | Safari | Firefox |
 |---|---|---|---|
 | Disk checkout | desktop only | no | no |
-| OPFS pose shelf | yes | 17+ | 111+ |
 
 Everything degrades to what the workbench already did: no picker means no Folder button, the
 source panel falls back to the route, and `New` writes a brief.

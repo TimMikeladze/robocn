@@ -20,6 +20,7 @@ const links: NavLink[] = [
   { href: "/docs", label: "Components" },
   { href: "/workbench", label: "Workbench" },
   { href: "/docs/installation", label: "Install" },
+  { href: "/about", label: "About" },
 ]
 
 /**

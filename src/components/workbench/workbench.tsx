@@ -20,7 +20,6 @@
 
 import * as React from "react"
 import {
-  Bookmark,
   Columns3,
   Frame,
   Grid2X2,
@@ -41,7 +40,6 @@ import { ExportMenu, type ExportDestination } from "@/components/ui/robot-export
 import { CheckoutProvider, useCheckout } from "@/components/workbench/checkout"
 import { CheckoutButton } from "@/components/workbench/checkout-button"
 import { ComponentList } from "@/components/workbench/component-list"
-import { PosePanel } from "@/components/workbench/poses"
 import { ControlsPanel } from "@/components/workbench/controls-panel"
 import { Matrix, axisValues } from "@/components/workbench/matrix"
 import { NewRobot } from "@/components/workbench/new-robot"
@@ -149,7 +147,6 @@ function Bench({ initialQuery }: WorkbenchProps) {
   const [scanning, setScanning] = React.useState(false)
   const [scanMessage, setScanMessage] = React.useState("")
   const [actions, setActions] = React.useState<ActionCall[]>([])
-  const [posesOpen, setPosesOpen] = React.useState(false)
   /** Seconds since the machine last drew — the status bar's heartbeat. */
   const [since, setSince] = React.useState(0)
   const checkout = useCheckout()
@@ -219,35 +216,6 @@ function Bench({ initialQuery }: WorkbenchProps) {
     if (chosen) setAxes(defaultAxes(chosen))
   }, [])
 
-  /**
-   * Put a whole saved pose back on the stage.
-   *
-   * The query string is the workbench's own state format, so restoring a pose
-   * from the shelf is reading the same string the URL holds — component, mode,
-   * matrix axes, stage settings and every non-default prop.
-   */
-  const applySearch = React.useCallback((next: string) => {
-    const saved = new URLSearchParams(next)
-    const chosen = workbenchComponent(saved.get("c"))
-    if (!chosen) return
-    setId(chosen.id)
-    setPose(readPose(saved, chosen.controls))
-    setMatrix(saved.get("mode") === "matrix")
-    setAxes({
-      x: saved.get("x") ?? defaultAxes(chosen).x,
-      y: saved.get("y") ?? defaultAxes(chosen).y,
-    })
-    setBackground(
-      (stageBackgrounds.find((entry) => entry.id === saved.get("bg"))?.id ??
-        "grid") as StageBackground,
-    )
-    setZoom(Number(saved.get("zoom")) || 1)
-    setOutline(saved.get("outline") === "1")
-    setSourceOpen(saved.get("panel") === "source")
-    pending.current = []
-    setActions([])
-  }, [])
-
   const shuffle = () => {
     const next: Pose = { ...pose }
     for (const control of component.controls) {
@@ -301,7 +269,6 @@ function Bench({ initialQuery }: WorkbenchProps) {
       if (event.key === "s") setSourceOpen((value) => !value)
       if (event.key === "o") setOutline((value) => !value)
       if (event.key === "e") setExportOpen((value) => !value)
-      if (event.key === "b") setPosesOpen((value) => !value)
       if (event.key === "g") {
         setBackground((current) => {
           const index = stageBackgrounds.findIndex((entry) => entry.id === current)
@@ -467,26 +434,6 @@ function Bench({ initialQuery }: WorkbenchProps) {
         >
           <SquareCode className="size-3.5" /> Handoff
         </button>
-        <span className="relative">
-          <button
-            type="button"
-            className={button}
-            aria-pressed={posesOpen}
-            onClick={() => setPosesOpen((value) => !value)}
-            title="Saved poses, kept in this browser (b)"
-          >
-            <Bookmark className="size-3.5" /> Poses
-          </button>
-          {posesOpen ? (
-            <PosePanel
-              component={component.id}
-              search={search}
-              onOpen={applySearch}
-              onClose={() => setPosesOpen(false)}
-            />
-          ) : null}
-        </span>
-
         <span className="mx-1 h-4 w-px bg-border" />
         <label className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
           <span className="sr-only">Stage background</span>
