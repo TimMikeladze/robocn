@@ -164,8 +164,10 @@ docs/screenshots      where exports land
 registry.json  components.json
 ```
 
-That is about 260 files. Steady state costs one `stat` each — contents are only re-read when
-size or mtime moves — so the 300ms poll is cheap enough to leave running.
+That is a little over 300 files. Steady state costs one `stat` each — contents are only
+re-read when size or mtime moves — so the poll is cheap enough to leave running. It is set
+to 600ms rather than the library's 300: a repository is bigger than the default assumption,
+and an agent's save does not need to be seen in a third of a second.
 
 A target project being installed into is not filtered, because it is not scanned:
 `src/lib/fs/probe.ts` walks the handle directly for the two files it needs and for each path
