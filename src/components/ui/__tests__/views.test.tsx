@@ -93,6 +93,8 @@ import { FlareStack } from "@/components/ui/flare-stack"
 import { FractionatingColumn } from "@/components/ui/fractionating-column"
 import { JackupRig } from "@/components/ui/jackup-rig"
 import { UtilityDroid } from "@/components/ui/utility-droid"
+import { CableStation } from "@/components/ui/cable-station"
+import { ResistanceCam } from "@/components/ui/resistance-cam"
 
 /**
  * The native view is the default, and adding the `view` axis to a machine is
@@ -205,6 +207,8 @@ const machines: Record<string, (view?: RobotView) => React.ReactElement> = {
   orrery: (view) => <Orrery animate={false} epoch={0.34} view={view} />,
   "battle-station": (view) => <BattleStation animate={false} breakup={0.28} charge={0.8} spin={42} view={view} />,
   "debris-field": (view) => <DebrisField animate={false} spread={0.5} showTrails view={view} />,
+  "cable-station": (view) => <CableStation animate={false} draw={0.4} view={view} />,
+  "resistance-cam": (view) => <ResistanceCam animate={false} angle={0.4} view={view} />,
 }
 
 /**
@@ -302,6 +306,8 @@ const natives: Partial<Record<keyof typeof machines, RobotView>> = {
   orrery: "plan",
   "battle-station": "front",
   "debris-field": "front",
+  "cable-station": "profile",
+  "resistance-cam": "profile",
 }
 
 const tippedFrom = (native: RobotView): RobotView =>

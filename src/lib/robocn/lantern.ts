@@ -4,13 +4,10 @@
  *
  * Five things the set had no maths for:
  *
- * - **An ordered exploded assembly.** Coming apart is not a body scaled up, and
- *   it is not one motion shared by every part either. Each part was fitted
- *   along an axis, in an order, and the teardown is that order reversed: the
- *   last thing on goes first, and a part does not start moving until the parts
- *   fitted after it are already on their way out. At `progress` 0 every offset
- *   is exactly the zero vector — the assembly is not nearly back together, it
- *   is back together — and at 1 every part is exactly its own clearance away.
+ * - **An ordered exploded assembly.** Moved out to `assembly-geometry`, since
+ *   nothing about it is lantern-shaped, and re-exported from here so anything
+ *   already installed keeps compiling. The lantern is still the machine that
+ *   shows it off.
  * - **Charge that is conserved.** Transfer moves charge out of a reservoir and
  *   into a cell against the cell's own capacity: what leaves one arrives in the
  *   other, and the only charge that disappears is what the emitter drew. The
@@ -35,131 +32,28 @@
  * Design note: docs/power-lantern.md.
  */
 
-import { clamp, type Vec2, type Vec3 } from "@/lib/robocn/kinematics"
+import { clamp, type Vec2 } from "@/lib/robocn/kinematics"
 
 const TAU = Math.PI * 2
 
 const finite = (value: number, fallback: number) =>
   Number.isFinite(value) ? value : fallback
 
-const unit3 = (v: Vec3 | undefined, fallback: Vec3 = { x: 0, y: 1, z: 0 }): Vec3 => {
-  const x = finite(v?.x ?? 0, 0)
-  const y = finite(v?.y ?? 0, 0)
-  const z = finite(v?.z ?? 0, 0)
-  const length = Math.hypot(x, y, z)
-  return length > 1e-12
-    ? { x: x / length, y: y / length, z: z / length }
-    : { ...fallback }
-}
-
 /* -------------------------------------------------------------------------- */
 /* the exploded assembly                                                       */
 /* -------------------------------------------------------------------------- */
 
-/** One part of an assembly, and how it was put on. */
-export interface AssemblyPart {
-  /** Stable name. Comes back on the exploded part, and makes a good `data-part`. */
-  id: string
-  /**
-   * The direction it was fitted along, in world units. Need not be a unit
-   * vector; a zero-length axis falls back to straight up.
-   */
-  axis: Vec3
-  /** How far it has to travel to be clear of everything under it. */
-  travel: number
-  /** When it was fitted. 0 is the first part on the bench, and the last off. */
-  order: number
-}
-
-/** A part of the assembly at some point in the teardown. */
-export interface ExplodedPart extends AssemblyPart {
-  /** Its unit fit axis. */
-  direction: Vec3
-  /** Where it stands in the teardown: 0 is the first part off. */
-  rank: number
-  /** How far through its own travel it is, 0 seated to 1 clear. */
-  fraction: number
-  /** How far it has actually moved, in world units. */
-  distance: number
-  /** Its offset from where it sits assembled, in world units. */
-  offset: Vec3
-}
-
-export interface ExplodeOptions {
-  /**
-   * How much the parts' travel windows overlap, 0 to 1. At 0 the teardown is
-   * strictly sequential — nothing moves until the part above it is clear. At 1
-   * every part moves through the whole of `progress` together, which is the
-   * shell-expanding look this is deliberately not. Default 0.45.
-   */
-  overlap?: number
-}
-
-/**
- * The fraction of its own travel the part at `rank` has made at `progress`.
- * Rank 0 leaves first. Pure, and the schedule {@link explodeAssembly} runs on.
- */
-export function explodeFraction(
-  rank: number,
-  count: number,
-  progress: number,
-  overlap = 0.45,
-): number {
-  const total = Math.max(1, Math.round(finite(count, 1)))
-  const index = clamp(Math.round(finite(rank, 0)), 0, total - 1)
-  const t = clamp(finite(progress, 0), 0, 1)
-  if (total === 1) return t
-  // The window every part gets, between one part at a time and all at once.
-  const blend = clamp(finite(overlap, 0.45), 0, 1)
-  const window = (1 / total) * (1 - blend) + blend
-  const stride = (1 - window) / (total - 1)
-  return clamp((t - index * stride) / window, 0, 1)
-}
-
-/**
- * The assembly at `progress`, taken apart in the reverse of the order it was
- * fitted. The last part on is rank 0 and moves first; the first part on is the
- * last rank and moves last, which is what makes this read as a teardown.
- */
-export function explodeAssembly(
-  parts: readonly AssemblyPart[],
-  progress: number,
-  { overlap = 0.45 }: ExplodeOptions = {},
-): ExplodedPart[] {
-  const list = Array.isArray(parts) ? parts.filter(Boolean) : []
-  if (list.length === 0) return []
-  // Removal order is fitting order reversed, counted in *stages* rather than in
-  // parts: everything fitted at the same time — a whole course of ribs — is one
-  // stage, and leaves together.
-  const stages = [...new Set(list.map((part) => finite(part.order, 0)))].sort(
-    (a, b) => a - b,
-  )
-  const count = stages.length
-  const rankOf = new Map<number, number>()
-  stages.forEach((order, position) => {
-    rankOf.set(order, count - 1 - position)
-  })
-
-  return list.map((part) => {
-    const rank = rankOf.get(finite(part.order, 0)) ?? 0
-    const direction = unit3(part.axis)
-    const travel = Math.max(0, finite(part.travel, 0))
-    const fraction = explodeFraction(rank, count, progress, overlap)
-    const distance = travel * fraction
-    return {
-      ...part,
-      direction,
-      rank,
-      fraction,
-      distance,
-      offset: {
-        x: direction.x * distance,
-        y: direction.y * distance,
-        z: direction.z * distance,
-      },
-    }
-  })
-}
+// The teardown schedule is not lantern-shaped — parts, axes, an order — so it
+// lives in `assembly-geometry` and every machine that comes apart shares it.
+// Re-exported here so anything already installed keeps compiling.
+export {
+  assemblyEnvelope,
+  explodeAssembly,
+  explodeFraction,
+  type AssemblyPart,
+  type ExplodedPart,
+  type ExplodeOptions,
+} from "@/lib/robocn/assembly"
 
 /* -------------------------------------------------------------------------- */
 /* the charge                                                                  */

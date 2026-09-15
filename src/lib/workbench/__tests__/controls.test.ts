@@ -96,7 +96,7 @@ describe("a machine that does not exist yet", () => {
       subject: "A quayside container crane.",
       reference: workbenchComponent("robot-arm"),
     })
-    expect(prompt).toContain("ship-robot skill")
+    expect(prompt).toContain("build-robot skill")
     expect(prompt).toContain("src/components/ui/harbour-crane.tsx")
     expect(prompt).toContain("`HarbourCrane`")
     expect(prompt).toContain("`harbour-crane`")
@@ -113,7 +113,7 @@ describe("a machine that does not exist yet", () => {
   it("asks for the ten touchpoints a draft is still missing", () => {
     const draft = { ...component, draft: true }
     const prompt = shipDraftPrompt(draft)
-    expect(prompt).toContain("ship-robot skill")
+    expect(prompt).toContain("build-robot skill")
     expect(prompt).toContain("src/components/ui/test-bot.tsx")
     expect(prompt).toContain("registry item `test-bot`")
   })
@@ -200,5 +200,16 @@ describe("handoff", () => {
 
   it("leaves a blank for the request when there is not one yet", () => {
     expect(agentPrompt(component, {})).toContain("<describe it>")
+  })
+
+  it("sends the agent to the scaffolder, or past it when the file is already there", () => {
+    const fresh = newRobotPrompt({ name: "Harbour crane" })
+    expect(fresh).toContain("pnpm robot:new harbour-crane")
+
+    // The workbench wrote the skeleton itself; `robot:new` would refuse it.
+    const drafted = newRobotPrompt({ name: "Harbour crane", drafted: true })
+    expect(drafted).not.toContain("pnpm robot:new")
+    expect(drafted).toContain("The file already exists")
+    expect(drafted).toContain("pnpm robot:check harbour-crane")
   })
 })

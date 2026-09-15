@@ -9,9 +9,9 @@ they are the spec, and they need reading properly before any geometry is written
 | The image shows | It means | Do |
 |---|---|---|
 | A robot, toy, render, concept art, photo | Subject to build | This document |
-| Several angles of one subject | The view axis | Build one geometry, map the angles onto `plan` / `front` / `profile` / `iso` — `references/views.md` |
+| Several angles of one subject | The view axis | Build one geometry, map the angles onto `plan` / `front` / `profile` / `iso` — `views.md` |
 | Our own docs site, hero, or a component | Feedback, not a subject | Read it as a bug report: find what is wrong in the drawing, fix that component. Do not build a new one |
-| A UI, a chart, a layout | Site work | `references/site.md` |
+| A UI, a chart, a layout | Site work | `refine-robot/references/site.md` |
 | A sketch with arrows or annotations | A change request | The arrows are the spec; the drawing under them may already exist |
 
 A screenshot of the running app plus "create different profiles" means *this component, more
@@ -29,7 +29,7 @@ Do not trace. Extract, in this order, and write the answers into the design note
    not pixel counts. Those ratios become the world units in the `viewBox`.
 3. **Degrees of freedom.** Every joint, hinge, rail, dome seam and telescoping section
    visible in the image. Each becomes a prop, and each has to be *visibly* mechanical in the
-   drawing — `references/craft.md`.
+   drawing — `craft.md`.
 4. **Panel breakdown.** Which surfaces are painted body (`shell`), which are bare machined
    (`metal`), which are cast or recessed (`dark`), which glow (`accent`). Map the image's
    colours onto the four roles rather than copying them.

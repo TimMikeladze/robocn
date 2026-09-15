@@ -42,6 +42,7 @@ import { defaultHeadGeometry, solveFace, type FaceExpression } from "@/lib/roboc
 import { SecurityDroid, type SecurityDroidBehavior, type SecurityDroidPose } from "@/components/ui/security-droid"
 import { UtilityDroid, type UtilityDroidSeries, type UtilityDroidTool , type UtilityDroidBehavior} from "@/components/ui/utility-droid"
 import { defaultStewartGeometry, solveStewart } from "@/lib/robocn/stewart"
+import { defaultCamGeometry, reeveStack, solveCam } from "@/lib/robocn/gym"
 import { RobotQuadruped, type QuadrupedBehavior } from "@/components/ui/robot-quadruped"
 import { RobotBird, type BirdBehavior } from "@/components/ui/robot-bird"
 import { RobotCrab, type CrabBehavior } from "@/components/ui/robot-crab"
@@ -159,7 +160,12 @@ import { RobotTorso, type TorsoBehavior } from "@/components/ui/robot-torso"
 import { RobotSkeleton, type SkeletonBehavior } from "@/components/ui/robot-skeleton"
 import type { SkeletonGait } from "@/lib/robocn/skeleton"
 import { MotionPlatform, type MotionPlatformBehavior, type MotionPlatformPayload } from "@/components/ui/motion-platform"
-import { Pumpjack, type PumpjackBalance, type PumpjackBehavior } from "@/components/ui/pumpjack"
+import {
+  Pumpjack,
+  type PumpjackBalance,
+  type PumpjackBehavior,
+  type PumpjackControl,
+} from "@/components/ui/pumpjack"
 import { DrillingDerrick, type DerrickBehavior, type DerrickLines } from "@/components/ui/drilling-derrick"
 import { MudPump, type MudPumpBehavior, type MudPumpCylinders } from "@/components/ui/mud-pump"
 import { WellheadTree, type WellheadBehavior, type WellheadService } from "@/components/ui/wellhead-tree"
@@ -205,6 +211,8 @@ import { GridironReceiver, type ReceiverBehavior } from "@/components/ui/gridiro
 import { RobotFootball, type FootballBehavior } from "@/components/ui/robot-football"
 import { routeNames, type FacemaskStyle, type GridironStance, type RouteName } from "@/lib/robocn/gridiron"
 import { Slider } from "@/components/ui/slider"
+import { CableStation, type CableStationBehavior } from "@/components/ui/cable-station"
+import { ResistanceCam, type ResistanceCamBehavior } from "@/components/ui/resistance-cam"
 import { oklchToHex } from "@/lib/robocn/color"
 import {
   chainAngles2,
@@ -3676,8 +3684,8 @@ function InputTerminalDemo() {
 /* -------------------------------------------------------------------------- */
 
 function PumpjackDemo() {
-  const [view, setView] = React.useState<RobotView>("profile"); const [variant, setVariant] = React.useState<RobotVariant>("solid"); const [behavior, setBehavior] = React.useState<PumpjackBehavior>("pump"); const [balance, setBalance] = React.useState<PumpjackBalance>("crank")
-  return <Bench controls={<><Segmented label="view" value={view} options={views} onChange={setView} /><Segmented label="variant" value={variant} options={variants} onChange={setVariant} /><Segmented label="motion" value={behavior} options={["pump", "slow", "static"]} onChange={setBehavior} /><Segmented label="balance" value={balance} options={["crank", "beam", "air"]} onChange={setBalance} /><Hint>Drag anywhere round the gearbox to turn the crank by hand. The beam and the rod stroke are what the four-bar produces.</Hint></>}><Pumpjack size={360} view={view} variant={variant} behavior={behavior} balance={balance} interactive label="BP-04" /></Bench>
+  const [view, setView] = React.useState<RobotView>("iso"); const [variant, setVariant] = React.useState<RobotVariant>("solid"); const [behavior, setBehavior] = React.useState<PumpjackBehavior>("pump"); const [balance, setBalance] = React.useState<PumpjackBalance>("crank"); const [control, setControl] = React.useState<PumpjackControl>("crank"); const [apart, setApart] = React.useState(0); const [leaders, setLeaders] = React.useState<"on" | "off">("on")
+  return <Bench controls={<><Segmented label="view" value={view} options={views} onChange={setView} /><Segmented label="variant" value={variant} options={variants} onChange={setVariant} /><Segmented label="motion" value={behavior} options={["pump", "slow", "service", "static"]} onChange={setBehavior} /><Segmented label="balance" value={balance} options={["crank", "beam", "air"]} onChange={setBalance} /><Segmented label="grab" value={control} options={["crank", "explode"]} onChange={setControl} /><NumberControl label="explode" value={apart} min={0} max={100} onChange={setApart} format={(v) => `${v}%`} /><Segmented label="leaders" value={leaders} options={["on", "off"] as const} onChange={setLeaders} /><Hint>Drag anywhere round the gearbox to turn the crank by hand. Wind `explode` up and it parks the beam level first — an exploded view of a moving four-bar would be nonsense — then takes it apart in the reverse of the order it was built. The handed pairs come off sideways, so try `iso`.</Hint></>}><Pumpjack size={360} view={view} variant={variant} behavior={behavior} balance={balance} control={control} explode={apart === 0 && behavior === "service" ? undefined : apart / 100} showLeaders={leaders === "on"} interactive label="BP-04" /></Bench>
 }
 
 function DrillingDerrickDemo() {
@@ -5095,6 +5103,71 @@ function BallLauncherDemo() {
   )
 }
 
+
+
+function CableStationDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [behavior, setBehavior] = React.useState<CableStationBehavior>("press")
+  const [pin, setPin] = React.useState(5)
+  const [lines, setLines] = React.useState(2)
+  const [draw, setDraw] = React.useState(0.35)
+  // The readout is the solver's, not the demo's arithmetic restated. At a draw
+  // of zero only the selection matters, which is all these rows report.
+  const lift = reeveStack(0, {
+    plates: 10, plateHeight: 7, plateGap: 1.2, plateWeight: 5, headroom: 42, lines, pin,
+  })
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="motion" value={behavior} options={["press", "pyramid", "hold", "static"] as const} onChange={setBehavior} />
+      <NumberControl label="pin" value={pin} min={0} max={9} step={1} onChange={setPin} format={value => `${value + 1} plates`} />
+      <NumberControl label="reeving" value={lines} min={1} max={6} step={1} onChange={setLines} format={value => `${value}:1`} />
+      <Readout rows={[
+        ["selected", `${lift.weight}`],
+        ["advantage", `${lift.advantage}`],
+        ["at the handle", `${Math.round(lift.handleForce * 10) / 10}`],
+        ["drawn", `${Math.round(draw * 100)}%`],
+      ]} />
+      <Hint>Drag down it, or focus it and use the arrow keys. Reeve more lines in and the same pull moves the same plates half as far, for half the force.</Hint>
+    </>}>
+      <CableStation size={300} view={view} variant={variant} behavior={behavior} pin={pin} lines={lines} interactive onDrawChange={setDraw} label="CABLE / 01" />
+    </Bench>
+  )
+}
+
+function ResistanceCamDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [behavior, setBehavior] = React.useState<ResistanceCamBehavior>("curl")
+  const [peak, setPeak] = React.useState(0.46)
+  const [peakRadius, setPeakRadius] = React.useState(34)
+  const [angle, setAngle] = React.useState(0.42)
+  // Read off the solver, so the readout cannot drift from the drawing.
+  const pose = solveCam(angle * defaultCamGeometry.sweep, {
+    ...defaultCamGeometry, peakRadius, peakAngle: peak * defaultCamGeometry.sweep,
+  })
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="motion" value={behavior} options={["curl", "slow", "hold", "static"] as const} onChange={setBehavior} />
+      <NumberControl label="peak at" value={peak} min={0.1} max={0.9} step={0.02} onChange={setPeak} format={value => `${Math.round(value * 100)}% of sweep`} />
+      <NumberControl label="peak radius" value={peakRadius} min={16} max={46} step={1} onChange={setPeakRadius} format={value => `${value}`} />
+      <Readout rows={[
+        ["lever", `${Math.round(pose.angle)}°`],
+        ["moment arm", `${Math.round(pose.momentArm * 10) / 10}`],
+        ["cable paid out", `${Math.round(pose.payout * 10) / 10}`],
+        ["round pulley would", `${Math.round(pose.linearPayout * 10) / 10}`],
+      ]} />
+      <Hint>Drag up it, or focus it and use the arrow keys. The last two rows are the same lever angle: the gap between them is the cam.</Hint>
+    </>}>
+      <ResistanceCam size={300} view={view} variant={variant} behavior={behavior} peak={peak} peakRadius={peakRadius} interactive onAngleChange={setAngle} label="CAM / 02" />
+    </Bench>
+  )
+}
+
 export const demos: Record<string, React.ComponentType<DemoProps>> = {
   "robot-football": RobotFootballDemo,
   "gridiron-geometry": RobotFootballDemo,
@@ -5246,6 +5319,7 @@ export const demos: Record<string, React.ComponentType<DemoProps>> = {
   "servo-motor": ServoMotorDemo,
   "radial-bloom": RadialBloomDemo,
   "power-lantern": PowerLanternDemo,
+  "assembly-geometry": PumpjackDemo,
   "lantern-geometry": PowerLanternDemo,
   "rotary-table": RotaryTableDemo,
   "robot-rover": RobotRoverDemo,
@@ -5293,6 +5367,9 @@ export const demos: Record<string, React.ComponentType<DemoProps>> = {
   "robot-color": ColorDemo,
   "use-robot-arm": UseRobotArmDemo,
   "use-pointer-target": UsePointerTargetDemo,
+  "cable-station": CableStationDemo,
+  "gym-geometry": CableStationDemo,
+  "resistance-cam": ResistanceCamDemo,
 }
 
 /**

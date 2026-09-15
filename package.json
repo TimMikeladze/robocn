@@ -50,6 +50,8 @@
     "start": "next start",
     "lint": "eslint",
     "registry:build": "node scripts/build-registry.mjs",
+    "robot:new": "node scripts/new-robot.mjs",
+    "robot:check": "node scripts/check-robot.mjs",
     "og": "node scripts/build-og.mjs",
     "shots": "node scripts/build-shots.mjs",
     "test": "pnpm generate && vitest run",

@@ -2175,8 +2175,42 @@ pose.legs     // hip, knee, foot, kneeHeight, clearance, contact, load`,
     notes: ["Front elevation is the drawing it always had. The can, the mounting tabs and the output boss have a depth through the machine that only reads once the camera comes round.", "A supplied angle always wins and stops the loop. The step behavior deliberately jumps its goal: the 210°/s slew rate is what draws the travel between positions, and what carries a released horn back into the sweep.", "The drawing's travel limits are illustrative and do not specify the limits of a particular physical servo."],
   },
   {
+    slug: "assembly-geometry", item: "assembly-geometry", title: "Assembly geometry", group: "Foundations",
+    summary:
+      "Taking a machine apart in the reverse of the order it was put together: each part along the axis it was fitted on, in stages, and seated again exactly — plus the room the teardown needs.",
+    files: ["lib/robocn/assembly.ts"],
+    usage: `import { assemblyEnvelope, explodeAssembly } from "@/lib/robocn/assembly"
+
+// Fitted bottom up, so it comes apart top down. Rank 0 leaves first.
+const parts = [
+  { id: "skid", axis: { x: 0, y: 1, z: 0 }, travel: 0, order: 0 },
+  { id: "post", axis: { x: 0, y: 1, z: 0 }, travel: 30, order: 1 },
+  // A handed pair is one stage, and leaves along opposite axes.
+  { id: "pitman-port", axis: { x: -1, y: 0, z: 0 }, travel: 34, order: 2 },
+  { id: "pitman-starboard", axis: { x: 1, y: 0, z: 0 }, travel: 34, order: 2 },
+]
+
+const apart = explodeAssembly(parts, 0.4)
+apart[1].offset     // a world offset — project it and it is a screen offset
+apart[1].rank       // 0 is the first part off
+
+// The box a frame has to fit, so it zooms out with the teardown and never with the pose.
+assemblyEnvelope(parts, 0.4, { min: { x: -30, y: 0, z: -236 }, max: { x: 30, y: 176, z: 4 } })`,
+    api: [
+      { name: "explodeAssembly", type: "(parts: AssemblyPart[], progress: number, options?: { overlap?: number }) => ExplodedPart[]", description: "Takes an assembly apart in the reverse of the order it was fitted. At progress 0 every offset is exactly the zero vector; at 1 every part is exactly its own `travel` from where it sat. `overlap` runs from a strictly sequential teardown at 0 to every part moving at once at 1." },
+      { name: "AssemblyPart", type: "{ id, axis: Vec3, travel: number, order: number }", description: "One part: the axis it was fitted along (need not be a unit vector), how far it has to go to be clear, and when it was fitted. Parts sharing an `order` are one stage and leave together — a course of ribs, a handed pair of pitmans." },
+      { name: "ExplodedPart", type: "AssemblyPart & { direction, rank, fraction, distance, offset }", description: "`rank` 0 is the first part off. `offset` is in world units, and projection is linear, so `camera.project(offset.x, offset.y, offset.z)` is the translation to hang on the part." },
+      { name: "explodeFraction", type: "(rank, count, progress, overlap?) => number", description: "The schedule on its own: how far through its own travel the part at `rank` is, out of `count` stages." },
+      { name: "assemblyEnvelope", type: "(parts, progress, seated: { min: Vec3, max: Vec3 }) => { min: Vec3, max: Vec3 }", description: "The world box the assembly needs at `progress`: the seated box grown by the furthest travel along each axis. Fed to `fitFrame`, the drawing zooms out as the machine comes apart and at no other time — it takes a progress, not a pose, so the framing cannot breathe." },
+    ],
+    notes: [
+      "No collision model and no fastener model. Parts pass through each other's paths the way they do in every exploded drawing, and `progress` runs backwards as happily as forwards.",
+      "`lantern-geometry` re-exports all of these, so anything installed before they moved keeps compiling.",
+    ],
+  },
+  {
     slug: "lantern-geometry", item: "lantern-geometry", title: "Lantern geometry", group: "Foundations",
-    summary: "An ordered exploded assembly — parts taken apart in the reverse of the order they were fitted, each along its own axis, and seated again exactly — plus a charge transfer that conserves, a recital count, a reserve gauge, and an emission column priced by the inverse-square law.",
+    summary: "A charge transfer that conserves, a recital count, a reserve gauge, and an emission column priced by the inverse-square law — plus the exploded assembly from `assembly-geometry`, re-exported.",
     files: ["lib/robocn/lantern.ts"],
     usage: `import { explodeAssembly, stepCharge, emissionBeam } from "@/lib/robocn/lantern"
 
@@ -5524,15 +5558,21 @@ const block = tacklePosition(3, { lines: 8, drumRadius: 11, topHeight: 204, floo
 <Pumpjack crankAngle={120} balance="beam" interactive onCrankAngleChange={setAngle} />`,
     props: [
       { name: "crankAngle", type: "number", description: "Controlled crank angle in degrees. Supplying it stops the loop." },
-      { name: "behavior", type: `"pump" | "slow" | "static"`, default: `"pump"`, description: "Continuous pumping, or a pump-off duty cycle: two revolutions then a rest." },
+      { name: "behavior", type: `"pump" | "slow" | "service" | "static"`, default: `"pump"`, description: "Continuous pumping, a pump-off duty cycle of two revolutions then a rest, or `service`: parked level and taken apart and back together." },
       { name: "balance", type: `"crank" | "beam" | "air"`, default: `"crank"`, description: "Where the counterbalance mass is carried. It moves the mass, not the linkage." },
+      { name: "explode", type: "number", description: "How far apart it is, 0 assembled to 1 fully exploded. Anything above 0 parks the linkage at the service angle and stops the loop." },
+      { name: "explodeOverlap", type: "number", default: "0.45", description: "How much the parts' travel windows overlap: 0 takes one stage off at a time, 1 moves everything at once." },
+      { name: "showLeaders", type: "boolean", default: "true", description: "Dashed leaders from each displaced part back to its seat. Nothing is drawn while the machine is together." },
+      { name: "control", type: `"crank" | "explode"`, default: `"crank"`, description: "Which axis dragging and the arrow keys drive." },
       { name: "showWell", type: "boolean", default: "true", description: "The stuffing box, wellhead and flow line under the polished rod." },
-      { name: "interactive / onCrankAngleChange", type: "boolean / (angle: number) => void", description: "Turn the gearbox by hand: the pointer's bearing about the crank centre is the crank angle." },
+      { name: "interactive / onCrankAngleChange / onExplodeChange", type: "boolean / (angle: number) => void / (explode: number) => void", description: "Turn the gearbox by hand — the pointer's bearing about the crank centre is the crank angle — or pull the machine apart, depending on `control`." },
       view("profile", "beam pump"), ...loop, ...form.slice(0, 2), ...palette,
     ],
     notes: [
       "The four-bar, the beam angle and the rod stroke are solved; the horsehead's arc is centred on the saddle bearing, which is why the rod stays vertical and travels exactly radius × beam angle.",
       "No dynamics: no fluid, rod load, torque, counterbalance calculation or production rate is computed.",
+      "The teardown is `assembly-geometry`'s schedule, and the angle it parks at is scanned out of the four-bar rather than typed — `beam level` is an inverse problem the loop does not solve directly.",
+      "The handed pairs come off sideways, which reads in `iso` and `front`; in `profile` a lateral move is foreshortened to almost nothing, and in `plan` a part lifted straight up does not move on screen at all. Both are the projection being honest — a real side elevation cannot show a lateral move either. The wellhead is the well, not the pump, so it stays put.",
     ],
   },
   {
@@ -6576,6 +6616,112 @@ download(await encodeFrames(frames, "webp"), "robot-arm.webp")`,
       "The button carries `data-robocn-hide`, and the snapshotter drops those from the clone — otherwise every recording would have a record button in the corner of it.",
       "Settings are per menu, not global: the scale, rate and ground of one panel do not follow you to the next. `onSettingsChange` is there for a page that wants them to.",
       "Everything runs in the page — `robot-capture` does the work and the file is an anchor click. Notes: `docs/export.md`.",
+    ],
+  },
+  {
+    slug: "gym-geometry", item: "gym-geometry", title: "Gym geometry", group: "Foundations",
+    summary:
+      "The five mechanisms that stand between a selected weight and a felt load: rope reeving, a variable-radius cam, an inclined rail, a coupler curve, and velocity-squared air drag.",
+    files: ["lib/robocn/gym.ts"],
+    api: [
+      { name: "reeveStack(draw, geometry?)", type: "(draw: number, geometry?: StackGeometry) => StackLift", description: "Where a selectorised stack sits after the handle has been drawn. The rope is inextensible, so the stack rises draw / lines and the handle holds weight / lines: the reeving is the advantage, and nobody sets it." },
+      { name: "camRadius(angle, geometry?)", type: "(angle: number, geometry?: CamGeometry) => number", description: "The cam's working radius at one lever angle — which is also the moment arm there." },
+      { name: "solveCam(angle, geometry?)", type: "(angle: number, geometry?: CamGeometry) => CamPose", description: "Moment arm, leverage and cable payout. Payout is the integral of r dθ, so the stack does not rise linearly with the lever." },
+      { name: "camProfile(geometry?, steps?)", type: "(geometry?: CamGeometry, steps?: number) => Vec2[]", description: "The cam's outline in polar about its pivot, at the radii solveCam works from — so the drawn cam is the resistance curve." },
+      { name: "solveSled(stroke, geometry?)", type: "(stroke: number, geometry?: SledGeometry) => SledPose", description: "A carriage on inclined rails. Only the component along the rails resists, so the load is weight · sin(angle) and the rail angle is the resistance." },
+      { name: "solveTrainer(crankAngle, geometry?)", type: "(crankAngle: number, geometry?: TrainerGeometry) => TrainerPose", description: "Crank, coupler and rocker solved as a closed loop, with the footpad rigid on the coupler and the grip carried on up the rocker." },
+      { name: "trainerFootPath(geometry?, steps?)", type: "(geometry?: TrainerGeometry, steps?: number) => TrainerPath", description: "A whole turn of the crank as the closed path the footpad draws, with the stride and rise that path happens to have." },
+      { name: "solveErgCycle(geometry?, steps?)", type: "(geometry?: ErgGeometry, steps?: number) => ErgCycle", description: "One steady-state stroke of an air flywheel on a one-way clutch: drag factor, speeds, handle force, and the window where handle and seat travel opposite ways." },
+      { name: "ergAt(cycle, phase)", type: "(cycle: ErgCycle, phase: number) => ErgSample", description: "One sample of a solved cycle, interpolated, with the phase wrapped — so a component can memoise the cycle and stay a pure function of the clock." },
+    ],
+    notes: [
+      "Pure functions over plain objects: no React, no three.js, no dependencies beyond robot-kinematics and linkage-geometry.",
+      "Unit-agnostic. Lengths are world units and weights are whatever you count in, so a plate is a plate.",
+      "Frictionless throughout: no rope stretch, no sheave efficiency, no rail or roller friction, no bearing loss. The advantages and loads are the ideal ones.",
+      "Nothing here knows about a person, a muscle or a rep. The rowing stroke's handle and seat schedules are chosen ramps; everything downstream of them — speeds, forces, drag factor, counter-travel — is integrated from those ramps.",
+      "Design note: docs/gym-machines.md.",
+    ],
+  },
+  {
+    slug: "cable-station", item: "cable-station", title: "Cable station", group: "Machines",
+    summary:
+      "Selectorised weight stack reeved through pulleys: the pin picks what rises, and the reeving sets both the handle force and how far the stack travels.",
+    files: ["components/ui/cable-station.tsx"],
+    usage: `import { CableStation } from "@/components/ui/cable-station"
+
+// Runs its own set.
+<CableStation behavior="press" />
+
+// Move the pin and the reeving; the advantage is reported, never set.
+<CableStation pin={7} lines={4} />
+
+// Or drive the handle, which stops the loop.
+<CableStation draw={0.6} onDrawChange={setDraw} interactive />`,
+    props: [
+      { name: "draw", type: "number", description: "Handle travel, 0 racked to 1 at the bottom of the pull. Supplying it stops the loop." },
+      { name: "onDrawChange", type: "(draw: number) => void", description: "Fires while it is dragged or keyed, so interaction works in controlled mode too." },
+      { name: "behavior", type: `"press" | "pyramid" | "hold" | "static"`, default: `"press"`, description: "What it does with nobody driving it." },
+      { name: "pin", type: "number", default: "5", description: "Which plate the selector pin is in, counted from the top: 0 pins the top plate alone. That plate and everything above it ride the riser." },
+      { name: "plates", type: "number", default: "10", description: "Plates in the stack." },
+      { name: "lines", type: "number", default: "2", description: "Falling lines under the load. This — and only this — sets the mechanical advantage." },
+      { name: "plateWeight", type: "number", default: "5", description: "What one plate weighs, for the readout in the accessible label." },
+      { name: "interactive", type: "boolean", default: "false", description: "Hand it to a person: drag down it, or focus it and use the arrow keys. It eases back into the behaviour on release." },
+      { name: "showGround", type: "boolean", default: "true", description: "Draw the contact shadow and the ground line beneath it." },
+      { name: "label", type: "string", description: "Optional technical caption under the drawing." },
+      view("profile", "machine"),
+      { name: "speed", type: "number", default: "0.35", description: "Reps per second." },
+      ...loop,
+      ...form.slice(0, 2),
+      ...palette,
+    ],
+    notes: [
+      "Solved: the reeving. The rope is one length, so the stack rises by the handle's travel over the number of falling lines and the handle holds the selected weight over the same number. Both come out of `reeveStack` in gym-geometry, over the block-and-tackle travel constraint in linkage-geometry.",
+      "Solved: the split at the pin. Which plates rise is the pin position, and every plate is drawn at the height the solver puts it at.",
+      "Illustrated: the rope is inextensible and the sheaves are frictionless, so the advantage is the ideal one. Nothing models rope stretch, sheave efficiency or the weight of the riser itself.",
+      "The mechanical advantage is never a prop. Change `lines` and read it back off the accessible label.",
+      "Design note: docs/gym-machines.md.",
+    ],
+  },
+  {
+    slug: "resistance-cam", item: "resistance-cam", title: "Resistance cam", group: "Machines",
+    summary:
+      "A lever on a variable-radius cam: the cable leaves at a radius that changes with the angle, so the moment arm is the cam profile and the stack does not rise linearly.",
+    files: ["components/ui/resistance-cam.tsx"],
+    usage: `import { ResistanceCam } from "@/components/ui/resistance-cam"
+
+// Runs its own set.
+<ResistanceCam behavior="curl" />
+
+// Reshape the cam and the resistance curve changes with it.
+<ResistanceCam baseRadius={8} peakRadius={38} peak={0.7} />
+
+// Or drive the lever, which stops the loop.
+<ResistanceCam angle={0.6} onAngleChange={setAngle} interactive />`,
+    props: [
+      { name: "angle", type: "number", description: "Lever travel, 0 at the bottom of the sweep to 1 at the top. Supplying it stops the loop." },
+      { name: "onAngleChange", type: "(angle: number) => void", description: "Fires while it is dragged or keyed, so interaction works in controlled mode too." },
+      { name: "behavior", type: `"curl" | "slow" | "hold" | "static"`, default: `"curl"`, description: "What it does with nobody driving it." },
+      { name: "baseRadius", type: "number", default: "13", description: "The cam's smallest working radius, at the ends of the sweep." },
+      { name: "peakRadius", type: "number", default: "34", description: "Its largest, where the strength curve peaks." },
+      { name: "peak", type: "number", default: "0.46", description: "Where in the sweep the profile peaks, as a fraction of it. This is the strength curve the cam is cut for." },
+      { name: "pin", type: "number", default: "4", description: "Which plate the selector pin is in, counted from the top." },
+      { name: "plateWeight", type: "number", default: "5", description: "What one plate weighs, for the readout in the accessible label." },
+      { name: "showProfile", type: "boolean", default: "true", description: "Draw the cam's profile. It is the resistance curve, so this is the graph and the part in one." },
+      { name: "interactive", type: "boolean", default: "false", description: "Hand it to a person: drag up it, or focus it and use the arrow keys. It eases back into the behaviour on release." },
+      { name: "showGround", type: "boolean", default: "true", description: "Draw the contact shadow and the ground line beneath it." },
+      { name: "label", type: "string", description: "Optional technical caption under the drawing." },
+      view("profile", "machine"),
+      { name: "speed", type: "number", default: "0.3", description: "Reps per second." },
+      ...loop,
+      ...form.slice(0, 2),
+      ...palette,
+    ],
+    notes: [
+      "Solved: the moment arm. The cable leaves the groove on a tangent, so the perpendicular distance from the pivot to it is the cam's working radius exactly — and that is the arm the resistance acts on. The dashed line from the hub is that radius, drawn.",
+      "Solved: the payout. Cable off the cam is the integral of r dθ, so the stack does not rise in step with the lever. Turn the cam through its fat part and the stack runs away from the handle.",
+      "Solved: the profile. The outline is `camRadius` in polar, turned to where the lever has put it — the drawn cam is the resistance curve rather than a picture of one. The cam is keyed to the lever and turns forward with it.",
+      "Illustrated: the strength curve the profile is shaped to is a raised cosine chosen for the drawing, not a measurement of any joint. Frictionless, and the cable does not stretch.",
+      "Design note: docs/gym-machines.md.",
     ],
   },
 ]

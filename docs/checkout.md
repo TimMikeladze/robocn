@@ -82,7 +82,7 @@ checkout it writes `src/components/ui/<slug>.tsx` itself, seeded from a real rob
 — props interface, palette, camera, size, a placeholder body that draws. The draft appears
 in the index immediately, and the agent gets a file to edit rather than a blank prompt.
 
-The brief is still produced, and still points at `ship-robot`. The template is a starting
+The brief is still produced, and still points at `build-robot`. The template is a starting
 point, not a machine.
 
 ### 4. Drafts come from disk

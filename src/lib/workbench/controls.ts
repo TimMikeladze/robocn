@@ -123,7 +123,7 @@ export const exportName = (slug: string) =>
 /**
  * The brief for a machine that does not exist yet.
  *
- * It does not try to restate the house rules — `.claude/skills/ship-robot` is
+ * It does not try to restate the house rules — the `build-robot` skill is
  * 190 lines of them and is already in the repo. It names the file, the export,
  * the subject and the nearest machine to follow, and points the agent at the
  * skill that knows the other ten touchpoints.
@@ -132,14 +132,21 @@ export function newRobotPrompt({
   name,
   subject,
   reference,
+  drafted = false,
 }: {
   name: string
   subject?: string
   reference?: WorkbenchComponent | null
+  /**
+   * True when the workbench has already written the skeleton into the folder it
+   * is holding. `pnpm robot:new` refuses to overwrite a machine that exists, so
+   * the brief has to send the agent down the other half of the command.
+   */
+  drafted?: boolean
 }) {
   const slug = slugify(name) || "new-robot"
   return [
-    "Use the ship-robot skill.",
+    "Use the build-robot skill.",
     "",
     `Build a new robocn machine: **${name.trim() || slug}**`,
     "",
@@ -154,9 +161,22 @@ export function newRobotPrompt({
       ? subject.trim()
       : "What it is: <describe the machine — what it does, what moves, what it should read as>",
     "",
-    "Ship it end to end: solver if the mechanism has real kinematics, the component with the",
-    "shared prop contract (size, variant, view, palette, paused, animate, behavior), a registry",
-    "item, a docs entry, a demo, a catalogue card, a README row and tests.",
+    ...(drafted
+      ? [
+          "The file already exists — the workbench wrote the skeleton into the folder it is",
+          "holding. Build the mechanism in it, keeping the shared prop contract (size, variant,",
+          `view, palette, paused, animate, behavior), and add \`${slug}\` to \`registry.json\` with a`,
+          "test file beside the component.",
+        ]
+      : [
+          `Scaffold it with \`pnpm robot:new ${slug}\` — that writes the component with the shared prop`,
+          "contract (size, variant, view, palette, paused, animate, behavior), its tests, its registry",
+          "item and its view fixture.",
+        ]),
+    "",
+    "Then write the mechanism, and the solver first if it has real kinematics. The docs entry,",
+    "the demo bench and the catalogue card are optional; write them once it works. Verify with",
+    `\`pnpm robot:check ${slug}\`.`,
     "",
     "Save the component file first and tell me — it shows up in the workbench as a draft as soon",
     "as it exists, and I will pose it there while you finish the rest.",
@@ -166,13 +186,13 @@ export function newRobotPrompt({
 /** What a draft still needs before it is a component anyone can install. */
 export function shipDraftPrompt(component: WorkbenchComponent) {
   return [
-    "Use the ship-robot skill.",
+    "Use the build-robot skill.",
     "",
     `\`${component.file}\` exists and draws, but nothing else does: it has no registry item, so`,
     "it does not install, has no docs page, no demo, no catalogue card and no tests.",
     "",
-    `Ship \`${component.export}\` the rest of the way — registry item \`${component.id}\`, docs entry,`,
-    "demo, catalogue card, README row, tests — and run the verification pass.",
+    `Ship \`${component.export}\` the rest of the way — registry item \`${component.id}\`, tests, and`,
+    "the docs entry, demo and catalogue card it deserves — then `pnpm robot:check` it.",
   ].join("\n")
 }
 

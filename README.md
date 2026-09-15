@@ -119,7 +119,8 @@ installs at.
 | `servo-motor` | Positional servo with single, double, or cross horns. |
 | `radial-bloom` | Radial array of four-stage telescoping rams on one hub: closed it is an even star, driven out it is a ragged burst, and a vector of strokes drives each ram on its own. |
 | `power-lantern` | Carried reservoir lantern that charges a ring: a ribbed prism barrel in a bowed cage, with a round port on its *face* that a ring docks into. Charge is *moved* rather than invented, the recital gates the transfer so the ring fills on the last glyph, the beam is paid for out of the reserve at `√intensity` range — and every part comes off in the reverse of the order it was fitted, seating again exactly. |
-| `lantern-geometry` | The ordered exploded assembly — each part along the axis it was fitted on, in reverse fitting order, exactly reassembling — plus a conserved charge transfer solved in closed form, a recital count, a reserve gauge and an inverse-square emission column. |
+| `assembly-geometry` | The ordered teardown, shared by every machine that comes apart: each part along the axis it was fitted on, in stages so a handed pair leaves together, seating again at exactly the zero vector — plus the envelope the explosion needs, so a frame zooms with the teardown and never with the pose. |
+| `lantern-geometry` | A conserved charge transfer solved in closed form, a recital count, a reserve gauge and an inverse-square emission column. The exploded assembly it used to own now lives in `assembly-geometry`, and is re-exported from here. |
 | `rotary-table` | Rotary indexing platter with controlled angle and up to twelve fixtures. |
 | `robot-rover` | Four- or six-wheel ground robot with controlled heading, steering, and tread travel. |
 | `robot-drone` | Quad- or hexacopter with counter-rotating propellers and optional guards. |
@@ -223,7 +224,7 @@ installs at.
 | `use-pointer-target` | Pointer position in a component's own world units. |
 | `use-robot-motion` | The clock the machines run on, the rate limiter, and press-and-drag control. |
 | `linkage-geometry` | Closed-loop kinematics: a four-bar solved as a circle intersection, a slider-crank with an analytic stroke, and block-and-tackle travel from rope length. |
-| `pumpjack` | A beam pump with its four-bar actually solved: the polished-rod stroke is what the link lengths produce, not a number anyone typed. |
+| `pumpjack` | A beam pump with its four-bar actually solved: the polished-rod stroke is what the link lengths produce, not a number anyone typed. It also comes apart — parking itself beam-level first, at an angle scanned out of the loop rather than typed, because an exploded view of a *moving* four-bar is nonsense. |
 | `drilling-derrick` | A travelling block that is reeved rather than positioned — the drum's payout is shared between the lines, so advantage is visible as rope. |
 | `mud-pump` | One, two or three slider-cranks on a shaft, with a discharge summed from the solved piston velocities. |
 | `wellhead-tree` | The valve stack on a well: rising stems show their state, and the accent follows only the bore the open valves leave through. |
@@ -239,6 +240,9 @@ installs at.
 | `espresso-machine` | A spring-lever group drawn as the linkage it is — lever, rod, piston — where the declining shot pressure is the spring paying its force back rather than a curve anyone drew. |
 | `refrigerator` | A cabinet whose doors are solved leaves on vertical hinges, with an interior that is a second drawing revealed by the swing and a lamp thrown by a real door switch. |
 | `washing-machine` | One drum either side of a Froude number of one: thrown and falling below it, pinned to the wall above it — and a tub that is worse at its critical speed than at full spin. |
+| `cable-station` | Selectorised weight stack reeved through pulleys: the pin picks what rises, and the reeving sets both the handle force and how far the stack travels. |
+| `gym-geometry` | Five mechanisms that stand between a selected weight and a felt load: rope reeving, a variable-radius cam, an inclined rail, a coupler curve and velocity-squared air drag. |
+| `resistance-cam` | A lever on a variable-radius cam: the cable leaves at a radius that changes with the angle, so the moment arm is the cam profile and the stack does not rise linearly. |
 
 Installing a component pulls in what it needs: `robot-arm` brings `robot-kinematics`,
 `robot-style` and both hooks, and the theme variables ride along with `robot-style`.
@@ -514,8 +518,29 @@ drives real animation frames at every card and fails the ones that draw the same
 three seconds later, because a pinned value prop is indistinguishable from configuration in
 the source. See [gallery coverage](docs/gallery-coverage.md).
 
-The whole path — solver, component, camera angles, motion, registry, docs, demo, catalogue,
-README row, tests — is written up as an agent skill at `.claude/skills/ship-robot/`.
+Two commands do the mechanical half of all of it. `pnpm robot:new <name>` writes a machine that
+already renders and already keeps the whole customisation contract — palette, size, the four
+variants, the four camera angles, a controlled prop, a behaviour union, drag and arrow keys,
+`data-*` hooks, aria, `px()` and finite clamping — together with its tests, its `registry.json`
+item, its fixture in the view snapshots, its docs page, its demo bench, its landing card and its
+row in the table above. `--solver <name>` adds a pure solver module and its tests beside it, and
+`--minimal` stops at the installable minimum. What is left to write is the mechanism.
+
+`pnpm robot:check <name>` is the focused loop afterwards, about ten seconds: the machine's own
+tests plus the registry and catalogue ones, `typecheck`, `lint`, `registry:build`, and a report
+of which site wiring is written and which is falling back. `--full` adds the whole suite and
+`next build`.
+
+The whole path is written up as four agent skills in [`skills/`](skills) —
+[build](skills/build-robot), [refine](skills/refine-robot), [fork](skills/fork-robot) and
+[publish](skills/publish-robot) — which work in Claude Code, Codex, Cursor and the rest:
+
+```bash
+npx skills add TimMikeladze/robocn
+```
+
+`pnpm install` mirrors them into `.claude/skills/` and `.agents/skills/` for this repo's own
+agents. Notes: [the robot-building skills](docs/robot-skills.md).
 
 ## The workbench
 
@@ -558,7 +583,7 @@ a first visit and comes back from the toolbar or `?`.
 
 **Building a new robot works the same way.** `New` writes the brief — file path, export
 name, item name, the nearest existing machine to follow — and points your agent at the
-`ship-robot` skill in the repo. The workbench picks the component up the moment the file
+`build-robot` skill in the repo. The workbench picks the component up the moment the file
 exists, registry entry or not: it appears as a **draft** at the top of the index, with knobs
 already derived from whatever props it declares, so you can pose it while the agent is still
 writing the docs, the demo and the tests.

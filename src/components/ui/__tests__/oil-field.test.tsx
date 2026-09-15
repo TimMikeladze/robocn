@@ -3,7 +3,14 @@ import * as React from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 import type { RobotView } from "@/lib/robocn/style"
-import { Pumpjack, pumpjackCarrier, pumpjackCrank } from "@/components/ui/pumpjack"
+import {
+  PUMPJACK_SERVICE_ANGLE,
+  Pumpjack,
+  pumpjackCarrier,
+  pumpjackCrank,
+  pumpjackParts,
+  pumpjackService,
+} from "@/components/ui/pumpjack"
 import { DrillingDerrick, derrickHoist } from "@/components/ui/drilling-derrick"
 import { MudPump, mudPumpCrank, mudPumpFlow } from "@/components/ui/mud-pump"
 import { WellheadTree, wellheadChoke } from "@/components/ui/wellhead-tree"
@@ -61,6 +68,85 @@ describe("pumpjack", () => {
 
     rerender(<Pumpjack animate={false} crankAngle={40} balance="air" />)
     expect(container.querySelector("[data-counterweight]")).not.toBeNull()
+  })
+
+
+  it("comes apart in the reverse of the order it went together, and seats again exactly", () => {
+    const { container, rerender } = render(<Pumpjack animate={false} crankAngle={0} explode={0} />)
+    // Seated is seated: no part carries a displacement at all.
+    expect(container.querySelectorAll("[data-part][transform]").length).toBe(0)
+    const beamSeated = transform(container, "[data-horsehead]")
+
+    rerender(<Pumpjack animate={false} crankAngle={0} explode={1} view="iso" />)
+    const apart = container.querySelectorAll("[data-part][transform]")
+    expect(apart.length).toBeGreaterThan(6)
+
+    // The rod is the first thing off, the post among the last.
+    const rank = (id: string) =>
+      Number(container.querySelector(`[data-part="${id}"]`)!.getAttribute("data-rank"))
+    expect(rank("rod")).toBeLessThan(rank("pitman-port"))
+    expect(rank("pitman-port")).toBeLessThan(rank("crank-port"))
+    expect(rank("crank-port")).toBeLessThan(rank("beam"))
+    expect(rank("beam")).toBeLessThan(rank("post"))
+
+    rerender(<Pumpjack animate={false} crankAngle={0} explode={0} />)
+    expect(container.querySelectorAll("[data-part][transform]").length).toBe(0)
+    expect(transform(container, "[data-horsehead]")).toBe(beamSeated)
+  })
+
+  it("parks the linkage level before it takes anything apart", () => {
+    // The service angle is scanned, not typed: it really does level the beam.
+    expect(Math.abs(pumpjackService().beamAngle)).toBeLessThan(0.25)
+
+    const { container } = render(<Pumpjack animate={false} explode={1} />)
+    expect(Number(container.querySelector("[data-beam]")!.getAttribute("data-angle"))).toBeCloseTo(0, 1)
+    expect(container.querySelector("svg")!.getAttribute("aria-label")).toContain("apart")
+  })
+
+  it("takes the handed pairs off sideways and leaves the well alone", () => {
+    const lateral = pumpjackParts().filter((part) => Math.abs(part.axis.x) > 0.5)
+    expect(lateral.map((part) => part.id).sort()).toEqual([
+      "crank-port", "crank-starboard",
+      "pitman-port", "pitman-starboard",
+      "weight-port", "weight-starboard",
+    ])
+    // Handed: the two sides leave along opposite axes.
+    const port = lateral.find((part) => part.id === "pitman-port")!
+    const starboard = lateral.find((part) => part.id === "pitman-starboard")!
+    expect(Math.sign(port.axis.x)).toBe(-Math.sign(starboard.axis.x))
+    // The wellhead is the well, not the pump: it is not in the assembly.
+    expect(pumpjackParts().some((part) => part.id === "wellhead")).toBe(false)
+  })
+
+  it("draws leaders back to the seat only while it is apart", () => {
+    const { container, rerender } = render(<Pumpjack animate={false} explode={0} showLeaders />)
+    expect(container.querySelectorAll("[data-leader]").length).toBe(0)
+
+    rerender(<Pumpjack animate={false} explode={0.8} showLeaders view="iso" />)
+    expect(container.querySelectorAll("[data-leader]").length).toBeGreaterThan(4)
+
+    rerender(<Pumpjack animate={false} explode={0.8} showLeaders={false} view="iso" />)
+    expect(container.querySelectorAll("[data-leader]").length).toBe(0)
+  })
+
+  it("renders a seated machine for rubbish explode input", () => {
+    const { container } = render(<Pumpjack animate={false} crankAngle={0} explode={Number.NaN} />)
+    expect(hasNaN(container)).toBe(false)
+    expect(container.querySelectorAll("[data-part][transform]").length).toBe(0)
+    expect(PUMPJACK_SERVICE_ANGLE).toBeGreaterThanOrEqual(0)
+    expect(PUMPJACK_SERVICE_ANGLE).toBeLessThan(360)
+  })
+
+  it("hands a person the teardown when that is the axis asked for", () => {
+    const onExplode = vi.fn()
+    const { container } = render(
+      <Pumpjack animate={false} control="explode" interactive onExplodeChange={onExplode} />,
+    )
+    const svg = container.querySelector("svg")!
+    expect(svg.getAttribute("aria-valuemax")).toBe("100")
+    svg.dispatchEvent(new KeyboardEvent("keydown", { key: "End", bubbles: true }))
+    expect(onExplode).toHaveBeenCalledWith(1)
+    expect(svg.getAttribute("aria-valuetext")).toContain("percent apart")
   })
 
   it("names itself, its crank and its view", () => {

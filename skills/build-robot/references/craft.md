@@ -7,7 +7,7 @@ vocabulary and every mechanism is visible.
 
 A new machine has to be recognisable as a 150px catalogue card, in one colour, before any
 detail goes on it. Working from a reference image, the silhouette and the proportions are the
-part that must match — see `references/reference-images.md`. Block out the silhouette — skirt, barrel, dome, gantry, four legs — and
+part that must match — see `reference-images.md`. Block out the silhouette — skirt, barrel, dome, gantry, four legs — and
 check it against the cards already in `catalogue.tsx`. If it reads as one of them, either the
 proportions are wrong or the machine does not earn its place (see *Distinctness*).
 
@@ -72,7 +72,7 @@ The one exception is blueprint's extra annotation layer, which is additive.
 
 `signal` maps `"warning" → shell`, `"ready" → accent`, `"idle" → metal`; use it for lamps and
 readouts, and document what each means for that machine. Ground shadows flatten by
-`camera.flatten` and slide out from under a machine that rises (see `references/views.md`).
+`camera.flatten` and slide out from under a machine that rises (see `views.md`).
 
 ## Effects and keyframes
 

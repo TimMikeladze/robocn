@@ -191,6 +191,8 @@ import { TankerTruck } from "@/components/ui/tanker-truck"
 import { FlareStack } from "@/components/ui/flare-stack"
 import { FractionatingColumn } from "@/components/ui/fractionating-column"
 import { JackupRig } from "@/components/ui/jackup-rig"
+import { CableStation } from "@/components/ui/cable-station"
+import { ResistanceCam } from "@/components/ui/resistance-cam"
 import { galleryEntries } from "@/components/site/gallery.generated"
 import { Panel } from "@/components/site/panel"
 
@@ -325,6 +327,7 @@ const art: Record<string, Art> = {
   "servo-motor": { line: "Positional shaft with three horn styles.", art: <ServoMotor size={150} /> },
   "radial-bloom": { line: "Twelve telescopes on one hub, each on its own number.", art: <RadialBloom size={190} speed={0.5} /> },
   "power-lantern": { line: "A ring in the port, taking charge the reservoir is losing.", art: <PowerLantern size={150} behavior="oath" speed={0.28} phase={0.5} plate="LTN-04" /> },
+  "assembly-geometry": { line: "Apart in the reverse of the order it was built.", art: <Pumpjack size={210} behavior="service" speed={0.24} phase={0.45} view="iso" variant="blueprint" /> },
   "lantern-geometry": { line: "Apart in the reverse of the order it went together.", art: <PowerLantern size={150} behavior="service" speed={0.22} phase={0.5} variant="blueprint" view="iso" /> },
   "solenoid-valve": { line: "A winding, return spring, plunger, and switched flow path.", art: <SolenoidValve size={210} ports={3} /> },
   "electromagnetic-relay": { line: "A visible armature switching two contact sets.", art: <ElectromagneticRelay size={205} poles={2} /> },
@@ -431,6 +434,9 @@ const art: Record<string, Art> = {
   "washing-machine": { line: "Thrown below a Froude number of one, pinned above it.", art: <WashingMachine size={172} load={6} /> },
   "household-geometry": { line: "Swings, sectional panels, a tumbling drum and a resonant tub.", art: <WashingMachine size={172} variant="blueprint" behavior="spin" load={6} /> },
 
+  "cable-station": { line: "The pin picks the weight; the reeving decides what you hold.", art: <CableStation size={150} pin={6} phase={0.35} /> },
+  "gym-geometry": { line: "Five reasons the felt load is not the selected load.", art: <ResistanceCam size={150} variant="blueprint" phase={0.15} /> },
+  "resistance-cam": { line: "The moment arm is the cam radius, so the cam is the resistance curve.", art: <ResistanceCam size={150} phase={0.3} /> },
 }
 
 /** Exported for the coverage test — a card that exists nowhere else is a bug. */

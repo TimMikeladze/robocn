@@ -9,95 +9,15 @@ much.
 machine — every mechanism driven by a prop — stays a server component; `medical-droid.tsx`
 is the reference for that shape.
 
-## Skeleton
+## The skeleton is generated
 
-```tsx
-import type * as React from "react"
+`pnpm robot:new <name>` writes it: the prop interface, the palette/size/variant/view
+resolution, a behaviour union with `static`, a controlled prop, drag and arrow keys, the
+`data-*` groups, the aria surface, `px()` and the finite clamp. Read what it emitted rather
+than a second copy of it here, and keep its shape as you replace the placeholder mechanism.
 
-import { clamp } from "@/lib/robocn/kinematics"
-import {
-  px, resolveRobotPalette, resolveRobotSize, robotCamera, robotSurface,
-  type RobotPaletteProps, type RobotSize, type RobotVariant, type RobotView,
-} from "@/lib/robocn/style"
-import { cn } from "@/lib/utils"
-
-export type CasingDroidPose = "idle" | "alert" | "extend"
-
-export interface CasingDroidProps
-  extends Omit<React.ComponentProps<"svg">, "color">,   // `color` is ours, not the DOM's
-    RobotPaletteProps {
-  size?: RobotSize | number
-  variant?: RobotVariant
-  /** Where the camera stands. Default is the view the machine was designed in. */
-  view?: RobotView
-  pose?: CasingDroidPose
-  domeAngle?: number
-  signal?: "idle" | "ready" | "warning"
-  showGround?: boolean
-  label?: string
-}
-
-const viewNames: Record<RobotView, string> = {
-  plan: "plan view", front: "front elevation", profile: "side elevation", iso: "isometric view",
-}
-
-const poses: Record<CasingDroidPose, { lean: number; skirt: number }> = {
-  idle:   { lean: 0, skirt: 0 },
-  alert:  { lean: -3, skirt: 6 },
-  extend: { lean: 4, skirt: 12 },
-}
-
-function CasingDroid({
-  size = "md", variant = "solid", view = "front", pose = "idle", domeAngle = 0,
-  signal = "ready", showGround = true, label,
-  color, accent, metal, dark, glow, grid, palette: paletteOverride,
-  className, style, ...props
-}: CasingDroidProps) {
-  const palette = resolveRobotPalette({ color, accent, metal, dark, glow, grid, palette: paletteOverride })
-  const width = resolveRobotSize(size)
-  const camera = robotCamera(view)                    // see references/views.md
-  const turn = finiteClamp(domeAngle, -180, 180)
-  const stance = poses[pose] ?? poses.idle            // unknown union value never throws
-  const shell = robotSurface("shell", variant, palette)
-  const machined = robotSurface("metal", variant, palette)
-  const cast = robotSurface("dark", variant, palette)
-  const signalColor = signal === "warning" ? palette.shell : signal === "ready" ? palette.accent : palette.metal
-
-  return (
-    <svg
-      role="img"
-      aria-label={`Casing droid, ${pose} pose, ${viewNames[view] ?? viewNames.front}`}
-      viewBox="0 0 170 230"
-      width={width}
-      height={px(width * 230 / 170)}
-      className={cn("max-w-full select-none", className)}
-      style={{ color: palette.foreground, ...style }}
-      {...props}
-    >
-      {variant === "blueprint" && (
-        <g fill="none" stroke={palette.grid} strokeWidth={0.5} opacity={0.45}>
-          <path d="M 12 209 H 158 M 85 8 V 216" strokeDasharray="2 3" />
-        </g>
-      )}
-      {showGround && <ellipse cx={85} cy={207} rx={44} ry={5.5} fill={palette.dark} opacity={0.14} />}
-
-      <g data-frame data-view={view} transform={`translate(85 199) rotate(${stance.lean})`}>
-        <g data-dome transform={`rotate(${px(turn)})`}>{/* … */}</g>
-      </g>
-
-      {label && (
-        <text x={85} y={224} textAnchor="middle" fontFamily="ui-monospace, monospace"
-              fontSize={6} fill={palette.foreground}>{label}</text>
-      )}
-    </svg>
-  )
-}
-
-const finiteClamp = (value: number, min: number, max: number) =>
-  Number.isFinite(value) ? clamp(value, min, max) : 0
-
-export { CasingDroid }
-```
+`--dry-run` prints the plan without writing. `--solver <name>` adds a pure solver module, its
+tests and its own `registry:lib` item.
 
 ## Rules that are easy to get wrong
 
@@ -126,7 +46,9 @@ Shared so a gantry rail and an elbow read as the same kit:
 | `robotSurface(role, variant, palette, weight)` | `style.ts` | Fill/stroke for one part. Spread it: `<rect {...shell} />`. `weight` scales the outline with the part. |
 | `capsulePath(a, b, radius)` | `style.ts` | A limb: rectangle between two joints, half-circle caps. Every limb in the set. |
 | `linkRole(index)` | `style.ts` | Alternates `shell`/`metal` down a chain so segments read as separate parts. |
-| `robotCamera(view)`, `extrudedPath`, `roundedFootprint` | `style.ts` | The four camera angles. Required on anything with a body in space — `references/views.md`. |
+| `elevationDraft(camera, plane)` | `style.ts` | **Reach for this first.** `point` / `path` / `solid` / `box` / `bar` / `disc` for a machine drawn in an elevation: write it once in flat drawing coordinates and every camera is correct — `views.md`. |
+| `robotCamera(view)`, `fitTransform`, `boxCorners` | `style.ts` | The camera itself, and fitting the projected machine inside the viewBox. Required on anything with a body in space. |
+| `extrudedPath`, `roundedFootprint`, `camera.plane` | `style.ts` | The plan-view route, for machines drawn looking down. |
 | `mountTransform(mount, w, h, floor)` / `labelTransform(mount)` | `style.ts` | Floor/ceiling/wall mounting. The drawing group works in robot coordinates (y up); labels get counter-transformed. |
 | `clamp`, `toRadians`, `add2`/`sub2`/`scale2`, `normalize2`, `perpendicular2`, `convexHull2` | `kinematics.ts` | Plain vector math on `{x, y}`. |
 

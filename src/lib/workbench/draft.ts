@@ -56,7 +56,7 @@ ${wrapped}
  *
  * A draft. It draws, it takes a pose and it runs on its own, but no registry
  * item claims it yet — so it does not install, and it has no docs page, demo or
- * tests. The \`ship-robot\` skill knows the rest of the way.${from}
+ * tests. The \`build-robot\` skill knows the rest of the way.${from}
  */
 
 import * as React from "react"

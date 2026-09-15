@@ -44,8 +44,8 @@ outline overlay that draws the SVG's own bounding box.
 
 **A new robot starts here too.** `New` in the toolbar (or `n`) names the machine, picks the
 nearest existing one to follow, and writes the brief — file path, export name, item name,
-what it is — pointing the agent at the `ship-robot` skill that already knows the other ten
-touchpoints. The agent builds it in this checkout; **the workbench picks the component up
+what it is — pointing the agent at the `build-robot` skill, which scaffolds the rest with
+`pnpm robot:new`. The agent builds it in this checkout; **the workbench picks the component up
 the moment the file exists**, registry entry or not, so you can pose it while the rest of the
 work is still going on.
 
@@ -139,7 +139,7 @@ pnpm dev          # http://localhost:3000/workbench
 
 Then open a coding agent in the same directory — `claude`, `codex`, `opencode`, or an editor.
 Nothing to connect and no key to paste: the agent edits `src/components/ui/<item>.tsx` and
-Fast Refresh puts it on the stage. `AGENTS.md` and the `ship-robot` skill are already in the
+Fast Refresh puts it on the stage. `AGENTS.md` and the robot-building skills are already in the
 repo, so an agent opened here knows the house rules.
 
 It works when deployed too — it is an ordinary Next page — but the point of it is local,

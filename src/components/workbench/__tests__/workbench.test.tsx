@@ -79,7 +79,7 @@ describe("starting a new machine", () => {
     fireEvent.change(within(dialog).getByRole("textbox", { name: /what is it called/i }), {
       target: { value: "Harbour crane" },
     })
-    const brief = within(dialog).getByText(/ship-robot skill/)
+    const brief = within(dialog).getByText(/build-robot skill/)
     expect(brief.textContent).toContain("src/components/ui/harbour-crane.tsx")
     expect(brief.textContent).toContain("HarbourCrane")
     // The machine on the stage is offered as the one to follow.

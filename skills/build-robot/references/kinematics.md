@@ -20,10 +20,16 @@ of stopping to ask is the whole turn.
 | Delta | `solveDelta(target, geometry)` | closed form, per-arm YZ formulation rotated 0/120/240° |
 | Gantry / cartesian | nothing — position directly | `useEasedPoint(..., { perAxis: true })` gives the dog-leg path a cartesian machine actually makes |
 | Stewart / hexapod | `solveStewart(pose, geometry)` in `stewart.ts` | rotate each anchor, measure to its base anchor; nothing to iterate |
-| Legs | `quadruped.ts`, `duck.ts` | planar two-link legs plus a footfall cycle |
+| Legs, 4–10, radial | `hexapod.ts` | tripod, wave and ripple gaits, knees solved per leg |
+| Legs, mass above the hips | `walker.ts` | a footfall schedule, the support polygon it leaves, and the hull roll and pitch that are the only way such a machine moves its mass over a foot |
+| Three legs | `tripod.ts` | a load schedule per foot, the body position that schedule demands, and the polygon it has to stay inside |
+| Legs, planar, simple | `quadruped.ts`, `duck.ts` | planar two-link legs plus a footfall cycle |
+| Gaits with a named beat | `gait.ts` | six gaits as touchdown sequences: the beat counted, the support pattern, the lead, the share on every grounded foot |
+| A closed loop — four-bar, slider-crank | `linkage.ts` | `solveFourBar`, `rigidPoint`; the stroke is what the loop produces, not a tween |
+| A travelling body wave | `spine.ts` | serpenoid spine with taper, steady turn and ground clearance |
 
 If the mechanism has none of these, it is a pose table, not kinematics — keep it in the
-component (see `references/component.md`).
+component (see `component.md`).
 
 ## API
 
@@ -53,7 +59,7 @@ Rules that keep poses stable:
   in anything new.
 - **Angles are degrees** everywhere in the public surface; radians stay inside the maths.
 - **`isometric` returns y-down screen coordinates**, so it drops straight into a y-up drawing
-  group. `robotCamera` (see `references/views.md`) is the newer, more general projection —
+  group. `robotCamera` (see `views.md`) is the newer, more general projection —
   prefer it for anything that needs more than one angle.
 
 ## The arm hooks

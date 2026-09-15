@@ -17,7 +17,7 @@
  * moment it exists.
  *
  * Either way the brief is produced, because the template is a starting point
- * and `ship-robot` is the rest of the way.
+ * and `build-robot` is the rest of the way.
  */
 
 import * as React from "react"
@@ -66,6 +66,8 @@ function NewRobot({ onClose, current, onScan, scanning, scanMessage }: NewRobotP
     name,
     subject,
     reference: workbenchComponent(reference),
+    // Either the workbench just wrote it, or it was already there.
+    drafted: Boolean(written) || onDisk,
   })
 
   const create = async () => {

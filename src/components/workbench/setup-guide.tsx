@@ -109,7 +109,7 @@ function SetupGuide({ onClose, local }: SetupGuideProps) {
             <p className="text-[12px] text-muted-foreground">
               A second terminal in the same checkout — that is the whole integration. The repo
               ships an <code className="font-mono text-foreground">AGENTS.md</code> and a{" "}
-              <code className="font-mono text-foreground">ship-robot</code> skill, so an agent
+              <code className="font-mono text-foreground">build-robot</code> skill, so an agent
               opened here already knows the house rules for building a machine.
             </p>
           </Step>
