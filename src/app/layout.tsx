@@ -58,8 +58,8 @@ export const metadata: Metadata = {
     title,
     description: site.description,
     // The handle a card credits, so a repost carries the author with it.
-    creator: "@linesofcodev",
-    site: "@linesofcodev",
+    creator: "@linesofcode",
+    site: "@linesofcode",
     images: [{ url: "/og.png", alt: ogAlt }],
   },
 }

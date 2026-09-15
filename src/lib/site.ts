@@ -45,7 +45,7 @@ export const site = {
     name: "Tim Mikeladze",
     linkedin: "https://www.linkedin.com/in/tim-mikeladze",
     portfolio: "https://linesofcode.dev",
-    twitter: "https://twitter.com/linesofcodev",
+    twitter: "https://twitter.com/linesofcode",
   },
 } as const
 
