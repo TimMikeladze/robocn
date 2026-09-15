@@ -419,10 +419,13 @@ export function randomTune(): Record<ThemeRole, ThemeTune> {
   const spread = 60 + Math.random() * 120
   const band = (low: number, high: number) =>
     Math.round((low + Math.random() * (high - low)) * 100) / 100
+  // Round first, then wrap: rounding 359.6 into the circle gives 360, which is
+  // off the end of the hue range.
+  const hue = (value: number) => Math.round(value) % 360
   return {
-    base: { hue: Math.round(start % 360), chroma: band(0.4, 1.4) },
-    signal: { hue: Math.round((start + spread) % 360), chroma: band(0.7, 1.15) },
-    shell: { hue: Math.round((start + spread * 2) % 360), chroma: band(0.7, 1.15) },
+    base: { hue: hue(start), chroma: band(0.4, 1.4) },
+    signal: { hue: hue(start + spread), chroma: band(0.7, 1.15) },
+    shell: { hue: hue(start + spread * 2), chroma: band(0.7, 1.15) },
   }
 }
 

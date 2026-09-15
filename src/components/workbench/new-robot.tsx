@@ -3,17 +3,29 @@
 /**
  * Starting a machine that does not exist yet.
  *
- * The workbench cannot write files — it is a page. What it can do is write the
- * brief precisely: the file path, the export name, the item name, and the
- * nearest machine in the set to follow. The agent in the other terminal does
- * the building, guided by the `ship-robot` skill already in the repo, and the
- * moment the component file exists the workbench picks it up as a draft.
+ * Two ways out of this dialog, and which one you get depends on whether the
+ * workbench is holding a folder.
+ *
+ * **With a folder** it writes `src/components/ui/<slug>.tsx` itself, seeded
+ * from a real robocn skeleton — props destructured with defaults, palette,
+ * camera, a clock. The draft appears in the index, and the agent is handed a
+ * file to change rather than a blank page.
+ *
+ * **Without one** it does what it always did: write the brief precisely — file
+ * path, export name, item name, the nearest machine to follow — and let the
+ * agent in the other terminal create the file. The workbench picks it up the
+ * moment it exists.
+ *
+ * Either way the brief is produced, because the template is a starting point
+ * and `ship-robot` is the rest of the way.
  */
 
 import * as React from "react"
-import { Loader2, RefreshCw } from "lucide-react"
+import { Check, FilePlus2, Loader2, RefreshCw } from "lucide-react"
 
 import { Command, WorkbenchDialog } from "@/components/workbench/dialog"
+import { useCheckout } from "@/components/workbench/checkout"
+import { draftFile, draftSource } from "@/lib/workbench/draft"
 import {
   exportName,
   newRobotPrompt,
@@ -40,25 +52,62 @@ function NewRobot({ onClose, current, onScan, scanning, scanMessage }: NewRobotP
   const [name, setName] = React.useState("")
   const [subject, setSubject] = React.useState("")
   const [reference, setReference] = React.useState(current.draft ? "" : current.id)
+  const [writing, setWriting] = React.useState(false)
+  const [written, setWritten] = React.useState<string | null>(null)
+  const [failure, setFailure] = React.useState<string | null>(null)
+  const checkout = useCheckout()
+
   const slug = slugify(name)
+  const file = slug ? draftFile(slug) : ""
   const taken = Boolean(slug) && Boolean(workbenchComponent(slug))
+  /** Already on disk, registry entry or not — writing would overwrite it. */
+  const onDisk = Boolean(file && checkout.files.has(file))
   const prompt = newRobotPrompt({
     name,
     subject,
     reference: workbenchComponent(reference),
   })
 
+  const create = async () => {
+    if (!slug || taken || onDisk) return
+    setWriting(true)
+    setFailure(null)
+    try {
+      await checkout.write(file, draftSource({ slug, subject, reference: reference || undefined }))
+      setWritten(file)
+      // The control manifest is a build step, so the draft is a file before it
+      // is a component. Where the generator can run, run it.
+      onScan?.()
+    } catch (cause) {
+      setFailure(cause instanceof Error ? cause.message : "The file could not be written.")
+    } finally {
+      setWriting(false)
+    }
+  }
+
+  const canWrite = Boolean(checkout.root)
+
   return (
     <WorkbenchDialog
       eyebrow="New machine"
-      title="Name it, then hand the build to your agent."
+      title={canWrite ? "Name it, and the workbench writes the file." : "Name it, then hand the build to your agent."}
       onClose={onClose}
     >
       <p className="text-[13px] leading-relaxed text-muted-foreground">
-        This page cannot write files, and it does not need to. Your agent builds the component
-        in this checkout; the workbench picks it up{" "}
-        <strong className="text-foreground">as soon as the file exists</strong> — registry entry
-        or not — so you can pose it while the rest of the work is still going on.
+        {canWrite ? (
+          <>
+            A skeleton that already draws — props, palette, camera, clock — written into{" "}
+            <strong className="text-foreground">{checkout.root}</strong>. Your agent replaces the
+            body; it does not have to work out the house idiom first.
+          </>
+        ) : (
+          <>
+            No folder is open, so this writes the brief rather than the file. Your agent builds
+            the component in this checkout; the workbench picks it up{" "}
+            <strong className="text-foreground">as soon as the file exists</strong> — registry
+            entry or not — so you can pose it while the rest of the work is still going on.
+          </>
+        )}
       </p>
 
       <div className="grid gap-3 sm:grid-cols-2">
@@ -102,6 +151,8 @@ function NewRobot({ onClose, current, onScan, scanning, scanMessage }: NewRobotP
             <span className="text-foreground">{exportName(slug)}</span>
             {taken ? (
               <span className="ml-2 text-destructive">that name is already taken</span>
+            ) : onDisk ? (
+              <span className="ml-2 text-destructive">that file is already on disk</span>
             ) : null}
           </>
         ) : (
@@ -124,6 +175,14 @@ function NewRobot({ onClose, current, onScan, scanning, scanMessage }: NewRobotP
 
       <Command code={prompt} label="paste into Claude Code, Codex or opencode" />
 
+      {failure ? <p className="text-[12px] text-destructive">{failure}</p> : null}
+      {written ? (
+        <p className="inline-flex items-center gap-1.5 font-mono text-[11px] text-foreground">
+          <Check className="size-3.5 text-emerald-500" />
+          wrote {written} — it is in the index under drafts
+        </p>
+      ) : null}
+
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
         <span className="font-mono text-[11px] text-muted-foreground">
           {scanMessage || "Drafts appear in the index under “drafts”."}
@@ -142,6 +201,21 @@ function NewRobot({ onClose, current, onScan, scanning, scanMessage }: NewRobotP
                 <RefreshCw className="size-3.5" />
               )}
               Rescan the library
+            </button>
+          ) : null}
+          {canWrite ? (
+            <button
+              type="button"
+              onClick={() => void create()}
+              disabled={!slug || taken || onDisk || writing || Boolean(written)}
+              className="inline-flex items-center gap-1.5 rounded-sm border border-border px-3 py-1.5 font-mono text-[11px] transition-colors hover:bg-accent disabled:opacity-40"
+            >
+              {writing ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <FilePlus2 className="size-3.5" />
+              )}
+              Write the file
             </button>
           ) : null}
           <button

@@ -63,6 +63,24 @@ the toolbar, the `?` key, or `?setup=1` in the URL: clone, `pnpm install`, `pnpm
 brief from the Handoff panel. On robocn.dev it says so plainly: every control works, but
 nothing hosted can edit your files.
 
+**Export what is on the stage.** The toolbar's `Export` menu (`e`) records the stage — the
+machine, the background, the zoom, and the whole grid in matrix mode — as an animated WebP,
+an animated GIF or a still. It runs in the page and uploads nothing: `docs/export.md`.
+
+**It can hold a folder.** `Folder` in the toolbar opens a directory picker; point it at this
+checkout and the page has read and write access to it. The Source tab becomes an editor over
+the real file with ⌘S to save, `New` writes the skeleton itself instead of only a brief, a
+recording can land in `docs/screenshots` instead of your downloads, and a machine that is on
+disk but not in the control manifest is noticed and rescanned without anyone pressing
+anything. None of it changes what is *on* the stage — that is still a module Fast Refresh
+swapped, which is why the local loop is still the loop. Chrome, Edge and Opera on a desktop;
+elsewhere the button does not appear and everything falls back to what it did before. Notes:
+`docs/checkout.md`.
+
+**A shelf for poses.** The URL is still the pose. `Poses` (or `b`) saves the one on screen
+under a name, in the origin private file system — no picker, no permission, and it works in
+Safari and Firefox too. Nothing is uploaded and nothing leaves that browser.
+
 **Handoff, not integration.** The workbench does not talk to an agent. It gives you the
 things an agent needs, on the clipboard: the component's file path, a JSX snippet of the
 pose currently on screen, the props as JSON, the rendered SVG, and a prepared prompt naming
@@ -98,10 +116,15 @@ everything else mounts bare.
 
 `GET /api/workbench/source?component=<id>` returns a component's current source for the
 source panel. It resolves the path from the manifest and never from the request, so the
-parameter can only name a component that ships.
+parameter can only name a component that ships. It is the fallback path now: with a folder
+open the panel reads and writes the file directly and never calls it, which is also what
+makes the Source tab work on robocn.dev.
 
 `POST /api/workbench/scan` re-runs `scripts/build-workbench.mjs`, which is how a robot
-created after the page loaded shows up without a restart. It takes no parameters — there is
+created after the page loaded shows up without a restart. With a folder open it fires by
+itself, because the page can see the new file before the manifest does — deriving controls
+still means the TypeScript AST, and shipping the compiler to the browser to save a `POST`
+would be a bad trade. It takes no parameters — there is
 nothing in the request for the command to read — and refuses on a production build or a
 request that did not come from this machine.
 

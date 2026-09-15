@@ -2,6 +2,7 @@ import Link from "next/link"
 
 import { Catalogue, type CatalogueCard } from "@/components/site/catalogue"
 import { HeroArm } from "@/components/site/hero-arm"
+import { RobotExport } from "@/components/ui/robot-export"
 import { InstallCommand } from "@/components/site/install-command"
 import { Panel } from "@/components/site/panel"
 import { VariantStrip } from "@/components/site/variant-strip"
@@ -60,7 +61,9 @@ export default function Home() {
           </div>
         </div>
         <Panel className="p-4">
-          <HeroArm />
+          <RobotExport name="robocn-hero" defaults={{ seconds: 4 }}>
+            <HeroArm />
+          </RobotExport>
         </Panel>
       </section>
 

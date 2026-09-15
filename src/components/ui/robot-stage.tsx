@@ -88,7 +88,10 @@ function RobotStage({
       <Canvas
         shadows
         camera={{ position: camera, fov }}
-        gl={{ antialias: true, alpha: true }}
+        // `preserveDrawingBuffer`: without it the buffer is cleared before
+        // anything can read it back, and every export of a 3D machine is a
+        // blank panel. See `docs/export.md`.
+        gl={{ antialias: true, alpha: true, preserveDrawingBuffer: true }}
         {...canvasProps}
       >
         <hemisphereLight intensity={0.55} groundColor="#20242b" />

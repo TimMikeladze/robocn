@@ -10,12 +10,18 @@
  *
  * State lives in the query string, so a pose can be reloaded, bookmarked, or
  * pasted to someone else. Notes: `docs/workbench.md`.
+ *
+ * It can also hold a folder. With one open the source panel becomes an editor,
+ * `New` writes the file itself, a recording can land in `docs/screenshots`, and
+ * a machine that exists on disk but not in the manifest is noticed without
+ * anyone pressing rescan. That is `docs/checkout.md`; none of it changes what
+ * is on the stage, which is still a module Fast Refresh swapped.
  */
 
 import * as React from "react"
 import {
+  Bookmark,
   Columns3,
-  Download,
   Frame,
   Grid2X2,
   Maximize2,
@@ -31,7 +37,11 @@ import {
   ZoomOut,
 } from "lucide-react"
 
+import { ExportMenu, type ExportDestination } from "@/components/ui/robot-export"
+import { CheckoutProvider, useCheckout } from "@/components/workbench/checkout"
+import { CheckoutButton } from "@/components/workbench/checkout-button"
 import { ComponentList } from "@/components/workbench/component-list"
+import { PosePanel } from "@/components/workbench/poses"
 import { ControlsPanel } from "@/components/workbench/controls-panel"
 import { Matrix, axisValues } from "@/components/workbench/matrix"
 import { NewRobot } from "@/components/workbench/new-robot"
@@ -48,6 +58,7 @@ import {
 import {
   drivable,
   fallbackValue,
+  isRobotSource,
   readPose,
   workbenchComponent,
   workbenchComponentList,
@@ -92,7 +103,7 @@ export interface WorkbenchProps {
   initialQuery: Record<string, string | string[] | undefined>
 }
 
-function Workbench({ initialQuery }: WorkbenchProps) {
+function Bench({ initialQuery }: WorkbenchProps) {
   const params = React.useMemo(() => {
     const search = new URLSearchParams()
     for (const [key, value] of Object.entries(initialQuery)) {
@@ -121,6 +132,7 @@ function Workbench({ initialQuery }: WorkbenchProps) {
   const [zoom, setZoom] = React.useState(() => Number(params.get("zoom")) || 1)
   const [outline, setOutline] = React.useState(params.get("outline") === "1")
   const [sourceOpen, setSourceOpen] = React.useState(params.get("panel") === "source")
+  const [exportOpen, setExportOpen] = React.useState(false)
   const [listOpen, setListOpen] = React.useState(false)
   // The guide opens itself once, for someone who has never seen the loop. After
   // that the `?` key and the toolbar are the ways back in — and `?setup=1` or
@@ -137,8 +149,10 @@ function Workbench({ initialQuery }: WorkbenchProps) {
   const [scanning, setScanning] = React.useState(false)
   const [scanMessage, setScanMessage] = React.useState("")
   const [actions, setActions] = React.useState<ActionCall[]>([])
+  const [posesOpen, setPosesOpen] = React.useState(false)
   /** Seconds since the machine last drew — the status bar's heartbeat. */
   const [since, setSince] = React.useState(0)
+  const checkout = useCheckout()
 
   const searchInput = React.useRef<HTMLInputElement>(null)
   /** Calls arrive as fast as the machine moves; the panel updates four times a second. */
@@ -205,6 +219,35 @@ function Workbench({ initialQuery }: WorkbenchProps) {
     if (chosen) setAxes(defaultAxes(chosen))
   }, [])
 
+  /**
+   * Put a whole saved pose back on the stage.
+   *
+   * The query string is the workbench's own state format, so restoring a pose
+   * from the shelf is reading the same string the URL holds — component, mode,
+   * matrix axes, stage settings and every non-default prop.
+   */
+  const applySearch = React.useCallback((next: string) => {
+    const saved = new URLSearchParams(next)
+    const chosen = workbenchComponent(saved.get("c"))
+    if (!chosen) return
+    setId(chosen.id)
+    setPose(readPose(saved, chosen.controls))
+    setMatrix(saved.get("mode") === "matrix")
+    setAxes({
+      x: saved.get("x") ?? defaultAxes(chosen).x,
+      y: saved.get("y") ?? defaultAxes(chosen).y,
+    })
+    setBackground(
+      (stageBackgrounds.find((entry) => entry.id === saved.get("bg"))?.id ??
+        "grid") as StageBackground,
+    )
+    setZoom(Number(saved.get("zoom")) || 1)
+    setOutline(saved.get("outline") === "1")
+    setSourceOpen(saved.get("panel") === "source")
+    pending.current = []
+    setActions([])
+  }, [])
+
   const shuffle = () => {
     const next: Pose = { ...pose }
     for (const control of component.controls) {
@@ -257,6 +300,8 @@ function Workbench({ initialQuery }: WorkbenchProps) {
       if (event.key === "m") setMatrix((value) => !value)
       if (event.key === "s") setSourceOpen((value) => !value)
       if (event.key === "o") setOutline((value) => !value)
+      if (event.key === "e") setExportOpen((value) => !value)
+      if (event.key === "b") setPosesOpen((value) => !value)
       if (event.key === "g") {
         setBackground((current) => {
           const index = stageBackgrounds.findIndex((entry) => entry.id === current)
@@ -295,6 +340,40 @@ function Workbench({ initialQuery }: WorkbenchProps) {
     }
   }
 
+  /**
+   * Machines on disk that the control manifest has never seen.
+   *
+   * The manifest is a build artefact, so a component written a minute ago is
+   * not in it. With a folder open the workbench can see the file directly —
+   * and where the generator can be run, run it rather than making someone
+   * press a button to be told what the page already knows.
+   */
+  const strangers = React.useMemo(() => {
+    if (!checkout.root) return []
+    const known = new Set(workbenchComponentList.map((entry) => entry.file))
+    return [...checkout.files]
+      .filter(
+        ([path, source]) =>
+          path.startsWith("src/components/ui/") &&
+          path.endsWith(".tsx") &&
+          !known.has(path) &&
+          isRobotSource(source),
+      )
+      .map(([path]) => path)
+      .sort()
+  }, [checkout.files, checkout.root])
+
+  const scanned = React.useRef("")
+  React.useEffect(() => {
+    if (!local || scanning || strangers.length === 0) return
+    const signature = strangers.join("|")
+    if (scanned.current === signature) return
+    scanned.current = signature
+    // `scan` is re-created every render and rescanning is idempotent; the
+    // signature ref is what stops this from looping, not the dependency list.
+    void scan()
+  }, [local, scanning, strangers])
+
   const svgOf = () => stageRef.current?.querySelector("svg")
 
   const copySvg = async () => {
@@ -303,28 +382,25 @@ function Workbench({ initialQuery }: WorkbenchProps) {
     await navigator.clipboard.writeText(new XMLSerializer().serializeToString(svg))
   }
 
-  const downloadPng = async () => {
-    const svg = svgOf()
-    if (!svg) return
-    const markup = new XMLSerializer().serializeToString(svg)
-    const image = new Image()
-    image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(markup)}`
-    await new Promise((resolve, reject) => {
-      image.onload = resolve
-      image.onerror = () => reject(new Error("render"))
-    })
-    const canvas = document.createElement("canvas")
-    canvas.width = (image.width || 320) * 2
-    canvas.height = (image.height || 320) * 2
-    const context = canvas.getContext("2d")
-    if (!context) return
-    context.drawImage(image, 0, 0, canvas.width, canvas.height)
-    const url = canvas.toDataURL("image/png")
-    const anchor = document.createElement("a")
-    anchor.href = url
-    anchor.download = `${component.id}.png`
-    anchor.click()
-  }
+  /**
+   * Where a recording can go. A held folder adds `docs/screenshots`, which is
+   * where a screenshot of a machine was headed anyway.
+   */
+  const destinations = React.useMemo<ExportDestination[]>(() => {
+    const places: ExportDestination[] = [{ id: "download", label: "Download" }]
+    if (checkout.root) {
+      places.push({
+        id: "checkout",
+        label: "Folder",
+        write: async (blob, filename) => {
+          const path = `docs/screenshots/${filename}`
+          await checkout.write(path, blob)
+          return path
+        },
+      })
+    }
+    return places
+  }, [checkout])
 
   const zoomBy = (direction: 1 | -1) => {
     const index = zooms.indexOf(zoom)
@@ -391,6 +467,25 @@ function Workbench({ initialQuery }: WorkbenchProps) {
         >
           <SquareCode className="size-3.5" /> Handoff
         </button>
+        <span className="relative">
+          <button
+            type="button"
+            className={button}
+            aria-pressed={posesOpen}
+            onClick={() => setPosesOpen((value) => !value)}
+            title="Saved poses, kept in this browser (b)"
+          >
+            <Bookmark className="size-3.5" /> Poses
+          </button>
+          {posesOpen ? (
+            <PosePanel
+              component={component.id}
+              search={search}
+              onOpen={applySearch}
+              onClose={() => setPosesOpen(false)}
+            />
+          ) : null}
+        </span>
 
         <span className="mx-1 h-4 w-px bg-border" />
         <label className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
@@ -451,9 +546,17 @@ function Workbench({ initialQuery }: WorkbenchProps) {
           <button type="button" className={button} onClick={() => void copySvg()} title="Copy the rendered SVG">
             SVG
           </button>
-          <button type="button" className={button} onClick={() => void downloadPng()} title="Download a PNG">
-            <Download className="size-3.5" />
-          </button>
+          {/* The stage, not the SVG: what comes out is the machine, the
+              background, the zoom and — in matrix mode — the whole grid. */}
+          <ExportMenu
+            target={stageRef}
+            name={matrix ? `${component.id}-matrix` : component.id}
+            label="Export"
+            open={exportOpen}
+            onOpenChange={setExportOpen}
+            destinations={destinations}
+          />
+          <CheckoutButton className={button} />
           <button
             type="button"
             className={button}
@@ -590,6 +693,14 @@ function Workbench({ initialQuery }: WorkbenchProps) {
             <span className="truncate">{component.file}</span>
             <span className="hidden sm:inline">{component.export}</span>
             <span className="hidden md:inline">{knobs} controls</span>
+            {strangers.length ? (
+              <span
+                className="hidden rounded-sm border border-border px-1.5 text-foreground lg:inline"
+                title={strangers.join("\n")}
+              >
+                {strangers.length} on disk, not in the manifest
+              </span>
+            ) : null}
             {local ? (
               <button
                 type="button"
@@ -625,6 +736,18 @@ function Workbench({ initialQuery }: WorkbenchProps) {
         </aside>
       </div>
     </div>
+  )
+}
+
+/**
+ * One checkout for the page. The provider is here rather than in the route so
+ * the whole feature — the button, the editor, the writer — lives in one folder.
+ */
+function Workbench(props: WorkbenchProps) {
+  return (
+    <CheckoutProvider>
+      <Bench {...props} />
+    </CheckoutProvider>
   )
 }
 

@@ -2660,6 +2660,33 @@
       ]
     },
     {
+      "name": "robot-capture",
+      "type": "registry:lib",
+      "title": "Robot capture",
+      "description": "Records any component out of the page: a snapshotter that bakes the cascade into a clone, a dependency-free GIF89a encoder, and an animated-WebP muxer built on the browser's own encoder.",
+      "categories": [
+        "robotics",
+        "export"
+      ],
+      "files": [
+        {
+          "path": "src/lib/robocn/capture.ts",
+          "type": "registry:lib",
+          "target": "@lib/robocn/capture.ts"
+        },
+        {
+          "path": "src/lib/robocn/gif.ts",
+          "type": "registry:lib",
+          "target": "@lib/robocn/gif.ts"
+        },
+        {
+          "path": "src/lib/robocn/webp.ts",
+          "type": "registry:lib",
+          "target": "@lib/robocn/webp.ts"
+        }
+      ]
+    },
+    {
       "name": "use-robot-arm",
       "type": "registry:hook",
       "title": "useRobotArm",
@@ -4561,6 +4588,49 @@
       ]
     },
     {
+      "name": "lantern-geometry",
+      "type": "registry:lib",
+      "title": "Lantern geometry",
+      "description": "An ordered exploded assembly — parts taken apart in the reverse of the order they were fitted, each along its own axis, seated again exactly — with a conserved charge transfer, a recital count, a reserve gauge, a cage, and an inverse-square emission column.",
+      "categories": [
+        "robotics",
+        "math"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json"
+      ],
+      "files": [
+        {
+          "path": "src/lib/robocn/lantern.ts",
+          "type": "registry:lib",
+          "target": "@lib/robocn/lantern.ts"
+        }
+      ]
+    },
+    {
+      "name": "power-lantern",
+      "type": "registry:ui",
+      "title": "Power lantern",
+      "description": "A carried reservoir lantern that charges a ring: a ribbed prism barrel in a cage of bowed straps, a round charge port on its face that docks a ring, a conduit that moves charge rather than inventing it, an inscription collar lit a glyph at a time, an emission cone paid for out of the reserve — and every part of it coming off in the reverse of the order it was fitted.",
+      "categories": [
+        "robotics",
+        "machines"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/lantern-geometry.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/power-lantern.tsx",
+          "type": "registry:ui",
+          "target": "@ui/power-lantern.tsx"
+        }
+      ]
+    },
+    {
       "name": "radial-bloom",
       "type": "registry:ui",
       "title": "Radial bloom",
@@ -4579,6 +4649,31 @@
           "path": "src/components/ui/radial-bloom.tsx",
           "type": "registry:ui",
           "target": "@ui/radial-bloom.tsx"
+        }
+      ]
+    },
+    {
+      "name": "robot-export",
+      "type": "registry:ui",
+      "title": "Robot export",
+      "description": "The record button: wrap a machine and it can be saved as an animated WebP, an animated GIF or a still, encoded in the page with nothing uploaded.",
+      "categories": [
+        "robotics",
+        "export"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "button",
+        "popover",
+        "{REGISTRY_URL}/r/robot-capture.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/robot-export.tsx",
+          "type": "registry:ui",
+          "target": "@ui/robot-export.tsx"
         }
       ]
     }

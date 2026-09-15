@@ -50,6 +50,9 @@ importers:
       tw-animate-css:
         specifier: ^1.4.0
         version: 1.4.0
+      use-fs:
+        specifier: ^2.0.0
+        version: 2.0.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
     devDependencies:
       '@tailwindcss/postcss':
         specifier: ^4
@@ -3717,6 +3720,13 @@ packages:
 
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
+
+  use-fs@2.0.0:
+    resolution: {integrity: sha512-IW9ChnNa0jeBB9OhF7DzuqMCP4pCM2Kfip4yXw2M7SjymjUOkyhBw3W6KNbn2UNNzhCo1k0+D3TojYXr0P+JEA==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      react: '>=17'
+      react-dom: '>=17'
 
   use-sync-external-store@1.7.0:
     resolution: {integrity: sha512-6L+EeigHMQhdaIPNIFUKwfWJSwWFQ8gJbJ2DLOs5sDIegTwR9fRxvnM3uciHKjIZhFz+KAv2emhWMRvDmMcY8A==}
@@ -7667,6 +7677,12 @@ snapshots:
   uri-js@4.4.1:
     dependencies:
       punycode: 2.3.1
+
+  use-fs@2.0.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
+    dependencies:
+      ignore: 7.0.9
+      react: 19.2.8
+      react-dom: 19.2.8(react@19.2.8)
 
   use-sync-external-store@1.7.0(react@19.2.8):
     dependencies:

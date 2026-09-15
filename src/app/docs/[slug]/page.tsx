@@ -6,6 +6,7 @@ import { notFound } from "next/navigation"
 import { CodeBlock } from "@/components/site/code-block"
 import { DemoPanel } from "@/components/site/demo-panel"
 import { InstallCommand } from "@/components/site/install-command"
+import { InstallToFolder } from "@/components/site/install-to-folder"
 import { PropsTable } from "@/components/site/props-table"
 import { docBySlug, docs } from "@/lib/docs"
 import { workbenchComponent } from "@/lib/workbench/controls"
@@ -84,6 +85,8 @@ export default async function DocPage({
         <section className="space-y-3">
           <h2 className="text-[15px] font-medium">Install</h2>
           <InstallCommand item={entry.item} />
+          {/* Chrome, Edge and Opera on a desktop; it renders nothing elsewhere. */}
+          <InstallToFolder item={entry.item} />
         </section>
       ) : null}
 

@@ -57,6 +57,8 @@ Consumers install with `npx shadcn@latest add https://<host>/r/robot-arm.json`, 
 | `robot-face` | ui | Head with pointer-tracking eyes, moods, blinking, antenna. |
 | `robot-loader` | ui | Pick-and-place loop as a loading indicator. |
 | `arm-controls` | ui | Slider panel that drives an arm in forward kinematics. |
+| `robot-export` | ui | The record button: wrap a machine and save it as an animated WebP, an animated GIF or a still. |
+| `robot-capture` | lib | DOM to frames to bytes: a cascade-baking snapshotter, a GIF89a encoder, an animated-WebP muxer. |
 | `robot-gripper` | ui | Standalone parallel or angular gripper that works a pick cycle. |
 | `conveyor-belt` | ui | Automatic or controlled conveyor travel with workpieces. |
 | `micro-duck` | ui | Bipedal duck robot: solved legs, craning neck, hinged beak. |
@@ -208,6 +210,8 @@ Consumers install with `npx shadcn@latest add https://<host>/r/robot-arm.json`, 
 | `espresso-machine` | ui | A spring-lever group solved as a slider-crank: the declining pressure is the spring. |
 | `refrigerator` | ui | Solved leaves on vertical hinges, an interior the swing reveals, and a lamp on a real door switch. |
 | `radial-bloom` | ui | Four guided stages per ram, so the star opens past twice its closed radius without a stage ever leaving its sleeve. |
+| `lantern-geometry` | lib | An ordered exploded assembly — each part along the axis it was fitted on, in reverse fitting order, seating again exactly — a charge transfer solved in closed form so it conserves at any step size, a recital, a reserve gauge, and an inverse-square emission column. |
+| `power-lantern` | ui | A carried reservoir that charges a ring through a port on its face: charge is moved rather than invented, the recital gates the transfer, the beam is paid for out of the reserve, and the whole machine comes apart in the reverse of the order it was built. |
 | `washing-machine` | ui | Wash and spin either side of a Froude number of one, over a tub that resonates on the way up. |
 | `rail-geometry` | lib | Bogies placed on a curve and the centre and end throw that follow, Klingel hunting on a coned wheelset, a pantograph solved to a working height, and a turnout's lead, crossing angle and blade throw. |
 | `rail-locomotive` | ui | The inverse of every other vehicle here: nothing on board steers, the track places it — bogies on the tangent, the body the chord, the throw the answer. |
@@ -1566,3 +1570,81 @@ the obvious reading of a flower opening and is wrong for this camera — the fro
 ten degrees above horizontal, so an open corolla projected to a line and the machine lost the
 one event it has in its own native view. It opens into a funnel now, and the silhouette flips
 from a tall narrow bud to a wide shallow cup.
+
+### Verification for the power lantern
+
+`vitest` over the geometry and the machine — 37 tests, and 2351 in the suite. The solver: the
+assembly reassembling to the *zero vector* rather than to something small, every part exactly
+its own clearance away at full travel, the teardown running in reverse fitting order and never
+backwards, a strictly sequential teardown at zero overlap and a simultaneous one at full,
+parts sharing a fitting order counting as one stage and leaving together, and a zero axis or a
+non-finite travel degrading instead of throwing. The charge: conservation, with what leaves
+the reservoir arriving in the cell less exactly what was drawn; one 2.5-unit step equal to a
+thousand 2.5-millisecond ones to nine places, which is what makes a pure sampler exact; the
+clamps at an empty reservoir and a full cell; nothing moving with an empty dock while the
+emitter still draws; and rubbish clamped into a state that still reads. Then the recital
+counting up and finishing on the last cell with the line and glyph inside their band, the
+gauge fills averaging back to the level they were made from, the cage leaving a bay on the
+front rather than a rib, and the beam reaching half as far at a quarter of the power.
+
+The machine: every part moving off the assembly and every transform gone again at
+`exploded={0}`; the crown leaving before the parts under it; the lid standing off its seat
+whenever the bore is in use and seated when it is not; the gauge reading the reserve and the
+label saying it; the ring docking, showing its own charge, and the iris closing without one;
+the conduit running only while the model says charge is moving — a *full ring darkens it with
+the transfer still switched on*; the beam priced by the inverse square and absent on an empty
+reserve; the collar lighting a glyph at a time; one geometry differing between cameras with
+the view named in the label; a rib count and a colour override landing; `NaN` everywhere
+rendering a neutral machine with no `NaN` in the DOM; and the slider surface appearing only
+when interactive, naming whichever channel `control` grabbed. The behaviour samplers at fixed
+phases: `charge` conserving at every phase, `oath` filling the ring on the last glyph, `emit`
+paying the area under its gate rather than its peak, and `service` returning to exactly zero.
+
+`tsc --noEmit`, `eslint`, `pnpm registry:build` and `pnpm build` clean. Driven in Chrome at
+`/docs/power-lantern`: all four views, all four variants, every behaviour, the machine dragged
+apart to 92% and released to ease back to 0, the keyboard taking `apart` to 1, reduced motion
+forced on to confirm the loop parks while the drag still works, dark mode, both catalogue
+cards, and the page at 390px (the only horizontal overflow there is the site header's icon
+row, which every docs page has).
+
+The browser caught four things the tests could not: the crown lid sitting *on* the bore, so a
+docked ring was invisible — the lid now stands off its seat whenever the bore is in use, and
+gives way to the part's own travel once the teardown starts; a ring too small and thin to read
+at the crown; an iris drawn as flat blades, which is a scribble when a disc is seen ten degrees
+off edge-on, replaced by a shutter with real thickness and seam lines; and a conduit drawn over
+the outside of the hood, now drawn only where it can actually be seen — up the column inside
+the glass, and again in the open bore. The framing was a fifth: a fixed envelope with enough
+headroom for the teardown drew the assembled machine small in its own frame, so the fit is
+allowed to enlarge.
+
+#### Reshaped to a reference
+
+A reference photograph of a period lantern moved the form and one mechanism. The silhouette
+became the marine-lamp archetype it is now — a squat barrel of ribbed prism glass in a cage of
+bowed straps, between a flared foot and a stack of collars under a domed cap, on a stem and a
+hanging eye — and the charge port moved from a bore in the crown to a **round boss on the
+face**, which is where the reference carries its fitting and is the better place for it: the
+ring now seats head-on in the machine's own view, so its charge reads as an arc of the ring
+rather than as a line seen edge-on, and the iris that closes the bore reads as a diaphragm
+instead of a scribble. The crown lid and its stand-off went with it; the parts list is
+`base · plinth · core · cell · rib ×N · collar · hood · finial · hanger · bezel · iris · ring`,
+and the teardown now has *two* fit axes — up the stack, and forward off the face.
+
+Proportions, the ribbed barrel, the bowed straps, the collar stack, the stem and eye, and the
+round port were taken in words and ratios; nothing was traced and no colour was sampled. The
+machine stays an archetype named for its job.
+
+Re-verified after the reshape: 2351 tests, `tsc --noEmit`, `eslint`, `pnpm registry:build` and
+`pnpm build` all clean, and driven in Chrome at `/docs/power-lantern` again — all four views,
+all four variants, the teardown to 100% in front, profile and iso, reduced motion parking the
+loop, the catalogue card at 150px, and the page at 390px.
+
+The browser caught four more: cage straps drawn as stacked arc sections, which read as a chain
+of blocks rather than a bent strap, replaced by one path up each rail of the bow; those straps
+collapsing to a hairline when seen edge-on, fixed by drawing the bar's other section too, so it
+keeps a width from every camera; prism rings drawn as whole ellipses, which read as a coil seen
+through the glass, cut back to the near half each; and the burner deck painted `dark`, which
+read through the glass as something the barrel was full of. A fifth was a schedule error rather
+than a drawing one: the barrel's clearance was larger than the collar's above it, so the glass
+overtook the collar on the way out — clearances have to fall with removal rank or the stack
+does not spread.

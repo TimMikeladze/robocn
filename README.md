@@ -23,6 +23,12 @@ edit them, theme them with CSS variables.
 pnpm dlx shadcn@latest add https://robocn.dev/r/robot-arm.json
 ```
 
+Or without the CLI: every docs page offers **Choose a folder**, which asks for a directory,
+resolves the item's dependencies, shows you exactly which paths it would write — marked
+`new` or `replace` — and writes them once you say so. It reads your `components.json` and
+`tsconfig.json` for your aliases, so the files land where your project keeps them. Chrome,
+Edge and Opera on a desktop; see [holding a folder](docs/checkout.md).
+
 ## What is in it
 
 Every item below is on [the landing page](https://robocn.dev), running, at the size it
@@ -112,6 +118,8 @@ installs at.
 | `linear-actuator` | Controlled cylinder stroke with optional piston cutaway. |
 | `servo-motor` | Positional servo with single, double, or cross horns. |
 | `radial-bloom` | Radial array of four-stage telescoping rams on one hub: closed it is an even star, driven out it is a ragged burst, and a vector of strokes drives each ram on its own. |
+| `power-lantern` | Carried reservoir lantern that charges a ring: a ribbed prism barrel in a bowed cage, with a round port on its *face* that a ring docks into. Charge is *moved* rather than invented, the recital gates the transfer so the ring fills on the last glyph, the beam is paid for out of the reserve at `√intensity` range — and every part comes off in the reverse of the order it was fitted, seating again exactly. |
+| `lantern-geometry` | The ordered exploded assembly — each part along the axis it was fitted on, in reverse fitting order, exactly reassembling — plus a conserved charge transfer solved in closed form, a recital count, a reserve gauge and an inverse-square emission column. |
 | `rotary-table` | Rotary indexing platter with controlled angle and up to twelve fixtures. |
 | `robot-rover` | Four- or six-wheel ground robot with controlled heading, steering, and tread travel. |
 | `robot-drone` | Quad- or hexacopter with counter-rotating propellers and optional guards. |
@@ -203,6 +211,8 @@ installs at.
 | `robot-face` | A head whose eyes follow the pointer, with six moods. |
 | `robot-loader` | A pick-and-place cycle as a loading indicator, determinate or not. |
 | `arm-controls` | A teach pendant: one slider per joint, driving an arm in forward kinematics. |
+| `robot-export` | The record button: wrap any machine and save it as an animated WebP, an animated GIF or a still. |
+| `robot-capture` | The recording itself — a DOM snapshotter that bakes the cascade, a GIF89a encoder, and an animated-WebP muxer. No dependencies. |
 | `robot-kinematics` | The solver. No React, no three.js, no dependencies. |
 | `phyllotaxis-geometry` | The golden-angle disc, the Fibonacci spiral arms that fall out of it, a dished face and its normals, and a two-axis aim solved from a direction. |
 | `celestial-geometry` | Kepler's equation solved to machine precision, ellipses about a focus, the terminator great circle, illumination and limb darkening, body frames, and a deterministic irregular radius field. |
@@ -343,6 +353,39 @@ import { ArmControls } from "@/components/ui/arm-controls"
 const [angles, setAngles] = React.useState([-30, 45, 20])
 
 <ArmControls angles={angles} onAnglesChange={setAngles} tool="welder" />
+```
+
+**Save a machine as a picture.** Wrap anything in `robot-export` and it can be recorded out
+of the page — animated WebP, animated GIF, or a still. The encoding happens in the browser
+and nothing is uploaded.
+
+```tsx
+import { RobotExport } from "@/components/ui/robot-export"
+
+<RobotExport name="robot-arm">
+  <RobotArm behavior="sweep" />
+</RobotExport>
+```
+
+Every number in the menu is typed rather than picked — seconds, frame rate, frame count,
+scale, quality, loop count, ground colour and file name — and the ranges are a prop:
+
+```tsx
+<RobotExport
+  name="robot-arm"
+  defaults={{ format: "gif", seconds: 7.5, fps: 24, scale: 1.5 }}
+  limits={{ fps: [1, 120], frames: 2000 }}
+>
+  <RobotArm behavior="sweep" />
+</RobotExport>
+```
+
+Or call it directly, with no button in the way:
+
+```tsx
+import { exportNode } from "@/lib/robocn/capture"
+
+await exportNode(stageRef.current, { format: "gif", name: "robot-arm", duration: 2, fps: 15 })
 ```
 
 **The same arm in three dimensions.** `robot-arm-3d` is the same chain as a procedural
@@ -520,7 +563,15 @@ exists, registry entry or not: it appears as a **draft** at the top of the index
 already derived from whatever props it declares, so you can pose it while the agent is still
 writing the docs, the demo and the tests.
 
-See [the workbench](docs/workbench.md) for the architecture and what it replaced.
+**It can also hold the folder.** `Folder` in the toolbar hands the page your checkout: the
+Source tab becomes an editor over the real file with ⌘S to save, `New` writes the skeleton
+itself rather than only a brief, a recording can land in `docs/screenshots`, and a machine
+that is on disk but not in the manifest is noticed and rescanned by itself. What is *on* the
+stage is still a module Fast Refresh swapped, so this adds to the local loop rather than
+replacing it.
+
+See [the workbench](docs/workbench.md) for the architecture and what it replaced, and
+[holding a folder](docs/checkout.md) for what a directory handle buys.
 
 ## Credits
 

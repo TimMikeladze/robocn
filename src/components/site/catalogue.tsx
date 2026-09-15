@@ -107,6 +107,7 @@ import { IonInterceptor } from "@/components/ui/ion-interceptor"
 import { LinearActuator } from "@/components/ui/linear-actuator"
 import { ServoMotor } from "@/components/ui/servo-motor"
 import { RadialBloom } from "@/components/ui/radial-bloom"
+import { PowerLantern } from "@/components/ui/power-lantern"
 import { SolenoidValve } from "@/components/ui/solenoid-valve"
 import { ElectromagneticRelay } from "@/components/ui/electromagnetic-relay"
 import { InductionMotor } from "@/components/ui/induction-motor"
@@ -323,6 +324,8 @@ const art: Record<string, Art> = {
   "linear-actuator": { line: "Controlled stroke and a piston cutaway.", art: <LinearActuator size={240} cutaway /> },
   "servo-motor": { line: "Positional shaft with three horn styles.", art: <ServoMotor size={150} /> },
   "radial-bloom": { line: "Twelve telescopes on one hub, each on its own number.", art: <RadialBloom size={190} speed={0.5} /> },
+  "power-lantern": { line: "A ring in the port, taking charge the reservoir is losing.", art: <PowerLantern size={150} behavior="oath" speed={0.28} phase={0.5} plate="LTN-04" /> },
+  "lantern-geometry": { line: "Apart in the reverse of the order it went together.", art: <PowerLantern size={150} behavior="service" speed={0.22} phase={0.5} variant="blueprint" view="iso" /> },
   "solenoid-valve": { line: "A winding, return spring, plunger, and switched flow path.", art: <SolenoidValve size={210} ports={3} /> },
   "electromagnetic-relay": { line: "A visible armature switching two contact sets.", art: <ElectromagneticRelay size={205} poles={2} /> },
   "induction-motor": { line: "Three phases circling a squirrel-cage rotor.", art: <InductionMotor size={152} poles={4} showField /> },

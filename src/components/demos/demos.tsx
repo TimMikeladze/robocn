@@ -77,6 +77,12 @@ import type { QuadrupedGait } from "@/lib/robocn/quadruped"
 import { LinearActuator, type ActuatorBehavior } from "@/components/ui/linear-actuator"
 import { ServoMotor, type ServoBehavior, type ServoHorn } from "@/components/ui/servo-motor"
 import { RadialBloom, type BloomBehavior } from "@/components/ui/radial-bloom"
+import {
+  PowerLantern,
+  type LanternControl,
+  type LanternRing,
+  type PowerLanternBehavior,
+} from "@/components/ui/power-lantern"
 import { SolenoidValve, type SolenoidValveBehavior } from "@/components/ui/solenoid-valve"
 import { ElectromagneticRelay, type ElectromagneticRelayBehavior } from "@/components/ui/electromagnetic-relay"
 import { InductionMotor, type InductionMotorBehavior } from "@/components/ui/induction-motor"
@@ -1118,6 +1124,49 @@ function RadialBloomDemo() {
           : drive === "vector"
             ? { strokes: bloomVector.slice(0, rams) }
             : { behavior: drive })} />
+    </Bench>
+  )
+}
+
+function PowerLanternDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [drive, setDrive] = React.useState<PowerLanternBehavior | "manual">("oath")
+  const [ring, setRing] = React.useState<LanternRing>("docked")
+  const [control, setControl] = React.useState<LanternControl>("exploded")
+  const [ribs, setRibs] = React.useState(6)
+  const [exploded, setExploded] = React.useState(0.45)
+  const [charge, setCharge] = React.useState(0.7)
+  const [cell, setCell] = React.useState(0.35)
+  const [recital, setRecital] = React.useState(0.5)
+  const [emission, setEmission] = React.useState(0)
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="ring" value={ring} options={["docked", "presented", "none"] as const} onChange={setRing} />
+      <NumberControl label="ribs" value={ribs} min={4} max={12} onChange={setRibs} />
+      <Segmented label="drive" value={drive} options={["charge", "oath", "emit", "idle", "service", "static", "manual"] as const} onChange={setDrive} />
+      <Segmented label="grab" value={control} options={["exploded", "charge"] as const} onChange={setControl} />
+      {drive === "manual" ? (
+        <>
+          <NumberControl label="reserve" value={charge} min={0} max={1} step={0.01} onChange={setCharge} format={v => `${Math.round(v * 100)}%`} />
+          <NumberControl label="ring" value={cell} min={0} max={1} step={0.01} onChange={setCell} format={v => `${Math.round(v * 100)}%`} />
+          <NumberControl label="recital" value={recital} min={0} max={1} step={0.01} onChange={setRecital} format={v => `${Math.round(v * 100)}%`} />
+          <NumberControl label="emission" value={emission} min={0} max={1} step={0.01} onChange={setEmission} format={v => `${Math.round(v * 100)}%`} />
+          <NumberControl label="apart" value={exploded} min={0} max={1} step={0.01} onChange={setExploded} format={v => `${Math.round(v * 100)}%`} />
+        </>
+      ) : (
+        <Hint>Drag up the lantern to pull it apart in the order it was built — or switch the grab to the reserve and fill it by hand. Arrow keys work either way, Home seats it, End takes it all the way. It eases back into the behaviour when you let go.</Hint>
+      )}
+      <Readout rows={[["apart", `${Math.round(exploded * 100)}%`], ["reserve", `${Math.round(charge * 100)}%`]]} />
+    </>}>
+      <PowerLantern view={view} size={300} variant={variant} ribs={ribs} ring={ring}
+        control={control} plate="LTN-04" label="LANTERN / 04"
+        interactive onExplodedChange={setExploded} onChargeChange={setCharge}
+        {...(drive === "manual"
+          ? { behavior: "static" as const, exploded, charge, cell, recital, emission }
+          : { behavior: drive })} />
     </Bench>
   )
 }
@@ -5196,6 +5245,8 @@ export const demos: Record<string, React.ComponentType<DemoProps>> = {
   "linear-actuator": LinearActuatorDemo,
   "servo-motor": ServoMotorDemo,
   "radial-bloom": RadialBloomDemo,
+  "power-lantern": PowerLanternDemo,
+  "lantern-geometry": PowerLanternDemo,
   "rotary-table": RotaryTableDemo,
   "robot-rover": RobotRoverDemo,
   "robot-drone": RobotDroneDemo,

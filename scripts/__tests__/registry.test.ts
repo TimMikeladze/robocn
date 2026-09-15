@@ -346,7 +346,7 @@ describe("registry.json", () => {
   })
 
   it("only depends on items in this registry or on shadcn's own", () => {
-    const shadcn = new Set(["button", "card", "label", "select", "slider"])
+    const shadcn = new Set(["button", "card", "label", "popover", "select", "slider"])
     for (const item of registry.items) {
       for (const dependency of item.registryDependencies ?? []) {
         if (dependency.startsWith("{REGISTRY_URL}")) {

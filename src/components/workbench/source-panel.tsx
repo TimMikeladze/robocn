@@ -3,15 +3,25 @@
 /**
  * Source and handoff.
  *
- * The workbench has no agent in it. What it has is everything an agent needs on
- * the clipboard: the file to edit, the pose on screen written as JSX, and a
- * brief naming both. Paste that into Claude Code or Codex running in this same
- * checkout, let it edit the file, and the stage redraws through Fast Refresh.
+ * Two ways to change a machine, and they are for different sizes of change.
+ *
+ * **Handoff** is the big one: everything an agent needs on the clipboard — the
+ * file to edit, the pose on screen written as JSX, and a brief naming both.
+ * Paste that into Claude Code or Codex running in this same checkout, let it
+ * work, and the stage redraws through Fast Refresh.
+ *
+ * **Source** is the small one. With a folder open (`docs/checkout.md`) the tab
+ * is an editor over the real file rather than a read-only fetch: nudge a
+ * number, fix a path, delete the line you can see is wrong, ⌘S. Without a
+ * folder it falls back to the route and stays read-only, which is what Firefox
+ * and Safari get.
  */
 
 import * as React from "react"
+import { Loader2, Save } from "lucide-react"
 
 import { CodeBlock } from "@/components/site/code-block"
+import { useCheckout } from "@/components/workbench/checkout"
 import {
   agentPrompt,
   jsxSnippet,
@@ -36,13 +46,34 @@ export interface SourcePanelProps {
   search: string
 }
 
+/**
+ * An edit in progress.
+ *
+ * Null until someone types: with no edit the textarea simply shows what is on
+ * disk, so an agent's save arrives by itself and there is no effect
+ * synchronising two copies of the same string.
+ */
+interface Draft {
+  id: string
+  /** What is in the textarea. */
+  text: string
+  /** What was on disk when the first keystroke landed — the save's baseline. */
+  baseline: string
+}
+
 function SourcePanel({ component, pose, search }: SourcePanelProps) {
   const [tab, setTab] = React.useState<Tab>("handoff")
   const [request, setRequest] = React.useState("")
+  const checkout = useCheckout()
   /** Keyed by component, so a stale read is never shown against a new machine. */
   const [read, setRead] = React.useState<{ id: string; source?: string; error?: string } | null>(
     null,
   )
+  const [draft, setDraft] = React.useState<Draft | null>(null)
+  const [saving, setSaving] = React.useState(false)
+  /** Carried with the component it belongs to, so it clears by being ignored. */
+  const [failure, setFailure] = React.useState<{ id: string; message: string } | null>(null)
+
   // The origin is browser state, not React state; the query string arrives as a
   // prop from the workbench, which is what writes it.
   const origin = React.useSyncExternalStore(
@@ -51,8 +82,12 @@ function SourcePanel({ component, pose, search }: SourcePanelProps) {
     () => "",
   )
 
+  const held = Boolean(checkout.root)
+  const onDisk = held ? checkout.files.get(component.file) : undefined
+
+  // The route is the fallback path: only fetched when there is no folder open.
   React.useEffect(() => {
-    if (tab !== "source") return
+    if (tab !== "source" || held) return
     let live = true
     fetch(`/api/workbench/source?component=${encodeURIComponent(component.id)}`)
       .then(async (response) => {
@@ -71,9 +106,34 @@ function SourcePanel({ component, pose, search }: SourcePanelProps) {
     return () => {
       live = false
     }
-  }, [component.id, tab])
+  }, [component.id, tab, held])
 
   const loaded = read?.id === component.id ? read : null
+  const editing = draft?.id === component.id ? draft : null
+  /** What the textarea shows: the edit if there is one, otherwise disk. */
+  const text = editing ? editing.text : (onDisk ?? "")
+  const dirty = Boolean(editing && editing.text !== editing.baseline)
+  /** Someone else wrote the file while there were unsaved edits in this box. */
+  const conflicted = Boolean(dirty && onDisk !== undefined && onDisk !== editing?.baseline)
+  const saveError = failure?.id === component.id ? failure.message : null
+
+  const save = async () => {
+    if (!editing || editing.text === editing.baseline) return
+    setSaving(true)
+    setFailure(null)
+    try {
+      await checkout.write(component.file, editing.text)
+      // Back to showing disk: the poll will hand back what was just written.
+      setDraft(null)
+    } catch (cause) {
+      setFailure({
+        id: component.id,
+        message: cause instanceof Error ? cause.message : "The file could not be written.",
+      })
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const explicit = jsxSnippet(component, pose)
   const full = jsxSnippet(component, resolvedPose(component, pose))
@@ -99,6 +159,18 @@ function SourcePanel({ component, pose, search }: SourcePanelProps) {
             {entry.label}
           </button>
         ))}
+        {tab === "source" && held && onDisk !== undefined ? (
+          <button
+            type="button"
+            onClick={() => void save()}
+            disabled={!dirty || saving}
+            title="Write this file (⌘S)"
+            className="ml-2 inline-flex items-center gap-1.5 rounded-sm border border-border px-2 py-1 font-mono text-[11px] transition-colors hover:bg-accent disabled:opacity-40"
+          >
+            {saving ? <Loader2 className="size-3 animate-spin" /> : <Save className="size-3" />}
+            {dirty ? "Save" : "Saved"}
+          </button>
+        ) : null}
         <span className="ml-auto truncate font-mono text-[11px] text-muted-foreground">
           {component.file}
         </span>
@@ -160,6 +232,49 @@ function SourcePanel({ component, pose, search }: SourcePanelProps) {
               </div>
             ) : null}
           </div>
+        ) : held ? (
+          onDisk !== undefined ? (
+            <div className="flex h-full min-h-0 flex-col gap-2">
+              {conflicted ? (
+                <p className="rounded-sm border border-destructive/40 bg-destructive/5 px-2 py-1.5 text-[12px] leading-snug text-foreground">
+                  This file changed on disk while you were editing it. Saving replaces what is
+                  there now. Copy anything you want to keep first.
+                </p>
+              ) : null}
+              {saveError ? (
+                <p className="text-[12px] text-destructive">{saveError}</p>
+              ) : null}
+              <textarea
+                spellCheck={false}
+                value={text}
+                onChange={(event) =>
+                  setDraft({
+                    id: component.id,
+                    text: event.target.value,
+                    baseline: editing?.baseline ?? onDisk,
+                  })
+                }
+                onKeyDown={(event) => {
+                  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {
+                    event.preventDefault()
+                    void save()
+                  }
+                }}
+                aria-label={`Source of ${component.file}`}
+                className="min-h-72 w-full flex-1 resize-none rounded-sm border border-border bg-panel p-2 font-mono text-[11.5px] leading-[1.55] outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+              <p className="font-mono text-[10px] text-muted-foreground">
+                {dirty ? "unsaved · ⌘S to write" : "in step with disk"} · {checkout.root}/
+                {component.file}
+              </p>
+            </div>
+          ) : (
+            <p className="text-[12px] leading-snug text-muted-foreground">
+              <code className="font-mono text-foreground">{component.file}</code> is not in the
+              folder you opened. Open the robocn checkout itself — the folder with{" "}
+              <code className="font-mono text-foreground">registry.json</code> in it.
+            </p>
+          )
         ) : loaded?.error ? (
           <p className="text-[12px] text-muted-foreground">{loaded.error}</p>
         ) : !loaded?.source ? (

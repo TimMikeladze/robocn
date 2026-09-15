@@ -2175,6 +2175,98 @@ pose.legs     // hip, knee, foot, kneeHeight, clearance, contact, load`,
     notes: ["Front elevation is the drawing it always had. The can, the mounting tabs and the output boss have a depth through the machine that only reads once the camera comes round.", "A supplied angle always wins and stops the loop. The step behavior deliberately jumps its goal: the 210°/s slew rate is what draws the travel between positions, and what carries a released horn back into the sweep.", "The drawing's travel limits are illustrative and do not specify the limits of a particular physical servo."],
   },
   {
+    slug: "lantern-geometry", item: "lantern-geometry", title: "Lantern geometry", group: "Foundations",
+    summary: "An ordered exploded assembly — parts taken apart in the reverse of the order they were fitted, each along its own axis, and seated again exactly — plus a charge transfer that conserves, a recital count, a reserve gauge, and an emission column priced by the inverse-square law.",
+    files: ["lib/robocn/lantern.ts"],
+    usage: `import { explodeAssembly, stepCharge, emissionBeam } from "@/lib/robocn/lantern"
+
+// Fitted bottom up, so it comes apart top down. Rank 0 leaves first.
+const parts = explodeAssembly(
+  [
+    { id: "base", axis: { x: 0, y: 1, z: 0 }, travel: 0, order: 0 },
+    { id: "body", axis: { x: 0, y: 1, z: 0 }, travel: 10, order: 1 },
+    { id: "cap", axis: { x: 0, y: 1, z: 0 }, travel: 24, order: 2 },
+  ],
+  0.4,
+)
+parts[2].offset       // a world offset — project it and it is a screen offset
+parts[2].fraction     // 0 seated, 1 clear of everything under it
+
+// What leaves the reservoir arrives in the ring, less exactly what was drawn.
+const step = stepCharge({ reservoir: 1, cell: 0 }, 0.5, { rate: 0.15, docked: true })
+step.transferred      // and step.state.reservoir + step.state.cell is conserved
+
+emissionBeam(0.5, 1).length   // reach at √intensity of full range`,
+    api: [
+      { name: "explodeAssembly", type: "(parts: AssemblyPart[], progress: number, options?: { overlap?: number }) => ExplodedPart[]", description: "Takes an assembly apart in the reverse of the order it was fitted. At progress 0 every offset is exactly the zero vector; at 1 every part is exactly its own `travel` from where it sat. `overlap` runs from a strictly sequential teardown at 0 to every part moving at once at 1." },
+      { name: "AssemblyPart", type: "{ id, axis: Vec3, travel: number, order: number }", description: "One part: the axis it was fitted along (need not be a unit vector), how far it has to go to be clear, and when it was fitted. Parts sharing an `order` are one stage and leave together — a whole course of ribs, say." },
+      { name: "ExplodedPart", type: "AssemblyPart & { direction, rank, fraction, distance, offset }", description: "`rank` 0 is the first part off. `offset` is in world units, and projection is linear, so `camera.project(offset.x, offset.y, offset.z)` is the translation to hang on the part." },
+      { name: "explodeFraction", type: "(rank, count, progress, overlap?) => number", description: "The schedule on its own: how far through its own travel the part at `rank` is, out of `count` stages." },
+      { name: "stepCharge", type: "(state: ChargeState, dt: number, options?: ChargeOptions) => ChargeStep", description: "The reservoir, the docked cell and the emitter over `dt`. Solved in closed form rather than integrated, so one big step equals a thousand small ones, and `reservoir + cell` afterwards is what it was before less exactly `drawn`." },
+      { name: "ChargeOptions", type: "{ rate?, cellCapacity?, docked?, draw? }", description: "Transfer rate through the conduit, what the cell can hold in reservoir units, whether anything is docked at all, and what the emitter is taking." },
+      { name: "reserveState / chargeSegments", type: "(reservoir) => \"depleted\" | \"low\" | \"nominal\" | \"full\" / (level, count?) => number[]", description: "The reserve read as a state for a lamp, and as a segmented gauge whose fills average back to the level they were made from." },
+      { name: "recital / glyphBars", type: "(progress, { lines?, glyphs? }) => Recital / (index) => [number, number, number]", description: "How many inscription cells are lit and which line the recital has reached, and the abstract marks in one cell — three bar heights from a hash of the index. No text, nothing to read." },
+      { name: "cageRibs / bandCell", type: "(count, radius?) => CageRib[] / (angle, radius, halfArc, thickness, steps?) => Vec2[]", description: "Ribs placed so a bay faces the front rather than a rib, and an arc of a band as a plan-view footprint ready to extrude: a collar cell, a rib section, a vent slot." },
+      { name: "emissionBeam", type: "(charge, power, options?) => Beam", description: "Intensity is the power asked for, with the reserve as a ceiling rather than a multiplier. Reach is `√intensity` of the full-power range, because illuminance goes as the inverse square." },
+      { name: "conduitBeads / breathe / cyclePhase", type: "(flow, clock, beads?) => number[] / (clock) => number / (clock) => number", description: "Flow markers that stand still when nothing is moving, a 0..1..0 breath over a cycle, and a clock folded into one cycle." },
+    ],
+    notes: [
+      "The explode schedule is about parts and fitting order, not about lanterns: any assembly with an axis per part and an order to it takes the same call.",
+      "Exact reassembly is the property worth having. `progress` 0 gives the zero vector rather than a small one, so a machine that has been apart is byte-identical to one that never was.",
+      "No collision model and no fasteners: parts pass through each other's paths the way they do in every exploded drawing, and progress runs backwards as happily as forwards.",
+      "No thermal model, no internal resistance and no discharge curve. The transfer is a rate against a capacity, and that is all it claims to be.",
+    ],
+  },
+  {
+    slug: "power-lantern", item: "power-lantern", title: "Power lantern", group: "Machines",
+    summary: "A carried reservoir lantern in the old marine-lamp form — a ribbed prism barrel in a cage of bowed straps, with a round charge port on its face. Charge is moved rather than invented, the recital gates the transfer, the beam is paid for out of the reserve, and every part comes off in the reverse of the order it was fitted.",
+    files: ["components/ui/power-lantern.tsx"],
+    usage: `import { PowerLantern } from "@/components/ui/power-lantern"
+
+<PowerLantern behavior="oath" ring="docked" />
+
+// Take it apart: drag it, arrow-key it, or drive it yourself.
+<PowerLantern exploded={0.65} view="iso" />
+<PowerLantern interactive onExplodedChange={setApart} />
+
+// Or put the drag on the reserve instead, and read the ring off the transfer.
+<PowerLantern control="charge" interactive charge={reserve} cell={ring} />
+
+// The emission colour is the theme's accent, and the accent is a prop.
+<PowerLantern behavior="emit" accent="oklch(0.78 0.21 145)" />`,
+    props: [
+      view("front", "lantern"),
+      { name: "behavior", type: '"charge" | "oath" | "emit" | "idle" | "service" | "static"', default: '"charge"', description: "charge runs the transfer at a constant rate; oath gates it to the recital so the ring fills on the last glyph; emit runs the beam and pays for it; service takes the whole machine apart and puts it back; idle holds a reserve and breathes." },
+      { name: "charge", type: "number", description: "Controlled reserve, 0 to 1. Supplying it pins the reservoir; the other channels keep running." },
+      { name: "onChargeChange", type: "(charge: number) => void", description: "Fired through a drag or a key press while control is \"charge\", in controlled mode too." },
+      { name: "exploded", type: "number", description: "Controlled teardown, 0 seated to 1 all the way apart. At 0 every part is exactly where it was assembled." },
+      { name: "onExplodedChange", type: "(exploded: number) => void", description: "Fired through a drag or a key press while control is \"exploded\", in controlled mode too." },
+      { name: "ring", type: '"none" | "presented" | "docked"', default: '"docked"', description: "Where the ring is: away, held off the port, or seated in it. The port is on the machine\u2019s face, so the ring reads head-on in the native view. Nothing docked closes the iris over the bore and stops the conduit." },
+      { name: "cell", type: "number", description: "Controlled ring charge, 0 to 1 of the ring's own capacity — which is 12% of a full reservoir, because a ring is not a battery." },
+      { name: "recital", type: "number", description: "Controlled recital, 0 to 1. It lights the collar a glyph at a time and gates the transfer." },
+      { name: "emission", type: "number", description: "Controlled emitter power, 0 to 1. The reserve is the ceiling on it: an empty lantern emits nothing whatever it is asked for." },
+      { name: "ribs", type: "number", default: "8", description: "Straps in the cage, 4 to 12. They bow out over the barrel and a bay faces the front rather than a strap, so the port and the lit barrel are both visible." },
+      { name: "control", type: '"exploded" | "charge"', default: '"exploded"', description: "Which channel the drag and the arrow keys hold. The other goes on running off the behaviour." },
+      { name: "interactive", type: "boolean", default: "false", description: "Drag up to pull it apart (or to fill it); arrows step 5%, page keys 20%, Home seats it and End takes it all the way. Release eases back into the behaviour." },
+      { name: "speed", type: "number", default: "0.35", description: "Cycles per second." },
+      ...loop,
+      { name: "showGauge", type: "boolean", default: "true", description: "The segmented reserve gauge on the plinth." },
+      { name: "plate", type: "string", description: "Stamped on the plinth nameplate, shown where the face is toward the camera." },
+      { name: "showGround", type: "boolean", default: "true", description: "Draw the contact shadow under the base." },
+      { name: "label", type: "string", description: "Caption under the lantern." },
+      ...form.slice(0, 2), ...palette,
+    ],
+    notes: [
+      "Charge is moved, not invented. `stepCharge` takes the reservoir, the ring's capacity and what the emitter is drawing, and what leaves one arrives in the other: the conduit is lit by what is actually flowing, which is why a full ring darkens it with the transfer still switched on.",
+      "The `oath` behaviour solves its transfer rate from the ring's capacity and the length of the recital, so the ring is full on the last glyph rather than at a moment that was tuned to look right.",
+      "The beam's reach is `√intensity` of full range, because illuminance falls off with the square of distance. Quarter power is half the distance, not a quarter of it. It leaves through the port, so it is a cone in the side and three-quarter views and a halo in the machine's own.",
+      "Taking it apart is an ordered teardown, not a shell expanding: each part travels along the axis it was fitted along — the port and the ring forward off the face, the crown up, the cage straps out along their own radials — in the reverse of the order it was built in, and at exploded 0 every offset is exactly zero.",
+      "One geometry through one camera: the exploded offsets are world vectors, and projection is linear, so the teardown is as truthful from iso as it is from the front elevation.",
+      "Solved: the schedule, the transfer, the recital count, the gauge, the beam, the cage placement and its depth ordering. Illustrated: the glow, the glass, the knurl, the vents and the bolts. There is no thermal model and no discharge curve.",
+      "The glyphs are abstract marks from a hash of the cell index — deterministic, and not language. An original archetype named for its job, with the proportions and the fittings taken from a period lantern rather than traced from it: no franchise name, insignia, oath or paint scheme here, in the demo, or in the defaults, and the emission colour is the theme's accent.",
+    ],
+  },
+  {
     slug: "radial-bloom", item: "radial-bloom", title: "Radial bloom", group: "Machines",
     summary: "A hub of telescoping rams pointed outward in one plane: closed it is an even star, driven out it is a ragged burst. Four guided stages per ram, and a vector of strokes drives each ram on its own.",
     files: ["components/ui/radial-bloom.tsx"],
@@ -6408,6 +6500,82 @@ sampleRoute(routePath("post", { depth: 12 }), 13.4)  // { point, heading, turn }
       "Exit speed is the mean of the two contact speeds and spin is their difference over the ball's own diameter, both out of launcherExit off the same pair of inputs. Matched wheels throw it flat and fast; every turn of mismatch trades speed for rotation.",
       "The wheels are drawn at the speeds they are given — the spokes index by the clock times the rate — so a wheel at half speed visibly turns at half speed.",
       "No slip, no compression and no air. A real launcher loses some of the contact speed to the ball skidding through the gap; this one reports the ideal, which is the number the machine is set to.",
+    ],
+  },
+  {
+    slug: "robot-capture", item: "robot-capture", title: "Robot capture", group: "Foundations",
+    summary:
+      "Records a component out of the page: a snapshotter that bakes the cascade into a clone, a GIF89a encoder, and an animated-WebP muxer built on the browser's own encoder. No dependencies, no server, nothing uploaded.",
+    files: ["lib/robocn/capture.ts", "lib/robocn/gif.ts", "lib/robocn/webp.ts"],
+    usage: `import { exportNode, record, encodeFrames, download } from "@/lib/robocn/capture"
+
+// The whole path: record two seconds and save the file.
+await exportNode(node, { format: "gif", name: "robot-arm", duration: 2, fps: 15 })
+
+// Or keep the frames: they are canvases, so anything can have them.
+const frames = await record(node, { duration: 2, fps: 20, scale: 2 })
+download(await encodeFrames(frames, "webp"), "robot-arm.webp")`,
+    api: [
+      { name: "exportNode", type: "(target, options?) => Promise<ExportResult>", description: "Record a DOM node and save it. `format` is `webp`, `gif` or `png`; `duration` of 0 takes a still. Reports the file, the frame count and the pixel size. `save` replaces the browser download with anything that takes a blob and a name — a directory handle, an upload, a clipboard write." },
+      { name: "record", type: "(target, options?) => Promise<Frame[]>", description: "Sample a node in real time into canvases, one a frame, each carrying the delay that was actually measured between it and the next." },
+      { name: "snapshot / rasterize", type: "(target, options?) => Promise<Snapshot> / (snapshot, options?) => Promise<HTMLCanvasElement>", description: "The two halves of a frame: a standalone SVG document with the computed cascade baked in, and that document painted onto a canvas." },
+      { name: "encodeFrames", type: "(frames, format, options?) => Promise<Blob>", description: "Frames to a file. One frame is a still; more than one is an animation." },
+      { name: "encodeGif", type: "(frames, { width, height, loop }) => Uint8Array", description: "From `gif.ts`: GIF89a with median-cut quantization, a local colour table per frame and LZW. Transparency is a palette slot with disposal 2." },
+      { name: "muxAnimatedWebp", type: "(frames, { width, height, loop }) => Uint8Array", description: "From `webp.ts`: re-houses single-image WebP files as `ANMF` frames under `VP8X`/`ANIM`. It never touches a pixel — the browser did the encoding." },
+      { name: "frameDelays / backgroundBehind / supportsWebp", type: "helpers", description: "The measured deltas of a recording, the first opaque colour above a node, and whether this browser's canvas can write WebP at all." },
+    ],
+    notes: [
+      "The snapshot resolves `var()` and `currentColor` off the live element, because a detached clone has no cascade: without it every export comes out in the fallback palette. Elements mid-keyframe have their computed transform and opacity copied too, so CSS animation lands in the recording.",
+      "Recording is real time — the machines run on requestAnimationFrame, so a four-second capture takes four seconds and the tab has to stay in front.",
+      "A `<canvas>` is read back with toDataURL and swapped into the clone as an image. WebGL needs `preserveDrawingBuffer`, which `robot-stage` sets.",
+      "Cross-origin images and stylesheets cannot be inlined and are dropped rather than tainting the canvas. Notes: `docs/export.md`.",
+      "The way out of the page is a callback, not a hard-coded download: pass `save` to `exportNode` and the blob goes wherever you send it. `docs/checkout.md` is the workbench writing one into a folder it is holding.",
+    ],
+  },
+  {
+    slug: "robot-export", item: "robot-export", title: "Robot export", group: "Machines",
+    summary:
+      "The record button. Wrap any machine and it can be saved as an animated WebP, an animated GIF or a still — encoded in the page, with nothing uploaded.",
+    files: ["components/ui/robot-export.tsx"],
+    usage: `import { RobotExport, ExportMenu } from "@/components/ui/robot-export"
+
+// Wrap a machine: the button appears over its corner on hover.
+<RobotExport name="robot-arm">
+  <RobotArm behavior="sweep" />
+</RobotExport>
+
+// Or put the menu in a toolbar that already knows its target.
+<ExportMenu target={stageRef} name="robot-arm" label="Export" />
+
+// Open on your own numbers, and widen what the fields will accept.
+<RobotExport
+  name="robot-arm"
+  defaults={{ format: "gif", seconds: 7.5, fps: 24, scale: 1.5, ground: "custom", groundColor: "#101014" }}
+  limits={{ fps: [1, 120], frames: 2000 }}
+  presets={{ seconds: [0, 3, 7.5], fps: [24, 60], scale: [] }}
+>
+  <RobotArm behavior="sweep" />
+</RobotExport>`,
+    props: [
+      { name: "name", type: "string", default: `"robocn"`, description: "File stem. The extension comes from the format." },
+      { name: "target", type: "RefObject<Element> | (() => Element | null)", description: "Record something other than the wrapper — the machine itself, or a whole stage." },
+      { name: "formats", type: `("webp" | "gif" | "png")[]`, default: `["webp", "gif", "png"]`, description: "Which formats the menu offers, in order. WebP is dropped on a browser whose canvas cannot write it." },
+      { name: "defaults", type: "Partial<ExportSettings>", description: "Opening settings: `format`, `seconds` (0 is a still), `fps`, `scale`, `quality`, `loop`, `ground` and `groundColor`." },
+      { name: "limits", type: "Partial<ExportLimits>", default: "0–120 s, 1–60 fps, 0.1–8×, 900 frames", description: "What the fields will accept. The ceiling stops a typo asking for a hundred thousand frames; raise it and the field takes the higher number." },
+      { name: "presets", type: "{ seconds?: number[]; fps?: number[]; scale?: number[] }", description: "The chips beside each field — shortcuts, not the range. An empty array leaves a field bare." },
+      { name: "onSettingsChange", type: "(settings: ExportSettings) => void", description: "On `ExportMenu`: every setting as it changes, for a page that wants to remember them." },
+      { name: "destinations", type: "ExportDestination[]", description: "Where the file may go. One is used silently; more than one becomes a row in the menu. Defaults to the browser's download." },
+      { name: "alwaysVisible", type: "boolean", default: "false", description: "Keep the button on screen instead of revealing it on hover or focus." },
+      { name: "corner", type: `"start" | "end"`, default: `"end"`, description: "Which top corner the button sits in." },
+      { name: "open / onOpenChange", type: "boolean / (open: boolean) => void", description: "On `ExportMenu`: drive the menu from outside, which is how the workbench binds it to a key." },
+      { name: "destinations", type: "ExportDestination[]", default: `[{ id: "download", label: "Download" }]`, description: "Where the finished file may go. One is used silently; more than one becomes a row in the menu. A destination with a `write(blob, filename)` callback replaces the browser's download — that is how the workbench writes a recording into a folder it is holding." },
+    ],
+    notes: [
+      "Every number is typed, not picked. The chips are shortcuts to values the field beside them would take anyway: 7.5 seconds at 24 fps scaled 1.75× is as available as the two-second default, and arrow keys step a field.",
+      "Seconds, rate and frames are three views of one recording. Asking for 90 frames at 30 fps is asking for three seconds, and the field you did not touch follows.",
+      "The button carries `data-robocn-hide`, and the snapshotter drops those from the clone — otherwise every recording would have a record button in the corner of it.",
+      "Settings are per menu, not global: the scale, rate and ground of one panel do not follow you to the next. `onSettingsChange` is there for a page that wants them to.",
+      "Everything runs in the page — `robot-capture` does the work and the file is an anchor click. Notes: `docs/export.md`.",
     ],
   },
 ]

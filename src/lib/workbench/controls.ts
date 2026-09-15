@@ -51,7 +51,8 @@ export interface WorkbenchComponent {
   module: string
   export: string
   webgl: boolean
-  wrap: string | null
+  /** Mounted through a wrapper instead of bare: the export name and its module. */
+  wrap: { export: string; module: string } | null
   props: string | null
   controls: Control[]
 }
@@ -96,6 +97,20 @@ export const slugify = (name: string) =>
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
+
+/**
+ * A machine is anything that draws itself with robocn's own vocabulary: the
+ * palette, the camera, the clock. Shadcn primitives share the `ui` folder and
+ * are not machines, and this is what tells a draft robot from a button.
+ *
+ * The twin of `isRobotSource` in `scripts/lib/workbench.mjs`, which the
+ * generator uses in node. This copy is for the browser: with a folder open the
+ * workbench reads `src/components/ui` itself and has to make the same call
+ * about a file the manifest has never seen. `controls.test.ts` keeps the two
+ * honest.
+ */
+export const isRobotSource = (source: string) =>
+  /from "@\/(lib\/robocn|hooks\/use-robot)/.test(source)
 
 /** `folding-handset` → `FoldingHandset`, the export the workbench resolves by. */
 export const exportName = (slug: string) =>

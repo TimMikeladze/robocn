@@ -15,6 +15,8 @@ import { readFile } from "node:fs/promises"
  */
 export const drawnBy = {
   "arm-controls": "robot-arm",
+  // A record button wraps a machine; on its own it draws nothing at all.
+  "robot-export": "robot-arm",
 }
 
 /** Foundations ship a `.ts` file, so each names the machine that exercises it. */
@@ -43,6 +45,7 @@ export const exercises = {
   "cactus-geometry": "robot-cactus",
   "celestial-geometry": "celestial-planet",
   "hull-geometry": "battle-station",
+  "robot-capture": "robot-arm",
 }
 
 /**

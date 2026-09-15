@@ -27,13 +27,15 @@ import { exportedNames, isWebgl, pascalCase } from "./lib/gallery.mjs"
 import { controlsFor, indexTypes, isRobotSource, titleCase } from "./lib/workbench.mjs"
 
 /**
- * A component that needs a WebGL context cannot mount bare on the stage: the
- * arm needs a canvas around it and the stage needs something to hold. Both
- * wrappers live in `src/components/workbench/webgl.tsx`.
+ * A component that cannot mount bare on the stage: the 3D arm needs a canvas
+ * around it, the stage needs something to hold, and the export control needs a
+ * machine to record. The WebGL pair keeps its own module so three.js stays
+ * behind that lazy boundary and nothing else pulls a renderer in.
  */
 const wrapped = {
-  "robot-arm-3d": "StagedArm3D",
-  "robot-stage": "StageWithArm",
+  "robot-arm-3d": { export: "StagedArm3D", module: "@/components/workbench/webgl" },
+  "robot-stage": { export: "StageWithArm", module: "@/components/workbench/webgl" },
+  "robot-export": { export: "ExportedArm", module: "@/components/workbench/wrappers" },
 }
 
 async function sourcesUnder(dir) {
@@ -155,7 +157,7 @@ const lines = [
     // The WebGL pair loads three.js, so even their wrappers stay behind the
     // lazy boundary: nothing pulls in a renderer until it is on the stage.
     const load = component.wrap
-      ? `import("@/components/workbench/webgl").then((module) => ({ default: module.${component.wrap} as unknown as WorkbenchComponent }))`
+      ? `import(${JSON.stringify(component.wrap.module)}).then((module) => ({ default: module.${component.wrap.export} as unknown as WorkbenchComponent }))`
       : `import(${JSON.stringify(component.module)}).then((module) => ({ default: module.${component.export} as unknown as WorkbenchComponent }))`
     return `  ${JSON.stringify(component.id)}: React.lazy(() => ${load}),`
   }),
