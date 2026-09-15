@@ -69,6 +69,15 @@ const gridironCollection = [
   "ball-launcher",
 ] as const
 
+/** The five sports objects, all on the one sport solver. */
+const sportCollection = [
+  "robot-baseball",
+  "batting-rig",
+  "robot-basketball",
+  "robot-soccer-ball",
+  "robot-hockey-puck",
+] as const
+
 const vehicleCollection = [
   "robot-car",
   "transit-bus",
@@ -270,6 +279,14 @@ describe("registry.json", () => {
     expect(item?.type).toBe("registry:ui")
     expect(item?.files).toHaveLength(1)
     expect(item?.files[0]?.path).toBe(`src/components/ui/${name}.tsx`)
+  })
+
+  it.each(sportCollection)("publishes %s on the sport solver", (name) => {
+    const item = registry.items.find((candidate) => candidate.name === name)
+    expect(item?.type).toBe("registry:ui")
+    expect(item?.files).toHaveLength(1)
+    expect(item?.files[0]?.path).toBe(`src/components/ui/${name}.tsx`)
+    expect(item?.registryDependencies).toContain("{REGISTRY_URL}/r/sport-geometry.json")
   })
 
   it.each(vehicleCollection)("publishes %s as one UI source file", (name) => {

@@ -4835,6 +4835,231 @@
           "target": "@ui/rowing-erg.tsx"
         }
       ]
+    },
+    {
+      "name": "carve-geometry",
+      "type": "registry:lib",
+      "title": "Carve geometry",
+      "description": "Outlines authored in shell coordinates and wrapped onto a lobed body of revolution, carved along their own perimeter, the plugs they free, the light that escapes through them, a flame that answers to the draught, and the projection run backwards so a pointer lands back on the skin it is over.",
+      "categories": [
+        "robotics",
+        "geometry"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/produce-geometry.json"
+      ],
+      "files": [
+        {
+          "path": "src/lib/robocn/carve.ts",
+          "type": "registry:lib",
+          "target": "@lib/carve.ts"
+        }
+      ]
+    },
+    {
+      "name": "jack-o-lantern",
+      "type": "registry:ui",
+      "title": "Jack-o'-lantern",
+      "description": "A carved gourd lantern: a lobed shell on a scalloped lid and stem, cut anywhere a knife is dragged, turned to any angle in any direction, with a candle inside whose light is paid for by the openings, and every part coming off in the reverse of the order it was fitted.",
+      "categories": [
+        "robotics",
+        "machines"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/produce-geometry.json",
+        "{REGISTRY_URL}/r/assembly-geometry.json",
+        "{REGISTRY_URL}/r/carve-geometry.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/jack-o-lantern.tsx",
+          "type": "registry:ui",
+          "target": "@ui/jack-o-lantern.tsx"
+        }
+      ]
+    },
+    {
+      "name": "sport-geometry",
+      "type": "registry:lib",
+      "title": "Sport geometry",
+      "description": "The kit a game is played with: the sphere and its seams, the puck, and the four dynamics that make five objects behave unlike one another \u2014 a restitution ladder, a Magnus curve, a Coulomb slide and the bat-ball collision, each a closed form sampled at a clock rather than an integrator.",
+      "categories": [
+        "robotics",
+        "kinematics"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json"
+      ],
+      "files": [
+        {
+          "path": "src/lib/robocn/sport.ts",
+          "type": "registry:lib",
+          "target": "@lib/sport.ts"
+        }
+      ]
+    },
+    {
+      "name": "robot-baseball",
+      "type": "registry:ui",
+      "title": "Robot baseball",
+      "description": "The ball as a sphere with a real seam: the figure-eight is a closed curve lying exactly on the surface, so spin carries it round the back instead of sliding it across the front.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json",
+        "{REGISTRY_URL}/r/sport-geometry.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/robot-baseball.tsx",
+          "type": "registry:ui",
+          "target": "@ui/robot-baseball.tsx"
+        }
+      ]
+    },
+    {
+      "name": "batting-rig",
+      "type": "registry:ui",
+      "title": "Batting rig",
+      "description": "A bat on a solved swing arc meeting a pitched ball, with the collision itself solved: effective mass falls away from the sweet spot, so contact off the end hands the ball back less than it brought.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json",
+        "{REGISTRY_URL}/r/sport-geometry.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/batting-rig.tsx",
+          "type": "registry:ui",
+          "target": "@ui/batting-rig.tsx"
+        }
+      ]
+    },
+    {
+      "name": "robot-basketball",
+      "type": "registry:ui",
+      "title": "Robot basketball",
+      "description": "Eight panels cut by two great circles and one wavy seam, on a ball that bounces by closed-form restitution rather than a tween: every apex is the last one times e squared.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json",
+        "{REGISTRY_URL}/r/sport-geometry.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/robot-basketball.tsx",
+          "type": "registry:ui",
+          "target": "@ui/robot-basketball.tsx"
+        }
+      ]
+    },
+    {
+      "name": "robot-soccer-ball",
+      "type": "registry:ui",
+      "title": "Robot soccer ball",
+      "description": "A truncated icosahedron inflated onto the sphere: twelve pentagons and twenty hexagons built from the solid, culled by their own normals, and rolled without slipping so the panels turn because it travelled.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json",
+        "{REGISTRY_URL}/r/sport-geometry.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/robot-soccer-ball.tsx",
+          "type": "registry:ui",
+          "target": "@ui/robot-soccer-ball.tsx"
+        }
+      ]
+    },
+    {
+      "name": "robot-hockey-puck",
+      "type": "registry:ui",
+      "title": "Robot hockey puck",
+      "description": "A cylinder on ice: Coulomb friction is a constant deceleration, so the slide is exact and the puck stops where the maths says. The boards reflect it, and the silhouette is the hull of its two rims.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json",
+        "{REGISTRY_URL}/r/sport-geometry.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/robot-hockey-puck.tsx",
+          "type": "registry:ui",
+          "target": "@ui/robot-hockey-puck.tsx"
+        }
+      ]
+    },
+    {
+      "name": "construct-geometry",
+      "type": "registry:lib",
+      "title": "Construct geometry",
+      "description": "Reads a freehand stroke \u2014 resampled by arc length, measured into a frame, classified into an archetype \u2014 and forges it into a filled construct, with the draw it costs.",
+      "categories": [
+        "robotics",
+        "kinematics"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json"
+      ],
+      "files": [
+        {
+          "path": "src/lib/robocn/construct.ts",
+          "type": "registry:lib",
+          "target": "@lib/construct.ts"
+        }
+      ]
+    },
+    {
+      "name": "construct-ring",
+      "type": "registry:ui",
+      "title": "Construct ring",
+      "description": "A signet emitter ring that lights, comes apart, and forges a drawn stroke into a construct of solid light.",
+      "categories": [
+        "robotics",
+        "machines"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json",
+        "{REGISTRY_URL}/r/construct-geometry.json",
+        "{REGISTRY_URL}/r/assembly-geometry.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/construct-ring.tsx",
+          "type": "registry:ui",
+          "target": "@ui/construct-ring.tsx"
+        }
+      ]
     }
   ]
 }

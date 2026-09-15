@@ -26,7 +26,7 @@ import { RobotBird } from "@/components/ui/robot-bird"
 import { RobotQuadruped } from "@/components/ui/robot-quadruped"
 import { RobotSpider } from "@/components/ui/robot-spider"
 import { Logo } from "@/components/site/logo"
-import { installCommand, productionUrl, site } from "@/lib/site"
+import { defaultManager, installCommand, productionUrl, site } from "@/lib/site"
 import { cn } from "@/lib/utils"
 
 /** Open Graph's long-standing default, and what every platform requests. */
@@ -113,12 +113,14 @@ export interface OgCardProps {
 function OgCard({ items }: OgCardProps) {
   // Split at the last space so the URL gets its own line: `break-all` is right
   // on the site, where the box is narrow and live, and wrong on a poster.
-  const command = installCommand("robot-arm", "pnpm", productionUrl)
+  const command = installCommand("robot-arm", defaultManager, productionUrl)
   const runner = command.slice(0, command.lastIndexOf(" "))
   const target = command.slice(command.lastIndexOf(" ") + 1)
 
   return (
     <div
+      // The capture's shutter release — see `og-item-card.tsx`.
+      data-og-card="site"
       className="relative flex overflow-hidden bg-background text-foreground"
       style={{ width: ogSize.width, height: ogSize.height }}
     >
@@ -156,7 +158,7 @@ function OgCard({ items }: OgCardProps) {
           </p>
           <div className="border border-border bg-background">
             <div className="border-b border-border px-3 py-1.5 font-mono text-[11px] text-muted-foreground">
-              <span className="border-b-2 border-signal pb-1.5 text-foreground">pnpm</span>
+              <span className="border-b-2 border-signal pb-1.5 text-foreground">{defaultManager}</span>
             </div>
             <code className="block px-3 py-2.5 font-mono text-[13px] leading-[1.6]">
               <span className="block text-muted-foreground">{runner}</span>

@@ -91,6 +91,9 @@ git diff --stat
   `git checkout --` it.
 - **`AGENTS.md` is rewritten by `next dev`.** If it is in your diff, commit it with the work —
   deleting it from the diff just recreates the uncommitted change.
+- **The social card is in.** `public/og/<name>.png` and the `src/lib/og.generated.ts` line that
+  claims it are committed, like the component. Missing means `pnpm og --only <name>` never ran
+  and the docs page will link with the contact sheet instead of the machine.
 - **Generated files stay out.** `public/r/`, `src/components/site/gallery.generated.tsx`,
   `src/components/workbench/registry.generated.tsx`, `src/lib/workbench/generated.json` and
   `*.tsbuildinfo` are all ignored. If one is in `git status`, something is wrong.
@@ -142,6 +145,7 @@ Docs demo · four variants · four views · the 150px card.
 
 ## Verification
 - [ ] `pnpm robot:check <name> --full` green
+- [ ] `pnpm og --only <name>` run, card and manifest line committed
 - [ ] driven in a browser: every behavior, variant and view
 - [ ] grabbed with mouse and touch, reduced motion parks the loops
 - [ ] reads at 390px and at 150px

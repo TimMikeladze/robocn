@@ -196,6 +196,13 @@ import { ResistanceCam } from "@/components/ui/resistance-cam"
 import { LegPress } from "@/components/ui/leg-press"
 import { CrossTrainer } from "@/components/ui/cross-trainer"
 import { RowingErg } from "@/components/ui/rowing-erg"
+import { JackOLantern } from "@/components/ui/jack-o-lantern"
+import { RobotBaseball } from "@/components/ui/robot-baseball"
+import { BattingRig } from "@/components/ui/batting-rig"
+import { RobotBasketball } from "@/components/ui/robot-basketball"
+import { RobotSoccerBall } from "@/components/ui/robot-soccer-ball"
+import { RobotHockeyPuck } from "@/components/ui/robot-hockey-puck"
+import { ConstructRing } from "@/components/ui/construct-ring"
 import { galleryEntries } from "@/components/site/gallery.generated"
 import { Panel } from "@/components/site/panel"
 
@@ -443,6 +450,16 @@ const art: Record<string, Art> = {
   "leg-press": { line: "The rail angle is the resistance: the frame decides the weight.", art: <LegPress size={150} railAngle={44} phase={0.3} /> },
   "cross-trainer": { line: "The foot path is a coupler curve, so the stride is an output.", art: <CrossTrainer size={150} phase={0.4} /> },
   "rowing-erg": { line: "Drag goes as the square of rim speed, so the vent sets the feel.", art: <RowingErg size={168} vent={0.7} phase={0.2} /> },
+  "jack-o-lantern": { line: "The face is cut out of the shell, and the light is paid for by the holes.", art: <JackOLantern size={158} phase={0.4} /> },
+  "carve-geometry": { line: "An outline wrapped onto a shell, carved along its own perimeter.", art: <JackOLantern size={158} variant="blueprint" behavior="carve" speed={0.22} phase={1.2} /> },
+  "robot-baseball": { line: "A seam that is a closed curve on the sphere, and a break that comes out of the spin.", art: <RobotBaseball size={168} behavior="curveball" /> },
+  "sport-geometry": { line: "The solver under the family, drawn as the solid it builds.", art: <RobotSoccerBall size={168} behavior="spin" variant="blueprint" showGround={false} /> },
+  "batting-rig": { line: "Where it stands decides where on the barrel the ball arrives, and the collision says what that costs.", art: <BattingRig size={168} stance={30} /> },
+  "robot-basketball": { line: "Eight panels, and a bounce where every apex is the last one times e².", art: <RobotBasketball size={168} behavior="drop" /> },
+  "robot-soccer-ball": { line: "A truncated icosahedron that turns because it travelled.", art: <RobotSoccerBall size={168} behavior="roll" /> },
+  "robot-hockey-puck": { line: "A cylinder on ice, with every board and the stop already solved.", art: <RobotHockeyPuck size={168} behavior="dump" /> },
+  "construct-ring": { line: "Draw a stroke and it forges what the stroke was asking for.", art: <ConstructRing size={168} behavior="flare" rotatable={false} showField={false} showGround={false} /> },
+  "construct-geometry": { line: "A stroke measured into seven numbers, and the construct they ask for.", art: <ConstructRing size={168} variant="blueprint" rotatable={false} showField={false} showGround={false} /> },
 }
 
 /** Exported for the coverage test — a card that exists nowhere else is a bug. */

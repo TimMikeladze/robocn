@@ -18,6 +18,7 @@ is the contract.
 pnpm robot:new <name> --description "…" --view front        # add --solver <name> if it has real kinematics
 # write the solver, then the geometry
 pnpm robot:check <name>
+pnpm og --only <name>                                       # the social card — seconds, and always
 ```
 
 1. **Scaffold.** One command writes everything mechanical, and what it emits already renders,
@@ -30,6 +31,30 @@ pnpm robot:check <name>
    degree of freedom has to be visibly mechanical.
 5. **`pnpm robot:check <name>`** — about ten seconds. `--full` before you ship.
 6. **Drive it in a browser** once the shape is right, and only then claim it is done.
+7. **Capture its social card** — `pnpm og --only <name>`, once the drawing is final. Part of
+   building a machine, not a maintainer chore to defer: see *The card* below.
+
+## The card
+
+`pnpm og --only <name>` photographs `/og/<name>`, writes `public/og/<name>.png` and adds the
+slug to `src/lib/og.generated.ts`. Both files are committed with the machine.
+
+- **Always, and last.** A page with no card of its own falls back to the twelve-machine contact
+  sheet, so a machine that ships without one is invisible in every Slack, iMessage and tweet its
+  link lands in. Take it after the geometry is final — a card of a half-drawn machine is a
+  capture you will only take again.
+- **Seconds, not minutes.** About five, against the `pnpm dev` you already have up; the script
+  reuses that server and starts one only if there is none. Several machines in one run:
+  `pnpm og --only <a>,<b>,<c>`. **Never the bare `pnpm og`** — that is 200-odd captures and a
+  quarter of an hour, and nothing about a new machine needs the other 200 retaken.
+- **It needs the app to compile**, because the card is a screenshot of a real page. A `GET
+  /og/pages — 500` means the dev server is red, not that the card is unavailable.
+- **macOS + Chrome.** If Chrome is not installed, say the card was not taken — do not report the
+  machine as finished with the step quietly dropped.
+
+The composition itself takes no work: `src/components/site/og-item-card.tsx` draws every card
+from the catalogue pose you already set, so posing that card poses this one. Notes:
+`docs/per-page-og-images.md`.
 
 ## What the one command writes
 
@@ -167,6 +192,7 @@ subject. Full procedure: `references/reference-images.md`.
 ```bash
 pnpm robot:check <name>           # ~10 s: generate, focused tests, typecheck, lint, registry
 pnpm robot:check <name> --full    # adds the whole suite and next build — once, before shipping
+pnpm og --only <name>             # ~5 s: the machine's social card, once the drawing is final
 ```
 
 Then drive it (`pnpm dev`; if the port is taken use another — don't kill what is running): the
@@ -175,5 +201,9 @@ emulation, reduced motion forced on to confirm the loops park, and at 390px. Wit
 image, screenshot the demo at the reference's angle and compare — silhouette and proportions
 first, detail last — and check the 150px catalogue card. UI work gets the browser agent, not a
 guess.
+
+`git status` before you call it done: the diff carries `public/og/<name>.png` and
+`src/lib/og.generated.ts` as well as the machine. If either is missing, the card step did not
+run.
 
 Report what actually ran. "Should work" is not done.

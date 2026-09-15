@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google"
 
 import { SiteFooter } from "@/components/site/site-footer"
@@ -37,8 +37,6 @@ export const metadata: Metadata = {
   creator: site.author.name,
   publisher: site.author.name,
   category: "technology",
-  // Every page is its own canonical; a sub-route overrides this with its path.
-  alternates: { canonical: "/" },
   robots: {
     index: true,
     follow: true,
@@ -62,6 +60,31 @@ export const metadata: Metadata = {
     site: "@linesofcode",
     images: [{ url: "/og.png", alt: ogAlt }],
   },
+  // Every page is its own canonical; a sub-route overrides this with its path.
+  // The `types` entry is the `.md` mirror, so a crawler reading `rel=alternate`
+  // finds the Markdown without having to guess at the convention.
+  alternates: {
+    canonical: "/",
+    types: { "text/markdown": "/docs.md" },
+  },
+  other: {
+    // Named in the head as well as in `/llms.txt`, because an agent that starts
+    // from a page rather than from the root should still find the index.
+    "llms-txt": "/llms.txt",
+  },
+}
+
+/**
+ * The browser chrome follows the palette. Two entries rather than one: a
+ * visitor in dark mode gets the dark ground behind the address bar, which is
+ * the whole point of the tag.
+ */
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f2f4f6" },
+    { media: "(prefers-color-scheme: dark)", color: "#0d1116" },
+  ],
+  colorScheme: "light dark",
 }
 
 export default function RootLayout({
@@ -76,6 +99,14 @@ export default function RootLayout({
       <body className="min-h-dvh antialiased">
         {/* Before anything below it is parsed, so no frame paints in the wrong palette. */}
         <ThemeScript />
+        {/* For an agent reading the rendered page rather than the head: the
+            Markdown mirrors are the better surface, and this is where it finds
+            out they exist. `docs/site-polish.md`. */}
+        <p className="sr-only">
+          For the complete index, see /llms.txt. A Markdown version of any
+          documentation page is available by appending .md to its URL or by
+          sending an Accept: text/markdown header.
+        </p>
         <ThemeProvider>
           <div className="flex min-h-dvh flex-col">
             <SiteHeader />

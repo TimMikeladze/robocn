@@ -98,6 +98,13 @@ import { ResistanceCam } from "@/components/ui/resistance-cam"
 import { LegPress } from "@/components/ui/leg-press"
 import { CrossTrainer } from "@/components/ui/cross-trainer"
 import { RowingErg } from "@/components/ui/rowing-erg"
+import { JackOLantern } from "@/components/ui/jack-o-lantern"
+import { RobotBaseball } from "@/components/ui/robot-baseball"
+import { BattingRig } from "@/components/ui/batting-rig"
+import { RobotBasketball } from "@/components/ui/robot-basketball"
+import { RobotSoccerBall } from "@/components/ui/robot-soccer-ball"
+import { RobotHockeyPuck } from "@/components/ui/robot-hockey-puck"
+import { ConstructRing } from "@/components/ui/construct-ring"
 
 /**
  * The native view is the default, and adding the `view` axis to a machine is
@@ -215,6 +222,19 @@ const machines: Record<string, (view?: RobotView) => React.ReactElement> = {
   "leg-press": (view) => <LegPress animate={false} travel={0.4} view={view} />,
   "cross-trainer": (view) => <CrossTrainer animate={false} crankAngle={140} view={view} />,
   "rowing-erg": (view) => <RowingErg animate={false} strokePhase={0.32} view={view} />,
+  "jack-o-lantern": (view) => (
+    <JackOLantern animate={false} carve={1} exploded={0.35} flame={0.8} view={view} />
+  ),
+  "robot-baseball": (view) => (
+    <RobotBaseball animate={false} behavior="curveball" along={0.62} view={view} />
+  ),
+  "batting-rig": (view) => <BattingRig animate={false} swing={0.52} view={view} />,
+  "robot-basketball": (view) => <RobotBasketball animate={false} height={0.42} view={view} />,
+  "robot-soccer-ball": (view) => <RobotSoccerBall animate={false} travel={0.72} view={view} />,
+  "robot-hockey-puck": (view) => <RobotHockeyPuck animate={false} along={0.46} view={view} />,
+  "construct-ring": (view) => (
+    <ConstructRing animate={false} construct="glove" reserve={0.72} exploded={0.3} view={view} />
+  ),
 }
 
 /**
@@ -317,6 +337,13 @@ const natives: Partial<Record<keyof typeof machines, RobotView>> = {
   "leg-press": "profile",
   "cross-trainer": "profile",
   "rowing-erg": "profile",
+  "jack-o-lantern": "front",
+  "robot-baseball": "profile",
+  "batting-rig": "plan",
+  "robot-basketball": "profile",
+  "robot-soccer-ball": "profile",
+  "robot-hockey-puck": "plan",
+  "construct-ring": "iso",
 }
 
 const tippedFrom = (native: RobotView): RobotView =>

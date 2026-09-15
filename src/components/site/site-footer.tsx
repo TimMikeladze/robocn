@@ -1,13 +1,20 @@
+import Link from "next/link"
+
+import { rail } from "@/components/site/rail"
 import { site } from "@/lib/site"
+import { cn } from "@/lib/utils"
 
 function SiteFooter() {
   return (
     <footer className="border-t border-border">
-      <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-8 text-[13px] text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+      <div className={cn(rail, "flex flex-col gap-2 py-8 text-[13px] text-muted-foreground sm:flex-row sm:items-center sm:justify-between")}>
         <p>
           Robotic components you can install, theme, and control in your own app.
         </p>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4">
+          <Link href="/about" className="hover:text-foreground">
+            About
+          </Link>
           <a href={site.repository} className="hover:text-foreground" target="_blank" rel="noreferrer">
             Source
           </a>

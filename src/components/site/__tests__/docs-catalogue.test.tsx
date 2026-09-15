@@ -52,6 +52,16 @@ const gridironSlugs = [
   "ball-launcher",
 ] as const
 
+/** The five sports objects and the solver under all of them. */
+const sportSlugs = [
+  "sport-geometry",
+  "robot-baseball",
+  "batting-rig",
+  "robot-basketball",
+  "robot-soccer-ball",
+  "robot-hockey-puck",
+] as const
+
 const vehicleSlugs = [
   "robot-car",
   "transit-bus",
@@ -250,6 +260,11 @@ describe('docs catalogue', () => {
   })
 
   it.each(gridironSlugs)("documents and demos %s", (slug) => {
+    expect(docs.some((entry) => entry.slug === slug && entry.item === slug)).toBe(true)
+    expect(demoFor(slug)).toBeTruthy()
+  })
+
+  it.each(sportSlugs)("documents and demos %s", (slug) => {
     expect(docs.some((entry) => entry.slug === slug && entry.item === slug)).toBe(true)
     expect(demoFor(slug)).toBeTruthy()
   })

@@ -2,7 +2,7 @@
  * Mirrors `skills/` into the two places this repository's own agents look.
  *
  * `skills/` is the source of truth and the only committed copy — it is also the
- * layout the `skills` CLI walks, so `npx skills add TimMikeladze/robocn` offers
+ * layout the `skills` CLI walks, so `bunx skills add TimMikeladze/robocn` offers
  * the same four skills to anyone outside. `.claude/skills/` and `.agents/skills/`
  * are generated and ignored, so there is nothing to keep in sync by hand.
  *

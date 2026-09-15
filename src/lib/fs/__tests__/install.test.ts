@@ -161,7 +161,7 @@ describe("planInstall", () => {
 
 describe("primitiveCommand", () => {
   it("names the runner for each package manager", () => {
-    expect(primitiveCommand(["button", "card"])).toBe("pnpm dlx shadcn@latest add button card")
+    expect(primitiveCommand(["button", "card"])).toBe("bunx --bun shadcn@latest add button card")
     expect(primitiveCommand(["button"], "npm")).toBe("npx shadcn@latest add button")
   })
 })

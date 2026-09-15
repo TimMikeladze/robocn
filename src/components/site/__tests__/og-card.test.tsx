@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest"
 
 import { OgCard, ogTileSlugs } from "@/components/site/og-card"
 import { docs } from "@/lib/docs"
+import { defaultManager } from "@/lib/site"
 
 const registry: { items: { name: string }[] } = JSON.parse(
   readFileSync(path.join(process.cwd(), "registry.json"), "utf8"),
@@ -30,7 +31,9 @@ describe("social card", () => {
     // The card is captured from a dev server; the command on it must not be.
     const { container } = render(<OgCard items={items} />)
     const text = container.textContent ?? ""
-    expect(text).toContain("pnpm dlx shadcn@latest add")
+    expect(text).toContain("bunx --bun shadcn@latest add")
+    // The tab label names the manager the command below it actually uses.
+    expect(text).toContain(defaultManager)
     expect(text).toContain("https://robocn.dev/r/robot-arm.json")
     expect(text).not.toContain("localhost")
   })

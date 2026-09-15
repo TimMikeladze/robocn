@@ -11,6 +11,8 @@ import {
   fitTransform,
   frustumPath,
   robotCamera,
+  robotCameraAt,
+  robotViews,
   roundedFootprint,
 } from "@/lib/robocn/style"
 
@@ -24,6 +26,26 @@ describe("robot camera", () => {
     expect(camera.depth(0, 5, 0)).toBeCloseTo(5)
     expect(camera.lift).toBeCloseTo(0)
     expect(camera.flatten).toBeCloseTo(1)
+  })
+
+  it("takes any angle, and lands on the named views at their own angles", () => {
+    for (const view of ["plan", "front", "profile", "iso"] as const) {
+      const { azimuth, elevation } = robotViews[view]
+      const free = robotCameraAt(azimuth, elevation, view)
+      const named = robotCamera(view)
+      expect(free.project(13, 7, -5)).toEqual(named.project(13, 7, -5))
+      expect(free.plane(9, 20)).toBe(named.plane(9, 20))
+    }
+    // A turn of the camera is a turn of the drawing, and a whole turn is none.
+    const front = robotCamera("front")
+    const turned = robotCameraAt(180 + 37, 10, "front")
+    expect(turned.project(30, 0, 0).x).not.toBeCloseTo(front.project(30, 0, 0).x, 3)
+    const wrapped = robotCameraAt(180 + 360, 10, "front").project(30, 12, -8)
+    expect(wrapped.x).toBeCloseTo(front.project(30, 12, -8).x, 9)
+    expect(wrapped.y).toBeCloseTo(front.project(30, 12, -8).y, 9)
+    // Past the pole it holds rather than turning inside out, and rubbish is level.
+    expect(robotCameraAt(0, 140, "plan").flatten).toBeCloseTo(1, 6)
+    expect(robotCameraAt(Number.NaN, Number.NaN, "front").project(10, 0, 0).x).toBe(10)
   })
 
   it("tips the horizontal plane over and lifts height off the ground", () => {

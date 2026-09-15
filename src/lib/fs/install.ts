@@ -1,7 +1,7 @@
 /**
  * A registry item, resolved into a list of files to write.
  *
- * This is what `npx shadcn@latest add` does, minus node. `public/r/<item>.json`
+ * This is what `shadcn@latest add` does, minus the CLI. `public/r/<item>.json`
  * already carries every file's contents inline and a shadcn `target` alias; the
  * work is following `registryDependencies` to a closure, reading the receiving
  * project's `components.json` to learn what its aliases mean, and turning
@@ -11,6 +11,8 @@
  * plan comes out. The writing, the picker and the confirmation live in
  * `src/components/site/install-to-folder.tsx`.
  */
+
+import { defaultManager, shadcnRunner } from "@/lib/site"
 
 export interface RegistryFile {
   path: string
@@ -256,12 +258,5 @@ export function planInstall(
 }
 
 /** The one line that adds the primitives a plan cannot write itself. */
-export const primitiveCommand = (primitives: string[], manager = "pnpm") => {
-  const runner: Record<string, string> = {
-    pnpm: "pnpm dlx",
-    npm: "npx",
-    yarn: "yarn dlx",
-    bun: "bunx --bun",
-  }
-  return `${runner[manager] ?? "npx"} shadcn@latest add ${primitives.join(" ")}`
-}
+export const primitiveCommand = (primitives: string[], manager: string = defaultManager) =>
+  `${shadcnRunner(manager)} shadcn@latest add ${primitives.join(" ")}`

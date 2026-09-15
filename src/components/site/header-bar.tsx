@@ -7,6 +7,7 @@
 
 import { usePathname } from "next/navigation"
 
+import { rail } from "@/components/site/rail"
 import { cn } from "@/lib/utils"
 
 /**
@@ -29,7 +30,7 @@ function HeaderBar({ children }: { children: React.ReactNode }) {
         "flex h-14 items-center gap-4",
         // Matches the workbench toolbar's own gutter, so the wordmark sits over
         // *New* rather than a notch to its right.
-        fullBleed ? "w-full px-2 sm:px-3" : "mx-auto max-w-6xl px-4 sm:px-6",
+        fullBleed ? "w-full px-2 sm:px-3" : rail,
       )}
     >
       {children}

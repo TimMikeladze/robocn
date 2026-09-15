@@ -101,12 +101,22 @@ The same test pins `pages`, which `/og/pages` needs as a static segment.
 
 ## The manifest
 
-`ogImage()` reads `src/lib/og.generated.ts` — the list `pnpm og` last actually
-wrote — rather than assuming a card exists for every page. A component that
+`ogImage()` reads `src/lib/og.generated.ts` — the cards that have actually been
+captured — rather than assuming one exists for every page. A component that
 ships between two capture runs has a page before it has a card, and an
 `og:image` pointing at a 404 is worse than one pointing at the contact sheet, so
-an unknown slug falls back to the site card. A `--only` run deliberately leaves
-the manifest alone: it must not shrink to the one card it took.
+an unknown slug falls back to the site card.
+
+Every run writes the manifest, including a one-card `--only`, because it is
+**merged** rather than replaced: the union of what it already claims and what
+the run took, minus any slug whose PNG is no longer on disk. That is what makes
+`pnpm og --only <new-machine>` a complete step — the card registers itself the
+moment it is taken, instead of waiting for someone to re-photograph the other
+two hundred pages. Replacing would shrink the list to the one slug; not writing
+it at all, which is what this used to do, shipped machines whose own page linked
+with the contact sheet. The merge and the parse live in
+`scripts/lib/og-manifest.mjs`, away from the browser, and
+`scripts/__tests__/og-manifest.test.ts` pins both.
 
 ## Size
 
@@ -125,9 +135,19 @@ pnpm og --only micro-duck,orrery # those page cards
 pnpm og --pages                  # every page card, no site card
 ```
 
-Same constraints as before: macOS + Chrome, a maintainer command, not part of
-`pnpm build`. A full run is 170-odd captures and takes about fifteen minutes;
-the `--only` form is what you want while you are editing the composition.
+**A new machine takes its own card, in the same sitting as the machine.**
+`pnpm og --only <name>` is about five seconds against a `pnpm dev` that is
+already up — the script reuses that server rather than booting one — and the
+PNG and the manifest line are committed with the component. The robot skills
+say so as a step rather than as an optional extra, because a machine that ships
+without a card is invisible in every link preview of its own page. Re-take it
+when the drawing moves, for the same reason: the card is a photograph of it.
+
+Same constraints as before: macOS + Chrome, and not part of `pnpm build` — a
+card is a screenshot of a real page, so the app has to compile before one can be
+taken, and a red dev server shows up as `GET /og/pages — 500`. A full run is
+200-odd captures and takes about a quarter of an hour, so it is for a change to
+the composition or to a shared helper, never for one machine.
 
 WebGL is on for this run — `robot-arm-3d` and `robot-stage` are canvas cards and
 photograph as empty panels without a software rasteriser. That is the same flag

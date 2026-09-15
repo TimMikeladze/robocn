@@ -64,11 +64,17 @@ export async function freePort(start) {
   throw new Error(`no free port between ${start} and ${start + 50}`)
 }
 
-export async function waitFor(url, timeoutMs) {
+/**
+ * Polls `url` until it answers. `anyStatus` takes a 500 as an answer: a route
+ * that is failing to compile still proves a server is listening, and the
+ * caller's own error is more use than a timeout.
+ */
+export async function waitFor(url, timeoutMs, { anyStatus = false } = {}) {
   const deadline = Date.now() + timeoutMs
   while (Date.now() < deadline) {
     try {
-      if ((await fetch(url)).ok) return
+      const response = await fetch(url)
+      if (anyStatus || response.ok) return
     } catch {
       // Not up yet.
     }
@@ -86,7 +92,12 @@ export async function waitFor(url, timeoutMs) {
 async function runningDevServer(probePath) {
   try {
     const { port } = JSON.parse(await readFile(".next/dev/lock", "utf8"))
-    await waitFor(`http://localhost:${port}${probePath}`, 2_000)
+    // Any answer, not only a 2xx, and long enough for the route's first
+    // compile. A server that is up but serving a 500 is still the one to
+    // capture from — `next dev` will not start a second for this directory, so
+    // walking past it here fails the whole run on a port clash instead of
+    // reporting the route that is actually broken.
+    await waitFor(`http://localhost:${port}${probePath}`, 30_000, { anyStatus: true })
     return port
   } catch {
     return null

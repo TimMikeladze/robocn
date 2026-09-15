@@ -4,10 +4,8 @@ import * as React from "react"
 import { Check, Copy } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { installCommand } from "@/lib/site"
+import { defaultManager, installCommand, packageManagers, type PackageManager } from "@/lib/site"
 import { cn } from "@/lib/utils"
-
-const managers = ["pnpm", "npm", "yarn", "bun"] as const
 
 export interface InstallCommandProps extends React.ComponentProps<"div"> {
   /** Registry item name, e.g. `robot-arm`. */
@@ -16,14 +14,14 @@ export interface InstallCommandProps extends React.ComponentProps<"div"> {
 
 /** The one line a visitor came for, in their package manager. */
 function InstallCommand({ item, className, ...props }: InstallCommandProps) {
-  const [manager, setManager] = React.useState<(typeof managers)[number]>("pnpm")
+  const [manager, setManager] = React.useState<PackageManager>(defaultManager)
   const [copied, setCopied] = React.useState(false)
   const command = installCommand(item, manager)
 
   return (
     <div className={cn("border border-border bg-panel", className)} {...props}>
       <div className="flex items-center gap-1 border-b border-border px-1.5">
-        {managers.map((option) => (
+        {packageManagers.map((option) => (
           <button
             key={option}
             type="button"

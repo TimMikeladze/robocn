@@ -31,6 +31,7 @@ pnpm robot:check <name>          # before you touch anything — know what was a
 # make the change
 pnpm robot:check <name>          # ~10 s
 git diff -- src/components/ui/__tests__/__snapshots__/views
+pnpm og --only <name>            # ~5 s, if the drawing moved — the card is a photograph of it
 ```
 
 That last line is the one people skip. Every machine with a `view` axis has file snapshots
@@ -52,6 +53,12 @@ piece of it while fixing something else. In particular:
 - **`px()` anything new that came out of `Math.*`**, or the server and the browser disagree.
 - **Every degree of freedom stays visibly mechanical.** A prop that only nudges pixels is the
   thing reviewers notice first.
+- **Re-take the social card.** `public/og/<name>.png` is a photograph of the drawing you just
+  changed, so `pnpm og --only <name>` and commit it with the change — seconds against the dev
+  server you already have up. Never the bare `pnpm og`: 200-odd captures for one edit. A change
+  to a **shared** helper that moves many machines is the one case for a wider run —
+  `pnpm og --pages` — and it takes about a quarter of an hour. `build-robot/SKILL.md`, *The
+  card*.
 
 `build-robot/references/craft.md` is the reference for proportion, silhouette and the machined
 detail that separates a machine from a cartoon.
@@ -93,7 +100,7 @@ A solver is shared. Changing `walker.ts` changes the scout walker and the siege 
 ## Renaming or removing an item
 
 The registry name is a published install URL. Renaming one breaks
-`pnpm dlx shadcn add https://robocn.dev/r/<old>.json` for everyone who has it in a script.
+`bunx --bun shadcn add https://robocn.dev/r/<old>.json` for everyone who has it in a script.
 Don't, unless the user asks for exactly that. If they do: the name appears in `registry.json`,
 `src/lib/docs.ts`, the demos map, the catalogue `art` map, `views.test.tsx`, the snapshot
 filenames, the README row, and any family allow-list. `pnpm robot:check` will not find a

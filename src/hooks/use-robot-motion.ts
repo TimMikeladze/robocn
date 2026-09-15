@@ -249,7 +249,14 @@ export function useRobotDrag<T extends Element>(
       active = pointer.pointerId
       // Keeps the press from starting a text selection or a page scroll.
       pointer.preventDefault()
-      element.setPointerCapture?.(pointer.pointerId)
+      // A pointer can be gone by the time the handler runs — a lifted finger, a
+      // synthesised event — and capturing a dead id throws. The drag still
+      // works off the element's own listeners without the capture.
+      try {
+        element.setPointerCapture?.(pointer.pointerId)
+      } catch {
+        // No capture: releases outside the element are handled by pointercancel.
+      }
       setDragging(true)
       report(pointer)
     }

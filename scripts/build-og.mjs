@@ -11,7 +11,8 @@
  *
  *   pnpm og                          the site card and every page card
  *   pnpm og --only site              just public/og.png
- *   pnpm og --only micro-duck,orrery those page cards
+ *   pnpm og --only micro-duck,orrery those page cards — seconds each, and the
+ *                                    form a new machine ships with
  *   pnpm og --pages                  every page card, no site card
  *   pnpm og --url http://…:3001      capture from a server you name
  *   pnpm og --theme dark --out public/og-dark.png
@@ -20,7 +21,8 @@
  * macOS + Google Chrome only; a maintainer command, not part of `pnpm build`.
  */
 
-import { mkdir, stat, writeFile } from "node:fs/promises"
+import { existsSync } from "node:fs"
+import { mkdir, readFile, stat, writeFile } from "node:fs/promises"
 import path from "node:path"
 import process from "node:process"
 
@@ -34,6 +36,7 @@ import {
   scratchDir,
   withPage,
 } from "./lib/capture.mjs"
+import { manifestSource, mergeManifest, parseManifest } from "./lib/og-manifest.mjs"
 
 const WIDTH = 1200
 const HEIGHT = 630
@@ -45,6 +48,14 @@ const SETTLE_MS = 2500
  * for — which matters when there are 170 of them.
  */
 const PAGE_SETTLE_MS = 1400
+
+/**
+ * The card's own root. Nothing is photographed until it is on the page: a route
+ * that threw renders Next's "This page couldn't load" instead, at the same
+ * 1200 x 630, and that captures as a perfectly valid-looking PNG. One shipped
+ * that way. Both card components carry the attribute.
+ */
+const CARD = (slug) => `[data-og-card=${JSON.stringify(slug)}]`
 
 const PAGES_DIR = "public/og"
 const MANIFEST = "src/lib/og.generated.ts"
@@ -69,7 +80,11 @@ const wantsPages = args.pages ? true : !only || pageFilter.length > 0
 /** Which page cards the server says exist. `/og/pages` is built from `docs.ts`. */
 async function pageSlugs(origin) {
   const response = await fetch(`${origin}/og/pages`)
-  if (!response.ok) throw new Error(`GET ${origin}/og/pages — ${response.status}`)
+  if (!response.ok) {
+    throw new Error(
+      `GET ${origin}/og/pages — ${response.status}. A card is a photograph of a real page, so the app has to compile first; the dev server's log says what is broken.`,
+    )
+  }
   const { slugs } = await response.json()
   if (!pageFilter?.length) return slugs
   const unknown = pageFilter.filter((slug) => !slugs.includes(slug))
@@ -107,6 +122,9 @@ async function main() {
           console.log(`→ capturing ${url}`)
           const raw = path.join(scratch, "og@2x.png")
           await page.goto(url)
+          if (!(await page.waitForSelector(CARD("site")))) {
+            throw new Error(`${url} did not render the card — nothing to capture`)
+          }
           await page.settle(SETTLE_MS)
           await page.screenshot(raw, { x: 0, y: 0, width: WIDTH, height: HEIGHT })
           await downsample(raw, siteOut, WIDTH, HEIGHT)
@@ -121,10 +139,19 @@ async function main() {
         console.log(`→ ${slugs.length} page cards`)
 
         const captured = []
+        const failed = []
         for (const [index, slug] of slugs.entries()) {
           const out = path.join(PAGES_DIR, `${slug}.png`)
           const raw = path.join(scratch, `${slug}@2x.png`)
           await page.goto(`${origin}/og/${slug}${themeQuery}`)
+          // A run of 200 does not stop for one bad page: note it, keep the old
+          // card on disk rather than overwriting it with an error page, and
+          // fail the command at the end with the list.
+          if (!(await page.waitForSelector(CARD(slug)))) {
+            failed.push(slug)
+            console.error(`✗ ${index + 1}/${slugs.length} ${slug} — the page did not render`)
+            continue
+          }
           await page.settle(PAGE_SETTLE_MS)
           await page.screenshot(raw, { x: 0, y: 0, width: WIDTH, height: HEIGHT })
           await downsample(raw, out, WIDTH, HEIGHT)
@@ -134,9 +161,16 @@ async function main() {
           console.log(`✓ ${index + 1}/${slugs.length} ${out} — ${kb(size)}`)
         }
 
-        // Only when the whole set was captured: a `--only` run must not shrink
-        // the manifest to the one card it took.
-        if (!pageFilter?.length) await writeManifest(captured)
+        // Every run writes it, including a one-card `--only`: the manifest is
+        // merged rather than replaced, so a new machine's card registers itself
+        // the moment it is taken instead of waiting for the next full sweep.
+        await writeManifest(captured)
+
+        if (failed.length) {
+          throw new Error(
+            `${failed.length} card(s) did not render: ${failed.join(", ")}. The dev server's log says why.`,
+          )
+        }
       },
       // The two 3D cards are a `<canvas>`, and headless Chrome without a
       // software rasteriser photographs those as empty panels.
@@ -148,22 +182,17 @@ async function main() {
   }
 }
 
-async function writeManifest(slugs) {
-  const lines = [
-    "/**",
-    " * GENERATED by `scripts/build-og.mjs` — do not edit.",
-    " *",
-    " * The page cards under `public/og/` that have actually been captured. Read by",
-    " * `src/lib/og.ts` so a page with no card yet falls back to the site card",
-    " * rather than to a 404. Notes: `docs/per-page-og-images.md`.",
-    " */",
-    "",
-    "export const capturedOgSlugs: string[] = [",
-    ...[...slugs].sort().map((slug) => `  ${JSON.stringify(slug)},`),
-    "]",
-    "",
-  ]
-  await writeFile(MANIFEST, lines.join("\n"))
+async function writeManifest(captured) {
+  let claimed = []
+  try {
+    claimed = parseManifest(await readFile(MANIFEST, "utf8"))
+  } catch {
+    // No manifest yet: this run writes the first one.
+  }
+  const slugs = mergeManifest(claimed, captured, (slug) =>
+    existsSync(path.join(PAGES_DIR, `${slug}.png`)),
+  )
+  await writeFile(MANIFEST, manifestSource(slugs))
   console.log(`✓ ${MANIFEST} — ${slugs.length} cards`)
 }
 

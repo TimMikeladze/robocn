@@ -1,7 +1,9 @@
 import Link from "next/link"
 import { MobileDocsNav } from "@/components/site/mobile-docs-nav"
 
+import { rail } from "@/components/site/rail"
 import { docGroups, docs } from "@/lib/docs"
+import { cn } from "@/lib/utils"
 
 function NavigationLinks() {
   return (
@@ -27,7 +29,7 @@ function NavigationLinks() {
 
 export default function DocsLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mx-auto grid max-w-6xl gap-6 px-5 py-6 md:grid-cols-[13rem_1fr] md:gap-10 md:py-10">
+    <div className={cn(rail, "grid gap-6 py-6 md:grid-cols-[13rem_1fr] md:gap-10 md:py-10")}>
       <MobileDocsNav>
           <Link href="/docs" className="mb-5 block text-sm underline underline-offset-4">Search all components</Link>
           <NavigationLinks />

@@ -5,13 +5,16 @@ import { notFound } from "next/navigation"
 
 import { CodeBlock } from "@/components/site/code-block"
 import { DemoPanel } from "@/components/site/demo-panel"
+import { DocsPager } from "@/components/site/docs-pager"
+import { DocsToc, type TocSection } from "@/components/site/docs-toc"
 import { InstallCommand } from "@/components/site/install-command"
 import { InstallToFolder } from "@/components/site/install-to-folder"
+import { PageActions } from "@/components/site/page-actions"
 import { PropsTable } from "@/components/site/props-table"
 import { docBySlug, docs } from "@/lib/docs"
 import { workbenchComponent } from "@/lib/workbench/controls"
 import { ogImage } from "@/lib/og"
-import { site } from "@/lib/site"
+import { defaultManager, shadcnRunner, site } from "@/lib/site"
 
 export function generateStaticParams() {
   return docs.map((entry) => ({ slug: entry.slug }))
@@ -35,7 +38,11 @@ export async function generateMetadata({
     description: entry.summary,
     // Without this the page would inherit the root layout's canonical, which
     // points every route at `/`.
-    alternates: { canonical: `/docs/${slug}` },
+    alternates: {
+      canonical: `/docs/${slug}`,
+      // The Markdown mirror of this page: `docs/site-polish.md`.
+      types: { "text/markdown": `/docs/${slug}.md` },
+    },
     openGraph: {
       title: `${entry.title} — ${site.name}`,
       description: entry.summary,
@@ -65,10 +72,27 @@ export default async function DocPage({
     })),
   )
 
+  // What the page is about to draw, which is also what the TOC links to. Built
+  // here rather than scraped back out of the DOM: `docs-toc.tsx`.
+  const sections: TocSection[] = [
+    entry.item && { id: "install", label: "Install" },
+    entry.notes?.length && { id: "notes", label: entry.item ? "Notes" : "How it works" },
+    entry.usage && { id: "usage", label: "Usage" },
+    entry.props?.length && { id: "props", label: "Props" },
+    entry.api?.length && { id: "api", label: "API" },
+    sources.length && { id: "source", label: "Source" },
+  ].filter((section): section is TocSection => Boolean(section))
+
   return (
-    <article className="space-y-10">
+    // The TOC is a sibling of the article, not a child of it: the page owns the
+    // content/rail split because the layout above it cannot know the sections.
+    <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_11rem] xl:gap-10">
+      <article className="min-w-0 space-y-10">
       <header className="space-y-3">
-        <h1 className="text-3xl font-semibold tracking-tight">{entry.title}</h1>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <h1 className="text-3xl font-semibold tracking-tight">{entry.title}</h1>
+          <PageActions slug={entry.slug} />
+        </div>
         <p className="max-w-[64ch] text-[15px] leading-relaxed text-muted-foreground">
           {entry.summary}
         </p>
@@ -83,7 +107,7 @@ export default async function DocPage({
 
       {entry.item ? (
         <section className="space-y-3">
-          <h2 className="text-[15px] font-medium">Install</h2>
+          <h2 id="install" className="scroll-mt-20 text-[15px] font-medium">Install</h2>
           <InstallCommand item={entry.item} />
           {/* Chrome, Edge and Opera on a desktop; it renders nothing elsewhere. */}
           <InstallToFolder item={entry.item} />
@@ -92,7 +116,7 @@ export default async function DocPage({
 
       {entry.notes?.length ? (
         <section className="space-y-3">
-          <h2 className="text-[15px] font-medium">
+          <h2 id="notes" className="scroll-mt-20 text-[15px] font-medium">
             {entry.item ? "Notes" : "How it works"}
           </h2>
           <ul className="space-y-2 text-[14px] leading-relaxed text-muted-foreground">
@@ -109,28 +133,28 @@ export default async function DocPage({
 
       {entry.usage ? (
         <section className="space-y-3">
-          <h2 className="text-[15px] font-medium">Usage</h2>
+          <h2 id="usage" className="scroll-mt-20 text-[15px] font-medium">Usage</h2>
           <CodeBlock code={entry.usage} />
         </section>
       ) : null}
 
       {entry.props?.length ? (
         <section className="space-y-3">
-          <h2 className="text-[15px] font-medium">Props</h2>
+          <h2 id="props" className="scroll-mt-20 text-[15px] font-medium">Props</h2>
           <PropsTable rows={entry.props} />
         </section>
       ) : null}
 
       {entry.api?.length ? (
         <section className="space-y-3">
-          <h2 className="text-[15px] font-medium">API</h2>
+          <h2 id="api" className="scroll-mt-20 text-[15px] font-medium">API</h2>
           <PropsTable rows={entry.api} caption="exports" />
         </section>
       ) : null}
 
       {sources.length ? (
         <section className="space-y-3">
-          <h2 className="text-[15px] font-medium">Source</h2>
+          <h2 id="source" className="scroll-mt-20 text-[15px] font-medium">Source</h2>
           {sources.map((source) => (
             <CodeBlock
               key={source.file}
@@ -141,7 +165,12 @@ export default async function DocPage({
           ))}
         </section>
       ) : null}
-    </article>
+
+      <DocsPager slug={entry.slug} />
+      </article>
+
+      <DocsToc sections={sections} />
+    </div>
   )
 }
 
@@ -166,7 +195,7 @@ function InstallationExtras() {
   }
 }`}
       />
-      <CodeBlock code={`pnpm dlx shadcn@latest add @robocn/robot-arm @robocn/delta-arm`} />
+      <CodeBlock code={`${shadcnRunner(defaultManager)} shadcn@latest add @robocn/robot-arm @robocn/delta-arm`} />
     </section>
   )
 }

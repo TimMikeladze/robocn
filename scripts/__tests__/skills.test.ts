@@ -4,7 +4,7 @@ import path from "node:path"
 import { describe, expect, it } from "vitest"
 
 /**
- * `skills/` is published: `npx skills add TimMikeladze/robocn` reads it
+ * `skills/` is published: `bunx skills add TimMikeladze/robocn` reads it
  * straight off GitHub, and `pnpm install` mirrors it into `.claude/skills` and
  * `.agents/skills`. So the things that break it are frontmatter the CLI cannot
  * parse, and — the one that actually costs an agent a turn — a path named in a

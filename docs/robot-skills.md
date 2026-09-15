@@ -3,7 +3,7 @@
 Four skills, in `skills/`, published from this repository and installable anywhere with
 
 ```bash
-npx skills add TimMikeladze/robocn
+bunx skills add TimMikeladze/robocn
 ```
 
 They replace the single `ship-robot` skill, which had grown to a 192-line front page that sent
@@ -134,6 +134,12 @@ loop, lists what the one command writes so there is no touchpoint checklist to w
 and names the exemplar to copy in a table so that picking one is a lookup rather than a search. `docs/spec.md`
 is no longer in the reading path at all — it is a catalogue, and the skill needs a contract.
 
+The loop ends with `pnpm og --only <name>`, the machine's own social card. It used to be
+left off as maintainer work and deferred, which shipped machines whose docs page previewed as
+the twelve-machine contact sheet instead of as themselves; it is about five seconds against a
+dev server that is already up, and the manifest it writes is merged rather than replaced, so
+one card costs one capture. `docs/per-page-og-images.md`.
+
 References load **one at a time, only when the machine has that axis**: `kinematics.md` when
 there is a solver, `views.md` when it moves in space, `motion.md` when it runs itself,
 `reference-images.md` when an image came with the prompt, `craft.md` before the drawing is
@@ -176,7 +182,7 @@ skills/
 ```
 
 `skills/` at the repository root is what the `skills` CLI walks, so
-`npx skills add TimMikeladze/robocn` offers all four and installs to whichever agent the
+`bunx skills add TimMikeladze/robocn` offers all four and installs to whichever agent the
 person runs. `SKILL.md` frontmatter needs `name` and `description` and nothing else.
 
 `scripts/setup-skills.mjs` mirrors `skills/` into `.claude/skills/` and `.agents/skills/` on

@@ -28,7 +28,7 @@ src/components/ui/*.tsx          the components
 registry.json                    registry manifest -> `pnpm registry:build` -> public/r/*.json
 ```
 
-Consumers install with `npx shadcn@latest add https://<host>/r/robot-arm.json`, or add the
+Consumers install with `bunx --bun shadcn@latest add https://<host>/r/robot-arm.json`, or add the
 `@robocn` namespace to `components.json` and run `add @robocn/robot-arm`.
 
 ## Components

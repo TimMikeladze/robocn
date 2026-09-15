@@ -45,7 +45,7 @@ does not replace the local loop; it makes every *other* part of the loop work wi
   "files": [{ "target": "@ui/robot-arm.tsx", "content": "…" }] }
 ```
 
-Everything `npx shadcn@latest add` does with that file, a page can do: resolve
+Everything `shadcn@latest add` does with that file, a page can do: resolve
 `registryDependencies` recursively, read the target project's `components.json` for its
 aliases, and write. **Point the picker at any project and the item lands in it** — no node,
 no network beyond the same-origin JSON, no CLI.

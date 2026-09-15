@@ -43,7 +43,7 @@ describe("page social card", () => {
   it("prints an install line that works from anywhere", () => {
     // The card is captured from a dev server; the command on it must not be.
     const text = card("robot-arm").container.textContent ?? ""
-    expect(text).toContain("pnpm dlx shadcn@latest add")
+    expect(text).toContain("bunx --bun shadcn@latest add")
     expect(text).toContain("https://robocn.dev/r/robot-arm.json")
     expect(text).not.toContain("localhost")
   })

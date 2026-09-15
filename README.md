@@ -9,7 +9,7 @@ sheets.
 
 [**robocn.dev**](https://robocn.dev) · [Components](https://robocn.dev/docs) ·
 [Workbench](https://robocn.dev/workbench) · [Install](https://robocn.dev/docs/installation) ·
-MIT licensed
+[About](https://robocn.dev/about) · MIT licensed
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/landing-dark.png">
@@ -20,8 +20,16 @@ Components install as source into your project, the way shadcn/ui components do.
 edit them, theme them with CSS variables.
 
 ```bash
-pnpm dlx shadcn@latest add https://robocn.dev/r/robot-arm.json
+bunx --bun shadcn@latest add https://robocn.dev/r/robot-arm.json
 ```
+
+`bun` is the default the site offers; the install block on every page has `pnpm`, `npm` and
+`yarn` beside it. `--bun` runs `shadcn` in Bun's own runtime rather than deferring to the
+`node` shebang, so the line works on a machine that has Bun and no Node — see
+[the install line](docs/install-line.md). The repository's own toolchain is still pnpm.
+
+What the project is and what it actually solves, in one page:
+[robocn.dev/about](https://robocn.dev/about), and [why it says that](docs/about-page.md).
 
 Or without the CLI: every docs page offers **Choose a folder**, which asks for a directory,
 resolves the item's dependencies, shows you exactly which paths it would write — marked
@@ -246,6 +254,16 @@ installs at.
 | `leg-press` | A sled on inclined rails: only the component of the load along the rails resists, so the rail angle is the resistance and the frame decides the weight. |
 | `cross-trainer` | A crank and rocker whose footpad rides the coupler: the stride and the shape of the foot path are what the link lengths produce, not a traced ellipse. |
 | `rowing-erg` | An air flywheel on a one-way clutch: drag goes as the square of rim speed, the damper vent sets the drag factor, and the drive spins it up while the recovery coasts it down. |
+| `jack-o-lantern` | A carved gourd lantern: a lobed shell on a scalloped lid and stem, cut anywhere a knife is dragged — the pointer put back on the skin it is over — turned to any angle in any direction, with a candle inside whose light is paid for by the openings, and every part coming off in the reverse of the order it was fitted. |
+| `carve-geometry` | Outlines authored in shell coordinates and wrapped onto a lobed body of revolution, carved along their own perimeter, the plugs they free, the light that escapes through them — open area over skin area, each opening reaching the square root of what it passes — a flame that leans and guts in a draught, and the projection run backwards so a pointer can be put back on the skin it is over. |
+| `robot-baseball` | The ball as a sphere with a real seam: the figure-eight is a closed curve lying exactly on the surface, so spin carries it round the back instead of sliding it across the front. |
+| `sport-geometry` | The kit a game is played with: the sphere and its seams, the puck, and the four dynamics — restitution bounce, Magnus curve, Coulomb slide and the bat-ball collision — each a closed form rather than an integrator. |
+| `batting-rig` | A bat on a solved swing arc meeting a pitched ball, with the collision itself solved: effective mass falls away from the sweet spot, so contact off the end hands the ball back less than it brought. |
+| `robot-basketball` | Eight panels cut by two great circles and one wavy seam, on a ball that bounces by closed-form restitution rather than a tween: every apex is the last one times e squared. |
+| `robot-soccer-ball` | A truncated icosahedron inflated onto the sphere: twelve pentagons and twenty hexagons built from the solid, culled by their own normals, and rolled without slipping so the panels turn because it travelled. |
+| `robot-hockey-puck` | A cylinder on ice: friction is a constant deceleration whatever the speed, so the whole track — every board, and the point it stops — is solved once in closed form. Its silhouette is the hull of its two rims, so it is exact face-on and edge-on alike. |
+| `construct-ring` | A signet emitter ring: a lit bezel over a knurled band, a teardown in fitting order, a field where a stroke you draw is forged into a construct — a bubble, a glove, a hammer — of solid light, and a camera you can turn to anywhere on the sphere with a drag. |
+| `construct-geometry` | Stroke sampling and measurement: arc-length resampling, a frame (centroid, principal axis, spans, closure, area, circularity, corners), a classifier from that frame to an archetype, and a scanline lattice that fills the result. |
 
 Installing a component pulls in what it needs: `robot-arm` brings `robot-kinematics`,
 `robot-style` and both hooks, and the theme variables ride along with `robot-style`.
@@ -454,7 +472,7 @@ const angles = chainAngles2(joints)
 ```
 
 ```bash
-pnpm dlx shadcn@latest add @robocn/robot-arm @robocn/delta-arm
+bunx --bun shadcn@latest add @robocn/robot-arm @robocn/delta-arm
 ```
 
 ## Development
@@ -464,8 +482,10 @@ pnpm install
 pnpm dev              # docs site and registry, on http://localhost:3000
 pnpm generate         # workbench control manifest + the registry→component gallery map
 pnpm registry:build   # writes public/r/*.json
-pnpm og               # recaptures the social cards: public/og.png and public/og/*.png
+pnpm og               # recaptures every social card — a quarter of an hour
+pnpm og --only <name> # just that page's card: ~5 s, what a new machine ships with
 pnpm shots            # recaptures docs/screenshots/*.png, the pictures above
+pnpm icons            # recaptures the app icons: src/app/icon.svg and apple-icon.png
 pnpm test             # kinematics, components, registry integrity
 pnpm typecheck
 pnpm build            # builds the registry, then the site
@@ -482,9 +502,30 @@ from real components — see [the social card](docs/og-image.md) for why, and ru
 after changing what it shows. Every docs page has a card of its own under `public/og/`
 drawn the same way, so a link to `/docs/micro-duck` previews as the duck rather than as
 the catalogue: [a social card per page](docs/per-page-og-images.md), and `pnpm og --only
-micro-duck` while you are editing one. The pictures in this README are captures of the
+micro-duck` for one card — seconds against a dev server that is already up, which is why
+taking a new machine's card is a step in building it rather than a maintenance sweep. The pictures in this README are captures of the
 real pages for the same reason: `pnpm shots`, and [the screenshots](docs/screenshots.md)
-for the shot list. All of it drives headless Chrome through `scripts/lib/capture.mjs`.
+for the shot list. The app icons are the same trick at a smaller size: `pnpm icons` lifts
+the mark out of `/og` with its computed colours baked on, because `<Logo />` solves its
+chain at runtime and a favicon cannot. All of it drives headless Chrome through
+`scripts/lib/capture.mjs`.
+
+### Reading the site as Markdown
+
+Every documentation page has a Markdown mirror, for the coding agents that are a large
+part of who installs from here:
+
+```bash
+curl https://robocn.dev/llms.txt                 # the whole catalogue as one file
+curl https://robocn.dev/docs/robot-arm.md        # one page: install line, props, source
+curl -H 'Accept: text/markdown' https://robocn.dev/docs/robot-arm   # the same thing
+```
+
+The mirrors are generated from the same `DocEntry` the HTML page renders, so the two
+cannot drift, and `src/proxy.ts` is what routes `.md` onto them. Each docs page also
+carries a *Copy page* action that puts its Markdown on the clipboard or hands the URL to
+an assistant. What this is and where it came from:
+[what pdfcn does that robocn did not](docs/site-polish.md).
 
 The project describes itself in three places. `package.json` carries the description,
 keywords, homepage and repository; `src/lib/site.ts` carries the name, tagline,
@@ -539,7 +580,7 @@ The whole path is written up as four agent skills in [`skills/`](skills) —
 [publish](skills/publish-robot) — which work in Claude Code, Codex, Cursor and the rest:
 
 ```bash
-npx skills add TimMikeladze/robocn
+bunx skills add TimMikeladze/robocn
 ```
 
 `pnpm install` mirrors them into `.claude/skills/` and `.agents/skills/` for this repo's own

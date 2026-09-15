@@ -318,8 +318,25 @@ const ELEVATION_COS = Math.cos(toRadians(robotViews.front.elevation))
 
 export function robotCamera(view: RobotView = "plan"): RobotCamera {
   const { azimuth, elevation } = robotViews[view] ?? robotViews.plan
-  const a = toRadians(azimuth)
-  const e = toRadians(elevation)
+  return robotCameraAt(azimuth, elevation, view)
+}
+
+/**
+ * The same camera at any angle at all, rather than at one of the four the set
+ * names. `robotCamera` is this with the named angles filled in, so a machine
+ * that lets a person turn it keeps every other property — the projection, the
+ * depth sort, the plan and wall transforms — instead of growing a second one.
+ *
+ * `elevation` is clamped to ±90 — straight down is the plan view the set
+ * already draws in, and straight up is the same camera under the floor.
+ */
+export function robotCameraAt(
+  azimuth: number,
+  elevation: number,
+  view: RobotView = "plan",
+): RobotCamera {
+  const a = toRadians(finite(azimuth, 0))
+  const e = toRadians(Math.max(-90, Math.min(90, finite(elevation, 0))))
   const ca = Math.cos(a)
   const sa = Math.sin(a)
   const ce = Math.cos(e) / ELEVATION_COS

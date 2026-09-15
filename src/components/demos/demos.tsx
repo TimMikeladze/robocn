@@ -216,6 +216,19 @@ import { ResistanceCam, type ResistanceCamBehavior } from "@/components/ui/resis
 import { LegPress, type LegPressBehavior } from "@/components/ui/leg-press"
 import { CrossTrainer, type CrossTrainerBehavior } from "@/components/ui/cross-trainer"
 import { RowingErg, rowingErgTempo, type RowingErgBehavior } from "@/components/ui/rowing-erg"
+import { RobotBaseball, baseballPitch, type BaseballBehavior } from "@/components/ui/robot-baseball"
+import { BattingRig, battingImpact, type BattingRigBehavior } from "@/components/ui/batting-rig"
+import { RobotBasketball, type BasketballBehavior } from "@/components/ui/robot-basketball"
+import { RobotSoccerBall, type SoccerBallBehavior } from "@/components/ui/robot-soccer-ball"
+import { RobotHockeyPuck, puckShot, type HockeyPuckBehavior } from "@/components/ui/robot-hockey-puck"
+import { ConstructRing, type ConstructArchetype, type ConstructRingBehavior } from "@/components/ui/construct-ring"
+import {
+  JackOLantern,
+  jackOLanternLight,
+  type JackOLanternBehavior,
+  type JackOLanternControl,
+} from "@/components/ui/jack-o-lantern"
+import type { FaceName } from "@/lib/robocn/carve"
 import { oklchToHex } from "@/lib/robocn/color"
 import {
   chainAngles2,
@@ -224,6 +237,7 @@ import {
   type Vec2,
 } from "@/lib/robocn/kinematics"
 import { dropTimings, hopTimings } from "@/lib/robocn/hopper"
+import { pitchSpin, slideTrack } from "@/lib/robocn/sport"
 import type {
   RobotBehavior,
   RobotMount,
@@ -5262,6 +5276,251 @@ function RowingErgDemo() {
   )
 }
 
+function JackOLanternDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [behavior, setBehavior] = React.useState<JackOLanternBehavior>("flicker")
+  const [face, setFace] = React.useState<FaceName>("classic")
+  const [control, setControl] = React.useState<JackOLanternControl>("cut")
+  const [candle, setCandle] = React.useState<"lit" | "out">("lit")
+  const [teeth, setTeeth] = React.useState(4)
+  const [lobes, setLobes] = React.useState(9)
+  const [nib, setNib] = React.useState(0.055)
+  const [hand, setHand] = React.useState(0)
+  const [orbit, setOrbit] = React.useState({ azimuth: 0, elevation: 0 })
+  const light = jackOLanternLight({ face, teeth, lobes, flame: 1 })
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="motion" value={behavior} options={["carve", "flicker", "teardown", "static"] as const} onChange={setBehavior} />
+      <Segmented label="face" value={face} options={["classic", "grin", "scowl", "sly", "blank"] as const} onChange={setFace} />
+      <Segmented label="drag" value={control} options={["cut", "orbit", "carve", "exploded"] as const} onChange={setControl} />
+      <Segmented label="candle" value={candle} options={["lit", "out"] as const} onChange={setCandle} />
+      <NumberControl label="knife" value={nib} min={0.02} max={0.16} step={0.005} onChange={setNib} format={value => `${Math.round(value * 1000) / 10}`} />
+      <NumberControl label="teeth" value={teeth} min={1} max={9} step={1} onChange={setTeeth} />
+      <NumberControl label="ribs" value={lobes} min={5} max={13} step={1} onChange={setLobes} />
+      <Readout rows={[
+        ["cuts by hand", `${hand}`],
+        ["turned", `${Math.round(orbit.azimuth)}° round, ${Math.round(orbit.elevation)}° up`],
+        ["preset face opens", `${Math.round(light.openArea)} u²`],
+        ["which escapes", `${Math.round(light.escape * 1000) / 10}% of the flame`],
+      ]} />
+      <Hint>Drag on the shell to cut it anywhere — the pointer is put back on the skin it is over, and the light comes out of whatever you cut. Hold shift to turn the machine instead, or pick <code>orbit</code> and drag: it goes all the way round and over the top. Arrow keys turn it, backspace takes back the last cut, escape clears them. <code>carve</code> and <code>exploded</code> hand the same drag to the preset face and the teardown.</Hint>
+    </>}>
+      <JackOLantern size={300} view={view} variant={variant} behavior={behavior} face={face} teeth={teeth} lobes={lobes} nib={nib} lit={candle === "lit"} control={control} onStrokesChange={next => setHand(next.length)} onOrbitChange={setOrbit} interactive label="JACK-O-LANTERN" />
+    </Bench>
+  )
+}
+
+function RobotBaseballDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [behavior, setBehavior] = React.useState<BaseballBehavior>("curveball")
+  const [seam, setSeam] = React.useState<"on" | "off">("on")
+  const [path, setPath] = React.useState<"on" | "off">("on")
+  const [along, setAlong] = React.useState<number | null>(null)
+
+  const spin = pitchSpin(baseballPitch(behavior))
+  const tilt = Math.round((Math.atan2(spin.axis.y, spin.axis.x) * 180) / Math.PI)
+
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="pitch" value={behavior} options={["fastball", "curveball", "slider", "sinker", "knuckler", "spin", "static"] as const} onChange={setBehavior} />
+      <Segmented label="seam" value={seam} options={["on", "off"] as const} onChange={setSeam} />
+      <Segmented label="flight" value={path} options={["on", "off"] as const} onChange={setPath} />
+      <Readout rows={[
+        ["spin", `${Math.round(spin.rate)} rev/s`],
+        ["axis tilt", `${tilt}° off the batter's right`],
+        ["scrubbed to", along === null ? "running" : `${Math.round(along * 100)}% to the plate`],
+      ]} />
+      <Hint>Take the <code>front</code> camera and the break is the whole story — the dashed line is the same pitch with the spin taken out. Drag across the frame to walk the ball down the flight, or focus it and use the arrow keys; let go and it picks the pitch back up.</Hint>
+    </>}>
+      <RobotBaseball size={300} view={view} variant={variant} behavior={behavior} seam={seam === "on"} showPath={path === "on"} onAlongChange={setAlong} interactive label="BASEBALL / 01" />
+    </Bench>
+  )
+}
+
+function BattingRigDemo() {
+  const [view, setView] = React.useState<RobotView>("plan")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [behavior, setBehavior] = React.useState<BattingRigBehavior>("swing")
+  const [stance, setStance] = React.useState(34)
+  const [rate, setRate] = React.useState(0.9)
+
+  const impact = battingImpact(stance, rate)
+
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="motion" value={behavior} options={["swing", "load", "check", "static"] as const} onChange={setBehavior} />
+      <NumberControl label="stance" value={stance} min={22} max={44} step={0.5} onChange={setStance} format={value => `${value}`} />
+      <NumberControl label="swing" value={rate} min={0.3} max={2} step={0.05} onChange={setRate} format={value => `${value} r/s`} />
+      <Readout rows={[
+        ["contact", `${Math.round(impact.contact)} from the knob`],
+        ["sweet spot", `${Math.round(impact.best.contact)} from the knob`],
+        ["effective mass", `${Math.round(impact.effectiveMass * 100) / 100}`],
+        ["exit speed", `${Math.round(impact.exitSpeed)} u/s`],
+        ["of its best", `${Math.round(impact.sweetness * 100)}%`],
+      ]} />
+      <Hint>Move the <code>stance</code> and watch the contact dot slide along the barrel toward the ring: the bat can only cross the line at one angle, so where the rig stands is the only thing that decides where the ball arrives. Both ends of the barrel cost exit speed. Drag across the frame to walk the bat through the zone by hand.</Hint>
+    </>}>
+      <BattingRig size={300} view={view} variant={variant} behavior={behavior} stance={stance} swingRate={rate} interactive label="BAT RIG / 02" />
+    </Bench>
+  )
+}
+
+function RobotBasketballDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [behavior, setBehavior] = React.useState<BasketballBehavior>("dribble")
+  const [seams, setSeams] = React.useState<"on" | "off">("on")
+  const [height, setHeight] = React.useState<number | null>(null)
+
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="motion" value={behavior} options={["dribble", "travel", "drop", "spin", "static"] as const} onChange={setBehavior} />
+      <Segmented label="seams" value={seams} options={["on", "off"] as const} onChange={setSeams} />
+      <Readout rows={[
+        ["restitution", "0.76"],
+        ["second apex", `${Math.round(0.76 ** 2 * 100)}% of the first`],
+        ["third apex", `${Math.round(0.76 ** 4 * 100)}% of the first`],
+        ["picked up to", height === null ? "running" : `${Math.round(height * 100)}% of the apex`],
+      ]} />
+      <Hint>Take <code>drop</code> and watch the ladder run down: every apex is the last one times e², exactly, and the gaps shorten with it. Drag up and down to pick the ball up — let go and it falls back into whatever the bounce has moved on to.</Hint>
+    </>}>
+      <RobotBasketball size={300} view={view} variant={variant} behavior={behavior} seams={seams === "on"} onHeightChange={setHeight} interactive label="BASKETBALL / 03" />
+    </Bench>
+  )
+}
+
+function RobotSoccerBallDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [behavior, setBehavior] = React.useState<SoccerBallBehavior>("roll")
+  const [panels, setPanels] = React.useState<"on" | "off">("on")
+  const [travel, setTravel] = React.useState<number | null>(null)
+
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="motion" value={behavior} options={["roll", "bend", "juggle", "spin", "static"] as const} onChange={setBehavior} />
+      <Segmented label="panels" value={panels} options={["on", "off"] as const} onChange={setPanels} />
+      <Readout rows={[
+        ["panels", "12 pentagons, 20 hexagons"],
+        ["built from", "an icosahedron cut at a third of every edge"],
+        ["rolled to", travel === null ? "running" : `${Math.round(travel * 100)}% across`],
+      ]} />
+      <Hint>Drag left and right: the panels turn because the ball travelled, not alongside it — <code>θ = s / r</code>, and rolling it back unrolls them. Take <code>bend</code> with the <code>plan</code> camera to see the other equation: a standing spin axis puts <code>ω × v</code> sideways, and the ball leaves the dashed line it was struck along.</Hint>
+    </>}>
+      <RobotSoccerBall size={300} view={view} variant={variant} behavior={behavior} panels={panels === "on"} onTravelChange={setTravel} interactive label="SOCCER / 04" />
+    </Bench>
+  )
+}
+
+function RobotHockeyPuckDemo() {
+  const [view, setView] = React.useState<RobotView>("plan")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [behavior, setBehavior] = React.useState<HockeyPuckBehavior>("slap")
+  const [heading, setHeading] = React.useState(13)
+  const [track, setTrack] = React.useState<"on" | "off">("on")
+
+  const solved = slideTrack({ ...puckShot(behavior), heading })
+
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="shot" value={behavior} options={["slap", "wrist", "dump", "spin", "static"] as const} onChange={setBehavior} />
+      <Segmented label="track" value={track} options={["on", "off"] as const} onChange={setTrack} />
+      <NumberControl label="aim" value={heading} min={-80} max={80} onChange={setHeading} format={value => `${value}°`} />
+      <Readout rows={[
+        ["deceleration", `${Math.round(solved.deceleration * 10) / 10} u/s² — constant`],
+        ["boards hit", `${Math.max(0, solved.legs.length - 1)}`],
+        ["distance", `${Math.round(solved.distance)} u`],
+        ["time to stop", `${Math.round(solved.duration * 100) / 100} s`],
+      ]} />
+      <Hint>Move the <code>aim</code> and the whole track re-solves — every board, and the point it runs out of ice. Friction takes the same speed per second whatever the puck is doing, so the distance it has left is exactly <code>v²/2μg</code>, and a board that takes e of the speed takes e² of the distance. Drag across the frame to walk the puck along its own track.</Hint>
+    </>}>
+      <RobotHockeyPuck size={300} view={view} variant={variant} behavior={behavior} heading={heading} showTrack={track === "on"} interactive label="PUCK / 05" />
+    </Bench>
+  )
+}
+
+function ConstructRingDemo() {
+  const [view, setView] = React.useState<RobotView>("iso")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [behavior, setBehavior] = React.useState<ConstructRingBehavior>("conjure")
+  const [pinned, setPinned] = React.useState<"auto" | ConstructArchetype>("auto")
+  const [exploded, setExploded] = React.useState(0)
+  const [drawable, setDrawable] = React.useState<"on" | "off">("on")
+  const [field, setField] = React.useState<"on" | "off">("on")
+  const [drawn, setDrawn] = React.useState<{ archetype: string; cost: number } | null>(null)
+  const [orbit, setOrbit] = React.useState<{ azimuth: number; elevation: number } | null>(null)
+  return (
+    <Bench controls={<>
+      <Segmented
+        label="view"
+        value={view}
+        options={views}
+        onChange={(next) => {
+          setOrbit(null)
+          setView(next)
+        }}
+      />
+      <NumberControl label="round" value={orbit?.azimuth ?? 0} min={-180} max={180} step={1} onChange={(v) => setOrbit({ azimuth: v, elevation: orbit?.elevation ?? 0 })} format={(v) => `${Math.round(v)}°`} />
+      <NumberControl label="up" value={orbit?.elevation ?? 0} min={-90} max={90} step={1} onChange={(v) => setOrbit({ azimuth: orbit?.azimuth ?? 0, elevation: v })} format={(v) => `${Math.round(v)}°`} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="motion" value={behavior} options={["conjure", "charge", "flare", "idle", "static"] as const} onChange={setBehavior} />
+      <Segmented label="hold" value={pinned} options={["auto", "bubble", "glove", "hammer", "shield", "cage", "bridge", "claw"] as const} onChange={setPinned} />
+      <NumberControl label="exploded" value={exploded} min={0} max={1} step={0.01} onChange={setExploded} format={(v) => `${Math.round(v * 100)}%`} />
+      <Segmented label="draw" value={drawable} options={["on", "off"] as const} onChange={setDrawable} />
+      <Segmented label="field" value={field} options={["on", "off"] as const} onChange={setField} />
+      <Hint>
+        Drag the ring to turn it — right round, over the top and down the far side. Arrow keys
+        do the same, Home puts the camera back on the named view. Draw in the field above it:
+        a round loop is a bubble, a stubby one a glove, a long straight stroke a hammer. Enter
+        forges the next archetype, Escape clears.
+      </Hint>
+      <Readout
+        rows={[
+          ["forged", drawn ? drawn.archetype : "—"],
+          ["draw", drawn ? `${Math.round(drawn.cost * 100)}%` : "—"],
+          [
+            "camera",
+            orbit
+              ? `${Math.round(orbit.azimuth)}° / ${Math.round(orbit.elevation)}°`
+              : view,
+          ],
+        ]}
+      />
+    </>}>
+      <ConstructRing
+        size={320}
+        view={view}
+        variant={variant}
+        behavior={behavior}
+        construct={pinned === "auto" ? undefined : pinned}
+        exploded={exploded}
+        azimuth={orbit?.azimuth}
+        elevation={orbit?.elevation}
+        onOrbitChange={setOrbit}
+        drawable={drawable === "on"}
+        showField={field === "on"}
+        interactive
+        onConstructChange={(report) => setDrawn({ archetype: report.archetype, cost: report.cost })}
+        label="RING / 01"
+      />
+    </Bench>
+  )
+}
+
 export const demos: Record<string, React.ComponentType<DemoProps>> = {
   "robot-football": RobotFootballDemo,
   "gridiron-geometry": RobotFootballDemo,
@@ -5467,6 +5726,16 @@ export const demos: Record<string, React.ComponentType<DemoProps>> = {
   "leg-press": LegPressDemo,
   "cross-trainer": CrossTrainerDemo,
   "rowing-erg": RowingErgDemo,
+  "jack-o-lantern": JackOLanternDemo,
+  "carve-geometry": JackOLanternDemo,
+  "robot-baseball": RobotBaseballDemo,
+  "sport-geometry": RobotBaseballDemo,
+  "batting-rig": BattingRigDemo,
+  "robot-basketball": RobotBasketballDemo,
+  "robot-soccer-ball": RobotSoccerBallDemo,
+  "robot-hockey-puck": RobotHockeyPuckDemo,
+  "construct-ring": ConstructRingDemo,
+  "construct-geometry": ConstructRingDemo,
 }
 
 /**

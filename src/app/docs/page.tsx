@@ -15,7 +15,11 @@ const images = [{ url: siteOgImage, ...ogSize, alt: `${site.name} — twelve rob
 export const metadata = {
   title: "Components",
   description,
-  alternates: { canonical: "/docs" },
+  alternates: {
+    canonical: "/docs",
+    // The catalogue as Markdown: `docs/site-polish.md`.
+    types: { "text/markdown": "/docs.md" },
+  },
   openGraph: { title: "Components — robocn", description, url: `${site.url}/docs`, images },
   twitter: { card: "summary_large_image", images },
 }

@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs"
+import { existsSync, readFileSync, readdirSync } from "node:fs"
 import path from "node:path"
 import { describe, expect, it } from "vitest"
 
@@ -66,6 +66,18 @@ describe("og image paths", () => {
     expect(image.width).toBe(1200)
     expect(image.height).toBe(630)
     expect(image.alt.length).toBeGreaterThan(20)
+  })
+
+  it("claims every card that is on disk", () => {
+    // The other half of the merge in `scripts/lib/og-manifest.mjs`: a PNG that
+    // nothing claims is a card nobody's link preview will ever show, which is
+    // what a `--only` run used to leave behind.
+    const dir = path.join(process.cwd(), "public", "og")
+    const onDisk = readdirSync(dir)
+      .filter((file) => file.endsWith(".png"))
+      .map((file) => file.replace(/\.png$/, ""))
+    const unclaimed = onDisk.filter((slug) => !capturedOgSlugs.includes(slug))
+    expect(unclaimed, `captured but unclaimed: ${unclaimed.join(", ")}`).toEqual([])
   })
 
   it("only claims cards that are on disk", () => {

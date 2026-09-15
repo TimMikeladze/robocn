@@ -22,7 +22,7 @@ import { cardArt, type CatalogueCard } from "@/components/site/catalogue"
 import { galleryEntries } from "@/components/site/gallery.generated"
 import { Logo } from "@/components/site/logo"
 import { RobotArm } from "@/components/ui/robot-arm"
-import { installCommand, productionUrl, site } from "@/lib/site"
+import { defaultManager, installCommand, productionUrl, site } from "@/lib/site"
 import { ogSize } from "@/lib/og"
 import { cn } from "@/lib/utils"
 
@@ -153,12 +153,16 @@ function OgItemCard({ slug, eyebrow, title, summary, item }: OgItemCardProps) {
   const webgl = galleryEntries[slug]?.webgl ?? false
 
   // Split at the last space so the URL gets its own line, same as the site card.
-  const command = item ? installCommand(item, "pnpm", productionUrl) : null
+  const command = item ? installCommand(item, defaultManager, productionUrl) : null
   const runner = command?.slice(0, command.lastIndexOf(" "))
   const target = command?.slice(command.lastIndexOf(" ") + 1)
 
   return (
     <div
+      // What `scripts/build-og.mjs` waits for before it fires the shutter: a
+      // card that did not render photographs as Next's error page, and a 33 KB
+      // "This page couldn't load" is a card nobody notices is wrong.
+      data-og-card={slug}
       className="relative flex overflow-hidden bg-background text-foreground"
       style={{ width: ogSize.width, height: ogSize.height }}
     >
@@ -202,7 +206,7 @@ function OgItemCard({ slug, eyebrow, title, summary, item }: OgItemCardProps) {
           {command ? (
             <div className="mt-8 border border-border bg-background">
               <div className="border-b border-border px-3 py-1.5 font-mono text-[11px] text-muted-foreground">
-                <span className="border-b-2 border-signal pb-1.5 text-foreground">pnpm</span>
+                <span className="border-b-2 border-signal pb-1.5 text-foreground">{defaultManager}</span>
               </div>
               <code className="block px-3 py-2.5 font-mono text-[13px] leading-[1.6]">
                 <span className="block text-muted-foreground">{runner}</span>

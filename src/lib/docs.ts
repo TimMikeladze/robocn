@@ -6844,6 +6844,363 @@ download(await encodeFrames(frames, "webp"), "robot-arm.webp")`,
       "Design note: docs/gym-machines.md.",
     ],
   },
+  {
+    slug: "carve-geometry", item: "carve-geometry", title: "Carve geometry", group: "Foundations",
+    summary:
+      "Outlines authored in shell coordinates and wrapped onto a lobed body of revolution, carved along their own perimeter, the plugs they free, the light that escapes through them, and a flame that answers to the draught.",
+    files: ["lib/robocn/carve.ts"],
+    api: [
+      { name: "shellAzimuth(u, spin?)", type: "(u: number, spin?: number) => number", description: "Shell `u` — degrees from the front of the machine, positive to starboard — as a `produce-geometry` azimuth. The front is -z, so u 0 is half a turn round." },
+      { name: "wrapOutline(profile, points, options?)", type: "(profile: ProduceProfile, points: ShellPoint[], options?: CarveOptions) => Vec3[]", description: "An outline sent through the same `profilePoint` the shell is drawn with, so it lands on the skin by construction, furrows and all." },
+      { name: "shellCut(profile, outline, options?)", type: "(profile: ProduceProfile, outline: CarveOutline, options?: ShellCutOptions) => ShellCut", description: "One opening: the rim on the skin, the plug a wall inside it, the outward normal, the perimeter, and the area measured on the wrapped polygon in world units." },
+      { name: "carveTrace(rim, progress)", type: "(rim: Vec3[], progress: number) => Vec3[]", description: "The part of a closed rim cut so far, ending exactly where the knife has reached. Nothing at 0; the loop closed at 1, and only then is the plug free." },
+      { name: "carveStage(index, count, progress, overlap?)", type: "(index: number, count: number, progress: number, overlap?: number) => number", description: "How far through its own cut one feature is when several are cut in turn over one progress. Sequential, with the next starting as the last plug drops." },
+      { name: "cutPerimeter(points)", type: "(points: Vec3[]) => number", description: "The length of a closed loop, including the edge back to where it started." },
+      { name: "wedgeCut(options)", type: "(options: WedgeOptions) => CarveOutline", description: "An eye or a nose: a regular fan of `sides` corners, scaled into its patch of shell and turned about its own centre." },
+      { name: "toothedMouth(options)", type: "(options: ToothedMouthOptions) => CarveOutline", description: "A grin: a band with `teeth` tabs left standing on each edge, the rows offset half a tooth so they interlock." },
+      { name: "scallopedRim(options)", type: "(options: ScallopedRimOptions) => CarveOutline", description: "A lid cut: a zig-zag ring with one notch at the front cut deeper than any scallop, so the lid seats in exactly one orientation." },
+      { name: "facePattern(name, options?)", type: `(name?: "classic" | "grin" | "scowl" | "sly", options?: FaceOptions) => CarveOutline[]`, description: "The four faces, composed from those generators in cut order — eyes first, mouth last. An unknown name falls back to the classic." },
+      { name: "lightThrough(apertures, flame, options)", type: "(apertures: CutAperture[], flame: number, options: ShellLightOptions) => ShellLight", description: "Open area over the area of the skin is what escapes; each opening takes its share by area and reaches √intensity of full range. No cuts, no light." },
+      { name: "flameAt(clock, options?)", type: "(clock: number, options?: FlameOptions) => FlameState", description: "The candle at `clock`: three incommensurate sines so the flicker never lands on a beat, leaning and gutting as the draught rises." },
+      { name: "pickShell(profile, project, target, options?)", type: "(profile: ProduceProfile, project: (p: Vec3) => Vec2, target: Vec2, options?: PickOptions) => ShellPick", description: "The projection run backwards: the point on the near face under a projected position, found by a coarse sweep that keeps several separated candidates and four halving refinements on each. Seeded with the last pick so a drag follows one branch instead of hopping across the limb, and it reports the distance it settled at rather than claiming a hit." },
+      { name: "strokeOutline(points, options?)", type: "(points: ShellPoint[], options?: StrokeOptions) => ShellPoint[]", description: "The outline a knife of some width leaves along a path across the skin: offset to both sides in a space where u and v are the same length, with a round cap at each end, so a tap is a disc and a drag is a slot." },
+      { name: "shellAspect(profile, v)", type: "(profile: ProduceProfile, v: number) => number", description: "How many degrees of azimuth are as long as one station at that height — the metric `strokeOutline` needs, taken from the shell rather than guessed." },
+      { name: "carveWindow(index, count, overlap?)", type: "(index: number, count: number, overlap?: number) => { start: number; end: number }", description: "The slice of progress one feature is cut over. What happens after a feature is finished — its plug dropping away — needs to know when that was." },
+    ],
+    notes: [
+      "Pure functions over plain objects: no React, no three.js, no dependencies.",
+      "Shell coordinates are `{u, v}` — u degrees of azimuth from the front, v the station on the profile — and world output is the set's own: x starboard, y up, z aft, the front at -z.",
+      "Areas are measured on the wrapped polygon rather than on the flat drawing, because the light downstream is paid for in those units.",
+      "No combustion model, no radiosity, and no thickness model beyond a constant wall.",
+    ],
+  },
+  {
+    slug: "jack-o-lantern", item: "jack-o-lantern", title: "Jack-o'-lantern", group: "Machines",
+    summary:
+      "A carved gourd lantern: a lobed shell on a scalloped lid and stem, a face cut one feature at a time with the plugs pushing out of it, a candle inside whose light is paid for by the openings, and every part coming off in the reverse of the order it was fitted.",
+    files: ["components/ui/jack-o-lantern.tsx"],
+    usage: `import { JackOLantern } from "@/components/ui/jack-o-lantern"
+
+// Carved and burning, which is what it does with nobody driving it.
+<JackOLantern />
+
+// Or watch it cut its own face.
+<JackOLantern behavior="carve" />
+
+// Or drive it, which stops the loop.
+<JackOLantern carve={0.6} onCarveChange={setCarve} interactive />
+
+// Take it apart: the stem, then the lid, then the candle.
+<JackOLantern carve={1} exploded={0.8} control="exploded" interactive />
+
+// Hand somebody a blank gourd and a knife, and let them turn it round.
+<JackOLantern face="blank" control="cut" interactive />`,
+    props: [
+      { name: "carve", type: "number", description: "How much of the face is cut, 0 uncarved to 1 finished. Features are cut one after another, and a plug only comes free when its own loop closes. Supplying it stops the loop." },
+      { name: "onCarveChange", type: "(carve: number) => void", description: "Fires while it is dragged or keyed, so interaction works in controlled mode too." },
+      { name: "exploded", type: "number", description: "The teardown, 0 seated to 1 every part clear — stem, then lid, then candle, in the reverse of the order they were fitted. At 0 every offset is exactly zero." },
+      { name: "onExplodedChange", type: "(exploded: number) => void", description: "Fires while the teardown is dragged or keyed." },
+      { name: "behavior", type: `"carve" | "flicker" | "teardown" | "static"`, default: `"flicker"`, description: "What it does with nobody driving it: cut the face, burn shut, come apart and back, or hold carved and still. The default is the finished machine burning, so a parked one is a carved lantern rather than a blank gourd." },
+      { name: "face", type: `"classic" | "grin" | "scowl" | "sly" | "blank"`, default: `"classic"`, description: "Which face is cut. Every feature is a generator call rather than a drawing, and `blank` is a gourd with nothing cut in it yet." },
+      { name: "strokes", type: "ShellStroke[]", description: "Cuts made by hand, each the path a knife took across the skin in shell coordinates. Supplying it takes control of them; leave it off and the machine keeps its own." },
+      { name: "onStrokesChange", type: "(strokes: ShellStroke[]) => void", description: "Fires when a hand cut is finished, taken back with backspace, or cleared with escape." },
+      { name: "nib", type: "number", default: "0.055", description: "How wide a cut the knife leaves, in stations. Clamped to 0.015..0.18." },
+      { name: "azimuth", type: "number", default: "0", description: "Degrees the camera swings round the machine, on top of `view`. Any angle at all, and it wraps." },
+      { name: "elevation", type: "number", default: "0", description: "Degrees the camera rises above the view's own elevation, clamped to ±88 — over the top, or up from under the floor." },
+      { name: "onOrbitChange", type: "({ azimuth, elevation }) => void", description: "Fires while the machine is being turned, by drag or by arrow key." },
+      { name: "teeth", type: "number", default: "4", description: "Teeth left standing in the mouth, clamped to 1..9." },
+      { name: "lobes", type: "number", default: "9", description: "Ribs round the shell, clamped to 5..13. The cuts ride the furrows they cross." },
+      { name: "flame", type: "number", description: "Controlled flame, 0 out to 1 full. Left off, the candle flickers on its own and leans when the lid comes off." },
+      { name: "lit", type: "boolean", default: "true", description: "Blow the candle out without taking it away." },
+      { name: "control", type: `"cut" | "orbit" | "carve" | "exploded"`, default: `"cut"`, description: "What a drag does. `cut` puts a knife on the shell and cuts wherever it is dragged; `orbit` turns the machine; the other two hold the preset carve or the teardown, the way the rest of the set's machines hold a channel. Holding shift swaps the knife for the turntable." },
+      { name: "interactive", type: "boolean", default: "false", description: "Hand it to a person: drag it, or focus it and use the arrow keys. It eases back into the behaviour on release." },
+      { name: "showGround", type: "boolean", default: "true", description: "Draw the contact shadow, and the pool of light the openings throw on it." },
+      { name: "label", type: "string", description: "Optional technical caption under the drawing." },
+      view("front", "machine"),
+      { name: "speed", type: "number", default: "0.32", description: "Cycles per second: one carve, or one teardown. The candle flickers seven times faster." },
+      ...loop,
+      ...form.slice(0, 2),
+      ...palette,
+    ],
+    notes: [
+      "Carving is not limited to the faces it ships with: with `control=\"cut\"` a drag puts a knife on the shell wherever the pointer is. The pointer is put *back* on the skin — the projection run backwards by search rather than by formula — so a cut follows the surface it is over, round the curve and across the ribs, and the light comes out of whatever was cut. Backspace takes back the last cut and escape clears them.",
+      "It turns all the way round in any direction. `view` still names the camera the machine is drawn from; `azimuth` and `elevation` move from there, and because it is one camera every hidden-line cull, depth sort and projected cut follows it — there is no second drawing for the back.",
+      "The face is cut out of the shell rather than drawn on it. Each feature is an outline in shell coordinates — degrees of azimuth from the front, station up the profile — wrapped onto the lobed surface of revolution, so an eye rides the furrows it crosses and is the right size on a curved skin rather than on a flat drawing.",
+      "Carving is progress along a perimeter: the knife goes in at one point and travels round, and until the loop closes the plug is still shell. That is why a half-carved eye is a scored arc with a tool at its end and not a faded triangle.",
+      "The light is paid for by the holes. Open area over the area of the skin is the share of the candle that gets out at all, and each opening divides that light by its own area and throws the square root of what it gets — so the mouth reaches further than an eye without being brighter per square unit. An uncarved shell emits nothing however hard the candle burns.",
+      "Taking the lid off is a draught: the flame leans, shortens and dims, and most of the light then goes up out of the neck instead of through the face.",
+      "Solved: the shell, the wrapped cuts, the carve, the plug offsets, the escaping light and its reach, the flame, and the teardown schedule. Illustrated: the glow inside the shell, the bloom at each opening, the wax and the stem's curl. There is no combustion model and no collision model — a plug passes through whatever is in its way, as in any exploded drawing.",
+    ],
+  },
+  {
+    slug: "sport-geometry", item: "sport-geometry", title: "Sport geometry", group: "Foundations",
+    summary:
+      "The kit a game is played with: the sphere and its seams, the puck, and the four dynamics that make five objects behave unlike one another — restitution bounce, Magnus curve, Coulomb slide, and the bat-ball collision.",
+    files: ["lib/robocn/sport.ts"],
+    api: [
+      { name: "spinFrame(axis, turns, base?)", type: "(axis: Partial<Vec3>, turns: number, base?: SurfaceFrame) => SurfaceFrame", description: "The frame a body reaches after `turns` revolutions about `axis`. Revolutions, because that is what a spin rate gives once it has met a clock." },
+      { name: "sphereSilhouette(radius, viewDir, steps?)", type: "(radius: number, viewDir: Vec3, steps?: number) => Vec3[]", description: "The outline, exactly: the great circle perpendicular to the view." },
+      { name: "surfaceCurve(frame, radius, dirs, viewDir)", type: "(frame, radius, dirs: Vec3[], viewDir) => SurfaceMark[]", description: "A curve of unit directions carried onto the ball, each point carrying the sign of its own normal against the camera." },
+      { name: "visibleRuns(marks, closed?)", type: "(marks: SurfaceMark[], closed?: boolean) => SurfaceMark[][]", description: "Splits a ring into the runs the camera can see, so the far half is never painted over the near one." },
+      { name: "clipToLimb(direction, viewDir)", type: "(direction: Vec3, viewDir: Vec3) => Vec3", description: "Pulls a direction that has gone round the back onto the limb, which is how a panel straddling the horizon is clipped rather than folded." },
+      { name: "baseballSeam(shape?, steps?)", type: "(shape?: number, steps?: number) => Vec3[]", description: "The figure-eight, lying exactly on the unit sphere for every t at every shape ratio — `x = a cos t + b cos 3t`, `y = a sin t − b sin 3t`, `z = 2√(ab) sin 2t`." },
+      { name: "basketballSeams(amplitude?, steps?)", type: "(amplitude?: number, steps?: number) => Vec3[][]", description: "Two orthogonal great circles and one wavy closed curve: four lunes, eight panels, three curves." },
+      { name: "soccerPanels(detail?)", type: "(detail?: number) => SpherePanel[]", description: "The truncated icosahedron, built rather than drawn: 12 pentagons and 20 hexagons, pushed onto the sphere and subdivided along great circles." },
+      { name: "puckRim / puckSilhouette", type: "(frame, shape, …) => Vec3[] | Vec2[]", description: "A cylinder's two rims, and the convex hull of them projected — which is its exact outline from any angle." },
+      { name: "bounceAt(time, options)", type: "(time: number, options?: BounceOptions) => BounceState", description: "The restitution ladder in closed form: every apex is the last one times e², so any instant can be asked for without running the ones before it." },
+      { name: "bounceDuration(options?)", type: "(options?: BounceOptions) => number", description: "When it stops bouncing: `t₀(1 + e)/(1 − e)`, exactly." },
+      { name: "dribbleAt(cycle, options?)", type: "(cycle: number, options?: DribbleOptions) => DribbleState", description: "The periodic bounce — the exact constant-gravity parabola, rewritten in cycles — plus where the paddle has to be to meet it." },
+      { name: "contactSquash(contact, impact, …)", type: "(contact: number, impact: number, reference?, most?) => number", description: "How flat it goes at contact. Illustration: impact speed against a reference, not a deformation model." },
+      { name: "flightAt(time, options?)", type: "(time: number, options?: FlightOptions) => FlightState", description: "Gravity plus a Magnus term held at its release value, so the whole flight is one quadratic. Returns the position, the break off the spinless line, and the turns racked up." },
+      { name: "pitchSpin(pitch)", type: "(pitch: PitchName) => PitchSpin", description: "A rate and an axis, and nothing else: fastball, curveball, slider, sinker, knuckler." },
+      { name: "rollTurns(distance, radius)", type: "(distance: number, radius: number) => number", description: "Rolling without slipping, which is the whole of `θ = s / r`." },
+      { name: "slideTrack(options?)", type: "(options?: SlideOptions) => SlideTrack", description: "The whole slide solved once. Coulomb friction is a constant μg, so the distance left is `v²/2μg` and a board that takes e of the speed takes e² of it." },
+      { name: "slideAt(track, time, spin?)", type: "(track: SlideTrack, time: number, spin?: number) => SlideState", description: "Where along that track the puck is, and how fast it is still going." },
+      { name: "effectiveMass(bat, contact)", type: "(bat: Partial<BatGeometry>, contact: number) => number", description: "`1/M = 1/m + d²/I` — the mass the ball actually meets, which collapses away from the centre of mass." },
+      { name: "swingImpact(options?) / sweetSpot(options?)", type: "(options?: ImpactOptions) => ImpactResult | { contact, exitSpeed }", description: "The collision itself, and where on the barrel it does its best work — found by sampling, not declared." },
+      { name: "swingAngle(phase, from?, to?, contactAt?)", type: "(phase: number, from?, to?, contactAt?) => number", description: "The sweep: a long load, a fast pass through the zone, a follow-through that slows. The phase is clamped, not wrapped." },
+      { name: "defaultBall / defaultPuck / defaultBat / defaultRink", type: "const", description: "The dimensions the family ships with." },
+    ],
+    notes: [
+      "Pure functions over plain objects: no React, no three.js, no dependencies.",
+      "There is no air in here. Nothing has drag, no spin decays, and the Magnus term is held at its release value — a curve is a constant-acceleration approximation of a flight that really is not one.",
+      "Contact is a coefficient, not a deformation: `contactSquash` is illustration, and the boards are a specular reflection, so a puck never leaves one at an angle it did not arrive at.",
+      "Lengths are in whatever units the caller draws in; `gravity` is in those units per second squared. Angles are degrees on the surface and radians inside.",
+    ],
+  },
+  {
+    slug: "robot-baseball", item: "robot-baseball", title: "Robot baseball", group: "Robots",
+    summary:
+      "The ball as a sphere with a real seam: the figure-eight is a closed curve lying exactly on the surface, so spin carries it round the back instead of sliding it across the front.",
+    files: ["components/ui/robot-baseball.tsx"],
+    usage: `import { RobotBaseball } from "@/components/ui/robot-baseball"
+
+// Each pitch is a spin rate and an axis, and the break follows.
+<RobotBaseball behavior="curveball" view="front" />
+
+// Or walk it down the flight yourself, which stops the loop.
+<RobotBaseball along={0.6} onAlongChange={setAlong} interactive />`,
+    props: [
+      { name: "along", type: "number", description: "Where the ball is, 0 at release and 1 at the plate. Supplying it stops the loop." },
+      { name: "onAlongChange", type: "(along: number) => void", description: "Fires while it is dragged or keyed, so interaction works in controlled mode too." },
+      { name: "behavior", type: `"fastball" | "curveball" | "slider" | "sinker" | "knuckler" | "spin" | "static"`, default: `"fastball"`, description: "Which pitch it throws with nobody driving it. Each one is a spin rate and an axis; everything else follows." },
+      { name: "interactive", type: "boolean", default: "false", description: "Hand it to a person: drag across to walk the ball down the flight, or focus it and use the arrow keys." },
+      { name: "showPath", type: "boolean", default: "true", description: "Draw the solved flight, and the same pitch with the spin taken out. The gap between them is the break." },
+      { name: "seam", type: "boolean", default: "true", description: "Draw the figure-eight seam, culled to the half the camera can see." },
+      { name: "showGround", type: "boolean", default: "true", description: "Draw the ground line, home plate and the contact shadow." },
+      { name: "label", type: "string", description: "Optional technical caption under the drawing." },
+      view("profile", "ball"),
+      { name: "speed", type: "number", default: "0.5", description: "Pitches per second." },
+      ...loop,
+      ...form.slice(0, 2),
+      ...palette,
+    ],
+    notes: [
+      "Solved: the seam, which lies exactly on the sphere and is culled by its own normal; the silhouette; and the flight, which is gravity plus `(S/m)(ω × v)`. The dashed line is the same pitch with the spin set to zero, so the break is measured rather than typed.",
+      "Illustrated: nothing about the ball, and everything about the air. There is no drag and no spin decay, and the Magnus term is held at its release value — which makes the whole flight one quadratic. Over the sixty feet this is drawn at, that is smaller than the seam it is drawn with.",
+      "`front` is the batter's view, and the one worth looking at: a curveball's dive and a slider's sideways break only separate from a fastball when the flight is coming at you.",
+    ],
+  },
+  {
+    slug: "batting-rig", item: "batting-rig", title: "Batting rig", group: "Robots",
+    summary:
+      "A bat on a solved swing arc meeting a pitched ball, with the collision itself solved: effective mass falls away from the sweet spot, so contact off the end hands the ball back less than it brought.",
+    files: ["components/ui/batting-rig.tsx"],
+    usage: `import { BattingRig } from "@/components/ui/batting-rig"
+
+// Where it stands decides where on the barrel the ball arrives.
+<BattingRig stance={34} swingRate={0.9} />
+
+// Or walk the bat through the zone yourself, which stops the loop.
+<BattingRig swing={0.52} onSwingChange={setSwing} interactive />`,
+    props: [
+      { name: "swing", type: "number", description: "Phase through the swing, 0 at the load and 1 through the follow. Supplying it stops the loop." },
+      { name: "onSwingChange", type: "(swing: number) => void", description: "Fires while it is dragged or keyed, so interaction works in controlled mode too." },
+      { name: "behavior", type: `"swing" | "load" | "check" | "static"`, default: `"swing"`, description: "What it does with nobody driving it. `load` and `check` both hold short of contact." },
+      { name: "stance", type: "number", default: "34", description: "How far the rig stands off the line, 22 to 44. This is the mechanism: the bat crosses the line at one angle only, so where it stands decides where on the barrel the ball arrives." },
+      { name: "swingRate", type: "number", default: "0.9", description: "Revolutions a second through the zone. It moves the sweet spot, because the barrel's speed is ω·r." },
+      { name: "showSweetSpot", type: "boolean", default: "true", description: "Ring the contact that would do the most with this swing, and dot the one it is actually making." },
+      { name: "showBall", type: "boolean", default: "true", description: "Draw the ball on its line in, and on the exit ray out." },
+      { name: "interactive", type: "boolean", default: "false", description: "Hand it to a person: drag across to walk the bat through the zone, or focus it and use the arrow keys." },
+      { name: "label", type: "string", description: "Optional technical caption under the drawing." },
+      view("plan", "machine"),
+      { name: "speed", type: "number", default: "0.5", description: "Swings per second." },
+      ...loop,
+      ...form.slice(0, 2),
+      ...palette,
+    ],
+    notes: [
+      "Solved: the collision. `1/M = 1/m + d²/I` is the mass the ball meets, `v_bat = ω·r` is what the barrel is doing, and `v_out = ((e·M − m)·v_pitch + M(1 + e)·v_bat)/(M + m)` is what the ball leaves with. The sweet spot is where that peaks, found by sampling the barrel rather than declared — move the swing rate and it moves.",
+      "Solved too: the contact point, which follows from geometry alone. The bat can cross the line at exactly one angle, so `r·cos θ = −stance`, and standing closer jams it on the handle while standing off puts it on the end. The exit ray leaves along the face normal, which is the direction the barrel is travelling.",
+      "Illustrated: the shape of the swing through the zone, which is an eased sweep and not a torque model; and the ball's line in, which is straight because a pitch is `robot-baseball`'s job.",
+    ],
+  },
+  {
+    slug: "robot-basketball", item: "robot-basketball", title: "Robot basketball", group: "Robots",
+    summary:
+      "Eight panels cut by two great circles and one wavy seam, on a ball that bounces by closed-form restitution rather than a tween: every apex is the last one times e squared.",
+    files: ["components/ui/robot-basketball.tsx"],
+    usage: `import { RobotBasketball } from "@/components/ui/robot-basketball"
+
+// The whole decay, played out over one cycle.
+<RobotBasketball behavior="drop" />
+
+// Or pick the ball up, which stops the loop.
+<RobotBasketball height={0.8} onHeightChange={setHeight} interactive />`,
+    props: [
+      { name: "height", type: "number", description: "Height off the floor, 0 down and 1 at the apex. Supplying it stops the loop." },
+      { name: "onHeightChange", type: "(height: number) => void", description: "Fires while it is dragged or keyed, so interaction works in controlled mode too." },
+      { name: "behavior", type: `"dribble" | "travel" | "drop" | "spin" | "static"`, default: `"dribble"`, description: "What it does with nobody driving it. `drop` runs the whole restitution ladder down; `dribble` is the periodic version with a paddle putting the energy back." },
+      { name: "interactive", type: "boolean", default: "false", description: "Hand it to a person: drag up and down to pick the ball up, or focus it and use the arrow keys. Let go and it falls back into the bounce." },
+      { name: "seams", type: "boolean", default: "true", description: "Draw the three curves that cut the eight panels, culled to the half the camera can see." },
+      { name: "showGround", type: "boolean", default: "true", description: "Draw the floor line and the contact shadow, which tightens as the ball comes down." },
+      { name: "label", type: "string", description: "Optional technical caption under the drawing." },
+      view("profile", "ball"),
+      { name: "speed", type: "number", default: "0.9", description: "Bounces per second." },
+      ...loop,
+      ...form.slice(0, 2),
+      ...palette,
+    ],
+    notes: [
+      "Solved: the panels, which are three closed curves on the surface rather than artwork — two orthogonal great circles cut four lunes, and one wavy curve splits each of them. And the bounce, which is the restitution ladder in closed form: apex n is `drop·e^2n` and flight n is `e` times the one before, so the ball can be asked where it is at any instant without having run the instants before it.",
+      "Illustrated: the squash at contact, which is impact speed against a reference rather than a contact-patch model; and the energy hand-back in `dribble` and `travel`, where each bounce comes back to the same apex. `dribble` at least draws the paddle doing it; `drop` is the one that takes nothing back.",
+      "Nothing here spins for a reason — the ball turns at a rate, it is not solved from the contact. `robot-soccer-ball` is the one that ties its turn to its travel.",
+    ],
+  },
+  {
+    slug: "robot-soccer-ball", item: "robot-soccer-ball", title: "Robot soccer ball", group: "Robots",
+    summary:
+      "A truncated icosahedron inflated onto the sphere: twelve pentagons and twenty hexagons built from the solid, culled by their own normals, and rolled without slipping so the panels turn because it travelled.",
+    files: ["components/ui/robot-soccer-ball.tsx"],
+    usage: `import { RobotSoccerBall } from "@/components/ui/robot-soccer-ball"
+
+// A standing spin axis puts the Magnus term sideways.
+<RobotSoccerBall behavior="bend" view="plan" />
+
+// Or roll it yourself — the panels turn exactly as far as it moved.
+<RobotSoccerBall travel={0.72} onTravelChange={setTravel} interactive />`,
+    props: [
+      { name: "travel", type: "number", description: "How far across it has rolled, 0 to 1. Supplying it stops the loop, and the turn still follows the travel." },
+      { name: "onTravelChange", type: "(travel: number) => void", description: "Fires while it is dragged or keyed, so interaction works in controlled mode too." },
+      { name: "behavior", type: `"roll" | "bend" | "juggle" | "spin" | "static"`, default: `"roll"`, description: "What it does with nobody driving it." },
+      { name: "interactive", type: "boolean", default: "false", description: "Hand it to a person: drag left and right to roll it, or focus it and use the arrow keys." },
+      { name: "showPath", type: "boolean", default: "true", description: "On `bend`, draw the kick and the same kick with the spin taken out." },
+      { name: "panels", type: "boolean", default: "true", description: "Draw the 32 panels, culled by their own normals and clipped onto the limb." },
+      { name: "showGround", type: "boolean", default: "true", description: "Draw the ground line and the contact shadow." },
+      { name: "label", type: "string", description: "Optional technical caption under the drawing." },
+      view("profile", "ball"),
+      { name: "speed", type: "number", default: "0.35", description: "Cycles per second." },
+      ...loop,
+      ...form.slice(0, 2),
+      ...palette,
+    ],
+    notes: [
+      "Solved: the ball itself. Truncating a regular icosahedron at exactly a third of every edge puts all sixty vertices the same distance from the centre, which is what makes the Archimedean solid; pushed onto the sphere and subdivided along great circles, the panels bulge the way an inflated one's do. Each carries its own normal, so the far side is culled and a panel over the horizon is clipped onto the limb rather than folded across the front.",
+      "Solved: the roll. `θ = s / r`, so the panels come round *because* the ball travelled, and rolling it backwards unrolls them. That holds under the controlled prop and under your finger, not only in the loop.",
+      "Illustrated: the air, as everywhere in this family. `bend` holds the Magnus term at its release value, so the kick is one quadratic; a real ball's spin decays and its drag curves the path, and neither is modelled.",
+    ],
+  },
+  {
+    slug: "robot-hockey-puck", item: "robot-hockey-puck", title: "Robot hockey puck", group: "Robots",
+    summary:
+      "A cylinder on ice: Coulomb friction is a constant deceleration, so the slide is exact and the puck stops where the maths says. The boards reflect it, and the silhouette is the hull of its two rims.",
+    files: ["components/ui/robot-hockey-puck.tsx"],
+    usage: `import { RobotHockeyPuck } from "@/components/ui/robot-hockey-puck"
+
+// Move the aim and the whole track re-solves, boards and all.
+<RobotHockeyPuck behavior="slap" heading={24} />
+
+// Or walk the puck along its own track, which stops the loop.
+<RobotHockeyPuck along={0.46} onAlongChange={setAlong} interactive />`,
+    props: [
+      { name: "along", type: "number", description: "Where along the solved track the puck is, 0 to 1. Supplying it stops the loop." },
+      { name: "onAlongChange", type: "(along: number) => void", description: "Fires while it is dragged or keyed, so interaction works in controlled mode too." },
+      { name: "behavior", type: `"slap" | "wrist" | "dump" | "spin" | "static"`, default: `"slap"`, description: "Which shot it takes with nobody driving it: how hard, off how many boards, and how much ice it has." },
+      { name: "heading", type: "number", description: "Degrees off straight up the ice, −80 to 80. The whole track re-solves around it — every reflection, and the point it runs out of ice." },
+      { name: "interactive", type: "boolean", default: "false", description: "Hand it to a person: drag across to walk the puck along its track, or focus it and use the arrow keys." },
+      { name: "showTrack", type: "boolean", default: "true", description: "Draw the solved track and the point friction stops it at." },
+      { name: "showRink", type: "boolean", default: "true", description: "Draw the ice, the boards, the centre line and the goal mouth." },
+      { name: "label", type: "string", description: "Optional technical caption under the drawing." },
+      view("plan", "machine"),
+      { name: "speed", type: "number", default: "0.32", description: "Shots per second." },
+      ...loop,
+      ...form.slice(0, 2),
+      ...palette,
+    ],
+    notes: [
+      "Solved: the silhouette, which is the convex hull of the two rims projected — exact face-on, exact edge-on and exact everywhere between, with nothing special-cased. Tip the camera and the disc becomes the slab because it is the same two rims.",
+      "Solved: the slide. Coulomb friction decelerates by `μg` whatever the speed, so the distance left is exactly `v²/2μg`, and a board that takes `e` of the speed therefore takes `e²` of the distance left. Every leg and every reflection is closed form; the clock only says where along the track the puck is.",
+      "Illustrated: the spin, which bleeds off in proportion to the speed rather than being solved from a moment; and the boards, which are a specular reflection, so a puck never leaves one at an angle it did not arrive at.",
+    ],
+  },
+  {
+    slug: "construct-geometry", item: "construct-geometry", title: "Construct geometry", group: "Foundations",
+    summary:
+      "Reads a freehand stroke — resampled by arc length, measured into a frame, classified into an archetype — and forges it into a filled construct, with the draw it costs.",
+    files: ["lib/robocn/construct.ts"],
+    api: [
+      { name: "resampleStroke(points, count?)", type: "(points: Vec2[], count?: number) => Vec2[]", description: "The stroke, evenly spaced by arc length. A pointer emits points at its own rate, so nothing downstream can be trusted until this has run. Non-finite points are dropped and a click comes back as a point rather than a division by zero." },
+      { name: "strokeFrame(points, count?)", type: "(points: Vec2[], count?: number) => StrokeFrame", description: "Centroid, the principal axis from the samples' covariance, the spans along and across it, path length, closure, enclosed area, circularity 4πA/P², corner count and total turning. Never returns NaN." },
+      { name: "classifyStroke(frame)", type: "(frame: StrokeFrame) => StrokeVerdict", description: "Which construct the stroke is asking for, with a score for every archetype so a near miss reads as a near miss. It always names one." },
+      { name: "constructOutline(archetype, frame?, options?)", type: "(archetype: ConstructArchetype, frame?: StrokeFrame, options?: { scale?: number }) => Vec2[]", description: "The archetype fitted to the stroke's frame: scaled to its spans, turned onto its principal axis, centred on its centroid. An unknown archetype falls back to a bubble." },
+      { name: "constructLattice(outline, options)", type: "(outline: Vec2[], options: { spacing: number; angle?: number }) => [Vec2, Vec2][]", description: "The fill lines, each one the real intersection of the outline with a line at the given rake, so the hatch follows the shape. A spacing that could not terminate returns nothing." },
+      { name: "constructCost(outline)", type: "(outline: Vec2[]) => number", description: "What holding the construct draws from the reserve, 0 to 1, proportional to the area it encloses." },
+      { name: "constructSettle(age, duration)", type: "(age: number, duration: number) => number", description: "How solid a construct is at `age`: in over the first fifth, held, let go over the last third, and nothing outside its own life." },
+      { name: "forgeConstruct(points, options?)", type: "(points: Vec2[], options?: ForgeOptions) => ForgedConstruct", description: "A raw pointer path all the way to something drawable: frame, verdict, outline, lattice and cost." },
+      { name: "polygonArea(points)", type: "(points: Vec2[]) => number", description: "Shoelace area, 0 for anything that is not a polygon." },
+      { name: "constructArchetypes", type: "readonly ConstructArchetype[]", description: "bubble, shield, cage, glove, hammer, bridge, claw." },
+    ],
+    notes: [
+      "Pure functions over plain objects: no React, no three.js, no dependencies.",
+      "The measurement and the classification are solved; the archetype outlines are drawings — a glove is a glove because it is drawn as one, not because a fist was solved.",
+      "No stroke is kept. What survives a gesture is the seven numbers of its frame.",
+    ],
+  },
+  {
+    slug: "construct-ring", item: "construct-ring", title: "Construct ring", group: "Machines",
+    summary:
+      "A signet emitter ring: a lit bezel over a knurled band, a teardown in fitting order, and a forge that turns a stroke you draw into a construct of solid light.",
+    files: ["components/ui/construct-ring.tsx"],
+    usage: `import { ConstructRing } from "@/components/ui/construct-ring"
+
+// Turn it with a drag or the arrow keys, and draw on it: a round loop is a
+// bubble, a long stroke a hammer, a stubby one a glove.
+<ConstructRing drawable onConstructChange={(c) => console.log(c.archetype)} />
+
+// Or command the camera, anywhere on the sphere.
+<ConstructRing azimuth={70} elevation={-25} onOrbitChange={setOrbit} />
+
+// Or drive it, which stops the cycle.
+<ConstructRing construct="glove" reserve={0.8} exploded={0.4} view="iso" />`,
+    props: [
+      { name: "reserve", type: "number", description: "Controlled reserve, 0 spent to 1 charged. Supplying it stops the loop." },
+      { name: "onReserveChange", type: "(reserve: number) => void", description: "Fires while it is dragged or keyed, so interaction works in controlled mode too." },
+      { name: "construct", type: `"bubble" | "shield" | "cage" | "glove" | "hammer" | "bridge" | "claw" | null`, description: "Controlled construct; null holds none. Supplying it stops the cycle. A drawn stroke still wins over it." },
+      { name: "onConstructChange", type: "(report: { archetype, cost, frame }) => void", description: "Fires whenever a stroke is forged, with what it was read as, what it costs and the frame it was measured into." },
+      { name: "behavior", type: `"conjure" | "charge" | "flare" | "idle" | "static"`, default: `"conjure"`, description: "Conjure cycles the archetypes; charge fills the reserve and forges nothing; flare holds one construct and pulses; idle breathes." },
+      { name: "exploded", type: "number", default: "0", description: "Take the ring apart, 0 seated to 1 clear. At 0 every part is exactly where it was fitted." },
+      { name: "drawable", type: "boolean", default: "false", description: "Hand the field to a person: drag to draw a stroke and it is forged on release. Enter forges the next archetype, Escape clears — the keyboard path to the same feature." },
+      { name: "interactive", type: "boolean", default: "false", description: "Makes the ring a slider over its own reserve: drag it, or focus it and use the arrow keys. With `drawable` on, a gesture starting on the ring adjusts the reserve and one starting in the field forges." },
+      { name: "rotatable", type: "boolean", default: "true", description: "Turn the ring with a drag, a finger or the arrow keys: right round, over the pole and down the far side. Home returns to the named view. While it is on, the slider role reports the camera rather than the reserve." },
+      { name: "azimuth / elevation", type: "number", description: "Controlled camera in degrees. Either one turns the ring to that angle and `view` only names the drawing plane. Azimuth wraps at 360; elevation past 90 carries over the pole instead of stopping." },
+      { name: "onOrbitChange", type: "({ azimuth, elevation }) => void", description: "Fires on every turn, in controlled mode too, with the angles already wrapped back onto the sphere." },
+      { name: "showField", type: "boolean", default: "true", description: "The frame and corner ticks of the field constructs are forged in." },
+      { name: "showGround", type: "boolean", default: "true", description: "Draw the contact shadow and the ground line beneath it." },
+      { name: "label", type: "string", description: "Optional technical caption under the drawing." },
+      view("iso", "ring"),
+      { name: "speed", type: "number", default: "0.5", description: "Cycles per second." },
+      ...loop,
+      ...form.slice(0, 2),
+      ...palette,
+    ],
+    notes: [
+      "Solved: the stroke frame (centroid, principal axis, spans, closure, area, circularity, corners), the classifier that reads an archetype out of it, the outline's fit to that frame, the scanline lattice that fills it, the draw it costs, and the explode schedule. All of it is `construct-geometry`, tested on its own.",
+      "Illustrated: the archetype outlines themselves — a glove is a glove because it is drawn as one — plus the glow, the emission column, the knurl and the crystal. There is no physics on a construct: nothing swings, nothing collides, nothing has mass.",
+      "Turning is a camera move, not a second drawing: `azimuth` and `elevation` go straight to `robotCameraAt`, so every angle on the sphere is the same geometry the four named views are. The camera has no roll axis, so a drag that carries over the pole comes down the far side upright.",
+      "The ring is projected; the construct is not. The ring is modelled once in world units and pushed through `robotCamera`, so all four cameras are the same geometry. A construct lives in the picture plane and does not rotate with the camera, because the stroke that made it was drawn there.",
+      "An original archetype: a generic signet emitter. The face is an abstract iris — a bore, four radial inlays and a spiral gauge — and carries no insignia from anywhere.",
+    ],
+  },
 ]
 /**
  * Which group a registry item lands in when nobody has written its page yet.

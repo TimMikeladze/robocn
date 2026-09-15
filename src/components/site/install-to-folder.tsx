@@ -4,7 +4,7 @@
  * Installing without a CLI.
  *
  * `public/r/<item>.json` already carries every file's contents inline and a
- * shadcn `target` alias, so everything `npx shadcn@latest add` does with that
+ * shadcn `target` alias, so everything `shadcn@latest add` does with that
  * file, this page can do: follow `registryDependencies` to a closure, read the
  * receiving project's `components.json` for its aliases, and write.
  *

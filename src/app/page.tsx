@@ -1,12 +1,15 @@
 import Link from "next/link"
+import { ArrowRight } from "lucide-react"
 
 import { Catalogue, type CatalogueCard } from "@/components/site/catalogue"
 import { HeroArm } from "@/components/site/hero-arm"
+import { HowItWorks } from "@/components/site/how-it-works"
 import { RobotExport } from "@/components/ui/robot-export"
 import { InstallCommand } from "@/components/site/install-command"
 import { Panel } from "@/components/site/panel"
 import { VariantStrip } from "@/components/site/variant-strip"
 import { Button } from "@/components/ui/button"
+import { rail } from "@/components/site/rail"
 import { docGroups, docs } from "@/lib/docs"
 
 /**
@@ -22,18 +25,24 @@ const cards: CatalogueCard[] = docGroups.flatMap((group) =>
     .map(({ slug, title, summary }) => ({ slug, title, group, summary })),
 )
 
-const facts = [
-  { value: String(cards.length), label: "registry items" },
-  { value: "0", label: "dependencies in the solver" },
-  { value: "8", label: "end effectors" },
-  { value: "2D + 3D", label: "same kinematics" },
-]
-
 export default function Home() {
   return (
-    <div className="mx-auto max-w-6xl px-5">
+    <div className={rail}>
       <section className="grid items-center gap-8 py-12 md:grid-cols-[1fr_1fr] md:py-20">
         <div className="space-y-6">
+          {/* Above the headline, pointing at the thing the site under-sells.
+              Deliberately not a "new in vX" badge: that goes stale the week
+              after it ships and nobody remembers to take it down. */}
+          <Link
+            href="/workbench"
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-panel py-1 pr-3 pl-1 text-[12.5px] text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-foreground"
+          >
+            <span className="rounded-full bg-foreground px-2 py-0.5 text-[11px] font-medium text-background">
+              Workbench
+            </span>
+            Every machine, with its controls
+            <ArrowRight className="size-3" aria-hidden />
+          </Link>
           <h1 className="text-4xl leading-[1.05] font-semibold tracking-tight sm:text-5xl">
             Robot components for shadcn/ui
           </h1>
@@ -67,14 +76,7 @@ export default function Home() {
         </Panel>
       </section>
 
-      <section className="grid grid-cols-2 gap-px border border-border bg-border lg:grid-cols-4">
-        {facts.map((fact) => (
-          <div key={fact.label} className="bg-panel px-4 py-5">
-            <div className="font-mono text-2xl">{fact.value}</div>
-            <div className="mt-1 text-[13px] text-muted-foreground">{fact.label}</div>
-          </div>
-        ))}
-      </section>
+      <HowItWorks />
 
       {/* Anchored: the docs link here, and `pnpm shots` scrolls to it. */}
       <section id="catalogue" className="scroll-mt-20 space-y-4 py-14">
