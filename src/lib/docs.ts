@@ -6804,6 +6804,46 @@ download(await encodeFrames(frames, "webp"), "robot-arm.webp")`,
       "Design note: docs/gym-machines.md.",
     ],
   },
+  {
+    slug: "rowing-erg", item: "rowing-erg", title: "Rowing erg", group: "Machines",
+    summary:
+      "An air flywheel on a one-way clutch: drag goes as the square of rim speed, the damper vent sets the drag factor, and the drive spins it up while the recovery coasts it down.",
+    files: ["components/ui/rowing-erg.tsx"],
+    usage: `import { RowingErg } from "@/components/ui/rowing-erg"
+
+// Runs its own stroke.
+<RowingErg behavior="row" />
+
+// Open the damper and the drag factor goes up with it.
+<RowingErg vent={1} />
+
+// Or drive the stroke, which stops the loop.
+<RowingErg strokePhase={0.3} onStrokePhaseChange={setStrokePhase} interactive />`,
+    props: [
+      { name: "strokePhase", type: "number", description: "Where in the stroke it is: 0 at the catch, round to 1 at the next. Supplying it stops the loop." },
+      { name: "onStrokePhaseChange", type: "(strokePhase: number) => void", description: "Fires while it is dragged or keyed, so interaction works in controlled mode too." },
+      { name: "behavior", type: `"row" | "sprint" | "paddle" | "static"`, default: `"row"`, description: "What it does with nobody driving it. These differ by rate, which is a physical difference: the drag factor belongs to the vent, so rowing harder changes the speed and the force goes as the square of it." },
+      { name: "vent", type: "number", default: "0.5", description: "The damper vent, 0 shut to 1 wide open: how much air reaches the cage. It sets the drag coefficient, and so the drag factor." },
+      { name: "showChain", type: "boolean", default: "true", description: "Draw the chain, which is painted in the accent colour only while the clutch is actually driving the wheel." },
+      { name: "interactive", type: "boolean", default: "false", description: "Hand it to a person: drag across it, or focus it and use the arrow keys. It eases back into the behaviour on release." },
+      { name: "showGround", type: "boolean", default: "true", description: "Draw the contact shadow and the ground line beneath it." },
+      { name: "label", type: "string", description: "Optional technical caption under the drawing." },
+      view("profile", "machine"),
+      { name: "speed", type: "number", default: "0.4", description: "Strokes per second, and a real rate: the dynamics are solved at it, so pulling the speed up makes the handle heavier." },
+      ...loop,
+      ...form.slice(0, 2),
+      ...palette,
+    ],
+    notes: [
+      "Solved: the drag. A fan flywheel is retarded by k·ω², and the vent sets k, so the drag factor k / I — the number a rower reads off a monitor — is the vent's and nothing else's.",
+      "Solved: the clutch. While the chain is faster than the rim the wheel is driven and the handle holds k·ω² / sprocket, which is why an erg gets harder the faster it is pulled rather than the further. Below rim speed the clutch lets go and the wheel coasts on dω/dt = −k·ω²/I.",
+      "Solved: where the fan is. Its angle is the integral of its own speed, so it spins up through the drive and runs down through the recovery instead of turning at a rate somebody picked.",
+      "Solved: the counter-travel. The slide is still coming forward at the catch when the chain has already gone taut, so the handle and the seat travel opposite ways for a few percent of the cycle. The solver measures that window off its own samples; the two arrows turn accent when it is open.",
+      "`solveErgCycle` integrates one stroke repeatedly until the speed it starts at is the speed it ends at, so what is drawn is the machine's steady state and not a spin-up. The component memoises the cycle on the geometry and samples it by phase, which is what keeps every behaviour a pure function of the clock.",
+      "Illustrated: there is no rower. The handle and seat schedules are chosen ramps with the sequencing a coach would recognise — legs, body, arms, and the reverse coming back — and everything downstream of them is integrated from those ramps. No bearing friction, no chain mass, no stretch.",
+      "Design note: docs/gym-machines.md.",
+    ],
+  },
 ]
 /**
  * Which group a registry item lands in when nobody has written its page yet.

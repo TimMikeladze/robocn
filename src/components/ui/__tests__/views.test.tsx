@@ -97,6 +97,7 @@ import { CableStation } from "@/components/ui/cable-station"
 import { ResistanceCam } from "@/components/ui/resistance-cam"
 import { LegPress } from "@/components/ui/leg-press"
 import { CrossTrainer } from "@/components/ui/cross-trainer"
+import { RowingErg } from "@/components/ui/rowing-erg"
 
 /**
  * The native view is the default, and adding the `view` axis to a machine is
@@ -213,6 +214,7 @@ const machines: Record<string, (view?: RobotView) => React.ReactElement> = {
   "resistance-cam": (view) => <ResistanceCam animate={false} angle={0.4} view={view} />,
   "leg-press": (view) => <LegPress animate={false} travel={0.4} view={view} />,
   "cross-trainer": (view) => <CrossTrainer animate={false} crankAngle={140} view={view} />,
+  "rowing-erg": (view) => <RowingErg animate={false} strokePhase={0.32} view={view} />,
 }
 
 /**
@@ -314,6 +316,7 @@ const natives: Partial<Record<keyof typeof machines, RobotView>> = {
   "resistance-cam": "profile",
   "leg-press": "profile",
   "cross-trainer": "profile",
+  "rowing-erg": "profile",
 }
 
 const tippedFrom = (native: RobotView): RobotView =>

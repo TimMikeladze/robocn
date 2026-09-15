@@ -245,6 +245,7 @@ installs at.
 | `resistance-cam` | A lever on a variable-radius cam: the cable leaves at a radius that changes with the angle, so the moment arm is the cam profile and the stack does not rise linearly. |
 | `leg-press` | A sled on inclined rails: only the component of the load along the rails resists, so the rail angle is the resistance and the frame decides the weight. |
 | `cross-trainer` | A crank and rocker whose footpad rides the coupler: the stride and the shape of the foot path are what the link lengths produce, not a traced ellipse. |
+| `rowing-erg` | An air flywheel on a one-way clutch: drag goes as the square of rim speed, the damper vent sets the drag factor, and the drive spins it up while the recovery coasts it down. |
 
 Installing a component pulls in what it needs: `robot-arm` brings `robot-kinematics`,
 `robot-style` and both hooks, and the theme variables ride along with `robot-style`.

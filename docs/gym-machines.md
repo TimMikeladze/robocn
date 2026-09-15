@@ -61,16 +61,20 @@ world unit of rope and the same constraint runs.
 ### `solveCam(angle, geometry)` — the moment arm
 
 The Nautilus idea. The cable leaves the cam at a radius that changes with lever angle, so the
-resistance torque tracks the joint's strength curve instead of being flat. Two consequences
+resistance torque tracks the joint's strength curve instead of being flat. Three consequences
 that are computed, not drawn:
 
-- **The moment arm is the cam radius at that angle.** `radius` and `momentArm` are the same
-  number, because the cable sits in the groove and leaves tangent to the local circle. So the
-  resistance the lever feels is `W · r(θ)` and it is the cam profile, read as a graph.
+- **The moment arm is the cam radius at that angle.** `camTangent` finds where the run out to
+  the anchor touches the working circle, so the perpendicular distance from the pivot to the
+  cable is `r(θ)` *exactly*, whichever way the cable leaves. `radius` and `momentArm` are one
+  number, and the resistance the lever feels is `W · r(θ)`.
 - **Payout is the integral of `r dθ`.** The stack therefore does *not* rise linearly with the
-  lever. `payout` is integrated with composite Simpson over the sweep so far, and
-  `camProfile()` returns the same `r(θ)` as an outline — **the drawn cam is the resistance
-  curve**, not an illustration of one.
+  lever: over the shipped profile, equal quarters of the sweep pay out 7.2, 12.6, 11.2 and 5.7.
+  `payout` is integrated with composite Simpson over the sweep so far.
+- **The drawn cam is the resistance curve.** `camProfile()` is the same `r(θ)` in polar, wound
+  so that a cam keyed to its lever turns *forward* with it, and `camOutline(pose)` turns it to
+  where the lever has actually put it. Reading a radius off the outline is reading the moment
+  arm off the machine.
 
 ### `solveSled(stroke, geometry)` — the rail angle
 
@@ -84,15 +88,19 @@ Frictionless: no rail friction, no roller drag, no bearing loss. Stated on the p
 ### `solveTrainer(crankAngle, geometry)` + `trainerFootPath(geometry)` — the coupler curve
 
 A crank, a coupler and a rocker — `solveFourBar` from `linkage.ts`. The footpad is a point
-rigidly attached to the coupler, so its path is a **coupler curve**: a closed, egg-shaped,
-distinctly non-elliptical loop. `stride` is the horizontal extent of that loop and `rise` its
-vertical extent, both found by sampling the solved loop over a full crank revolution — not by
-tracing an ellipse and calling the long axis a stride. Change the crank radius or any link
-length and the path changes shape, which is exactly what separates one machine's feel from
-another's.
+rigidly attached to the coupler, `padAlong` past the crank pin and carried on *beyond* the
+coupler pin, the way a real pedal arm is; so its path is a **coupler curve**: a closed,
+egg-shaped, distinctly non-elliptical loop. `stride` is the horizontal extent of that loop and
+`rise` its vertical extent, both found by sampling the solved loop over a full crank
+revolution — not by tracing an ellipse and calling the long axis a stride. On the shipped
+links the stride comes out at 98.7 against a crank diameter of 72, so the linkage genuinely
+amplifies rather than following the crank circle. Change the crank radius or any link length
+and the path changes shape, which is exactly what separates one machine's feel from another's.
 
-The handle is the top of the rocker, so arms and feet are the same linkage and cannot drift
-out of phase.
+The grip is the same rocker carried the other way past its ground pivot, so arms and feet are
+one linkage and cannot drift out of phase, and the two sides are that linkage half a
+revolution apart. `TRAINER_BRANCH` fixes which of the two assemblies the loop takes, once, so
+the machine cannot flip branch between frames and turn itself inside out.
 
 ### `solveErgCycle(geometry)` — velocity-squared drag
 
@@ -110,11 +118,16 @@ The only one with real dynamics.
   speeds agree, so the cycle it returns is the machine's steady state rather than a spin-up
   transient. The component memoises it on the geometry and samples it by phase, which is what
   keeps every behaviour a pure function of the clock.
-- **Counter-travel.** The drive sequences legs → body → arms and the recovery reverses it, so
-  there is a window in the early recovery where the handle is already travelling toward the
-  flywheel while the seat has not yet turned around. `counterPhase` is the fraction of the
-  cycle where `handleRate` and `seatRate` have opposite signs — reported by the solver, not
-  drawn.
+- **Where the fan is.** Each sample carries `wheelAngle`, the integral of the wheel's own
+  speed since the catch, and the cycle carries `turnsPerStroke`. So the drawn fan spins up
+  through the drive and runs down through the recovery instead of turning at a chosen rate,
+  and a shut vent visibly turns it further on the same stroke.
+- **Counter-travel.** The drive sequences legs → body → arms and the recovery reverses it, and
+  the slide's own reversal runs `catchOverlap` past the end of the cycle — so at the catch the
+  seat is still coming forward while the chain has already gone taut and the handle is going
+  the other way. `counterPhase` is the fraction of the cycle where `handleRate` and `seatRate`
+  have opposite signs, measured off the samples rather than asserted; on the shipped geometry
+  it comes out near 4%, and setting `catchOverlap` to zero closes it entirely.
 
 Illustrative where it has to be: there is no rower. The handle and seat schedules are chosen
 ramps with the sequencing a coach would recognise, and everything downstream of them —
@@ -132,9 +145,23 @@ arrow keys, and puts its reported output in the `aria-label` so it is testable:
 |---|---|---|---|
 | `cable-station` | `draw` (handle travel) | `press`, `pyramid`, `hold`, `static` | mechanical advantage, selected weight |
 | `resistance-cam` | `angle` (lever) | `curl`, `slow`, `hold`, `static` | moment arm at that angle |
-| `leg-press` | `stroke` | `press`, `partials`, `hold`, `static` | sled load as a fraction of stack |
-| `cross-trainer` | `crankAngle` | `stride`, `sprint`, `coast`, `static` | stride length |
-| `rowing-erg` | `phase` | `row`, `sprint`, `paddle`, `static` | drag factor, stroke rate |
+| `leg-press` | `travel` | `press`, `partials`, `hold`, `static` | sled load and the share it is of the plates |
+| `cross-trainer` | `crankAngle` | `stride`, `sprint`, `coast`, `static` | stride, and the rise that goes with it |
+| `rowing-erg` | `strokePhase` | `row`, `sprint`, `paddle`, `static` | drag factor, stroke rate |
+
+Two of those names dodge something. `leg-press` takes `travel` and not `stroke` because
+`stroke` is an SVG attribute the component passes through, and `rowing-erg` takes
+`strokePhase` and not `phase` because `phase` is already the motion offset every machine in
+the set carries.
+
+Two of the machines also use a data hook to say what they have worked out rather than only
+saying it in the label: `[data-cam][data-arm]` is the moment arm, and `[data-travel]` gains
+`data-opposed` for exactly the window where the erg's handle and seat go opposite ways.
+
+One framing note. `leg-press` sizes its envelope from the **rail angle** and nothing else.
+That is not the framing breathing: the rail angle is a thing somebody bolted together, like
+the cable station's reeving, while the travel is the machine working — and the travel never
+touches the frame.
 
 ## Originality
 

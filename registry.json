@@ -4812,6 +4812,29 @@
           "target": "@ui/cross-trainer.tsx"
         }
       ]
+    },
+    {
+      "name": "rowing-erg",
+      "type": "registry:ui",
+      "title": "Rowing erg",
+      "description": "An air flywheel on a one-way clutch: drag goes as the square of rim speed, the damper vent sets the drag factor, and the drive spins it up while the recovery coasts it down.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json",
+        "{REGISTRY_URL}/r/gym-geometry.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/rowing-erg.tsx",
+          "type": "registry:ui",
+          "target": "@ui/rowing-erg.tsx"
+        }
+      ]
     }
   ]
 }

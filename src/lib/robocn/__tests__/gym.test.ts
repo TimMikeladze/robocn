@@ -333,6 +333,23 @@ describe("velocity-squared drag", () => {
     expect(solveErgCycle({ ...defaultErgGeometry, catchOverlap: 0 }).counterPhase).toBe(0)
   })
 
+  it("turns the wheel by its own speed, so the fan is where the integral puts it", () => {
+    const cycle = solveErgCycle()
+
+    // Monotone within the stroke, and the whole turn is the sum of the steps.
+    for (let index = 1; index < cycle.samples.length; index += 1) {
+      expect(cycle.samples[index].wheelAngle).toBeGreaterThan(cycle.samples[index - 1].wheelAngle)
+    }
+    expect(cycle.turnsPerStroke).toBeGreaterThan(1)
+    expect(ergAt(cycle, 0).wheelAngle).toBe(0)
+    // Just short of the seam it has all but the last step of the whole turn.
+    expect(ergAt(cycle, 0.999).wheelAngle).toBeCloseTo(cycle.turnsPerStroke * 2 * Math.PI, 0)
+    // A shut vent coasts further, so the same stroke turns the wheel more.
+    expect(solveErgCycle({ ...defaultErgGeometry, vent: 0 }).turnsPerStroke).toBeGreaterThan(
+      solveErgCycle({ ...defaultErgGeometry, vent: 1 }).turnsPerStroke,
+    )
+  })
+
   it("samples by phase, wrapping, and gives a neutral sample for an empty cycle", () => {
     const cycle = solveErgCycle()
 

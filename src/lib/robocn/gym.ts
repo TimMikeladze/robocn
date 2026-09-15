@@ -643,6 +643,12 @@ export interface ErgSample {
   force: number
   /** True while the chain is driving the wheel rather than the wheel coasting. */
   engaged: boolean
+  /**
+   * How far the wheel has actually turned since the catch, in radians — the
+   * integral of its own speed, so a drawing can put the fan where it is rather
+   * than spin it at a rate somebody picked.
+   */
+  wheelAngle: number
 }
 
 export interface ErgCycle {
@@ -655,6 +661,8 @@ export interface ErgCycle {
   peakSpeed: number
   meanSpeed: number
   peakForce: number
+  /** Turns the wheel makes in one whole stroke. */
+  turnsPerStroke: number
   /** Strokes per minute. */
   strokeRate: number
   /**
@@ -783,11 +791,13 @@ export function solveErgCycle(
     ((at(phase + h) - at(phase - h)) / (2 * h)) * rate
 
   let speed = 0
+  let wheel = 0
   let samples: ErgSample[] = []
   // Two passes settle it — the clutch pins the speed through the whole drive —
   // but a shut vent and a slow rate coast a long way, so allow a few more.
   for (let pass = 0; pass < 8; pass += 1) {
     const started = speed
+    wheel = 0
     samples = []
     for (let index = 0; index < n; index += 1) {
       const phase = index / n
@@ -806,7 +816,11 @@ export function solveErgCycle(
         speed,
         force: engaged ? (drag * speed * speed) / sprocket : 0,
         engaged,
+        // Recorded before this step is added on, so phase zero is angle zero
+        // and a drawing can put the fan straight from the sample.
+        wheelAngle: wheel,
       })
+      wheel += speed * dt
     }
     if (Math.abs(speed - started) < 1e-9) break
   }
@@ -823,6 +837,7 @@ export function solveErgCycle(
     peakSpeed: Math.max(...speeds),
     meanSpeed: speeds.reduce((total, value) => total + value, 0) / n,
     peakForce: Math.max(...samples.map((sample) => sample.force)),
+    turnsPerStroke: wheel / (2 * Math.PI),
     strokeRate: rate * 60,
     counterPhase: counter / n,
   }
@@ -841,6 +856,7 @@ export function ergAt(cycle: ErgCycle, phase: number): ErgSample {
       speed: 0,
       force: 0,
       engaged: false,
+      wheelAngle: 0,
     }
   }
   const wrapped = ((finite(phase, 0) % 1) + 1) % 1
@@ -859,5 +875,11 @@ export function ergAt(cycle: ErgCycle, phase: number): ErgSample {
     speed: mix(from.speed, to.speed),
     force: mix(from.force, to.force),
     engaged: blend < 0.5 ? from.engaged : to.engaged,
+    // The last sample wraps back to the first, whose wheel angle is a fresh
+    // zero; carry the whole turn across that seam rather than unwinding it.
+    wheelAngle:
+      index + 1 >= samples.length
+        ? from.wheelAngle + (cycle.turnsPerStroke * 2 * Math.PI - from.wheelAngle) * blend
+        : mix(from.wheelAngle, to.wheelAngle),
   }
 }

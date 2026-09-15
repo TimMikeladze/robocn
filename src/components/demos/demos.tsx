@@ -42,7 +42,7 @@ import { defaultHeadGeometry, solveFace, type FaceExpression } from "@/lib/roboc
 import { SecurityDroid, type SecurityDroidBehavior, type SecurityDroidPose } from "@/components/ui/security-droid"
 import { UtilityDroid, type UtilityDroidSeries, type UtilityDroidTool , type UtilityDroidBehavior} from "@/components/ui/utility-droid"
 import { defaultStewartGeometry, solveStewart } from "@/lib/robocn/stewart"
-import { defaultCamGeometry, defaultTrainerGeometry, reeveStack, solveCam, solveSled, trainerFootPath } from "@/lib/robocn/gym"
+import { defaultCamGeometry, defaultErgGeometry, defaultTrainerGeometry, reeveStack, solveCam, solveErgCycle, solveSled, trainerFootPath } from "@/lib/robocn/gym"
 import { RobotQuadruped, type QuadrupedBehavior } from "@/components/ui/robot-quadruped"
 import { RobotBird, type BirdBehavior } from "@/components/ui/robot-bird"
 import { RobotCrab, type CrabBehavior } from "@/components/ui/robot-crab"
@@ -215,6 +215,7 @@ import { CableStation, type CableStationBehavior } from "@/components/ui/cable-s
 import { ResistanceCam, type ResistanceCamBehavior } from "@/components/ui/resistance-cam"
 import { LegPress, type LegPressBehavior } from "@/components/ui/leg-press"
 import { CrossTrainer, type CrossTrainerBehavior } from "@/components/ui/cross-trainer"
+import { RowingErg, rowingErgTempo, type RowingErgBehavior } from "@/components/ui/rowing-erg"
 import { oklchToHex } from "@/lib/robocn/color"
 import {
   chainAngles2,
@@ -5228,6 +5229,39 @@ function CrossTrainerDemo() {
   )
 }
 
+function RowingErgDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [behavior, setBehavior] = React.useState<RowingErgBehavior>("row")
+  const [vent, setVent] = React.useState(0.5)
+  const [rate, setRate] = React.useState(0.4)
+  // The whole steady-state stroke, solved the way the machine solves it, so the
+  // readout is the dynamics rather than a description of them.
+  const cycle = solveErgCycle({
+    ...defaultErgGeometry,
+    vent,
+    rate: Math.max(0.05, rate) * rowingErgTempo(behavior),
+  })
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="motion" value={behavior} options={["row", "sprint", "paddle", "static"] as const} onChange={setBehavior} />
+      <NumberControl label="damper vent" value={vent} min={0} max={1} step={0.05} onChange={setVent} format={value => `${Math.round(value * 100)}%`} />
+      <NumberControl label="rate" value={rate} min={0.15} max={0.9} step={0.05} onChange={setRate} format={value => `${Math.round(value * 60)} spm`} />
+      <Readout rows={[
+        ["drag factor", `${Math.round(cycle.dragFactor * 1000) / 1000}`],
+        ["peak handle force", `${Math.round(cycle.peakForce)}`],
+        ["turns a stroke", `${Math.round(cycle.turnsPerStroke * 10) / 10}`],
+        ["counter-travel", `${Math.round(cycle.counterPhase * 100)}% of the cycle`],
+      ]} />
+      <Hint>Drag across it, or focus it and use the arrow keys. Opening the vent raises the drag factor and the force; raising the rate raises the force on the same drag factor, because it goes as the square of the speed.</Hint>
+    </>}>
+      <RowingErg size={300} view={view} variant={variant} behavior={behavior} vent={vent} speed={rate} interactive label="ERG / 05" />
+    </Bench>
+  )
+}
+
 export const demos: Record<string, React.ComponentType<DemoProps>> = {
   "robot-football": RobotFootballDemo,
   "gridiron-geometry": RobotFootballDemo,
@@ -5432,6 +5466,7 @@ export const demos: Record<string, React.ComponentType<DemoProps>> = {
   "resistance-cam": ResistanceCamDemo,
   "leg-press": LegPressDemo,
   "cross-trainer": CrossTrainerDemo,
+  "rowing-erg": RowingErgDemo,
 }
 
 /**

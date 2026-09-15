@@ -195,6 +195,7 @@ import { CableStation } from "@/components/ui/cable-station"
 import { ResistanceCam } from "@/components/ui/resistance-cam"
 import { LegPress } from "@/components/ui/leg-press"
 import { CrossTrainer } from "@/components/ui/cross-trainer"
+import { RowingErg } from "@/components/ui/rowing-erg"
 import { galleryEntries } from "@/components/site/gallery.generated"
 import { Panel } from "@/components/site/panel"
 
@@ -441,6 +442,7 @@ const art: Record<string, Art> = {
   "resistance-cam": { line: "The moment arm is the cam radius, so the cam is the resistance curve.", art: <ResistanceCam size={150} phase={0.3} /> },
   "leg-press": { line: "The rail angle is the resistance: the frame decides the weight.", art: <LegPress size={150} railAngle={44} phase={0.3} /> },
   "cross-trainer": { line: "The foot path is a coupler curve, so the stride is an output.", art: <CrossTrainer size={150} phase={0.4} /> },
+  "rowing-erg": { line: "Drag goes as the square of rim speed, so the vent sets the feel.", art: <RowingErg size={168} vent={0.7} phase={0.2} /> },
 }
 
 /** Exported for the coverage test — a card that exists nowhere else is a bug. */
