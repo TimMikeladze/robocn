@@ -119,7 +119,9 @@ export default async function DocPage({
           <h2 id="notes" className="scroll-mt-20 text-[15px] font-medium">
             {entry.item ? "Notes" : "How it works"}
           </h2>
-          <ul className="space-y-2 text-[14px] leading-relaxed text-muted-foreground">
+          {/* The column is ~960px on a wide display; prose stops at a readable
+              measure rather than running the full width of it. */}
+          <ul className="max-w-[78ch] space-y-2 text-[14px] leading-relaxed text-muted-foreground">
             {entry.notes.map((note) => (
               <li key={note} className="border-l border-border pl-3">
                 {note}

@@ -28,8 +28,15 @@ const read = (file: string) => readFileSync(path.join(process.cwd(), file), "utf
 describe("the site rail", () => {
   it("is one column, centred, with a gutter at every width", () => {
     expect(rail).toContain("mx-auto")
-    expect(rail).toContain("max-w-6xl")
+    expect(rail).toContain("max-w-7xl")
     expect(rail).toMatch(/\bpx-\d/)
+  })
+
+  // The wide cap is an override of the base one, not a second column: it has to
+  // be behind a breakpoint, or a 1280px laptop loses its margins entirely.
+  it("opens up on a big display without touching the small ones", () => {
+    expect(rail).toContain("2xl:max-w-[92rem]")
+    expect(rail).toContain("w-full")
   })
 
   it("is what every shell uses", () => {
@@ -44,7 +51,7 @@ describe("the site rail", () => {
     for (const file of shells) {
       const source = read(file)
       // The rail module is the only place these may appear.
-      expect(source, `${file} sets its own max width`).not.toMatch(/max-w-[67]xl/)
+      expect(source, `${file} sets its own max width`).not.toMatch(/max-w-[5-7]xl/)
       expect(source, `${file} sets its own page gutter`).not.toMatch(/"[^"]*\bpx-5\b/)
     }
   })

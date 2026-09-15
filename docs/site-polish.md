@@ -103,11 +103,15 @@ was not already on the wire for `/`.
 
 - `docs-toc.tsx` — *On This Page*, sticky, on `xl` and up only. Scroll-spy by
   `IntersectionObserver`, marking the heading nearest the top of the viewport.
-  It fits *inside* the site rail rather than widening it: at `max-w-6xl` the
-  three columns are a 13rem nav, an 11rem TOC and ~648px of content, which is a
-  fine measure. An earlier pass widened the docs shell to `xl:max-w-7xl` to make
-  room and left the header at `max-w-6xl`, which put the wordmark 60-odd pixels
-  right of the page title beneath it — see `src/components/site/rail.ts`.
+  It fits *inside* the site rail rather than widening it: the three columns are
+  a 13rem nav, an 11rem TOC and whatever is left. At the rail's `max-w-7xl` that
+  is ~776px of content; past `2xl`, where the rail opens to 92rem, ~960px. Prose
+  on the page carries its own measure (`max-w-[78ch]` on the notes, `64ch` on the
+  summary) so the wide case widens the demo bench and the code blocks, not the
+  line length. An earlier pass widened the docs shell alone to `xl:max-w-7xl` and
+  left the header at `max-w-6xl`, which put the wordmark 60-odd pixels right of
+  the page title beneath it — the rail exists so that cannot recur, see
+  `src/components/site/rail.ts`.
 - `page-actions.tsx` — *Copy page* copies the Markdown mirror to the clipboard;
   the menu beside it offers *View as Markdown*, *Open in ChatGPT* and *Open in
   Claude*, each of which hands the assistant the `.md` URL rather than the HTML
