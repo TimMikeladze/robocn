@@ -35,7 +35,7 @@ casing annulus  →  ports near the TOP of the mud anchor
                 →  DOWN the annulus between the anchor and the dip tube
                 →  round the shoe of the dip tube (the U)
                 →  UP the dip tube to the standing valve
-gas breaks out on the way down and leaves back out of the ports
+gas keeps rising up the casing annulus and carries straight past the ports
 ```
 
 So the drawing changes:
@@ -48,8 +48,10 @@ So the drawing changes:
 - **A dip tube** hung off the pump intake, open at `DIP_LOW` just above the plug.
 - **The flow markers follow the U**: down the anchor annulus, round the shoe, up the dip tube,
   each gated on the standing valve as before.
-- **Gas leaves the way it came in**: bubbles rise in the anchor annulus and out of the ports.
-  Illustrated, and said to be.
+- **Gas goes past the intake, not into it**: the bubbles belong in the **casing annulus**,
+  because the annulus is where the drawdown is and so where gas comes out of solution. They rise
+  on the clock rather than on the plunger — buoyancy has nothing to do with the stroke — and
+  they swell on the way up as the head above them comes off. Illustrated, and said to be.
 - The perforated interval moves down to `[8, 17, 26]`, below the ports, so the path reads bottom
   to top: in at the perforations, up the annulus, in at the ports, down, round and up.
 

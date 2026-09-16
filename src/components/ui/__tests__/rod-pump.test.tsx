@@ -189,6 +189,22 @@ describe("rod-pump", () => {
     expect(pushing.container.querySelector("[data-anchor-flow]")).toBeNull()
   })
 
+  it("sends the gas up the annulus, past the intake rather than into it", () => {
+    const { container } = render(<RodPump animate={false} cycle={0.25} />)
+
+    // The drawdown is in the casing annulus, so that is where gas comes out of
+    // solution and where it rises — straight past the mud anchor's ports. It
+    // never appears inside the anchor, which is the point of taking the intake
+    // the long way round in the first place.
+    expect(container.querySelector("[data-gas] circle")).not.toBeNull()
+    expect(container.querySelector("[data-mud-anchor] circle")).toBeNull()
+    cleanup()
+
+    // Nothing standing in the annulus, nothing to break out of.
+    const dry = render(<RodPump animate={false} cycle={0.25} fluidLevel={0} />)
+    expect(dry.container.querySelector("[data-gas]")).toBeNull()
+  })
+
   it("keeps the formation flowing in all cycle, and only stops it on a full column", () => {
     const rate = (node: HTMLElement) =>
       Number(node.querySelector("[data-inflow]")!.getAttribute("data-rate"))

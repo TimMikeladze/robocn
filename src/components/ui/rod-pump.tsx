@@ -23,14 +23,17 @@
  * The **mud anchor** below the pump is drawn the way one works: the ports are
  * near its top, so the well has to run back *down* the annulus, round the dip
  * tube's shoe and up the dip tube to reach the standing valve. Gas will not
- * make that turn, which is the whole reason the part is there.
+ * make that turn — it is already rising up the casing annulus, and it carries
+ * straight past the ports instead — which is the whole reason the part is
+ * there.
  *
  * **Illustrated:** the rock, its bedding, the cement sheath, the perforation
  * tunnels and the inflow streaks; the fluid as coloured regions; the gas
- * bubbles. Those are drawing, and nothing reads a rate off them. The
- * formation flows in all cycle — a reservoir does not know about the stroke —
- * and the annulus level is drawn down by what the barrel has taken and
- * clamped at the intake.
+ * rising in the casing annulus, which is where the drawdown is and so where
+ * gas comes out of solution. Those are drawing, and nothing reads a rate off
+ * them. The formation flows in all cycle — a reservoir does not know about
+ * the stroke — and the annulus level is drawn down by what the barrel has
+ * taken and clamped at the intake.
  *
  * **Absent:** there is no wave equation. The surface card is not propagated
  * down the rod string — no stretch, damping, inertia, buoyancy, friction, or
@@ -528,6 +531,9 @@ function RodPump({
   // clock: it stalls where the plunger stalls and runs where the plunger runs,
   // because it is the same fluid. `flowed` is the fraction of this half-stroke
   // already swept, so it always climbs and resets where the flow is zero anyway.
+  // Buoyancy runs on the clock, not on the plunger: gas in the annulus keeps
+  // rising through both ends of the stroke, where the fluid markers stall.
+  const rising = pose.phase
   const shifting = Math.abs(pose.speed)
   const flowed = pose.direction > 0 ? pose.travel : 1 - pose.travel
   const drift = ((flowed * 6) % 1 + 1) % 1
@@ -726,6 +732,42 @@ function RodPump({
           </g>
         )}
 
+        {showFluid && working > hung(MUD_LOW) + 30 && (
+          /*
+           * Gas, in the one place it is free to be. The **casing annulus** is
+           * where the drawdown is, so it is where gas comes out of solution,
+           * and buoyancy takes it straight up the hole to the casing valve at
+           * surface. It goes *past* the mud anchor's ports rather than turning
+           * down into them, and that — not anything happening inside the
+           * anchor — is the separation the anchor is there to get.
+           *
+           * It rises on the clock rather than on the plunger, because what
+           * lifts it is its own buoyancy and the pump has nothing to do with
+           * it, and it swells on the way up as the head above it comes off.
+           */
+          <g data-gas>
+            {[-1, 1].flatMap((side) =>
+              [0, 1, 2].map((index) => {
+                const climb = (rising + index / 3 + (side > 0 ? 0.17 : 0)) % 1
+                const at = lerp(hung(MUD_LOW) + 4, working - 4, climb)
+                const seat = to({ x: side * (TUBING_OD + 8.5), y: at }, 0)
+                return (
+                  <circle
+                    key={`${side}:${index}`}
+                    cx={px(seat.x)}
+                    cy={px(seat.y)}
+                    r={px(1.1 + 1.2 * climb)}
+                    fill="none"
+                    stroke={palette.accent}
+                    strokeWidth={0.9}
+                    opacity={px(0.75 - 0.3 * climb)}
+                  />
+                )
+              }),
+            )}
+          </g>
+        )}
+
         {showFormation && (
           <g data-perforation>
             {PERFS.flatMap((y) =>
@@ -845,11 +887,12 @@ function RodPump({
           * plugged at the bottom and ported near the top. It is the long way
           * round on purpose. Liquid comes in high, runs *down* the annulus
           * between the anchor and the dip tube, turns under the dip tube's shoe
-          * and climbs back up it to the standing valve — and the gas it was
-          * carrying will not make that turn, so it breaks out on the way down
-          * and leaves back out of the ports it came in through. An intake that
-          * simply took fluid off the bottom would hand the pump the gas as
-          * well, and a gassy pump is the card nobody wants.
+          * and climbs back up it to the standing valve. The gas will not make
+          * that turn: it is already on its way up the casing annulus under its
+          * own buoyancy, and it carries straight past the ports rather than
+          * reversing into them. An intake that simply took fluid off the bottom
+          * would hand the pump the gas as well, and a gassy pump is the card
+          * nobody wants.
           */}
         <g data-mud-anchor data-fed={fed ? "1" : "0"}>
           {showFluid && feed > hung(MUD_PLUG) && (
@@ -903,28 +946,6 @@ function RodPump({
           />
           <path d={walls(BORE_R, DIP_R, hung(DIP_LOW), hung(HOLDDOWN_LOW))} {...machined} />
           <path d={walls(BORE_R, DIP_R + 2.5, hung(DIP_LOW), hung(DIP_LOW + 4))} {...cast} />
-          {/* Gas breaking out on the way down, and going back out the ports —
-              illustrated, like every other bubble in the drawing. */}
-          {showFluid &&
-            fed &&
-            [-1, 1].map((side) => {
-              // Gas hugs the high side of the annulus on its way back out.
-              const climb = (drift + (side > 0 ? 0.5 : 0)) % 1
-              const at = lerp(hung(DIP_LOW + 2), hung(MUD_PORT_HIGH + 2), climb)
-              const seat = to({ x: side * (TUBING_ID - 4), y: at }, 0)
-              return (
-                <circle
-                  key={side}
-                  cx={px(seat.x)}
-                  cy={px(seat.y)}
-                  r={px(1.3 + 0.7 * climb)}
-                  fill="none"
-                  stroke={palette.accent}
-                  strokeWidth={0.8}
-                  opacity={px(0.85 - 0.55 * climb)}
-                />
-              )
-            })}
         </g>
 
         {/* The hold-down: cup seals that land the pump in its seating nipple. */}

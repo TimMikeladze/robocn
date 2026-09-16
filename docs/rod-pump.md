@@ -154,14 +154,14 @@ casing annulus  →  ports near the TOP of the anchor
                 →  DOWN the annulus between the anchor and the dip tube
                 →  round the shoe of the dip tube — the U
                 →  UP the dip tube to the standing valve
-gas breaks out on the way down and leaves back out of the ports
+gas keeps rising up the casing annulus and carries straight past the ports
 ```
 
 So the tubing string ends, on camera, in a bull plug, with the ports cut in its wall just below
 the seating nipple and the dip tube hung off the pump's intake inside it. Fluid drawn straight
 off the bottom of the annulus would bring its gas with it; fluid that has to turn a corner will
 not. The flow markers follow that path whole, gated on the standing valve like everything else,
-and the bubbles rise in the down leg and leave through the ports.
+and the bubbles rise in the **casing annulus** — past the ports, not into them.
 
 ## The field formulas, unchanged
 
@@ -242,6 +242,7 @@ These are API. A test asserts a prop moved one of them.
 | `data-tubing-anchor` | `data-set` — 1 with the slips on the casing, 0 with them back off it; `data-reach` — where they are |
 | `data-mud-anchor` | `data-fed` — whether the well stands above the ports it comes in at |
 | `data-inflow` | `data-rate` — what the formation is doing, all cycle |
+| `data-gas` | the bubbles rising up the casing annulus, past the intake |
 | `data-chamber-gauge` | `data-pressure` — the chamber, 0 at intake and 1 at discharge |
 | `data-void` | present only while the plunger is falling through gas or nothing |
 | `data-flow` | `data-direction` — which way the fluid is going |
