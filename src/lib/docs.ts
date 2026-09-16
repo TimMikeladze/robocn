@@ -7353,6 +7353,108 @@ download(await encodeFrames(frames, "webp"), "robot-arm.webp")`,
       "An original archetype named for its job. It is a generic boring construct \u2014 no franchise name, insignia or paint scheme, and the default palette is the theme\u2019s.",
     ],
   },
+  {
+    slug: "airframe", item: "airframe", title: "Airframe", group: "Foundations",
+    summary:
+      "The geometry an aeroplane is made of — a fuselage lofted along its own axis with a second deck on the crown, a swept and kinked wing you can sample anywhere — and the one mechanism on it that is really solved: a leg swinging about its trunnion with a side stay that folds.",
+    files: ["lib/robocn/airframe.ts"],
+    usage: `import {
+  controlMix,
+  fuselageRing,
+  fuselageSection,
+  gearRetraction,
+  wingSurface,
+} from "@/lib/robocn/airframe"
+
+// The body at a station, and that station as a ring of world points.
+const section = fuselageSection(-70)
+section.crown            // the upper deck stands here
+fuselageRing(section, 16)
+
+// Every moving surface is a patch of one planform: a slat is 0 to 0.14 of the
+// chord, a Fowler flap 0.73 to 1, between two fractions of the half-span.
+wingSurface(0.1, 0.32, 0.73, 1)
+
+// The stay's knee is the solve; everything else is the leg's own angle.
+const leg = gearRetraction(0.4)
+leg.knee                 // folded, and still exactly its two link lengths away
+leg.reachable            // false only if the stay could not span the gap
+
+// The rules a big aeroplane flies by, not aerodynamics.
+controlMix({ roll: 8, configuration: 0.6 })`,
+    api: [
+      { name: "fuselageSection(z, loft?)", type: "(z: number, loft?: Partial<FuselageLoft>) => FuselageSection", description: "The body at one station: radius, centreline, crown, keel, and how much of the upper deck stands there. A nose ogive, a constant barrel and an upswept tail cone, continuous at both joins; outside the ends it is the end it is past, so a caller that over-runs gets a closed body rather than a negative radius." },
+      { name: "fuselageRing(section, steps?)", type: "(section: FuselageSection, steps?: number) => Vec3[]", description: "That section as a closed ring of world points, crown first and round to starboard. The upper deck is a lobe added on the crown side and faded out by the equator, which also narrows the section slightly where it stands." },
+      { name: "wingStation(t, plan?)", type: "(t: number, plan?: Partial<WingPlanform>) => WingStation", description: "The wing at a fraction of the half-span: distance out, height from the dihedral, leading and trailing edge, chord and built-in twist. The leading edge is one straight swept line while the chord collapses root to kink to tip, which is what gives a big jet its almost-unswept inboard trailing edge." },
+      { name: "wingSurface(from, to, chordFrom, chordTo, plan?)", type: "(…) => Vec3[]", description: "A patch of that planform between two spanwise stations and two chord fractions, as four world points on the starboard side. Every moving surface the wing carries is one of these, so flaps, slats, ailerons and spoilers all track the same planform instead of drifting off it. `wingPanel` is the whole chord." },
+      { name: "gearRetraction(retraction, gear?)", type: "(retraction: number, gear?: Partial<GearGeometry>) => GearPose", description: "One gear unit from 0 down-and-locked to 1 stowed. The leg is rigid and swings about its trunnion; the side stay is anchored to the structure at one end and pinned part-way down the leg at the other, so its knee is an elbow solve — two links and a known pair of ends. A stay that cannot span the gap clamps onto its own annulus and reports `reachable: false` rather than returning NaN." },
+      { name: "controlMix(command?)", type: "(command?: ControlCommand) => ControlDeflections", description: "Pitch, roll, yaw, the flap lever and the speedbrake, mixed into every surface. Four rules a big aeroplane really keeps: the slats lead the flaps out; the outboard ailerons lock out once the flaps are up; the roll spoilers rise on the down-going wing only, while the speedbrake puts both sides up; and the stabiliser trims with the configuration." },
+      { name: "defaultFuselageLoft / defaultWingPlanform / defaultGearGeometry", type: "const", description: "The dimensions the airliner ships with, in world units — x starboard, y up from the ground, z aft, nose at -z." },
+    ],
+    notes: [
+      "Solved: the side stay, by the law of cosines. Everything else here is a loft or a mix — there is no lift, no drag, no load factor and no stall, and controlMix is a mixer rather than aerodynamics.",
+      "Pure functions over plain objects: no React, no three.js, no dependencies. Angles are degrees on the surface and radians inside.",
+    ],
+  },
+  {
+    slug: "airliner", item: "airliner", title: "Airliner", group: "Robots",
+    summary:
+      "A four-engine double-deck widebody you can walk all the way round and take completely to bits. The camera goes to any angle at all, the skin opens on the reader's side wherever they are standing, and the teardown is the build order run backwards.",
+    files: ["components/ui/airliner.tsx"],
+    usage: `import { Airliner } from "@/components/ui/airliner"
+
+// On a bench: turning slowly, coming apart and going back together.
+<Airliner behavior="service" />
+
+// Any angle at all, on top of the four the set names.
+<Airliner view="profile" azimuth={38} elevation={-14} />
+
+// The near side of the skin opens wherever the reader is standing.
+<Airliner cutaway={0.8} />
+
+// Drag turns it; shift-drag takes it apart. Arrow keys do the same.
+<Airliner interactive control="orbit" onOrbitChange={setOrbit} />
+
+// Or drive it, which stops the loop.
+<Airliner explode={0.45} configuration={1} />`,
+    props: [
+      view("iso", "aeroplane"),
+      { name: "azimuth", type: "number", description: "Degrees the camera swings round the machine, on top of `view`. Any angle at all, and it wraps: the far side is 180 either way." },
+      { name: "elevation", type: "number", description: "Degrees the camera rises above the view's own elevation, clamped to ±88 — past the pole it is under the floor." },
+      { name: "onOrbitChange", type: "(orbit: { azimuth, elevation }) => void", description: "Where the camera stands, while a person is turning it." },
+      { name: "explode", type: "number", description: "The teardown, 0 seated to 1 every part its own clearance away. Supplying it stops the loop." },
+      { name: "onExplodeChange", type: "(explode: number) => void", description: "Fires while it is dragged or keyed, so interaction works in controlled mode too." },
+      { name: "explodeOverlap", type: "number", default: "0.45", description: "How much the stages overlap: 0 is strictly one stage at a time, 1 is every part moving together." },
+      { name: "showLeaders", type: "boolean", default: "true", description: "Dashed leaders from each part back to its seat. Nothing is drawn at rest." },
+      { name: "configuration", type: "number", description: "The flap lever, 0 clean to 1 dirty. It runs the slats, the three flap settings and the gear, in the order they come out." },
+      { name: "onConfigurationChange", type: "(configuration: number) => void", description: "The lever, while a person is working it." },
+      { name: "gear", type: "number", description: "The five legs on their own, 0 up to 1 down, when they should not follow the lever." },
+      { name: "pitch", type: "number", description: "Nose-up degrees commanded. It goes through the mixer, never straight onto a surface." },
+      { name: "roll", type: "number", description: "Starboard-wing-down degrees commanded. Ailerons and the roll spoilers on the down-going wing." },
+      { name: "yaw", type: "number", description: "Nose-right degrees commanded, onto the rudder." },
+      { name: "speedbrake", type: "number", description: "The speedbrake lever, 0 to 1. This is the one that puts both sides of spoilers up together." },
+      { name: "cutaway", type: "number", default: "0", description: "Open the reader's side of the skin, 0 closed to 1 the whole near hemisphere. A cut panel keeps its outline, so the silhouette survives." },
+      { name: "showCabin", type: "boolean", default: "true", description: "Decks, seats, the flight deck and the freight. Only drawn once the skin is open or the machine is apart." },
+      { name: "showStructure", type: "boolean", default: "true", description: "Frames inside the shell, likewise." },
+      { name: "behavior", type: `"cruise" | "approach" | "departure" | "turntable" | "service" | "static"`, default: `"cruise"`, description: "Hold a lazy wing-over, come down dirty, clean up after a departure, turn on a table, or come apart and go back together." },
+      { name: "control", type: `"orbit" | "explode" | "configuration"`, default: `"orbit"`, description: "What a drag does. Shift swaps the turntable for the other tool and back, so one pointer reaches both." },
+      { name: "interactive", type: "boolean", default: "false", description: "Hand it to a person: drag to turn it, shift-drag to take it apart, or focus it and use the arrow keys." },
+      { name: "active", type: "boolean", default: "true", description: "Light the navigation lamps and the beacons." },
+      { name: "showGround", type: "boolean", default: "true", description: "The contact shadow, drawn as the machine's own footprint and foreshortened by the camera." },
+      { name: "label", type: "string", description: "Optional technical caption under the drawing." },
+      { name: "speed", type: "number", default: "0.24", description: "Cycles per second: one teardown, one turn of the table, one circuit." },
+      ...loop,
+      ...form.slice(0, 2),
+      ...palette,
+    ],
+    notes: [
+      "Solved: the undercarriage. Each of the five legs swings about a fixed trunnion with a two-part side stay that folds as it goes, and the stay's knee is an elbow solve — `gearRetraction` in `airframe`. The teardown is `explodeAssembly` from `assembly-geometry`: twelve stages, not parts, so a handed pair leaves together and nothing moves before what was fitted after it is clear. The surfaces come from `controlMix`, which holds the rules a big aeroplane really flies by — the slats lead the flaps, the outboard ailerons lock out with the flaps up, the roll spoilers rise on the down-going wing only.",
+      "Illustrated: everything else. The loft is a loft, the aerofoil is a thickness distribution and not a section anyone would fly, and the engines are drawn rather than modelled. Nothing computes lift, drag, load factor or a stall, and the aircraft does not travel — it turns on a stand and comes apart on a bench.",
+      "Because the camera goes to any angle, the drawing is depth-sorted: every part is emitted with the depth of its own centroid and the whole set is ordered once a frame. The skin is longitudinal panels rather than one silhouette, because a fuselage with an upper deck is not a convex body — and that is also what makes the cutaway a camera-relative cull rather than a fixed hole.",
+      "Exploding parks the aeroplane: the surfaces go neutral and the gear goes down over the first sixth of the teardown, because an offset from a seat that is itself moving means nothing. The frame is fitted to an envelope grown by `explode` alone, so it zooms out when the machine comes apart and never breathes with a surface or a leg.",
+      "An original archetype named for its job — a generic four-engine double-deck widebody. No manufacturer's name, no livery, no registration, and the default palette is the theme's.",
+    ],
+  },
 ]
 /**
  * Which group a registry item lands in when nobody has written its page yet.

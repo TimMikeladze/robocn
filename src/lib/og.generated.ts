@@ -7,6 +7,7 @@
  */
 
 export const capturedOgSlugs: string[] = [
+  "airliner",
   "animatronic-face",
   "animatronic-robot",
   "arm-controls",

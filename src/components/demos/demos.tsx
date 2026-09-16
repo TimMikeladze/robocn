@@ -224,6 +224,11 @@ import { RobotHockeyPuck, puckShot, type HockeyPuckBehavior } from "@/components
 import { ConstructRing, type ConstructArchetype, type ConstructRingBehavior } from "@/components/ui/construct-ring"
 import { AnimatronicRobot, type AnimatronicChassis, type AnimatronicRobotBehavior } from "@/components/ui/animatronic-robot"
 import { BoreConstruct, type BoreConstructBehavior } from "@/components/ui/bore-construct"
+import {
+  Airliner,
+  type AirlinerBehavior,
+  type AirlinerControl,
+} from "@/components/ui/airliner"
 import { boreDuty } from "@/lib/robocn/boring"
 import {
   JackOLantern,
@@ -5618,6 +5623,71 @@ function BoreConstructDemo() {
   )
 }
 
+function AirlinerDemo() {
+  const [view, setView] = React.useState<RobotView>("iso")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [behavior, setBehavior] = React.useState<AirlinerBehavior>("service")
+  const [control, setControl] = React.useState<AirlinerControl>("orbit")
+  const [cutaway, setCutaway] = React.useState(0)
+  const [orbit, setOrbit] = React.useState({ azimuth: 0, elevation: 0 })
+  const [apart, setApart] = React.useState(0)
+  return (
+    <Bench
+      controls={
+        <>
+          <Segmented label="view" value={view} options={views} onChange={setView} />
+          <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+          <Segmented
+            label="motion"
+            value={behavior}
+            options={["cruise", "approach", "departure", "turntable", "service", "static"] as const}
+            onChange={setBehavior}
+          />
+          <Segmented
+            label="drag"
+            value={control}
+            options={["orbit", "explode", "configuration"] as const}
+            onChange={setControl}
+          />
+          <NumberControl
+            label="cutaway"
+            value={cutaway}
+            min={0}
+            max={1}
+            step={0.05}
+            onChange={setCutaway}
+            format={(value) => `${Math.round(value * 100)}%`}
+          />
+          <Hint>
+            Drag to turn it right round; hold shift to swap the turntable for the teardown.
+            Arrow keys do the same, and the cutaway follows whichever way you are looking.
+          </Hint>
+          <Readout
+            rows={[
+              ["azimuth", `${Math.round(orbit.azimuth)}°`],
+              ["elevation", `${Math.round(orbit.elevation)}°`],
+              ["apart", `${Math.round(apart * 100)}%`],
+            ]}
+          />
+        </>
+      }
+    >
+      <Airliner
+        size={420}
+        view={view}
+        variant={variant}
+        behavior={behavior}
+        control={control}
+        cutaway={cutaway}
+        onOrbitChange={setOrbit}
+        onExplodeChange={setApart}
+        interactive
+        label="AIRLINER / 747"
+      />
+    </Bench>
+  )
+}
+
 export const demos: Record<string, React.ComponentType<DemoProps>> = {
   "robot-football": RobotFootballDemo,
   "gridiron-geometry": RobotFootballDemo,
@@ -5836,6 +5906,8 @@ export const demos: Record<string, React.ComponentType<DemoProps>> = {
   "animatronic-robot": AnimatronicRobotDemo,
   "bore-construct": BoreConstructDemo,
   "boring": BoreConstructDemo,
+  "airliner": AirlinerDemo,
+  "airframe": AirlinerDemo,
 }
 
 /**

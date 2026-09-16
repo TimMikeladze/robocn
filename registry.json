@@ -944,7 +944,7 @@
       "name": "robot-mantis",
       "type": "registry:ui",
       "title": "Robot mantis",
-      "description": "A stalker in side elevation whose raptorial forelimbs are a two-link chain solved to a real target — the pointer while it is watched — with solved walking legs and a strike on click.",
+      "description": "A stalker in side elevation whose raptorial forelimbs are a two-link chain solved to a real target \u2014 the pointer while it is watched \u2014 with solved walking legs and a strike on click.",
       "categories": [
         "robotics",
         "robots",
@@ -1113,7 +1113,7 @@
       "name": "robot-polar-bear",
       "type": "registry:ui",
       "title": "Robot polar bear",
-      "description": "One body with two ways of holding itself up. Swim is the handover: the plantigrade soles unload as the water takes the weight, the hull settles to a waterline, the hind limbs stop stepping and trail, and the forelimbs paddle on a stroke path the shoulder and elbow are solved to. Long body, long neck, small head — the silhouette does the rest.",
+      "description": "One body with two ways of holding itself up. Swim is the handover: the plantigrade soles unload as the water takes the weight, the hull settles to a waterline, the hind limbs stop stepping and trail, and the forelimbs paddle on a stroke path the shoulder and elbow are solved to. Long body, long neck, small head \u2014 the silhouette does the rest.",
       "categories": [
         "robotics",
         "robots",
@@ -1139,7 +1139,7 @@
       "name": "robot-panda",
       "type": "registry:ui",
       "title": "Robot panda",
-      "description": "The bear that sits down to use its hands. Sitting puts a third contact on the floor — the pelvis, with a span of its own — which is what buys back a base of support once both forepaws have left it. The sixth digit opposes the other five and the pad gap is an output: a fatter stalk rides the thumb further open at the same grip, and both forelimbs are solved to the stalk itself.",
+      "description": "The bear that sits down to use its hands. Sitting puts a third contact on the floor \u2014 the pelvis, with a span of its own \u2014 which is what buys back a base of support once both forepaws have left it. The sixth digit opposes the other five and the pad gap is an output: a fatter stalk rides the thumb further open at the same grip, and both forelimbs are solved to the stalk itself.",
       "categories": [
         "robotics",
         "robots",
@@ -1165,7 +1165,7 @@
       "name": "robot-horse",
       "type": "registry:ui",
       "title": "Robot horse",
-      "description": "A quadruped whose gait is the mechanism: walk, trot, pace, canter and gallop are real footfall sequences whose beat is counted from them, and the load each grounded foot carries drives two joints nobody sets — a sprung fetlock that sinks under weight and recoils free, and a neck that nods because the forehand is loading and unloading. Drag across it to scrub the stride one footfall at a time.",
+      "description": "A quadruped whose gait is the mechanism: walk, trot, pace, canter and gallop are real footfall sequences whose beat is counted from them, and the load each grounded foot carries drives two joints nobody sets \u2014 a sprung fetlock that sinks under weight and recoils free, and a neck that nods because the forehand is loading and unloading. Drag across it to scrub the stride one footfall at a time.",
       "categories": [
         "robotics",
         "robots",
@@ -1217,7 +1217,7 @@
       "name": "robot-camel",
       "type": "registry:ui",
       "title": "Robot camel",
-      "description": "The one machine here whose floor is not a line: its ground is a medium with a depth, and the feet go into it. The pad opens under load, that spread drops its pressure, and the pressure is what takes it into the sand — so an opening foot keeps the animal higher up. The hump is a store that slumps as it empties, and the roll is the gait: a pace throws the body right over and a trot barely moves it.",
+      "description": "The one machine here whose floor is not a line: its ground is a medium with a depth, and the feet go into it. The pad opens under load, that spread drops its pressure, and the pressure is what takes it into the sand \u2014 so an opening foot keeps the animal higher up. The hump is a store that slumps as it empties, and the roll is the gait: a pace throws the body right over and a trot barely moves it.",
       "categories": [
         "robotics",
         "robots",
@@ -1316,7 +1316,7 @@
       "name": "voxel-form",
       "type": "registry:ui",
       "title": "Voxel form",
-      "description": "The workpiece on its own: a continuous field sampled into vector voxels and laid cell by cell, with no machine around it — a resolution axis, a build line you can scrub, and four camera angles.",
+      "description": "The workpiece on its own: a continuous field sampled into vector voxels and laid cell by cell, with no machine around it \u2014 a resolution axis, a build line you can scrub, and four camera angles.",
       "categories": [
         "robotics",
         "machines"
@@ -1595,7 +1595,7 @@
       "name": "robot-drone",
       "type": "registry:ui",
       "title": "Robot drone",
-      "description": "A four- or six-rotor drone drawn from four camera angles — plan, front, side and isometric — that flies its own path or takes a controlled heading, with spinning counter-rotating propellers, landing gear and optional guards.",
+      "description": "A four- or six-rotor drone drawn from four camera angles \u2014 plan, front, side and isometric \u2014 that flies its own path or takes a controlled heading, with spinning counter-rotating propellers, landing gear and optional guards.",
       "categories": [
         "robotics",
         "robots"
@@ -3196,7 +3196,7 @@
       "name": "cactus-geometry",
       "type": "registry:lib",
       "title": "Cactus geometry",
-      "description": "Dependency-free continuum limbs solved from their own curvature — exact length at every bend — with ribbed sections, crest lines, a staggered areole lattice, taper-true skin normals, rigid spine fans and rigid hinged petals.",
+      "description": "Dependency-free continuum limbs solved from their own curvature \u2014 exact length at every bend \u2014 with ribbed sections, crest lines, a staggered areole lattice, taper-true skin normals, rigid spine fans and rigid hinged petals.",
       "categories": [
         "robotics",
         "math"
@@ -3423,7 +3423,7 @@
       "name": "siege-walker",
       "type": "registry:ui",
       "title": "Siege walker",
-      "description": "A four-legged armoured transport walker on the same solver as the scout: four feet at the corners of a long rectangle contain its mass, so it walks nearly level — until it is asked to pace, when the support collapses to a line down one flank it cannot roll far enough to reach. Drawn from any of four camera angles.",
+      "description": "A four-legged armoured transport walker on the same solver as the scout: four feet at the corners of a long rectangle contain its mass, so it walks nearly level \u2014 until it is asked to pace, when the support collapses to a line down one flank it cannot roll far enough to reach. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
         "robots"
@@ -3493,7 +3493,7 @@
       "name": "celestial-planet",
       "type": "registry:ui",
       "title": "Celestial planet",
-      "description": "A tilted, turning globe with latitude bands, polar caps, longitude storms and a ring system the body genuinely occludes — the far arc is cut where the silhouette crosses it, and the day-night line is a projected great circle.",
+      "description": "A tilted, turning globe with latitude bands, polar caps, longitude storms and a ring system the body genuinely occludes \u2014 the far arc is cut where the silhouette crosses it, and the day-night line is a projected great circle.",
       "categories": [
         "robotics",
         "space",
@@ -3565,7 +3565,7 @@
       "name": "celestial-asteroid",
       "type": "registry:ui",
       "title": "Celestial asteroid",
-      "description": "An irregular body whose radius is a deterministic sum of cosine lobes, so its silhouette genuinely changes as it turns — and it tumbles about an axis that is itself going round.",
+      "description": "An irregular body whose radius is a deterministic sum of cosine lobes, so its silhouette genuinely changes as it turns \u2014 and it tumbles about an axis that is itself going round.",
       "categories": [
         "robotics",
         "space",
@@ -3996,7 +3996,7 @@
       "name": "vehicle-geometry",
       "type": "registry:lib",
       "title": "Vehicle geometry",
-      "description": "Ackermann steering, steady-state articulation, coordinated bank, a rigid body sitting on N axles, the rocket equation and surface-piercing foil lift — the constraints a vehicle works against.",
+      "description": "Ackermann steering, steady-state articulation, coordinated bank, a rigid body sitting on N axles, the rocket equation and surface-piercing foil lift \u2014 the constraints a vehicle works against.",
       "categories": [
         "robotics",
         "math"
@@ -4195,7 +4195,7 @@
       "name": "gabled-house",
       "type": "registry:ui",
       "title": "Gabled house",
-      "description": "A dwelling drawn as a machine: the ridge height is the roof pitch you pass it, the garage door's rigid panels ride one track from vertical to horizontal, and the louvre fins and the garden array turn to face a sun that is one number — the time of day.",
+      "description": "A dwelling drawn as a machine: the ridge height is the roof pitch you pass it, the garage door's rigid panels ride one track from vertical to horizontal, and the louvre fins and the garden array turn to face a sun that is one number \u2014 the time of day.",
       "categories": [
         "robotics",
         "machines"
@@ -4569,7 +4569,7 @@
       "name": "blocking-sled",
       "type": "registry:ui",
       "title": "Blocking sled",
-      "description": "A training sled whose pads sit at a static equilibrium — the load's moment against a return spring's, solved by bisection — on a frame that will not move at all until the drive beats the friction under its skids.",
+      "description": "A training sled whose pads sit at a static equilibrium \u2014 the load's moment against a return spring's, solved by bisection \u2014 on a frame that will not move at all until the drive beats the friction under its skids.",
       "categories": [
         "robotics",
         "machines"
@@ -4615,7 +4615,7 @@
       "name": "assembly-geometry",
       "type": "registry:lib",
       "title": "Assembly geometry",
-      "description": "An ordered exploded assembly: parts taken apart in the reverse of the order they were fitted, each along its own fit axis, in stages, and seated again exactly — plus the envelope the teardown needs.",
+      "description": "An ordered exploded assembly: parts taken apart in the reverse of the order they were fitted, each along its own fit axis, in stages, and seated again exactly \u2014 plus the envelope the teardown needs.",
       "categories": [
         "robotics",
         "geometry"
@@ -4635,7 +4635,7 @@
       "name": "lantern-geometry",
       "type": "registry:lib",
       "title": "Lantern geometry",
-      "description": "An ordered exploded assembly — parts taken apart in the reverse of the order they were fitted, each along its own axis, seated again exactly — with a conserved charge transfer, a recital count, a reserve gauge, a cage, and an inverse-square emission column.",
+      "description": "An ordered exploded assembly \u2014 parts taken apart in the reverse of the order they were fitted, each along its own axis, seated again exactly \u2014 with a conserved charge transfer, a recital count, a reserve gauge, a cage, and an inverse-square emission column.",
       "categories": [
         "robotics",
         "math"
@@ -4656,7 +4656,7 @@
       "name": "power-lantern",
       "type": "registry:ui",
       "title": "Power lantern",
-      "description": "A carried reservoir lantern that charges a ring: a ribbed prism barrel in a cage of bowed straps, a round charge port on its face that docks a ring, a conduit that moves charge rather than inventing it, an inscription collar lit a glyph at a time, an emission cone paid for out of the reserve — and every part of it coming off in the reverse of the order it was fitted.",
+      "description": "A carried reservoir lantern that charges a ring: a ribbed prism barrel in a cage of bowed straps, a round charge port on its face that docks a ring, a conduit that moves charge rather than inventing it, an inscription collar lit a glyph at a time, an emission cone paid for out of the reserve \u2014 and every part of it coming off in the reverse of the order it was fitted.",
       "categories": [
         "robotics",
         "machines"
@@ -4909,7 +4909,7 @@
       "name": "sport-geometry",
       "type": "registry:lib",
       "title": "Sport geometry",
-      "description": "The kit a game is played with: the sphere and its seams, the puck, and the four dynamics that make five objects behave unlike one another — a restitution ladder, a Magnus curve, a Coulomb slide and the bat-ball collision, each a closed form sampled at a clock rather than an integrator.",
+      "description": "The kit a game is played with: the sphere and its seams, the puck, and the four dynamics that make five objects behave unlike one another \u2014 a restitution ladder, a Magnus curve, a Coulomb slide and the bat-ball collision, each a closed form sampled at a clock rather than an integrator.",
       "categories": [
         "robotics",
         "kinematics"
@@ -5044,7 +5044,7 @@
       "name": "construct-geometry",
       "type": "registry:lib",
       "title": "Construct geometry",
-      "description": "Reads a freehand stroke — resampled by arc length, measured into a frame, classified into an archetype — and forges it into a filled construct, with the draw it costs.",
+      "description": "Reads a freehand stroke \u2014 resampled by arc length, measured into a frame, classified into an archetype \u2014 and forges it into a filled construct, with the draw it costs.",
       "categories": [
         "robotics",
         "kinematics"
@@ -5153,6 +5153,50 @@
           "path": "src/components/ui/bore-construct.tsx",
           "type": "registry:ui",
           "target": "@ui/bore-construct.tsx"
+        }
+      ]
+    },
+    {
+      "name": "airframe",
+      "type": "registry:lib",
+      "title": "Airframe",
+      "description": "TODO: what airframe solves, in one sentence a stranger can read on a card.",
+      "categories": [
+        "robotics",
+        "kinematics"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json"
+      ],
+      "files": [
+        {
+          "path": "src/lib/robocn/airframe.ts",
+          "type": "registry:lib",
+          "target": "@lib/airframe.ts"
+        }
+      ]
+    },
+    {
+      "name": "airliner",
+      "type": "registry:ui",
+      "title": "Airliner",
+      "description": "A four-engine double-deck widebody airliner: lofted fuselage and swept wing, solved gear retraction, free orbit and a full exploded teardown.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json",
+        "{REGISTRY_URL}/r/assembly-geometry.json",
+        "{REGISTRY_URL}/r/airframe.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/airliner.tsx",
+          "type": "registry:ui",
+          "target": "@ui/airliner.tsx"
         }
       ]
     }

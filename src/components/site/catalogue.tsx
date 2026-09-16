@@ -205,6 +205,7 @@ import { RobotHockeyPuck } from "@/components/ui/robot-hockey-puck"
 import { ConstructRing } from "@/components/ui/construct-ring"
 import { AnimatronicRobot } from "@/components/ui/animatronic-robot"
 import { BoreConstruct } from "@/components/ui/bore-construct"
+import { Airliner } from "@/components/ui/airliner"
 import { galleryEntries } from "@/components/site/gallery.generated"
 import { Panel } from "@/components/site/panel"
 
@@ -472,6 +473,26 @@ const art: Record<string, Art> = {
   "bore-geometry": {
     line: "The excavation solver under it: the rate, the cavity, and the spoil that conserves it.",
     art: <BoreConstruct size={168} variant="blueprint" behavior="bore" speed={1.1} showSpoil={false} showGround={false} />,
+  },
+  "airliner": {
+    line: "A four-engine double-deck widebody you can walk right round and take completely to bits.",
+    // Posed for 150px: on the bench, turning as it comes apart, which is the
+    // one still where a teardown still reads as an aeroplane.
+    art: <Airliner size={168} behavior="service" speed={0.12} showGround={false} />,
+  },
+  "airframe": {
+    line: "The loft under it — body, wing and a folding side stay — drawn as the machine it solves for.",
+    art: (
+      <Airliner
+        size={168}
+        variant="blueprint"
+        view="profile"
+        cutaway={0.9}
+        behavior="approach"
+        speed={0.16}
+        showGround={false}
+      />
+    ),
   },
 }
 
