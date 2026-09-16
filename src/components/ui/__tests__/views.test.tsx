@@ -105,6 +105,7 @@ import { RobotBasketball } from "@/components/ui/robot-basketball"
 import { RobotSoccerBall } from "@/components/ui/robot-soccer-ball"
 import { RobotHockeyPuck } from "@/components/ui/robot-hockey-puck"
 import { ConstructRing } from "@/components/ui/construct-ring"
+import { AnimatronicRobot } from "@/components/ui/animatronic-robot"
 
 /**
  * The native view is the default, and adding the `view` axis to a machine is
@@ -235,6 +236,18 @@ const machines: Record<string, (view?: RobotView) => React.ReactElement> = {
   "construct-ring": (view) => (
     <ConstructRing animate={false} construct="glove" reserve={0.72} exploded={0.3} view={view} />
   ),
+  "animatronic-robot": (view) => (
+    <AnimatronicRobot
+      animate={false}
+      interactive={false}
+      attend={{ x: 0.35, y: 0.2 }}
+      gait="walk"
+      gaitPhase={0.28}
+      breath={0.7}
+      showBalance
+      view={view}
+    />
+  ),
 }
 
 /**
@@ -344,6 +357,7 @@ const natives: Partial<Record<keyof typeof machines, RobotView>> = {
   "robot-soccer-ball": "profile",
   "robot-hockey-puck": "plan",
   "construct-ring": "iso",
+  "animatronic-robot": "front",
 }
 
 const tippedFrom = (native: RobotView): RobotView =>

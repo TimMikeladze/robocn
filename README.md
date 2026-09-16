@@ -170,6 +170,7 @@ installs at.
 | `robot-skeleton` | The whole biped, walking. A run is a walk with the duty factor under a half, and it says when both feet are off the floor. |
 | `hand-kinematics` | The hand solver: five digits in one frame, a two-angle saddle thumb, and the pinch gap that falls out of it. |
 | `skeleton-kinematics` | The biped solver: stride cycles, a foot that rolls over a planted sole, an equal-segment spine, counter-swinging arms. |
+| `animatronic-kinematics` | The whole-humanoid layer: one routine intent for the entire body, an attention cascade through eyes, neck and waist, and a centre of mass against the support polygon. |
 | `motion-platform` | A six-axis Stewart base under a payload deck, with visible stroke and a fault when a pose asks for more travel than it has. |
 | `produce-geometry` | Solids of revolution with a real profile: the surface, a golden-angle lattice spaced by equal surface area, half shells that reassemble, a hinge about any line, and blades that keep their length at every pitch. |
 | `electromagnetism-geometry` | Helical winding points, balanced three-phase vectors, and ideal resolver sine/cosine channels. |
@@ -264,6 +265,7 @@ installs at.
 | `robot-hockey-puck` | A cylinder on ice: friction is a constant deceleration whatever the speed, so the whole track — every board, and the point it stops — is solved once in closed form. Its silhouette is the hull of its two rims, so it is exact face-on and edge-on alike. |
 | `construct-ring` | A signet emitter ring: a lit bezel over a knurled band, a teardown in fitting order, a field where a stroke you draw is forged into a construct — a bubble, a glove, a hammer — of solid light, and a camera you can turn to anywhere on the sphere with a drag. |
 | `construct-geometry` | Stroke sampling and measurement: arc-length resampling, a frame (centroid, principal axis, spans, closure, area, circularity, corners), a classifier from that frame to an archetype, and a scanline lattice that fills the result. |
+| `animatronic-robot` | The whole animatronic: one routine driving gait, breath, gaze, grip and expression together, an attention cascade through eyes, neck and waist, and a centre of mass kept over the ground its feet hold. |
 
 Installing a component pulls in what it needs: `robot-arm` brings `robot-kinematics`,
 `robot-style` and both hooks, and the theme variables ride along with `robot-style`.

@@ -203,6 +203,7 @@ import { RobotBasketball } from "@/components/ui/robot-basketball"
 import { RobotSoccerBall } from "@/components/ui/robot-soccer-ball"
 import { RobotHockeyPuck } from "@/components/ui/robot-hockey-puck"
 import { ConstructRing } from "@/components/ui/construct-ring"
+import { AnimatronicRobot } from "@/components/ui/animatronic-robot"
 import { galleryEntries } from "@/components/site/gallery.generated"
 import { Panel } from "@/components/site/panel"
 
@@ -460,6 +461,8 @@ const art: Record<string, Art> = {
   "robot-hockey-puck": { line: "A cylinder on ice, with every board and the stop already solved.", art: <RobotHockeyPuck size={168} behavior="dump" /> },
   "construct-ring": { line: "Draw a stroke and it forges what the stroke was asking for.", art: <ConstructRing size={168} behavior="flare" rotatable={false} showField={false} showGround={false} /> },
   "construct-geometry": { line: "A stroke measured into seven numbers, and the construct they ask for.", art: <ConstructRing size={168} variant="blueprint" rotatable={false} showField={false} showGround={false} /> },
+  "animatronic-robot": { line: "The whole animatronic, running itself — and standing over its own foot.", art: <AnimatronicRobot size={168} behavior="greet" attend={{ x: 0.35, y: 0.3 }} follow={false} interactive={false} showReadout={false} showGround={false} /> },
+  "animatronic-kinematics": { line: "One intent for the whole body, and the ground its feet actually hold.", art: <AnimatronicRobot size={168} variant="blueprint" chassis="frame" behavior="inspect" interactive={false} showBalance showReadout={false} showGround={false} /> },
 }
 
 /** Exported for the coverage test — a card that exists nowhere else is a bug. */

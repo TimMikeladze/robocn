@@ -1975,6 +1975,29 @@
       ]
     },
     {
+      "name": "animatronic-kinematics",
+      "type": "registry:lib",
+      "title": "Animatronic kinematics",
+      "description": "A whole-humanoid controller and balance solver: one routine intent for the entire body, an attention cascade that spends the eyes before the neck and the neck before the waist, a segment-mass centre of mass against the support polygon the feet actually hold, and the rigid roll that puts the weight back over them.",
+      "categories": [
+        "robotics",
+        "math"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/skeleton-kinematics.json",
+        "{REGISTRY_URL}/r/face-actuation.json",
+        "{REGISTRY_URL}/r/hand-kinematics.json"
+      ],
+      "files": [
+        {
+          "path": "src/lib/robocn/animatronic.ts",
+          "type": "registry:lib",
+          "target": "@lib/robocn/animatronic.ts"
+        }
+      ]
+    },
+    {
       "name": "motion-platform",
       "type": "registry:ui",
       "title": "Motion platform",
@@ -5058,6 +5081,33 @@
           "path": "src/components/ui/construct-ring.tsx",
           "type": "registry:ui",
           "target": "@ui/construct-ring.tsx"
+        }
+      ]
+    },
+    {
+      "name": "animatronic-robot",
+      "type": "registry:ui",
+      "title": "Animatronic robot",
+      "description": "The whole animatronic, running itself: one routine intent driving gait, breath, gaze, grip and expression together, an attention cascade through the eyes, neck and waist, a solved face on a solved biped, and a centre of mass it keeps over the support polygon its feet actually hold. Four camera angles, every channel posable.",
+      "categories": [
+        "robotics",
+        "robots"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/animatronic-kinematics.json",
+        "{REGISTRY_URL}/r/skeleton-kinematics.json",
+        "{REGISTRY_URL}/r/face-actuation.json",
+        "{REGISTRY_URL}/r/hand-kinematics.json",
+        "{REGISTRY_URL}/r/use-pointer-target.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/animatronic-robot.tsx",
+          "type": "registry:ui",
+          "target": "@ui/animatronic-robot.tsx"
         }
       ]
     }

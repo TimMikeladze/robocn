@@ -222,6 +222,7 @@ import { RobotBasketball, type BasketballBehavior } from "@/components/ui/robot-
 import { RobotSoccerBall, type SoccerBallBehavior } from "@/components/ui/robot-soccer-ball"
 import { RobotHockeyPuck, puckShot, type HockeyPuckBehavior } from "@/components/ui/robot-hockey-puck"
 import { ConstructRing, type ConstructArchetype, type ConstructRingBehavior } from "@/components/ui/construct-ring"
+import { AnimatronicRobot, type AnimatronicChassis, type AnimatronicRobotBehavior } from "@/components/ui/animatronic-robot"
 import {
   JackOLantern,
   jackOLanternLight,
@@ -5521,6 +5522,44 @@ function ConstructRingDemo() {
   )
 }
 
+function AnimatronicRobotDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [behavior, setBehavior] = React.useState<AnimatronicRobotBehavior>("idle")
+  const [chassis, setChassis] = React.useState<AnimatronicChassis>("shell")
+  const [expression, setExpression] = React.useState<FaceExpression | "auto">("auto")
+  const [grasp, setGrasp] = React.useState<HandGrasp>("open")
+  const [stance, setStance] = React.useState(100)
+  const [breath, setBreath] = React.useState(-1)
+  const [speech, setSpeech] = React.useState(-1)
+  const [showBalance, setShowBalance] = React.useState<"on" | "off">("on")
+  const [follow, setFollow] = React.useState<"on" | "off">("off")
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="routine" value={behavior} options={["idle", "greet", "present", "inspect", "converse", "walk", "static"] as const} onChange={setBehavior} />
+      <Segmented label="chassis" value={chassis} options={["shell", "frame"] as const} onChange={setChassis} />
+      <Segmented label="expression" value={expression} options={["auto", "neutral", "joy", "surprise", "sorrow", "anger", "doubt", "sleep"] as const} onChange={setExpression} />
+      <Segmented label="grasp" value={grasp} options={GRASPS} onChange={setGrasp} />
+      <Segmented label="balance" value={showBalance} options={["on", "off"] as const} onChange={setShowBalance} />
+      <Segmented label="reach for it" value={follow} options={["on", "off"] as const} onChange={setFollow} />
+      <NumberControl label="stance" value={stance} min={0} max={100} onChange={setStance} format={v => `${v}%`} />
+      <NumberControl label="breath" value={breath} min={-1} max={100} onChange={setBreath} format={v => (v < 0 ? "auto" : `${v}%`)} />
+      <NumberControl label="speech" value={speech} min={-1} max={100} onChange={setSpeech} format={v => (v < 0 ? "auto" : `${v}%`)} />
+      <Hint>It watches the pointer anywhere on the page — the eyes go first, then the neck, then the waist. Drag across it to hold its attention, or focus it and use the arrow keys; End hands it back to the routine. With balance on, the dashed polygon is the ground its feet actually hold and the ring is where its weight is.</Hint>
+    </>}>
+      <AnimatronicRobot size={320} view={view} variant={variant} behavior={behavior}
+        chassis={chassis} grasp={grasp} stance={stance / 100}
+        expression={expression === "auto" ? undefined : expression}
+        breath={breath < 0 ? undefined : breath / 100}
+        speech={speech < 0 ? undefined : speech / 100}
+        showBalance={showBalance === "on"} follow={follow === "on"}
+        interactive label="ANIMATRONIC / 01" />
+    </Bench>
+  )
+}
+
 export const demos: Record<string, React.ComponentType<DemoProps>> = {
   "robot-football": RobotFootballDemo,
   "gridiron-geometry": RobotFootballDemo,
@@ -5736,6 +5775,7 @@ export const demos: Record<string, React.ComponentType<DemoProps>> = {
   "robot-hockey-puck": RobotHockeyPuckDemo,
   "construct-ring": ConstructRingDemo,
   "construct-geometry": ConstructRingDemo,
+  "animatronic-robot": AnimatronicRobotDemo,
 }
 
 /**

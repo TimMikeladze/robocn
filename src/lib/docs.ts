@@ -3142,6 +3142,36 @@ footRoll(0.9)  // { angle, contact, heelLoad, ballLoad, toeLoad }`,
     ],
   },
   {
+    slug: "animatronic-kinematics", item: "animatronic-kinematics", title: "Animatronic kinematics", group: "Foundations",
+    summary: "The whole-humanoid layer over the biped: one routine intent for the entire body, an attention cascade through the eyes, the neck and the waist, and a centre of mass measured against the ground the feet actually hold.",
+    files: ["lib/robocn/animatronic.ts"],
+    usage: `import { routineIntent, solveAttention, solveAnimatronic, balanceOf } from "@/lib/robocn/animatronic"
+
+const intent = routineIntent("converse", clock)   // the whole body at one instant
+const look = solveAttention({ x: 0.8, y: 0.1 })   // eyes, then neck, then waist
+const body = solveAnimatronic({ ...intent, balance: true })
+
+body.balance.margin   // signed distance from the plumb line to the support polygon
+body.roll             // the rigid roll taken to get there, in degrees`,
+    api: [
+      { name: "routineIntent", type: "(routine: AnimatronicRoutine, clock: number) => AnimatronicIntent", description: "The self-control loop: gait, stance, lean, twist, reach, gaze, expression, breath and grip together, as a pure function of the clock." },
+      { name: "blendIntent", type: "(a, b, t) => AnimatronicIntent", description: "Cross-fade two intents. Discrete fields \u2014 the gait, the grasp \u2014 take whichever side the fade is past halfway to; there is no halfway between a walk and a stand." },
+      { name: "solveAttention", type: "(target: Vec2 | null, effort?: number) => Attention", description: "Split a look across the eyes (\u00b130\u00b0), the neck (\u00b134\u00b0 yaw) and the waist (\u00b122\u00b0 twist), each taking only what the one before it could not reach." },
+      { name: "centreOfMass", type: "(pose: SkeletonPose) => Vec3", description: "Winter\u2019s segment fractions, each at its own segment\u2019s centre rather than at a joint." },
+      { name: "supportPolygon", type: "(pose, halfWidth?) => Vec2[]", description: "The convex hull of the footprints of the feet actually loaded, in the ground plane. A foot in swing contributes nothing." },
+      { name: "balanceOf", type: "(pose, halfWidth?) => Balance", description: "The weight, its plumb line, the polygon, and the signed margin between them. Positive is inside." },
+      { name: "balanceRoll", type: "(pose, effort?, halfWidth?) => number", description: "The roll about the support centroid that puts the plumb line back over it, clamped to what an animatronic\u2019s waist has." },
+      { name: "reachArm", type: "(arm, target, proportions?) => SkeletonArm", description: "Re-solve one arm to a target of its own, against the pose the skeleton returned \u2014 same shoulder, same bone lengths. The per-side override the shared reach target cannot express." },
+      { name: "solveAnimatronic", type: "(options?: AnimatronicOptions) => AnimatronicBody", description: "The whole machine: the biped, the cage it breathes with, the face rig and neck, both hands, and where its weight is standing." },
+      { name: "ribCage", type: "(spine: Vec3[], options?) => Rib[]", description: "Hoops hung off the thoracic vertebrae, drawn in the transverse plane. Breath opens them in depth about three times as much as in width." },
+    ],
+    notes: [
+      "No React, no three.js, no dependencies, and nothing is mutated. It sits on skeleton, face and hand kinematics rather than duplicating any of them.",
+      "The balance correction is a rigid rotation about a pivot on the floor, so every bone is the same length before and after and the planted foot stays where it was. It is also verified: the rolled pose is measured, and a roll that does not improve the margin is discarded rather than applied on faith.",
+      "There is still no dynamics. Nothing integrates a mass or computes a ground reaction; the margin is a measurement and the roll is a posture, not a fall being averted.",
+    ],
+  },
+  {
     slug: "motion-platform", item: "motion-platform", title: "Motion platform", group: "Machines",
     summary: "Six actuators and a deck: the Stewart platform doing the job it was invented for, with visible stroke and a fault when a pose asks for more travel than it has.",
     files: ["components/ui/motion-platform.tsx"],
@@ -7199,6 +7229,67 @@ download(await encodeFrames(frames, "webp"), "robot-arm.webp")`,
       "Turning is a camera move, not a second drawing: `azimuth` and `elevation` go straight to `robotCameraAt`, so every angle on the sphere is the same geometry the four named views are. The camera has no roll axis, so a drag that carries over the pole comes down the far side upright.",
       "The ring is projected; the construct is not. The ring is modelled once in world units and pushed through `robotCamera`, so all four cameras are the same geometry. A construct lives in the picture plane and does not rotate with the camera, because the stroke that made it was drawn there.",
       "An original archetype: a generic signet emitter. The face is an abstract iris — a bore, four radial inlays and a spiral gauge — and carries no insignia from anywhere.",
+    ],
+  },
+  {
+    slug: "animatronic-robot", item: "animatronic-robot", title: "Animatronic robot", group: "Robots",
+    summary: "The whole animatronic: a solved biped under a breathing cage, an expressive head on top of it, hands on the end of it, and a centre of mass it keeps over the ground its feet actually hold.",
+    files: ["components/ui/animatronic-robot.tsx"],
+    usage: `import { AnimatronicRobot } from "@/components/ui/animatronic-robot"
+
+// Runs itself, and watches the pointer anywhere on the page.
+<AnimatronicRobot behavior="converse" />
+
+// Every channel of the routine is also a prop, and a prop wins.
+<AnimatronicRobot expression="doubt" speech={0.4} grip={0.8} grasp="power" lean={12} />
+
+// Drive what it is looking at, and let it reach for that too.
+<AnimatronicRobot attend={{ x: 0.6, y: 0.2 }} follow showBalance />
+
+// The frame under the panels, walking.
+<AnimatronicRobot chassis="frame" gait="walk" gaitPhase={0.25} />`,
+    props: [
+      view("front", "machine"),
+      { name: "behavior", type: '"idle" | "greet" | "present" | "inspect" | "converse" | "walk" | "static"', default: '"idle"', description: "The routine it runs with nobody driving it. A routine returns the whole body\u2019s intent at an instant \u2014 gait, stance, lean, twist, reach, gaze, expression, breath and grip together \u2014 not a single number." },
+      { name: "chassis", type: '"shell" | "frame"', default: '"shell"', description: "Panels over the frame, or the frame on its own. Geometry is identical either way; only the shrouds come off." },
+      { name: "attend", type: "Vec2 | null", description: "What it is looking at, \u22121..1 on both axes: x to its left on screen, y up. Supplying it stops the pointer tracking." },
+      { name: "onAttendChange", type: "(point: Vec2 | null) => void", description: "Fires while it is dragged or keyed, so interaction works in controlled mode too. Null means it has been handed back to the routine." },
+      { name: "track", type: "boolean", default: "true", description: "Follow the pointer anywhere on the page." },
+      { name: "follow", type: "boolean", default: "true", description: "Reach for what it is attending to, as well as looking at it." },
+      { name: "interactive", type: "boolean", default: "true", description: "Drag across it to hold its attention, or focus it and use the arrow keys. Home centres the look; End hands it back to the routine." },
+      { name: "balance", type: "boolean", default: "true", description: "Roll the machine rigidly about its support centroid to bring its plumb line back inside the polygon its feet hold. A roll that does not improve the margin is not taken." },
+      { name: "showBalance", type: "boolean", default: "false", description: "Draw the support polygon, the centre of mass and the plumb line between them, and shade each pad of each sole by what it is carrying." },
+      { name: "showLoad", type: "boolean", description: "The sole pads on their own. Follows showBalance unless you set it." },
+      { name: "gait / gaitPhase", type: '"stand" | "walk" | "run" | "march" / number', description: "Footfall pattern and cycle fraction. Supplying the phase pins it." },
+      { name: "stance / stride / lift", type: "number", description: "Hip height 0 crouched to 1 tall, stride length, and foot clearance." },
+      { name: "lean / twist", type: "number", description: "Whole-column pitch and shoulders-against-pelvis, in degrees." },
+      { name: "neckYaw / neckPitch / neckRoll", type: "number", description: "Head angles in degrees, clamped to \u00b134, \u00b122, \u00b120, on top of whatever the column already carries it through." },
+      { name: "look", type: "Vec2 | null", description: "Pupil aim in \u22121..1 on both axes, over whatever the attention cascade gave the eyes." },
+      { name: "reach", type: "Vec3 | null", description: "A point both hands solve to, in the body frame \u2014 right for carrying something. Null takes them out of a reach and back into the swing." },
+      { name: "reachLeft / reachRight", type: "Vec3 | null", description: "A point one hand solves to, winning over reach for that side. This is what a wave is: the skeleton solver only takes a target both arms share, so without a per-side target every reaching pose comes out with the hands clasped." },
+      { name: "expression", type: '"neutral" | "joy" | "surprise" | "sorrow" | "anger" | "fear" | "disgust" | "doubt" | "sleep" | FaceChannels', description: "The face rig\u2019s shape, by name or as a channel vector you blended yourself." },
+      { name: "intensity / blink / speech", type: "number", description: "How far the rig drives there, lid closure, and speech level \u2014 each 0\u20131, each composing rather than replacing." },
+      { name: "channels", type: "Partial<FaceChannels>", description: "Drive individual face servos. Applied last, so these win outright." },
+      { name: "breath", type: "number", description: "Chest expansion, 0 emptied to 1 filled. Omit and it breathes on its own." },
+      { name: "grasp / grip", type: "HandGrasp / number", description: "What both hands are doing, and how far shut." },
+      { name: "effort", type: "number", default: "1", description: "How willingly the neck and waist join a look, and how hard the machine works to stay over its feet. At 0 a look stays in the eyes." },
+      { name: "ribs", type: "number", default: "7", description: "Hoops in the cage, clamped to 3\u201312." },
+      { name: "proportions", type: "Partial<SkeletonProportions>", description: "Override any bone length. The default is the family\u2019s, with an animatronic\u2019s larger skull." },
+      { name: "showGround / showReadout", type: "boolean", default: "true", description: "Contact shadow, and the routine / look / margin line under the drawing." },
+      { name: "speed", type: "number", default: "0.5", description: "Routine cycles per second." },
+      ...loop,
+      { name: "label", type: "string", description: "Caption under the machine." },
+      ...form.slice(0, 2),
+      ...palette,
+    ],
+    notes: [
+      "Nothing in the drawing branches on a routine name. A routine resolves to an AnimatronicIntent \u2014 the whole body\u2019s demand at an instant \u2014 and every field of it is also a prop, which is what makes the machine posable rather than merely animated. Supplying one prop leaves the routine driving the rest.",
+      "Looking at something is a posture, not a number. solveAttention spends the eyes first (\u00b130\u00b0), then the neck (\u00b134\u00b0 yaw), then the waist (\u00b122\u00b0 twist), each taking only what the one before it could not reach \u2014 so a small look is pure eyes and only a look over the shoulder costs a twist.",
+      "The balance is measured, not asserted. centreOfMass sums Winter\u2019s segment fractions at each segment\u2019s own centre; supportPolygon is the convex hull of the footprints of the feet actually loaded, so it narrows to a toe at toe-off and vanishes in a run\u2019s flight phase; the margin is the signed distance between the two. The correction is a rigid roll about the support centroid, so no bone changes length and the planted foot stays where it was.",
+      "There is no dynamics. Nothing integrates a mass, computes a ground reaction or decides whether the machine falls \u2014 it corrects its posture toward its support polygon and reports the margin it has left. An unstable pose is drawn unstable and says so rather than being quietly fixed.",
+      "The legs, feet and hands are the chassis robot-leg, robot-foot and robot-hand draw, on the same solvers and the same proportions: two strut actuators per leg whose stroke is a consequence of the pose, a sole turned about the ankle with a toe plate hinged at the ball, and a palm with a knuckle and a pad per digit. Nothing is redrawn per machine, so the four cannot drift apart.",
+      "Solved: the legs and their rolling feet, the spine, the ribs, the arms, both hands, the skull\u2019s exact silhouette, every face channel, and the balance. Illustrated: the shell panels, the chest core, and the ear and hip cans \u2014 they are drawn on the solved frame and drive nothing.",
+      "One geometry, four projections. The head is the same ellipsoid-and-chart construction as the animatronic face, carried by the column\u2019s lean, the shoulders\u2019 twist and the balance roll, so the far eye turns away on its own at every angle.",
     ],
   },
 ]
