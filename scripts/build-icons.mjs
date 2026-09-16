@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 /**
- * Writes the app icons: `src/app/icon.svg` and `src/app/apple-icon.png`.
+ * Writes the app icons: `src/app/icon.svg`, `src/app/apple-icon.png` and
+ * `src/app/favicon.ico` — the tab, the installed app and the bare
+ * `/favicon.ico` hit all showing the same mark the app bar does.
  *
  * The mark is `<Logo />` — a three-link chain the component solves at runtime —
  * so the icon cannot be the component. It is a capture of it: this opens the
@@ -23,11 +25,18 @@ import process from "node:process"
 import sharp from "sharp"
 
 import { parseArgs, resolveOrigin, withPage } from "./lib/capture.mjs"
+import { packIco } from "./lib/ico.mjs"
 
 /** Apple wants 180 px; everything else reads the SVG. */
 const APPLE = 180
+/**
+ * What goes in the `.ico`: the tab strip's 16, the bookmark bar and Windows'
+ * shortcut 32, and a 48 for the places that scale up from the largest they find.
+ */
+const ICO = [16, 32, 48]
 const OUT_SVG = "src/app/icon.svg"
 const OUT_PNG = "src/app/apple-icon.png"
+const OUT_ICO = "src/app/favicon.ico"
 
 /**
  * Lifts the logo out of the page with its painted colours baked on.
@@ -113,8 +122,20 @@ try {
     .png()
     .toFile(path.join(process.cwd(), OUT_PNG))
 
+  // The tab strip is the one place the mark is seen on a ground we do not
+  // control, so the `.ico` keeps its transparent corners rather than being
+  // flattened onto the light ground the way the touch icon is.
+  const frames = await Promise.all(
+    ICO.map(async (size) => ({
+      size,
+      data: await sharp(Buffer.from(svg), { density: 600 }).resize(size, size).png().toBuffer(),
+    })),
+  )
+  await writeFile(path.join(process.cwd(), OUT_ICO), packIco(frames))
+
   console.log(`→ ${OUT_SVG}`)
   console.log(`→ ${OUT_PNG} (${APPLE}x${APPLE})`)
+  console.log(`→ ${OUT_ICO} (${ICO.join(", ")})`)
 } finally {
   stop()
 }

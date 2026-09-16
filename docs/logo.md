@@ -132,3 +132,12 @@ capture reproducible.
 | --- | --- | --- |
 | `src/components/site/site-header.tsx` | live (`pointer`), click-aimed | 36 px |
 | `src/components/site/og-card.tsx` | `static`, so two captures of one commit are the same file | 56 px |
+
+And, frozen, in the three files a browser reads before it has read the page —
+`pnpm icons` lifts the parked pose off `/og` with its colours baked on and writes
+`src/app/icon.svg`, `src/app/apple-icon.png` (180 px, flattened onto the light
+ground because iOS composites a touch icon itself) and `src/app/favicon.ico`
+(16, 32, 48, transparent corners kept, packed by `scripts/lib/ico.mjs` because
+sharp has no `.ico` encoder). The tab strip, the bookmark bar and the app bar are
+therefore the same machine in the same pose. Re-run `pnpm icons` whenever the mark
+moves.

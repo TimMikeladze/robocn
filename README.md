@@ -489,7 +489,7 @@ pnpm registry:build   # writes public/r/*.json
 pnpm og               # recaptures every social card — a quarter of an hour
 pnpm og --only <name> # just that page's card: ~5 s, what a new machine ships with
 pnpm shots            # recaptures docs/screenshots/*.png, the pictures above
-pnpm icons            # recaptures the app icons: src/app/icon.svg and apple-icon.png
+pnpm icons            # recaptures the app icons: icon.svg, apple-icon.png, favicon.ico
 pnpm test             # kinematics, components, registry integrity
 pnpm typecheck
 pnpm build            # builds the registry, then the site
@@ -501,6 +501,12 @@ lives at the path a consumer installs it to, so what the site renders is exactly
 another outside shadcn's own registry — so the host is stamped in at build time from
 `NEXT_PUBLIC_REGISTRY_URL` (or Vercel's production URL).
 
+| variable | what it does |
+| --- | --- |
+| `NEXT_PUBLIC_REGISTRY_URL` | the host stamped into `public/r/*.json` and the install lines |
+| `NEXT_PUBLIC_UMAMI_WEBSITE_ID` | turns [analytics](docs/analytics.md) on; unset, no third-party script is served at all |
+| `NEXT_PUBLIC_UMAMI_URL` | the tracker script's full URL, for a self-hosted Umami; defaults to Umami Cloud |
+
 The social card at `public/og.png` is a screenshot of `/og`, which is a real page built
 from real components — see [the social card](docs/og-image.md) for why, and run `pnpm og`
 after changing what it shows. Every docs page has a card of its own under `public/og/`
@@ -510,8 +516,10 @@ micro-duck` for one card — seconds against a dev server that is already up, wh
 taking a new machine's card is a step in building it rather than a maintenance sweep. The pictures in this README are captures of the
 real pages for the same reason: `pnpm shots`, and [the screenshots](docs/screenshots.md)
 for the shot list. The app icons are the same trick at a smaller size: `pnpm icons` lifts
-the mark out of `/og` with its computed colours baked on, because `<Logo />` solves its
-chain at runtime and a favicon cannot. All of it drives headless Chrome through
+the mark out of `/og` with its computed colours baked on — because `<Logo />` solves its
+chain at runtime and a favicon cannot — and writes `icon.svg`, the 180 px `apple-icon.png`
+and a `favicon.ico` packed at 16, 32 and 48 by `scripts/lib/ico.mjs`, so the tab shows the
+same arm the app bar does. All of it drives headless Chrome through
 `scripts/lib/capture.mjs`.
 
 ### Reading the site as Markdown

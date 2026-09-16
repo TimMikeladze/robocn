@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next"
 import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google"
 
+import { Analytics } from "@/components/site/analytics"
 import { SiteFooter } from "@/components/site/site-footer"
 import { SiteHeader } from "@/components/site/site-header"
 import { ThemeProvider } from "@/components/site/theme-provider"
@@ -99,6 +100,8 @@ export default function RootLayout({
       <body className="min-h-dvh antialiased">
         {/* Before anything below it is parsed, so no frame paints in the wrong palette. */}
         <ThemeScript />
+        {/* Nothing at all unless NEXT_PUBLIC_UMAMI_WEBSITE_ID is set: `docs/analytics.md`. */}
+        <Analytics />
         {/* For an agent reading the rendered page rather than the head: the
             Markdown mirrors are the better surface, and this is where it finds
             out they exist. `docs/site-polish.md`. */}
