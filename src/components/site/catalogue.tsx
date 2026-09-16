@@ -204,6 +204,7 @@ import { RobotSoccerBall } from "@/components/ui/robot-soccer-ball"
 import { RobotHockeyPuck } from "@/components/ui/robot-hockey-puck"
 import { ConstructRing } from "@/components/ui/construct-ring"
 import { AnimatronicRobot } from "@/components/ui/animatronic-robot"
+import { BoreConstruct } from "@/components/ui/bore-construct"
 import { galleryEntries } from "@/components/site/gallery.generated"
 import { Panel } from "@/components/site/panel"
 
@@ -463,6 +464,15 @@ const art: Record<string, Art> = {
   "construct-geometry": { line: "A stroke measured into seven numbers, and the construct they ask for.", art: <ConstructRing size={168} variant="blueprint" rotatable={false} showField={false} showGround={false} /> },
   "animatronic-robot": { line: "The whole animatronic, running itself — and standing over its own foot.", art: <AnimatronicRobot size={168} behavior="greet" attend={{ x: 0.35, y: 0.3 }} follow={false} interactive={false} showReadout={false} showGround={false} /> },
   "animatronic-kinematics": { line: "One intent for the whole body, and the ground its feet actually hold.", art: <AnimatronicRobot size={168} variant="blueprint" chassis="frame" behavior="inspect" interactive={false} showBalance showReadout={false} showGround={false} /> },
+  "bore-construct": {
+    line: "A tunnelling head of solid light, boring a wall that cracks, spalls and heaps its own spoil.",
+    // Posed for 150px: the head half-buried, so the silhouette is bit, wall and wheel.
+    art: <BoreConstruct size={168} behavior="surge" thrust={0.86} hardness={0.3} speed={0.9} showGround={false} />,
+  },
+  "bore-geometry": {
+    line: "The excavation solver under it: the rate, the cavity, and the spoil that conserves it.",
+    art: <BoreConstruct size={168} variant="blueprint" behavior="bore" speed={1.1} showSpoil={false} showGround={false} />,
+  },
 }
 
 /** Exported for the coverage test — a card that exists nowhere else is a bug. */

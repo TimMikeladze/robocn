@@ -22,6 +22,7 @@ export const capturedOgSlugs: string[] = [
   "bellows-droid",
   "belt-drive",
   "blocking-sled",
+  "bore-construct",
   "busker-droid",
   "cable-carrier",
   "cable-station",

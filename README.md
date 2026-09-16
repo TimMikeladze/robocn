@@ -266,6 +266,8 @@ installs at.
 | `construct-ring` | A signet emitter ring: a lit bezel over a knurled band, a teardown in fitting order, a field where a stroke you draw is forged into a construct — a bubble, a glove, a hammer — of solid light, and a camera you can turn to anywhere on the sphere with a drag. |
 | `construct-geometry` | Stroke sampling and measurement: arc-length resampling, a frame (centroid, principal axis, spans, closure, area, circularity, corners), a classifier from that frame to an archetype, and a scanline lattice that fills the result. |
 | `animatronic-robot` | The whole animatronic: one routine driving gait, breath, gaze, grip and expression together, an attention cascade through eyes, neck and waist, and a centre of mass kept over the ground its feet hold. |
+| `bore-construct` | A tunnelling head of solid light: a stepped rotary bit forward, a pair of treaded drive wheels on one transverse axle aft, and a right-angle gear train, four thrust rams, gripper shoes and a flushing pump between them. The one machine here whose output is a change to the world around it — the hole it cuts and the spoil it heaps are the same cubic units. |
+| `bore-geometry` | Excavation mechanics: penetration from an energy balance at the face, the cavity that rate cuts in a slab, the volume conserved into a spoil heap at its own angle of repose, ballistic spall off the kerf, and a bearing cage ratio. |
 
 Installing a component pulls in what it needs: `robot-arm` brings `robot-kinematics`,
 `robot-style` and both hooks, and the theme variables ride along with `robot-style`.

@@ -223,6 +223,8 @@ import { RobotSoccerBall, type SoccerBallBehavior } from "@/components/ui/robot-
 import { RobotHockeyPuck, puckShot, type HockeyPuckBehavior } from "@/components/ui/robot-hockey-puck"
 import { ConstructRing, type ConstructArchetype, type ConstructRingBehavior } from "@/components/ui/construct-ring"
 import { AnimatronicRobot, type AnimatronicChassis, type AnimatronicRobotBehavior } from "@/components/ui/animatronic-robot"
+import { BoreConstruct, type BoreConstructBehavior } from "@/components/ui/bore-construct"
+import { boreDuty } from "@/lib/robocn/boring"
 import {
   JackOLantern,
   jackOLanternLight,
@@ -5560,6 +5562,62 @@ function AnimatronicRobotDemo() {
   )
 }
 
+function BoreConstructDemo() {
+  const [view, setView] = React.useState<RobotView>("profile")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [behavior, setBehavior] = React.useState<BoreConstructBehavior>("bore")
+  const [thrust, setThrust] = React.useState(72)
+  const [hardness, setHardness] = React.useState(45)
+  const [rev, setRev] = React.useState(110)
+  const [forge, setForge] = React.useState(100)
+  const [wall, setWall] = React.useState<"on" | "off">("on")
+  const [spoil, setSpoil] = React.useState<"on" | "off">("on")
+  const duty = boreDuty({
+    radius: 24,
+    cutters: 8,
+    rev: rev / 100,
+    torque: thrust / 100,
+    hardness: hardness / 100,
+  })
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="motion" value={behavior} options={["bore", "surge", "idle", "static"] as const} onChange={setBehavior} />
+      <NumberControl label="thrust" value={thrust} min={0} max={100} onChange={setThrust} format={(v) => `${v}%`} />
+      <NumberControl label="hardness" value={hardness} min={0} max={100} onChange={setHardness} format={(v) => `${v}%`} />
+      <NumberControl label="rev" value={rev} min={0} max={400} step={5} onChange={setRev} format={(v) => `${(v / 100).toFixed(2)}/s`} />
+      <NumberControl label="forge" value={forge} min={0} max={100} onChange={setForge} format={(v) => `${v}%`} />
+      <Segmented label="wall" value={wall} options={["on", "off"] as const} onChange={setWall} />
+      <Segmented label="spoil" value={spoil} options={["on", "off"] as const} onChange={setSpoil} />
+      <Readout rows={[
+        ["rate", `${duty.rate.toFixed(1)} u/s`],
+        ["per rev", `${duty.advancePerRev.toFixed(2)} u`],
+        ["chip", `${duty.chip.toFixed(3)} u`],
+        ["face", duty.turning ? "cutting" : "stalled"],
+      ]} />
+      <Hint>Drag across it to drive the head through the wall, or focus it and use the arrow keys. Wind the hardness up until the face stalls it.</Hint>
+    </>}>
+      <BoreConstruct
+        size={320}
+        view={view}
+        variant={variant}
+        behavior={behavior}
+        thrust={thrust / 100}
+        hardness={hardness / 100}
+        rev={rev / 100}
+        forge={forge / 100}
+        showWall={wall === "on"}
+        showSpoil={spoil === "on"}
+        color="oklch(0.74 0.16 158)"
+        accent="oklch(0.88 0.19 152)"
+        interactive
+        label="BORE / 01"
+      />
+    </Bench>
+  )
+}
+
 export const demos: Record<string, React.ComponentType<DemoProps>> = {
   "robot-football": RobotFootballDemo,
   "gridiron-geometry": RobotFootballDemo,
@@ -5776,6 +5834,8 @@ export const demos: Record<string, React.ComponentType<DemoProps>> = {
   "construct-ring": ConstructRingDemo,
   "construct-geometry": ConstructRingDemo,
   "animatronic-robot": AnimatronicRobotDemo,
+  "bore-construct": BoreConstructDemo,
+  "boring": BoreConstructDemo,
 }
 
 /**

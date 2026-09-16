@@ -7292,6 +7292,67 @@ download(await encodeFrames(frames, "webp"), "robot-arm.webp")`,
       "One geometry, four projections. The head is the same ellipsoid-and-chart construction as the animatronic face, carried by the column\u2019s lean, the shoulders\u2019 twist and the balance roll, so the far eye turns away on its own at every angle.",
     ],
   },
+  {
+    slug: "bore-geometry", item: "bore-geometry", title: "Bore geometry", group: "Foundations",
+    summary:
+      "Excavation mechanics: the penetration an energy balance at the face allows, the cavity that rate cuts in a slab, the volume conserved into a spoil heap at its own angle of repose, and ballistic spall off the kerf.",
+    files: ["lib/robocn/boring.ts"],
+    api: [
+      { name: "boreDuty(spec?)", type: "(spec?: Partial<BoreSpec>) => BoreDuty", description: "The energy balance: rate = \u03b7\u00b7P/(A\u00b7Es), where P is 2\u03c0\u00b7rev\u00b7torque and Es is the material\u2019s specific energy. Advance per revolution, chip per cutter and muck flow fall out of it. Below the stall torque nothing advances." },
+      { name: "specificEnergy(hardness)", type: "(hardness: number) => number", description: "Work per unit volume the material costs, convex in hardness." },
+      { name: "stallTorque(hardness)", type: "(hardness: number) => number", description: "The torque a face demands before it will turn at all, as a fraction of the drive\u2019s rating." },
+      { name: "boreCavity(depth, spec?, wall?)", type: "(depth: number, spec?: Partial<BoreSpec>, wall?: Partial<BoreWall>) => BoreCavity", description: "The hole: the real intersection of the bit\u2019s swept envelope with the slab, clipped at both faces, as an outline plus a hole subpath for fill-rule=\"evenodd\". Carries the excavated volume, the exit radius and the breakthrough." },
+      { name: "boreEnvelope(depth, spec?, wall?)", type: "(...) => (x: number) => number", description: "Half-width of the swept envelope at a drawing x \u2014 what the cavity is clipped from, so anything drawn inside the wall can be interrupted exactly where the bore has eaten it." },
+      { name: "spoilHeap(volume, repose?, at?)", type: "(volume: number, repose?: number, at?: Vec2) => SpoilHeap", description: "Inverts the cone volume, so the heap at the collar is the volume that came out of the wall, at the material\u2019s own angle of repose. It grows as a cube root, which is what conservation looks like." },
+      { name: "boreSpall(clock, flow, spec?, options?)", type: "(...) => Spall[]", description: "Rubble off the kerf, integrated as p\u2080 + vt + \u00bdgt\u00b2 from a deterministic launch on the rim. Nothing is thrown by a stalled head." },
+      { name: "boreFractures(cavity, spec?, wall?, count?)", type: "(...) => Fracture[]", description: "The crack pattern round the bore. Deterministic and grows with depth and hardness, but it is a drawing \u2014 there is no stress field here." },
+      { name: "cageRatio(rollerDiameter, pitchDiameter)", type: "(d: number, D: number) => number", description: "(1 \u2212 d/D)/2: how fast a rolling-element bearing\u2019s cage turns, as a fraction of the shaft." },
+      { name: "defaultBoreSpec / defaultBoreWall / BORE_TAPER", type: "BoreSpec | BoreWall | number", description: "The head, the slab and the nose-cone ratio everything is clipped with." },
+    ],
+    notes: [
+      "Pure functions over plain objects: no React, no three.js, no dependencies.",
+      "The rated torque is a scale constant, stated as one in the source: the set draws in picture units, so it is chosen to make a nominal head advance a few units a second. Nothing here is a real machine\u2019s numbers.",
+      "Solved: the duty, the cavity, the conserved volume and heap, the spall trajectories, the cage ratio. Illustrated: the fracture pattern.",
+    ],
+  },
+  {
+    slug: "bore-construct", item: "bore-construct", title: "Bore construct", group: "Machines",
+    summary:
+      "A construct-light tunnelling head: a stepped rotary bit forward, a pair of treaded drive wheels on one transverse axle aft that roll it into the face, and a right-angle gear train, thrust rams, grippers and a flushing pump between them, boring through a wall that cracks, spalls and heaps its own spoil.",
+    files: ["components/ui/bore-construct.tsx"],
+    usage: `import { BoreConstruct } from "@/components/ui/bore-construct"
+
+// Bores through and re-enters, at the rate the energy balance allows.
+<BoreConstruct behavior="bore" hardness={0.5} thrust={0.8} />
+
+// Or drive the head yourself. The advance is pinned; the spindle keeps turning.
+<BoreConstruct depth={0.6} onDepthChange={setDepth} interactive />`,
+    props: [
+      { name: "depth", type: "number", description: "Bore progress: 0 crown on the near face, 1 crown clear of the far one. Supplying it pins the advance exactly \u2014 the spindle keeps turning, because a drill held at depth is still a drill that is turning." },
+      { name: "onDepthChange", type: "(depth: number) => void", description: "Fires while it is dragged or keyed, so interaction works in controlled mode too." },
+      { name: "behavior", type: `"bore" | "surge" | "idle" | "static"`, default: `"bore"`, description: "What it does with nobody driving it. bore drives through and backs out to re-enter; surge takes the same ground in four bites while the grippers re-set; idle turns at the face without advancing." },
+      { name: "rev", type: "number", default: "1.1", description: "Spindle speed, bit revolutions per clock unit. The cutterhead drive turns the planetary ratio faster, and the flushing pump hangs off it." },
+      { name: "thrust", type: "number", default: "0.72", description: "Torque at the bit, 0 free to 1 the drive\u2019s rating. Also the stroke on the four rams and the reach of the gripper shoes." },
+      { name: "hardness", type: "number", default: "0.45", description: "The material, 0 spoil to 1 hard rock. Drives the specific energy, so it drives the rate, the chip and the stall." },
+      { name: "forge", type: "number", default: "1", description: "How solidly the construct stands, 0 to 1: the bloom and the shell\u2019s translucency. Paint only \u2014 no geometry moves." },
+      { name: "showWall", type: "boolean", default: "true", description: "The slab, drawn as a cutaway, with the bore cut out of it and the cracks around it." },
+      { name: "showSpoil", type: "boolean", default: "true", description: "The rubble off the kerf and the heap at the collar." },
+      { name: "interactive", type: "boolean", default: "false", description: "Hand it to a person: drag across it, or focus it and use the arrow keys. It eases back into the behaviour on release." },
+      { name: "showGround", type: "boolean", default: "true", description: "Draw the contact shadow and the ground line beneath it." },
+      { name: "label", type: "string", description: "Optional technical caption under the drawing." },
+      view("profile", "machine"),
+      { name: "speed", type: "number", default: "0.5", description: "Clock units per second." },
+      ...loop,
+      ...form.slice(0, 2),
+      ...palette,
+    ],
+    notes: [
+      "Solved: the penetration rate, from an energy balance at the face; the cavity, as the real intersection of the bit\u2019s swept envelope with the slab; the excavated volume and the spoil heap that conserves it; the spall trajectories; the planetary reduction, which is why the bit turns 3.75 times slower than the drive that feeds it; the drive wheel, which rolls without slipping \u2014 one revolution per 2\u03c0r of travel, and nothing at all while the machine is held; the transfer pair, meshed so the teeth genuinely sit in each other\u2019s spaces; the flushing pump\u2019s slider-crank; and the main bearing\u2019s cage ratio.",
+      "Illustrated: the fracture pattern around the bore, the bit\u2019s helical flights, the plough blades, the wheel\u2019s tread pattern, the body\u2019s rib cage, the hoses and fins, and the glow. Nothing collides \u2014 the machine is not stopped by the wall, it is driven through it by depth.",
+      "The wall is drawn as a cutaway so the machine inside the bore can be seen, and the bit is drawn inscribed in the envelope the cavity is cut from, so it never stands outside its own hole. Only a share of the muck reaches the collar; the rest packs the bore behind the machine.",
+      "An original archetype named for its job. It is a generic boring construct \u2014 no franchise name, insignia or paint scheme, and the default palette is the theme\u2019s.",
+    ],
+  },
 ]
 /**
  * Which group a registry item lands in when nobody has written its page yet.
