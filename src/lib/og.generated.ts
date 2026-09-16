@@ -181,6 +181,7 @@ export const capturedOgSlugs: string[] = [
   "robot-tomato",
   "robot-torso",
   "robot-turtle",
+  "rod-pump",
   "rotary-table",
   "rowing-erg",
   "scara-arm",

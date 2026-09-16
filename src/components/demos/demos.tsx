@@ -224,6 +224,12 @@ import { RobotHockeyPuck, puckShot, type HockeyPuckBehavior } from "@/components
 import { ConstructRing, type ConstructArchetype, type ConstructRingBehavior } from "@/components/ui/construct-ring"
 import { AnimatronicRobot, type AnimatronicChassis, type AnimatronicRobotBehavior } from "@/components/ui/animatronic-robot"
 import { BoreConstruct, type BoreConstructBehavior } from "@/components/ui/bore-construct"
+import { RodPump, type RodPumpBehavior } from "@/components/ui/rod-pump"
+import {
+  defaultPumpGeometry,
+  solveRodPump,
+  type PumpCondition,
+} from "@/lib/robocn/rodpump"
 import {
   Airliner,
   type AirlinerBehavior,
@@ -5688,6 +5694,83 @@ function AirlinerDemo() {
   )
 }
 
+function RodPumpDemo() {
+  const [view, setView] = React.useState<RobotView>("front")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [behavior, setBehavior] = React.useState<RodPumpBehavior>("pump")
+  const [condition, setCondition] = React.useState<PumpCondition>("full")
+  const [bore, setBore] = React.useState(1.75)
+  const [stroke, setStroke] = React.useState(86)
+  const [lift, setLift] = React.useState(4200)
+  const [spm, setSpm] = React.useState(8)
+  const [fillage, setFillage] = React.useState(0.55)
+  const [leak, setLeak] = React.useState(0.45)
+  const [level, setLevel] = React.useState(0.45)
+  const [card, setCard] = React.useState(true)
+  const [formation, setFormation] = React.useState(true)
+  const [cycle, setCycle] = React.useState(0.25)
+
+  const geometry = {
+    plungerDiameter: bore,
+    strokeLength: stroke,
+    netLift: lift,
+    strokesPerMinute: spm,
+    fillage,
+    leak,
+  }
+  const pose = solveRodPump(cycle, condition, { ...defaultPumpGeometry, ...geometry })
+
+  return (
+    <Bench controls={<>
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <Segmented label="motion" value={behavior} options={["pump", "slow", "static"] as const} onChange={setBehavior} />
+      <Segmented label="card" value={condition} options={["full", "gas", "pound", "tv-leak", "sv-leak", "tagging"] as const} onChange={setCondition} />
+      <NumberControl label="bore" value={bore} min={1} max={3.75} step={0.25} onChange={setBore} format={(v) => `${v}"`} />
+      <NumberControl label="stroke" value={stroke} min={24} max={192} step={2} onChange={setStroke} format={(v) => `${v}"`} />
+      <NumberControl label="lift" value={lift} min={500} max={9000} step={100} onChange={setLift} format={(v) => `${Math.round(v / 100) / 10}k`} />
+      <NumberControl label="spm" value={spm} min={2} max={16} onChange={setSpm} />
+      <NumberControl label="fillage" value={fillage} min={0.1} max={1} step={0.05} onChange={setFillage} format={(v) => `${Math.round(v * 100)}%`} />
+      <NumberControl label="leak" value={leak} min={0} max={1} step={0.05} onChange={setLeak} format={(v) => `${Math.round(v * 100)}%`} />
+      <NumberControl label="fluid" value={level} min={0} max={1} step={0.05} onChange={setLevel} format={(v) => `${Math.round(v * 100)}%`} />
+      <Segmented label="card?" value={card ? "on" : "off"} options={["on", "off"] as const} onChange={(next) => setCard(next === "on")} />
+      <Segmented label="rock" value={formation ? "on" : "off"} options={["on", "off"] as const} onChange={(next) => setFormation(next === "on")} />
+      <Readout rows={[
+        ["Fo", `${Math.round(pose.fluidLoad)} lb`],
+        ["on rods", `${Math.round(pose.rodLoad)} lb`],
+        ["displacement", `${Math.round(pose.displacement)} bpd`],
+        ["production", `${Math.round(pose.production)} bpd`],
+        ["efficiency", `${Math.round(pose.efficiency * 100)}%`],
+        ["chamber", `${Math.round(pose.chamber * 100)}% Pi→Pd`],
+        ["doing", pose.state],
+        ["TV lift", `${Math.round(pose.travelling * 100)}% · flow ${Math.round(pose.travellingFlow * 100)}%`],
+        ["SV lift", `${Math.round(pose.standing * 100)}% · flow ${Math.round(pose.standingFlow * 100)}%`],
+      ]} />
+      <Hint>
+        Drag up and down the well to work the plunger by hand — it turns over at the ends of
+        the stroke the way a crank does, and the dot tracks it round the card. Let go and the
+        pump picks the stroke back up. `fillage` and `leak` only bite on the fault they belong
+        to.
+      </Hint>
+    </>}>
+      <RodPump
+        size={320}
+        view={view}
+        variant={variant}
+        behavior={behavior}
+        condition={condition}
+        geometry={geometry}
+        fluidLevel={level}
+        showCard={card}
+        showFormation={formation}
+        onCycleChange={setCycle}
+        interactive
+        label="ROD PUMP / 25-175 RHBC"
+      />
+    </Bench>
+  )
+}
+
 export const demos: Record<string, React.ComponentType<DemoProps>> = {
   "robot-football": RobotFootballDemo,
   "gridiron-geometry": RobotFootballDemo,
@@ -5908,6 +5991,8 @@ export const demos: Record<string, React.ComponentType<DemoProps>> = {
   "boring": BoreConstructDemo,
   "airliner": AirlinerDemo,
   "airframe": AirlinerDemo,
+  "rod-pump": RodPumpDemo,
+  "rodpump-geometry": RodPumpDemo,
 }
 
 /**

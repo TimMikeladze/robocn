@@ -206,6 +206,7 @@ import { ConstructRing } from "@/components/ui/construct-ring"
 import { AnimatronicRobot } from "@/components/ui/animatronic-robot"
 import { BoreConstruct } from "@/components/ui/bore-construct"
 import { Airliner } from "@/components/ui/airliner"
+import { RodPump } from "@/components/ui/rod-pump"
 import { galleryEntries } from "@/components/site/gallery.generated"
 import { Panel } from "@/components/site/panel"
 
@@ -494,6 +495,13 @@ const art: Record<string, Art> = {
       />
     ),
   },
+  "rod-pump": {
+    line: "The downhole end of a beam-pumped well, in section — and a fluid pound is the plunger really falling through a void before it finds the liquid.",
+    // No card at 150px: what has to read is the cutaway itself, so the well is
+    // centred and the plunger is caught mid-fall with the void under it.
+    art: <RodPump size={120} condition="pound" geometry={{ fillage: 0.45 }} showCard={false} speed={0.22} phase={0.62} />,
+  },
+  "rodpump-geometry": { line: "The solver under it, drawn as the machine it solves for.", art: <RodPump size={168} variant="blueprint" /> },
 }
 
 /** Exported for the coverage test — a card that exists nowhere else is a bug. */

@@ -1,15 +1,18 @@
 # The oil field
 
-Ten machines and one solver covering the chain a barrel actually travels: a well pumped, a
-hole drilled, mud circulated, pressure controlled at the head, product stored, shipped by sea
-and by road, gas burned off, crude split into cuts, and the offshore hull that carries the
-whole upstream package out to sea.
+Eleven machines and two solvers covering the chain a barrel actually travels: a well pumped at
+surface and down the hole, a hole drilled, mud circulated, pressure controlled at the head,
+product stored, shipped by sea and by road, gas burned off, crude split into cuts, and the
+offshore hull that carries the whole upstream package out to sea.
 
-Design note for `linkage-geometry`, `pumpjack`, `drilling-derrick`, `mud-pump`,
-`wellhead-tree`, `storage-tank`, `oil-tanker`, `tanker-truck`, `flare-stack`,
-`fractionating-column` and `jackup-rig`.
+Design note for `linkage-geometry`, `rodpump-geometry`, `pumpjack`, `rod-pump`,
+`drilling-derrick`, `mud-pump`, `wellhead-tree`, `storage-tank`, `oil-tanker`, `tanker-truck`,
+`flare-stack`, `fractionating-column` and `jackup-rig`.
 
-## Why this is a family and not eleven items
+`rod-pump` has its own note — [`rod-pump.md`](./rod-pump.md) — because it is the family's
+second solver and the one place in the set that computes a pressure.
+
+## Why this is a family and not thirteen items
 
 Three things are shared and nothing else in the registry has them.
 
@@ -28,7 +31,7 @@ the pump's fluid end, the live cut leaving the column, flow through the choke, t
 plume. Reading a card, you can see at a glance how full a thing is. Nothing else in the set
 uses accent as a quantity.
 
-**Level is a mechanism.** Four of the ten are driven by *how much liquid is in them* rather
+**Level is a mechanism.** Four of them are driven by *how much liquid is in them* rather
 than by an angle: the tank roof floats on it, the tanker's waterline climbs the hull, the
 truck's compartments fill, the column's flash zone moves. That is the axis this family adds.
 
@@ -38,6 +41,8 @@ truck's compartments fill, the column's flash zone moves. That is the axis this 
 |---|---|---|
 | `linkage-geometry` | four-bar, slider-crank, block and tackle | the first *closed* loop: link lengths as a constraint, not a chain |
 | `pumpjack` | crank → pitman → walking beam, solved | a rocker whose stroke is a consequence of the loop, not a number |
+| `rodpump-geometry` | fluid load, valve timing off a gas compression, the card | the only mechanics in the set: a pressure, not a linkage |
+| `rod-pump` | the plunger and its two ball valves, in section | the first cutaway subject, and six diagnostic cards out of one model |
 | `drilling-derrick` | drum payout ÷ lines = block travel | mechanical advantage drawn as rope, with the falls really reeved |
 | `mud-pump` | three slider-cranks 120° apart | the only multi-cylinder machine; discharge is the sum of three piston velocities |
 | `wellhead-tree` | valve stack + variable choke bean | a pressure-control *assembly*, where `solenoid-valve` is one valve |
@@ -102,7 +107,7 @@ Everything the rest of the registry keeps, kept here: `shell`/`metal`/`dark`/`ac
 `px()` on every computed coordinate, a stable `data-*` per mechanism, `role="img"` or
 `role="slider"` with a real label.
 
-**Views.** All ten have a body in space and all ten take `view`. They are modelled once in
+**Views.** Every machine here has a body in space and every one takes `view`. They are modelled once in
 world units — **x** starboard, **y** up, **z** aft — and projected:
 
 - principal masses are solids: `elevationDraft`'s `solid` / `box` / `bar` / `disc` lift a
@@ -122,8 +127,15 @@ world units — **x** starboard, **y** up, **z** aft — and projected:
 
 Native views: `profile` for the machines whose mechanism is a side elevation (`pumpjack`,
 `oil-tanker`, `tanker-truck`), `front` for the standing ones (`drilling-derrick`,
-`wellhead-tree`, `storage-tank`, `flare-stack`, `fractionating-column`, `jackup-rig`), and
-`iso` for the mud pump, whose three cylinders sit behind one another in both elevations.
+`wellhead-tree`, `storage-tank`, `flare-stack`, `fractionating-column`, `jackup-rig`,
+`rod-pump`), and `iso` for the mud pump, whose three cylinders sit behind one another in both
+elevations.
+
+`rod-pump` adds the **cutaway** to this list, and holds the same contract: the round body of
+each tubular is a real cylinder, the cut through it is flat detail at depth zero, and so the
+plan view is a wellbore cross-section rather than a degenerate one. Its `solidity` — how
+opaque a tubular's body is drawn — is the one thing in the family that follows the camera, and
+it is paint rather than geometry.
 
 **Ground and water.** `showGround` draws a grade line and a contact shadow on the land
 machines, and a waterline with a hull shadow on `oil-tanker` and `jackup-rig`. The waterline
@@ -146,6 +158,7 @@ These are API. A test asserts a prop moved one of them.
 | `flare-stack` | `data-plume` (+`data-flow`) `data-pilot` `data-tip` `data-riser` `data-boom` `data-knockout` |
 | `fractionating-column` | `data-shell` `data-tray="n"` `data-draw="n"` (+`data-live`) `data-flash` `data-overhead` `data-reboiler` |
 | `jackup-rig` | `data-hull` (+`data-elevation`) `data-leg` `data-jack="n"` `data-cantilever` `data-string` |
+| `rod-pump` | `data-plunger` (+`data-travel`) `data-travelling-valve`/`data-standing-valve` (+`data-open` the ball's lift, +`data-flow`) `data-ball="travelling\|standing"` (+`data-wear`) `data-chamber` (+`data-charge`) `data-chamber-gauge` (+`data-pressure`) `data-void` `data-flow` (+`data-direction`) `data-card` (+`data-condition`) `data-rod` (+`data-load`) `data-barrel` `data-tubing` `data-casing` `data-holddown` `data-intake` `data-annulus` (+`data-level`) `data-perforation` `data-production` `data-formation` |
 
 ## Behaviours
 
@@ -164,6 +177,7 @@ the tests.
 | `flare-stack` | `flare` `pilot` `static` | flow to the tip |
 | `fractionating-column` | `run` `swing` `static` | heat into the flash zone |
 | `jackup-rig` | `jack` `preload` `static` | hull elevation up the legs |
+| `rod-pump` | `pump` `slow` `static` | position in the pump cycle, one stroke a cycle |
 
 ## Honesty
 
@@ -172,15 +186,22 @@ Stated here and repeated in each component's docs `notes`:
 - **Solved:** the pumpjack's four-bar and the polished-rod stroke that falls out of it; the
   mud pump's three slider-cranks and the crossheads they drive; the derrick's block travel and
   the reeved falls; the tanker's and the jack-up's waterline against a modelled hull; the tank
-  roof's height on the liquid; the truck's hitch articulation; every projection.
+  roof's height on the liquid; the truck's hitch articulation; the rod pump's fluid load,
+  displacement, valve timing and dynamometer card; every projection.
 - **Illustrated:** the flare plume, the flow arrows, the mud and crude as coloured regions, the
   column's temperature banding and the separation it implies, the derrick's drill string below
   the floor, the seabed under a spudcan.
-- **Absent:** there is no fluid, thermal, combustion, pressure, buoyancy, stability, mass or
-  torque model anywhere in this family. A tanker's draft is a drawn proportion of a modelled
-  hull, not displacement solved against a hull form; a column's cuts are labelled draws, not
-  a flash calculation; a flare's plume is a length, not combustion. Nothing here reports a
-  physical quantity it did not compute.
+- **Absent:** there is no thermal, combustion, buoyancy, stability, mass or torque model
+  anywhere in this family, and — outside `rodpump-geometry` — no fluid or pressure model
+  either. A tanker's draft is a drawn proportion of a modelled hull, not displacement solved
+  against a hull form; a column's cuts are labelled draws, not a flash calculation; a flare's
+  plume is a length, not combustion. Nothing here reports a physical quantity it did not
+  compute.
+- **The one exception, and its limit.** `rodpump-geometry` does compute a pressure: an
+  isothermal compression of the gas trapped below the plunger, which is what times both ball
+  valves and shapes the card. It is not a flow model and there is no wave equation — the
+  surface card is never propagated down the rod string, so what the pump reports is the
+  *downhole* card. `rod-pump.md` states the boundary.
 
 ## Originality
 

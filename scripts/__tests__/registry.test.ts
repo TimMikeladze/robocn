@@ -117,6 +117,7 @@ const oilFieldCollection = [
   "flare-stack",
   "fractionating-column",
   "jackup-rig",
+  "rod-pump",
 ] as const
 
 const electromagneticMachines = [

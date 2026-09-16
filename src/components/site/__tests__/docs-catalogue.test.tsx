@@ -144,7 +144,9 @@ const oilFieldSlugs = [
   "flare-stack",
   "fractionating-column",
   "jackup-rig",
+  "rod-pump",
   "linkage-geometry",
+  "rodpump-geometry",
 ] as const
 
 const electromagneticSlugs = [

@@ -7455,6 +7455,88 @@ controlMix({ roll: 8, configuration: 0.6 })`,
       "An original archetype named for its job — a generic four-engine double-deck widebody. No manufacturer's name, no livery, no registration, and the default palette is the theme's.",
     ],
   },
+  {
+    slug: "rodpump-geometry", item: "rodpump-geometry", title: "Rod pump geometry", group: "Foundations",
+    summary:
+      "The mechanics of a downhole sucker-rod pump: plunger travel off a crank, the fluid load and displacement from the field formulas, the travel at which each ball valve lifts, and the dynamometer card that falls out of the two.",
+    files: ["lib/robocn/rodpump.ts"],
+    api: [
+      { name: "solveRodPump(cycle, condition?, geometry?)", type: "(cycle: number, condition?: PumpCondition, geometry?: PumpGeometry) => RodPumpPose", description: "The whole pump at one point in its cycle: travel, direction, load, both valves, the liquid in the barrel, and the loads and rates in field units. One call, one frame of drawing." },
+      { name: "plungerTravel(cycle)", type: "(cycle: number) => number", description: "0 with the plunger on bottom, 1 on top. Hung off a crank, so it dwells at both ends and runs fastest through the middle." },
+      { name: "strokeDirection(cycle)", type: "(cycle: number) => 1 | -1", description: "Up over the first half of the cycle, down over the second." },
+      { name: "cycleForTravel(travel, near?)", type: "(travel: number, near?: number) => number", description: "The cycle nearest `near` that puts the plunger at `travel`. Every travel happens twice a cycle; picking the nearer branch is what lets a person drag the plunger and have it turn over at the ends instead of reversing." },
+      { name: "fluidLoad(geometry?)", type: "(geometry?: PumpGeometry) => number", description: "Fo = 0.34 · D² · G · L, pounds: the plunger area times the head of the column it lifts." },
+      { name: "pumpDisplacement(geometry?)", type: "(geometry?: PumpGeometry) => { displacement: number; production: number }", description: "PD = 0.1166 · D² · S · N, barrels a day, and what this fillage actually lifts." },
+      { name: "chamberPressure(cycle, condition?, geometry?)", type: "(cycle: number, condition?: PumpCondition, geometry?: PumpGeometry) => number", description: "Pressure in the barrel between the standing valve and the plunger, 0 at pump intake and 1 at discharge. **The one number the pump turns on**: the load on the rods is what is left of the differential across the plunger, and both balls are held down or let go by it. Going up the plunger expands whatever gas the clearance kept; coming down it compresses what is trapped above the liquid, until it meets liquid, which does not compress at all." },
+      { name: "pumpState(cycle, condition?, geometry?)", type: "(cycle: number, condition?: PumpCondition, geometry?: PumpGeometry) => PumpState", description: "Which of the card's four sides the pump is on: `filling`, `discharging`, or the two transfers — `picking-up` and `releasing` — where **both balls are down** and the plunger is doing nothing but change the pressure. Instants in a pump that fills; a fifth of the stroke in a gassy one." },
+      { name: "pumpRegime(condition, geometry?)", type: "(condition: PumpCondition, geometry?: PumpGeometry) => PumpRegime", description: "What a condition does to the pump, as numbers: fillage, intake ratio, how much of the unfilled barrel is compressible gas rather than void, valve slip, backflow, tagging. The six cards are six points in one model rather than six drawn shapes." },
+      { name: "tvOpenTravel(regime) / svOpenTravel(regime)", type: "(regime: PumpRegime) => number", description: "The travel at which the chamber first reaches discharge and first falls back to intake — so where each ball lifts. For a barrel that fills, the travelling valve opens at the top of the stroke (the card's square corner) and the standing valve at the bottom; a gassy one discharges late *and* fills late." },
+      { name: "pumpLoad(cycle, condition?, geometry?)", type: "(cycle: number, condition?: PumpCondition, geometry?: PumpGeometry) => number", description: "Load on the plunger as a fraction of Fo: the card's ordinate, where `plungerTravel` is its abscissa." },
+      { name: "valveFlow(cycle, condition?, geometry?)", type: "(cycle: number, condition?: PumpCondition, geometry?: PumpGeometry) => { travelling: number; standing: number }", description: "Flow through each valve as a fraction of the plunger's peak rate: `plungerSpeed` gated by the valve, and gated by the same travel the card is built from, so the flow, the load and the valve can never disagree. A plunger falling through a void moves nothing." },
+      { name: "ballLift(flow)", type: "(flow: number) => number", description: "Where a ball rides, 0 on its seat to 1 against its cage. Not a switch: the stream past it carries it up until the drag balances its own submerged weight, and it settles back as the flow dies at the end of the stroke. Linear in flow, because the annular area past the ball opens as it lifts." },
+      { name: "plungerSpeed(cycle)", type: "(cycle: number) => number", description: "Plunger velocity normalised to ±1 — the derivative of the travel, so zero at both ends of the stroke and fastest through the middle. Whatever the pump is moving, it is moving it at this rate." },
+      { name: "pumpValves(cycle, condition?, geometry?)", type: "(cycle: number, condition?: PumpCondition, geometry?: PumpGeometry) => PumpValves", description: "Both ball lifts, both valve flows, and how much liquid the barrel is holding." },
+      { name: "volumetricEfficiency(regime)", type: "(regime: PumpRegime) => number", description: "How much of the swept volume reaches surface: fillage, less slip past the travelling valve, less backflow through the standing valve. A pump can stroke perfectly and still deliver half of what it displaces." },
+      { name: "pumpCard(condition?, geometry?, steps?)", type: "(condition?: PumpCondition, geometry?: PumpGeometry, steps?: number) => PumpCard", description: "The closed card and its peak load, sampled over one cycle — so the running dot cannot leave the card it is drawn on." },
+      { name: "defaultPumpGeometry", type: "PumpGeometry", description: "A 1.75 in plunger on an 86 in stroke lifting 0.9 gravity fluid 4200 ft at 8 spm: about 3900 lb of fluid load and 246 bpd." },
+      { name: "PumpCondition", type: `"full" | "gas" | "pound" | "tv-leak" | "sv-leak" | "tagging"`, description: "The diagnostic cards a pump draws. `full` is the one the rest are read against." },
+    ],
+    notes: [
+      "One compression model produces the whole diagnostic family. The travelling valve opens where the gas trapped below the plunger reaches discharge pressure, or on contact with the liquid, whichever comes first — so `gas` is a Boyle curve, `pound` is the same function with no gas to compress, and both fall back onto `full` as the barrel fills. They are not three drawn shapes.",
+      "The two balls are one mechanism, not two. They are the two ends of a single volume — the barrel between the standing valve and the plunger — and `chamberPressure` is what holds each of them down or lets it go. Below intake pressure the standing valve lifts; above discharge the travelling valve does; in between **both are down** and the plunger is only changing the pressure. They can never both pass, because one chamber cannot be under the formation and over the discharge column at once. Which way the plunger is going decides which way that pressure is moving, so the whole valve sequence is two facts and not a schedule.",
+      "A ball is not a switch either. Once the pressure has let it go, `valveFlow` is the plunger's own rate through it and `ballLift` rides it up its cage on that flow, letting it settle back as the stroke slows — so it comes off its seat, floats, and beds again over real travel. A plunger falling through a void moves nothing, so its ball stays down through the whole fall and slams to the cage the moment it meets liquid. That is a fluid pound, and it falls out of the same chamber the card does.",
+      "The standing valve's delay is the mirror of that compression: the same gas has to expand back to intake pressure before formation fluid will come in, which is zero travel for a barrel that fills and a measurable fraction of the stroke for a gassy one.",
+      "No wave equation. The surface card is not propagated down the rod string — no stretch, damping, inertia, buoyancy, friction, gas solubility, temperature or slippage rate. `TRANSFER` is one constant standing in for the stretch that rounds a real card's corners, and this is the downhole card, which is the one a pump failure is read from anyway.",
+      "Pure functions over plain objects: no React, no three.js, no dependencies.",
+    ],
+  },
+  {
+    slug: "rod-pump", item: "rod-pump", title: "Rod pump", group: "Machines",
+    summary:
+      "A downhole sucker-rod pump in section: working barrel, plunger, travelling and standing valves, solving its own dynamometer card, fluid load and valve sequence, with the standard pump faults as conditions.",
+    files: ["components/ui/rod-pump.tsx"],
+    usage: `import { RodPump } from "@/components/ui/rod-pump"
+
+// Runs its own stroke, drawing a full-pump card.
+<RodPump behavior="pump" />
+
+// A well with gas below the plunger, sized for the job.
+<RodPump
+  condition="gas"
+  geometry={{ plungerDiameter: 2.25, netLift: 6100, fillage: 0.5 }}
+/>
+
+// Or drive it, which stops the loop.
+<RodPump cycle={0.3} onCycleChange={setCycle} interactive />`,
+    props: [
+      { name: "cycle", type: "number", description: "Controlled position in the pump cycle: 0 and 1 with the plunger on bottom, 0.5 on top. Supplying it stops the loop." },
+      { name: "onCycleChange", type: "(cycle: number) => void", description: "Fires while it is dragged or keyed, folded onto 0 to 1, so interaction works in controlled mode too." },
+      { name: "behavior", type: `"pump" | "slow" | "static"`, default: `"pump"`, description: "What it does with nobody driving it. `slow` is a pump-off controller's duty cycle: two strokes, then a rest." },
+      { name: "condition", type: `"full" | "gas" | "pound" | "tv-leak" | "sv-leak" | "tagging"`, default: `"full"`, description: "Which card the pump is drawing. A fault also changes the mechanism — where the balls lift, how far the plunger falls before it meets liquid — not just the trace." },
+      { name: "geometry", type: "Partial<PumpGeometry>", default: "defaultPumpGeometry", description: "Plunger bore and stroke in inches, net lift in feet, fluid gravity, strokes a minute, barrel fillage, intake ratio and leak severity. Every readout comes out of it." },
+      { name: "fluidLevel", type: "number", default: "0.45", description: "Fluid standing in the casing annulus, 0 at the foot of the window to 1 at the top. A drawn level, not a solved one." },
+      { name: "showCard", type: "boolean", default: "true", description: "The dynamometer card beside the well, with the full-pump card dashed behind a fault for comparison." },
+      { name: "showFormation", type: "boolean", default: "true", description: "The rock, its bedding, the cement sheath and the perforations." },
+      { name: "showFluid", type: "boolean", default: "true", description: "Fluid in the annulus, the tubing and the barrel." },
+      { name: "interactive", type: "boolean", default: "false", description: "Hand it to a person: drag up and down the well to work the plunger, or focus it and use the arrow keys. It turns over at the ends of the stroke and eases back into the behaviour on release." },
+      { name: "label", type: "string", description: "Optional technical caption under the drawing." },
+      view("front", "machine"),
+      { name: "speed", type: "number", default: "0.3", description: "Strokes per second." },
+      { name: "phase", type: "number", default: "0.2", description: "Offset into the cycle, so a row of wells breaks step. Its default is also where the pump parks under `animate={false}` or a reduced-motion preference: part way up the stroke, rather than on bottom at the instant of reversal where both valves are shut." },
+      ...loop.filter((row) => row.name !== "phase"),
+      ...form.slice(0, 2),
+      ...palette,
+    ],
+    notes: [
+      "Solved, in `rodpump-geometry`: the plunger travel off a crank and the rate that comes with it; the pressure in the barrel, from an isothermal compression and expansion of the gas the plunger is working against; both valves off that one pressure, and how far up its cage the flow through it carries each ball; the fluid load Fo = 0.34 · D² · G · L and the displacement PD = 0.1166 · D² · S · N; the liquid level in the barrel; the volumetric efficiency the fillage and the leaks leave; and the card itself, which is what is left of the differential across the plunger plotted against its travel. The running dot cannot leave the card, because the card is the dot sampled over a cycle.",
+      "The balls move because fluid moves them. Each rides as far up its cage as the stream past it will carry it and settles back as the stroke slows, so a valve opens and closes over real travel rather than switching — and the flow markers march with the volume the plunger has displaced, so they stall where it stalls. Wear is the other half of it: a ball whose seat face is no longer round still seats but no longer seals, so `tv-leak` and `sv-leak` pit the ball, bed it a little deeper in its own groove, draw the fluid slipping back past it, and take the loss off the production readout.",
+      "The conditions are one model at different fillages, intake ratios and leak severities — not six drawn shapes. `gas` bleeds the load off down a Boyle curve, `pound` is the same function with no gas to compress so the plunger falls free onto the liquid, and both come back to `full` as the barrel fills.",
+      "Illustrated: the rock, its bedding, the cement sheath, the perforation tunnels and the inflow streaks; the fluid as coloured regions; the gas bubbles. `fluidLevel` is a number you supply — the component never infers the annulus level from the fillage or anything else.",
+      "No wave equation. The surface card is not propagated down the rod string — no rod stretch, damping, inertia, buoyancy, friction or slippage rate — so this is the downhole card, which is the one a pump failure is read from. Nothing here reports a quantity it did not compute.",
+      "The first cutaway subject in the set: each tubular is drawn as the cylinder it is, ghosted, with the two faces the section plane leaves across its wall opaque over the top. In plan the cut plane is seen edge-on and the well reads as the concentric tubulars it is; the card is an instrument rather than an object, so it never turns with the camera.",
+      "A generic API-style insert pump named for its job. No manufacturer, field or operator names, and the default palette is the theme's.",
+    ],
+  },
 ]
 /**
  * Which group a registry item lands in when nobody has written its page yet.

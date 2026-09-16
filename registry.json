@@ -5199,6 +5199,49 @@
           "target": "@ui/airliner.tsx"
         }
       ]
+    },
+    {
+      "name": "rodpump-geometry",
+      "type": "registry:lib",
+      "title": "Rodpump geometry",
+      "description": "TODO: what rodpump geometry solves, in one sentence a stranger can read on a card.",
+      "categories": [
+        "robotics",
+        "kinematics"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-kinematics.json"
+      ],
+      "files": [
+        {
+          "path": "src/lib/robocn/rodpump.ts",
+          "type": "registry:lib",
+          "target": "@lib/rodpump.ts"
+        }
+      ]
+    },
+    {
+      "name": "rod-pump",
+      "type": "registry:ui",
+      "title": "Rod pump",
+      "description": "A downhole sucker-rod pump in section: working barrel, plunger, travelling and standing valves, solving its own dynamometer card, fluid load and valve sequence, with the standard pump faults as conditions.",
+      "categories": [
+        "robotics",
+        "machines"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json",
+        "{REGISTRY_URL}/r/rodpump-geometry.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/rod-pump.tsx",
+          "type": "registry:ui",
+          "target": "@ui/rod-pump.tsx"
+        }
+      ]
     }
   ]
 }
