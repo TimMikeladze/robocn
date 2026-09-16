@@ -5725,7 +5725,7 @@ function RodPumpDemo() {
       <Segmented label="view" value={view} options={views} onChange={setView} />
       <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
       <Segmented label="motion" value={behavior} options={["pump", "slow", "static"] as const} onChange={setBehavior} />
-      <Segmented label="card" value={condition} options={["full", "gas", "pound", "tv-leak", "sv-leak", "tagging"] as const} onChange={setCondition} />
+      <Segmented label="card" value={condition} options={["full", "gas", "pound", "tv-leak", "sv-leak", "tagging", "unanchored"] as const} onChange={setCondition} />
       <NumberControl label="bore" value={bore} min={1} max={3.75} step={0.25} onChange={setBore} format={(v) => `${v}"`} />
       <NumberControl label="stroke" value={stroke} min={24} max={192} step={2} onChange={setStroke} format={(v) => `${v}"`} />
       <NumberControl label="lift" value={lift} min={500} max={9000} step={100} onChange={setLift} format={(v) => `${Math.round(v / 100) / 10}k`} />
@@ -5738,8 +5738,8 @@ function RodPumpDemo() {
       <Readout rows={[
         ["Fo", `${Math.round(pose.fluidLoad)} lb`],
         ["on rods", `${Math.round(pose.rodLoad)} lb`],
-        ["displacement", `${Math.round(pose.displacement)} bpd`],
-        ["production", `${Math.round(pose.production)} bpd`],
+        ["fillage", `${Math.round(pose.tvOpen * 100)}%`],
+        ["swept", `${Math.round(pose.swept * 100)}% of the stroke`],
         ["efficiency", `${Math.round(pose.efficiency * 100)}%`],
         ["chamber", `${Math.round(pose.chamber * 100)}% Pi→Pd`],
         ["doing", pose.state],
@@ -5750,7 +5750,8 @@ function RodPumpDemo() {
         Drag up and down the well to work the plunger by hand — it turns over at the ends of
         the stroke the way a crank does, and the dot tracks it round the card. Let go and the
         pump picks the stroke back up. `fillage` and `leak` only bite on the fault they belong
-        to.
+        to, and `unanchored` lets the tubing string stretch — watch the whole pump ride up and
+        down against the casing, and the card lose the stroke it costs.
       </Hint>
     </>}>
       <RodPump

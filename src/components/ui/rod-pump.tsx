@@ -11,16 +11,26 @@
  * plunger, the two balls and the fluid inside can be read at all.
  *
  * **Solved**, in `src/lib/robocn/rodpump.ts` — pure, no React, tested on its
- * own: the plunger travel off a crank; the fluid load `Fo = 0.34·D²·G·L` and
- * the displacement `PD = 0.1166·D²·S·N`; the travel at which each ball lifts,
- * from an isothermal compression of the gas trapped below the plunger; the
- * liquid level in the barrel; and the dynamometer card, which is that load
- * plotted against that travel rather than six drawn shapes. The dot cannot
- * leave the card, because the card is the dot sampled over a cycle.
+ * own: the plunger travel off a crank; the fluid load `Fo = 0.34·D²·G·L`; the
+ * travel at which each ball lifts, from an isothermal compression of the gas
+ * trapped below the plunger; the liquid level in the barrel; the travel the
+ * pump sweeps against the barrel, which is less than the plunger travelled
+ * when the tubing string is free to stretch; and the dynamometer card, which
+ * is that load plotted against that swept travel rather than seven drawn
+ * shapes. The dot cannot leave the card, because the card is the dot sampled
+ * over a cycle.
+ *
+ * The **mud anchor** below the pump is drawn the way one works: the ports are
+ * near its top, so the well has to run back *down* the annulus, round the dip
+ * tube's shoe and up the dip tube to reach the standing valve. Gas will not
+ * make that turn, which is the whole reason the part is there.
  *
  * **Illustrated:** the rock, its bedding, the cement sheath, the perforation
  * tunnels and the inflow streaks; the fluid as coloured regions; the gas
- * bubbles. Those are drawing, and nothing reads a rate off them.
+ * bubbles. Those are drawing, and nothing reads a rate off them. The
+ * formation flows in all cycle — a reservoir does not know about the stroke —
+ * and the annulus level is drawn down by what the barrel has taken and
+ * clamped at the intake.
  *
  * **Absent:** there is no wave equation. The surface card is not propagated
  * down the rod string — no stretch, damping, inertia, buoyancy, friction, or
@@ -96,6 +106,22 @@ const PLUNGER_R = 13.4
 const BORE_R = 5.5
 const ROD_R = 4
 const BALL_R = 6.4
+/** How far a ball beds into the taper of its seat. Both valves land the same. */
+const SEAT_SINK = 2
+
+/**
+ * The mud anchor, bottom up: a bull plug, the dip tube's open shoe, and the
+ * ports the well comes in through — near the **top**, which is the whole point
+ * of it. Liquid entering up there has to run back down the annulus, round the
+ * shoe and up the dip tube before it reaches the pump, and the gas it was
+ * carrying breaks out on the way down and leaves the way it came in.
+ */
+const MUD_LOW = 0
+const MUD_PLUG = 6
+const DIP_LOW = 17
+const DIP_R = 10
+const MUD_PORT_LOW = 30
+const MUD_PORT_HIGH = 42
 
 /** The pump, bottom up. */
 const HOLDDOWN_LOW = 46
@@ -105,6 +131,12 @@ const SEAT_HIGH = 82
 const CAGE_HIGH = 104
 const BARREL_LOW = 88
 const BARREL_HIGH = 248
+/**
+ * The tubing anchor, a joint above the pump: slips that ride down a cone onto
+ * the casing wall and hold the string against the load coming on and off it.
+ */
+const ANCHOR_LOW = 112
+const ANCHOR_HIGH = 150
 /** The plunger assembly, measured from its own foot: seat, cage, then tube. */
 const TV_SEAT = 5
 const TV_CAGE = 28
@@ -120,9 +152,14 @@ const LIFT = 5.5
  * the rounded end of a cylinder.
  */
 const BLEED = 72
-/** The perforated interval, and the bedding the rock is drawn with. */
-const PERFS = [20, 38, 56]
-const BEDS = [12, 30, 48, 66, 94, 128, 166, 206, 248]
+/**
+ * The perforated interval, below the mud anchor's ports so the fluid rises to
+ * them, and the bedding the rock is drawn with.
+ */
+const PERFS = [8, 17, 26]
+const BEDS = [8, 20, 32, 48, 66, 94, 128, 166, 206, 248]
+/** How far the pump pulls the annulus down over a stroke, in world units. */
+const DRAWDOWN = 22
 
 /** The card, in viewBox units: an instrument, so it never turns with the camera. */
 const CARD = { x: 150, y: 42, w: 58, h: 44 }
@@ -152,6 +189,7 @@ const conditionNames: Record<PumpCondition, string> = {
   "tv-leak": "travelling valve leak",
   "sv-leak": "standing valve leak",
   tagging: "tagging bottom",
+  unanchored: "unanchored tubing",
 }
 
 /**
@@ -182,6 +220,7 @@ const conditionLabels: Record<PumpCondition, string> = {
   "tv-leak": "TV LEAK",
   "sv-leak": "SV LEAK",
   tagging: "TAGGING",
+  unanchored: "TUBING MOVEMENT",
 }
 
 /**
@@ -496,17 +535,53 @@ function RodPump({
   const tvWear = fault === "tv-leak" ? wearing : 0
   const svWear = fault === "sv-leak" ? wearing : 0
 
+  /**
+   * The tubing string, and the pump landed in it, ride the stretch the string
+   * takes under the fluid column — long when it is carrying it, short when the
+   * rods take it off. Anchor the string and that is zero, and every height
+   * below is the one the machine was drawn at. Let it go and the barrel chases
+   * the plunger up the hole, and the pump sweeps less than the rods travelled.
+   */
+  const rise = (pose.travel - pose.swept) * STROKE
+  /** A height that rides with the tubing string rather than with the casing. */
+  const hung = (y: number) => y + rise
+  const grip = fault === "unanchored" ? 0 : 1
+  /** Where the slips are: out against the casing, or back up their cone. */
+  const slipReach = lerp(TUBING_OD + 8, CASING_ID, grip)
+  const slipSlide = (1 - grip) * 4
+
   const foot = PLUNGER_LOW + pose.travel * STROKE
   const head = foot + PLUNGER_ASSY
   // A worn ball has cut its own groove, so it beds a little deeper than a new
   // one before it is carried off its seat by the flow.
-  const tvBall = foot + TV_SEAT + BALL_R - tvWear * 0.9 + pose.travelling * LIFT
-  const svBall = SEAT_HIGH + BALL_R - 2 - svWear * 0.9 + pose.standing * LIFT
-  const liquid = PLUNGER_LOW + pose.charge * STROKE
-  const annulus = level * TOP
-  // The tailpipe and the annulus are the same body of fluid, so the pump only
-  // has something to draw on while the level is above its intake.
-  const intake = Math.min(annulus, SEAT_LOW)
+  const tvBall =
+    foot + TV_SEAT + BALL_R - SEAT_SINK - tvWear * 0.9 + pose.travelling * LIFT
+  const svBall =
+    hung(SEAT_HIGH) + BALL_R - SEAT_SINK - svWear * 0.9 + pose.standing * LIFT
+  const liquid = Math.min(hung(PLUNGER_LOW) + pose.charge * STROKE, foot)
+  /**
+   * What the well stands at, and what it is actually at. The pump takes its
+   * charge out of the annulus and the formation feeds it back, so the level
+   * breathes with the stroke. It is not allowed to fall past the mud anchor's
+   * ports: a well whose level started above the intake keeps it there, which is
+   * the condition for a full card to mean anything. A level supplied below the
+   * ports is a pumped-off well, and stays one.
+   */
+  const standing = level * TOP
+  const working = Math.max(
+    standing - DRAWDOWN * pose.charge,
+    Math.min(standing, hung(MUD_PORT_HIGH)),
+  )
+  /** The anchor is fed while the well stands above the ports it comes in at. */
+  const fed = working > hung(MUD_PORT_LOW)
+  const feed = Math.min(working, hung(SEAT_LOW))
+  /**
+   * The formation does not know about the stroke. It flows in wherever there is
+   * drawdown to drive it, and stops only once the level has come back up far
+   * enough to kill it — so the perforations run all cycle and breathe with what
+   * the pump has taken, instead of switching off on every downstroke.
+   */
+  const inflow = clamp((1 - working / TOP) / 0.3, 0, 1) * (0.72 + 0.28 * pose.charge)
   const percent = Math.round(pose.travel * 100)
   const direction = pose.direction > 0 ? "upstroke" : "downstroke"
 
@@ -621,15 +696,28 @@ function RodPump({
         </g>
 
         {showFluid && (
-          // What the well has stood up in the annulus. A level you supply.
-          <g data-annulus data-level={px(level)}>
+          // What the well has stood up in the annulus: the level you supply,
+          // drawn down by what the pump has taken in this stroke.
+          <g
+            data-annulus
+            data-level={px(working / TOP)}
+            data-standing={px(level)}
+            data-drawdown={px((standing - working) / TOP)}
+          >
+            {/* Below the bull plug there is no tubing left, so the casing runs
+                full bore round the foot of the string. */}
             <path
-              d={walls(TUBING_OD, CASING_ID, -BLEED, annulus)}
+              d={bore(CASING_ID, -BLEED, Math.min(working, hung(MUD_LOW)))}
               fill={palette.accent}
               opacity={0.28}
             />
             <path
-              d={`${line([{ x: -CASING_ID, y: annulus }, { x: -TUBING_OD, y: annulus }])} ${line([{ x: TUBING_OD, y: annulus }, { x: CASING_ID, y: annulus }])}`}
+              d={walls(TUBING_OD, CASING_ID, hung(MUD_LOW), working)}
+              fill={palette.accent}
+              opacity={0.28}
+            />
+            <path
+              d={`${line([{ x: -CASING_ID, y: working }, { x: -TUBING_OD, y: working }])} ${line([{ x: TUBING_OD, y: working }, { x: CASING_ID, y: working }])}`}
               fill="none"
               stroke={palette.accent}
               strokeWidth={1.4}
@@ -672,55 +760,192 @@ function RodPump({
           </g>
         )}
 
-        {/* Tubing, hung from the surface; the pump lands in the bottom of it. */}
+        {/* Tubing, hung from the surface; the pump lands in a seating nipple
+            near the bottom of it, and what is left below that nipple is the mud
+            anchor. So the string stops at a bull plug on camera rather than
+            running off the frame. */}
         <g data-tubing>
-          <path d={tube(TUBING_OD, -BLEED, TOP + BLEED)} {...machined} opacity={px(solidity * 0.75)} />
           <path
-            d={bore(TUBING_ID, -BLEED, TOP + BLEED)}
+            d={tube(TUBING_OD, hung(MUD_LOW), TOP + BLEED)}
+            {...machined}
+            opacity={px(solidity * 0.75)}
+          />
+          <path
+            d={bore(TUBING_ID, hung(MUD_LOW), TOP + BLEED)}
             fill={painted ? palette.dark : "none"}
             opacity={px(behind * 0.7)}
           />
-          <path d={walls(TUBING_ID, TUBING_OD, -BLEED, TOP + BLEED)} {...machined} />
-          <path d={walls(TUBING_ID, TUBING_OD + 3.5, 256, 270)} {...cast} />
+          <path d={walls(TUBING_ID, TUBING_OD, hung(MUD_LOW), TOP + BLEED)} {...machined} />
+          <path d={walls(TUBING_ID, TUBING_OD + 3.5, hung(256), hung(270))} {...cast} />
+          {/* The seating nipple the pump's hold-down lands in. */}
+          <path
+            d={walls(TUBING_ID, TUBING_OD + 3.5, hung(HOLDDOWN_LOW - 2), hung(HOLDDOWN_HIGH))}
+            {...cast}
+          />
         </g>
 
-        {/* The gas anchor below the pump: slotted, so the intake takes liquid
-            off the bottom of the annulus rather than gas off the top of it. */}
-        <g data-intake>
-          <path d={tube(BARREL_OD - 3, -BLEED, HOLDDOWN_LOW)} {...machined} opacity={solidity} />
-          {showFluid && intake > -BLEED && (
-            <>
-              <path d={bore(BORE_R + 1, -BLEED, intake)} fill={palette.accent} opacity={0.45} />
+        {/*
+          * The tubing anchor. It holds the string against the casing so the
+          * fluid load can transfer on and off it twice a stroke without the
+          * string stretching and shortening — and every inch it does move comes
+          * straight off the plunger's travel against the barrel, which is why
+          * a slipped anchor is a card you can read rather than a part you have
+          * to pull to find. The slips ride down their cones to set.
+          */}
+        <g data-tubing-anchor data-set={px(grip)} data-reach={px(slipReach)}>
+          <path
+            d={tube(TUBING_OD + 5, hung(ANCHOR_LOW), hung(ANCHOR_HIGH))}
+            {...machined}
+            opacity={solidity}
+          />
+          <path
+            d={walls(TUBING_OD, TUBING_OD + 5, hung(ANCHOR_LOW), hung(ANCHOR_HIGH))}
+            {...machined}
+          />
+          {[-1, 1].map((side) => (
+            <g key={side}>
+              {/* The cone, and the slip wedged out along it. */}
               <path
-                d={bore(BORE_R + 1, HOLDDOWN_LOW, Math.min(intake, SEAT_LOW))}
+                d={region([
+                  { x: side * TUBING_OD, y: hung(ANCHOR_LOW + 4) },
+                  { x: side * (TUBING_OD + 7), y: hung(ANCHOR_LOW + 19) },
+                  { x: side * TUBING_OD, y: hung(ANCHOR_LOW + 19) },
+                ])}
+                {...cast}
+              />
+              <path
+                d={region([
+                  { x: side * (TUBING_OD + 2), y: hung(ANCHOR_LOW + 12 + slipSlide) },
+                  { x: side * slipReach, y: hung(ANCHOR_LOW + 20 + slipSlide) },
+                  { x: side * slipReach, y: hung(ANCHOR_LOW + 32 + slipSlide) },
+                  { x: side * (TUBING_OD + 2), y: hung(ANCHOR_LOW + 32 + slipSlide) },
+                ])}
+                {...machined}
+              />
+              {/* Teeth, which bite the casing wall when they reach it. */}
+              {[0, 1, 2].map((index) => (
+                <path
+                  key={index}
+                  d={line([
+                    { x: side * (slipReach - 3.5), y: hung(ANCHOR_LOW + 23 + index * 4 + slipSlide) },
+                    { x: side * slipReach, y: hung(ANCHOR_LOW + 23 + index * 4 + slipSlide) },
+                  ])}
+                  fill="none"
+                  stroke={palette.dark}
+                  strokeWidth={1.1}
+                  strokeLinecap="round"
+                />
+              ))}
+            </g>
+          ))}
+        </g>
+
+        {/*
+          * The mud anchor: what is left of the tubing below the seating nipple,
+          * plugged at the bottom and ported near the top. It is the long way
+          * round on purpose. Liquid comes in high, runs *down* the annulus
+          * between the anchor and the dip tube, turns under the dip tube's shoe
+          * and climbs back up it to the standing valve — and the gas it was
+          * carrying will not make that turn, so it breaks out on the way down
+          * and leaves back out of the ports it came in through. An intake that
+          * simply took fluid off the bottom would hand the pump the gas as
+          * well, and a gassy pump is the card nobody wants.
+          */}
+        <g data-mud-anchor data-fed={fed ? "1" : "0"}>
+          {showFluid && feed > hung(MUD_PLUG) && (
+            <g data-anchor-fluid>
+              {/* The U, as three regions: the down leg, the turn under the dip
+                  tube's shoe, and the bore it climbs back up. */}
+              <path
+                d={walls(DIP_R, TUBING_ID, hung(DIP_LOW), Math.min(feed, hung(HOLDDOWN_LOW)))}
                 fill={palette.accent}
                 opacity={0.45}
               />
-            </>
+              <path
+                d={bore(TUBING_ID, hung(MUD_PLUG), Math.min(feed, hung(DIP_LOW)))}
+                fill={palette.accent}
+                opacity={0.45}
+              />
+              <path
+                d={bore(BORE_R, hung(DIP_LOW), feed)}
+                fill={palette.accent}
+                opacity={0.45}
+              />
+            </g>
           )}
-          <path d={walls(BORE_R + 1, BARREL_OD - 3, -BLEED, HOLDDOWN_LOW)} {...machined} />
-          {[10, 22, 34].map((y) => (
+          {/* The bull plug that closes the foot of the string. */}
+          <path
+            d={tube(TUBING_OD, hung(MUD_LOW), hung(MUD_PLUG))}
+            {...machined}
+            opacity={solidity}
+          />
+          <path d={walls(0, TUBING_OD, hung(MUD_LOW), hung(MUD_PLUG))} {...cast} />
+          {/* The ports, cut through the wall just below the seating nipple. */}
+          {[0, 1].map((index) => (
             <path
-              key={y}
-              d={walls(BORE_R + 1, BARREL_OD - 3, y, y + 6)}
+              key={index}
+              d={walls(
+                TUBING_ID,
+                TUBING_OD,
+                hung(MUD_PORT_LOW + index * 7),
+                hung(MUD_PORT_LOW + 5 + index * 7),
+              )}
               fill={palette.dark}
-              opacity={0.55}
+              opacity={0.88}
             />
           ))}
+          {/* The dip tube, screwed into the pump's intake and open above the
+              plug: the only way into the barrel. */}
+          <path
+            d={tube(DIP_R, hung(DIP_LOW), hung(HOLDDOWN_LOW))}
+            {...machined}
+            opacity={solidity}
+          />
+          <path d={walls(BORE_R, DIP_R, hung(DIP_LOW), hung(HOLDDOWN_LOW))} {...machined} />
+          <path d={walls(BORE_R, DIP_R + 2.5, hung(DIP_LOW), hung(DIP_LOW + 4))} {...cast} />
+          {/* Gas breaking out on the way down, and going back out the ports —
+              illustrated, like every other bubble in the drawing. */}
+          {showFluid &&
+            fed &&
+            [-1, 1].map((side) => {
+              // Gas hugs the high side of the annulus on its way back out.
+              const climb = (drift + (side > 0 ? 0.5 : 0)) % 1
+              const at = lerp(hung(DIP_LOW + 2), hung(MUD_PORT_HIGH + 2), climb)
+              const seat = to({ x: side * (TUBING_ID - 4), y: at }, 0)
+              return (
+                <circle
+                  key={side}
+                  cx={px(seat.x)}
+                  cy={px(seat.y)}
+                  r={px(1.3 + 0.7 * climb)}
+                  fill="none"
+                  stroke={palette.accent}
+                  strokeWidth={0.8}
+                  opacity={px(0.85 - 0.55 * climb)}
+                />
+              )
+            })}
         </g>
 
         {/* The hold-down: cup seals that land the pump in its seating nipple. */}
         <g data-holddown>
-          <path d={tube(TUBING_ID, HOLDDOWN_LOW, HOLDDOWN_HIGH)} {...machined} opacity={solidity} />
-          <path d={walls(BORE_R, BARREL_OD - 3, HOLDDOWN_LOW, HOLDDOWN_HIGH)} {...machined} />
+          <path
+            d={tube(TUBING_ID, hung(HOLDDOWN_LOW), hung(HOLDDOWN_HIGH))}
+            {...machined}
+            opacity={solidity}
+          />
+          <path
+            d={walls(BORE_R, BARREL_OD - 3, hung(HOLDDOWN_LOW), hung(HOLDDOWN_HIGH))}
+            {...machined}
+          />
           {[-1, 1].map((side) => (
             <g key={side}>
               <path
                 d={region([
-                  { x: side * (BARREL_OD - 3), y: HOLDDOWN_LOW + 3 },
-                  { x: side * (TUBING_ID - 0.5), y: HOLDDOWN_LOW + 10 },
-                  { x: side * (TUBING_ID - 0.5), y: HOLDDOWN_HIGH - 5 },
-                  { x: side * (BARREL_OD - 3), y: HOLDDOWN_HIGH - 8 },
+                  { x: side * (BARREL_OD - 3), y: hung(HOLDDOWN_LOW + 3) },
+                  { x: side * (TUBING_ID - 0.5), y: hung(HOLDDOWN_LOW + 10) },
+                  { x: side * (TUBING_ID - 0.5), y: hung(HOLDDOWN_HIGH - 5) },
+                  { x: side * (BARREL_OD - 3), y: hung(HOLDDOWN_HIGH - 8) },
                 ])}
                 {...cast}
               />
@@ -728,8 +953,8 @@ function RodPump({
                 <path
                   key={index}
                   d={line([
-                    { x: side * (BARREL_OD - 2), y: HOLDDOWN_LOW + 12 + index * 5 },
-                    { x: side * (TUBING_ID - 1), y: HOLDDOWN_LOW + 12 + index * 5 },
+                    { x: side * (BARREL_OD - 2), y: hung(HOLDDOWN_LOW + 12 + index * 5) },
+                    { x: side * (TUBING_ID - 1), y: hung(HOLDDOWN_LOW + 12 + index * 5) },
                   ])}
                   fill="none"
                   stroke={palette.metal}
@@ -743,15 +968,25 @@ function RodPump({
 
         {/* Working barrel: the bore the plunger runs in. */}
         <g data-barrel>
-          <path d={tube(BARREL_OD, BARREL_LOW, BARREL_HIGH)} {...shell} opacity={solidity} />
           <path
-            d={bore(BARREL_ID, BARREL_LOW, BARREL_HIGH)}
+            d={tube(BARREL_OD, hung(BARREL_LOW), hung(BARREL_HIGH))}
+            {...shell}
+            opacity={solidity}
+          />
+          <path
+            d={bore(BARREL_ID, hung(BARREL_LOW), hung(BARREL_HIGH))}
             fill={painted ? palette.dark : "none"}
             opacity={behind}
           />
-          <path d={walls(BARREL_ID, BARREL_OD, BARREL_LOW, BARREL_HIGH)} {...shell} />
-          <path d={walls(BARREL_ID, BARREL_OD + 3, BARREL_LOW, BARREL_LOW + 12)} {...cast} />
-          <path d={walls(BARREL_ID, BARREL_OD + 3, BARREL_HIGH - 12, BARREL_HIGH)} {...cast} />
+          <path d={walls(BARREL_ID, BARREL_OD, hung(BARREL_LOW), hung(BARREL_HIGH))} {...shell} />
+          <path
+            d={walls(BARREL_ID, BARREL_OD + 3, hung(BARREL_LOW), hung(BARREL_LOW + 12))}
+            {...cast}
+          />
+          <path
+            d={walls(BARREL_ID, BARREL_OD + 3, hung(BARREL_HIGH - 12), hung(BARREL_HIGH))}
+            {...cast}
+          />
         </g>
 
         {showFluid && (
@@ -760,12 +995,12 @@ function RodPump({
                 standing in the tubing above it all the way to surface. */}
             <g data-production>
               <path
-                d={walls(ROD_R, BARREL_ID, head, BARREL_HIGH)}
+                d={walls(ROD_R, BARREL_ID, head, hung(BARREL_HIGH))}
                 fill={palette.accent}
                 opacity={0.34}
               />
               <path
-                d={walls(ROD_R, TUBING_ID, BARREL_HIGH, TOP + BLEED)}
+                d={walls(ROD_R, TUBING_ID, hung(BARREL_HIGH), TOP + BLEED)}
                 fill={palette.accent}
                 opacity={0.34}
               />
@@ -775,7 +1010,7 @@ function RodPump({
                 gas or void the plunger has still to fall through to reach it. */}
             <g data-chamber data-charge={px(pose.charge)}>
               <path
-                d={bore(BARREL_ID, CAGE_HIGH, Math.max(liquid, CAGE_HIGH))}
+                d={bore(BARREL_ID, hung(CAGE_HIGH), Math.max(liquid, hung(CAGE_HIGH)))}
                 fill={palette.accent}
                 opacity={0.5}
               />
@@ -809,15 +1044,21 @@ function RodPump({
         {/* Standing valve: seat, ball and cage, in the foot of the barrel. It
             lifts on the upstroke and the formation charges the barrel. */}
         <g data-standing-valve data-open={px(pose.standing)} data-flow={px(pose.standingFlow)}>
-          <path d={walls(BORE_R, BARREL_ID, SEAT_LOW, SEAT_HIGH)} {...machined} />
-          <path d={walls(BALL_R + 1, BARREL_ID - 0.5, SEAT_HIGH, CAGE_HIGH)} {...machined} />
-          <path d={walls(0, BARREL_ID - 0.5, CAGE_HIGH - 4, CAGE_HIGH)} {...machined} />
+          <path d={walls(BORE_R, BARREL_ID, hung(SEAT_LOW), hung(SEAT_HIGH))} {...machined} />
+          <path
+            d={walls(BALL_R + 1, BARREL_ID - 0.5, hung(SEAT_HIGH), hung(CAGE_HIGH))}
+            {...machined}
+          />
+          <path
+            d={walls(0, BARREL_ID - 0.5, hung(CAGE_HIGH - 4), hung(CAGE_HIGH))}
+            {...machined}
+          />
           {[-1, 1].map((side) => (
             <path
               key={side}
               d={line([
-                { x: side * (BALL_R + 1), y: SEAT_HIGH + 1 },
-                { x: side * (BORE_R - 1), y: SEAT_HIGH - 5 },
+                { x: side * (BALL_R + 1), y: hung(SEAT_HIGH + 1) },
+                { x: side * (BORE_R - 1), y: hung(SEAT_HIGH - 5) },
               ])}
               fill="none"
               stroke={palette.dark}
@@ -891,14 +1132,18 @@ function RodPump({
            * nothing at all.
            */
           <g data-flow data-direction={pose.direction}>
-            {pose.standingFlow > 0.02 && (
-              <>
-                {intake > HOLDDOWN_LOW &&
-                  stream("intake", 0, HOLDDOWN_LOW - 10, SEAT_LOW - 1, true, 3, pose.standingFlow)}
+            {/*
+             * The formation, which runs on its own clock. A well flows in
+             * wherever the column in the annulus is light enough to let it, so
+             * these do not switch off between strokes — they only fade as the
+             * level comes back up and kills the drawdown driving them.
+             */}
+            {showFormation && inflow > 0.02 && (
+              <g data-inflow data-rate={px(inflow)}>
                 {PERFS.map((y) =>
                   [-1, 1].map((side) => {
                     // Into the annulus, not into the cement: the tunnel ends at
-                    // the casing and the fluid turns down the hole from there.
+                    // the casing and the fluid turns up the hole from there.
                     const tip = to({ x: side * (TUBING_OD + 5), y }, 0)
                     const tail = to({ x: side * (CASING_ID - 3), y }, 0)
                     const wing = to({ x: side * (TUBING_OD + 11), y: y + 3 }, 0)
@@ -912,19 +1157,82 @@ function RodPump({
                         strokeWidth={1.2}
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        opacity={px(0.9 * pose.standingFlow)}
+                        opacity={px(0.9 * inflow)}
                       />
                     )
                   }),
                 )}
-              </>
+              </g>
+            )}
+            {/* In at the ports, down the anchor, round the shoe and up the dip
+                tube — the U the gas will not follow. Only while the standing
+                valve is open, because only then is anything moving. */}
+            {pose.standingFlow > 0.02 && fed && (
+              <g data-anchor-flow>
+                {[-1, 1].map((side) => {
+                  const y = hung(MUD_PORT_LOW + 6)
+                  const tip = to({ x: side * (TUBING_ID - 1), y }, 0)
+                  const tail = to({ x: side * (TUBING_OD + 8), y }, 0)
+                  const wing = to({ x: side * (TUBING_ID + 5), y: y + 2.6 }, 0)
+                  const under = to({ x: side * (TUBING_ID + 5), y: y - 2.6 }, 0)
+                  return (
+                    <path
+                      key={side}
+                      d={`M ${px(wing.x)} ${px(wing.y)} L ${px(tip.x)} ${px(tip.y)} L ${px(under.x)} ${px(under.y)} M ${px(tip.x)} ${px(tip.y)} L ${px(tail.x)} ${px(tail.y)}`}
+                      fill="none"
+                      stroke={palette.accent}
+                      strokeWidth={1.2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      opacity={px(0.9 * pose.standingFlow)}
+                    />
+                  )
+                })}
+                {[-1, 1].map((side) => (
+                  <React.Fragment key={side}>
+                    {stream(
+                      `anchor:${side}`,
+                      side * 17.5,
+                      hung(MUD_PLUG + 7),
+                      hung(MUD_PORT_LOW - 2),
+                      false,
+                      3,
+                      pose.standingFlow,
+                    )}
+                  </React.Fragment>
+                ))}
+                {/* The turn itself, under the shoe: the one bend in the path
+                    that the gas will not take. */}
+                {[-1, 1].map((side) => (
+                  <path
+                    key={`turn:${side}`}
+                    d={`${line([
+                      { x: side * 17.5, y: hung(MUD_PLUG + 5) },
+                      { x: side * 17.5, y: hung(MUD_PLUG + 2) },
+                      { x: side * 3.4, y: hung(MUD_PLUG + 2) },
+                      { x: side * 3.4, y: hung(DIP_LOW - 1) },
+                    ])} ${line([
+                      { x: side * 3.4 - 2.4, y: hung(DIP_LOW - 4) },
+                      { x: side * 3.4, y: hung(DIP_LOW - 1) },
+                      { x: side * 3.4 + 2.4, y: hung(DIP_LOW - 4) },
+                    ])}`}
+                    fill="none"
+                    stroke={palette.accent}
+                    strokeWidth={1.2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    opacity={px(0.9 * pose.standingFlow)}
+                  />
+                ))}
+                {stream("dip", 0, hung(DIP_LOW + 5), hung(SEAT_LOW - 1), true, 4, pose.standingFlow)}
+              </g>
             )}
             {/* Lifting: the whole column above the plunger goes up with it. */}
             {pose.direction > 0 &&
               [-1, 1].map((side) => (
                 <React.Fragment key={side}>
-                  {stream(`lift:${side}`, side * 9, head + 4, BARREL_HIGH - 4, true, 3, shifting)}
-                  {stream(`tube:${side}`, side * 15, BARREL_HIGH + 4, TOP, true, 4, shifting)}
+                  {stream(`lift:${side}`, side * 9, head + 4, hung(BARREL_HIGH - 4), true, 3, shifting)}
+                  {stream(`tube:${side}`, side * 15, hung(BARREL_HIGH + 4), TOP, true, 4, shifting)}
                 </React.Fragment>
               ))}
             {/* Transferring: through the plunger and on up the tubing. */}
@@ -935,7 +1243,7 @@ function RodPump({
                   "above",
                   0,
                   head + 6,
-                  Math.min(head + 44, BARREL_HIGH),
+                  Math.min(head + 44, hung(BARREL_HIGH)),
                   true,
                   2,
                   pose.travellingFlow * 0.7,
@@ -971,8 +1279,8 @@ function RodPump({
                   {stream(
                     `sv-slip:${side}`,
                     side * 3,
-                    SEAT_LOW - 14,
-                    SEAT_LOW + 2,
+                    hung(SEAT_LOW - 14),
+                    hung(SEAT_LOW + 2),
                     false,
                     2,
                     svWear * (0.35 + 0.65 * shifting),
@@ -1010,7 +1318,12 @@ function RodPump({
       </g>
 
       {showCard && (
-        <g data-card data-condition={fault} data-load={px(pose.load)}>
+        <g
+          data-card
+          data-condition={fault}
+          data-load={px(pose.load)}
+          data-swept={px(pose.swept)}
+        >
           <rect
             x={CARD.x - 7}
             y={CARD.y - 16}
@@ -1110,7 +1423,7 @@ function RodPump({
             fill={palette.foreground}
             opacity={0.8}
           >
-            {`${Math.round(pose.rodLoad)} LB · ${Math.round(pose.production)} BPD`}
+            {`${Math.round(pose.rodLoad)} LB · ${Math.round(pose.tvOpen * 100)}% FILL`}
           </text>
           <text
             x={CARD.x}

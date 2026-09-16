@@ -42,7 +42,7 @@ truck's compartments fill, the column's flash zone moves. That is the axis this 
 | `linkage-geometry` | four-bar, slider-crank, block and tackle | the first *closed* loop: link lengths as a constraint, not a chain |
 | `pumpjack` | crank → pitman → walking beam, solved | a rocker whose stroke is a consequence of the loop, not a number |
 | `rodpump-geometry` | fluid load, valve timing off a gas compression, the card | the only mechanics in the set: a pressure, not a linkage |
-| `rod-pump` | the plunger and its two ball valves, in section | the first cutaway subject, and six diagnostic cards out of one model |
+| `rod-pump` | the plunger and its two ball valves, in section | the first cutaway subject, and seven diagnostic cards out of one model |
 | `drilling-derrick` | drum payout ÷ lines = block travel | mechanical advantage drawn as rope, with the falls really reeved |
 | `mud-pump` | three slider-cranks 120° apart | the only multi-cylinder machine; discharge is the sum of three piston velocities |
 | `wellhead-tree` | valve stack + variable choke bean | a pressure-control *assembly*, where `solenoid-valve` is one valve |

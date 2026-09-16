@@ -129,6 +129,83 @@ describe("rod-pump", () => {
     expect(wear("travelling")).toBe("0")
   })
 
+  it("moves the whole tubing string only when it is not anchored", () => {
+    const barrel = (container: HTMLElement) =>
+      container.querySelector("[data-barrel] path")!.getAttribute("d")
+    const set = (container: HTMLElement) =>
+      container.querySelector("[data-tubing-anchor]")!.getAttribute("data-set")
+
+    // On bottom the rods are carrying nothing, so an unanchored string is at
+    // the same length an anchored one is and the drawing is identical.
+    const bottom = render(<RodPump animate={false} cycle={0} condition="full" />)
+    const bottomFree = render(<RodPump animate={false} cycle={0} condition="unanchored" />)
+    expect(barrel(bottomFree.container)).toBe(barrel(bottom.container))
+    expect(set(bottom.container)).toBe("1")
+    expect(set(bottomFree.container)).toBe("0")
+    cleanup()
+
+    // At the top the column is all on the rods, the string has shortened, and
+    // the barrel has chased the plunger up the hole.
+    const top = render(<RodPump animate={false} cycle={0.5} condition="full" />)
+    const topFree = render(<RodPump animate={false} cycle={0.5} condition="unanchored" />)
+    expect(barrel(topFree.container)).not.toBe(barrel(top.container))
+    // And the pump swept less of the stroke than the plunger travelled.
+    expect(
+      Number(topFree.container.querySelector("[data-card]")!.getAttribute("data-swept")),
+    ).toBeLessThan(0.9)
+  })
+
+  it("draws the well down when the pump takes fluid in, and never past its intake", () => {
+    const level = (node: HTMLElement) =>
+      Number(node.querySelector("[data-annulus]")!.getAttribute("data-level"))
+
+    const bottom = render(<RodPump animate={false} cycle={0} />)
+    const top = render(<RodPump animate={false} cycle={0.5} />)
+
+    // The barrel is full at the top of the stroke, and that came out of the
+    // annulus; it comes back over the downstroke.
+    expect(level(top.container)).toBeLessThan(level(bottom.container))
+    cleanup()
+
+    // A level that started above the mud anchor's ports stays above them, so a
+    // sound pump keeps its feed however hard it pulls.
+    // It has drawn down — but it stopped at the ports instead of going the
+    // whole 8% of the window the full drawdown would have taken it.
+    const shallow = render(<RodPump animate={false} cycle={0.5} fluidLevel={0.2} />)
+    expect(level(shallow.container)).toBeLessThan(0.2)
+    expect(level(shallow.container)).toBeGreaterThan(0.14)
+    expect(shallow.container.querySelector("[data-mud-anchor]")!.getAttribute("data-fed")).toBe("1")
+  })
+
+  it("takes the fluid the long way round the mud anchor, and only while it is drawing", () => {
+    // Up the stroke the standing valve is open and the well is coming in
+    // through the ports, down the annulus and back up the dip tube.
+    const drawing = render(<RodPump animate={false} cycle={0.25} />)
+    expect(drawing.container.querySelector("[data-anchor-flow]")).not.toBeNull()
+    cleanup()
+
+    // Coming down nothing goes past the standing valve, so nothing moves in it.
+    const pushing = render(<RodPump animate={false} cycle={0.75} />)
+    expect(pushing.container.querySelector("[data-anchor-flow]")).toBeNull()
+  })
+
+  it("keeps the formation flowing in all cycle, and only stops it on a full column", () => {
+    const rate = (node: HTMLElement) =>
+      Number(node.querySelector("[data-inflow]")!.getAttribute("data-rate"))
+
+    // Both halves of the stroke: the reservoir does not know about the valves.
+    const up = render(<RodPump animate={false} cycle={0.25} />)
+    const down = render(<RodPump animate={false} cycle={0.75} />)
+    expect(rate(up.container)).toBeGreaterThan(0)
+    expect(rate(down.container)).toBeGreaterThan(0)
+    cleanup()
+
+    // What does stop it is the level coming back up and killing the drawdown.
+    const low = render(<RodPump animate={false} cycle={0.25} fluidLevel={0.4} />)
+    const high = render(<RodPump animate={false} cycle={0.25} fluidLevel={0.95} />)
+    expect(rate(high.container)).toBeLessThan(rate(low.container))
+  })
+
   it("is a slider with a real readout when it is interactive", () => {
     const { container } = render(<RodPump animate={false} cycle={0.25} interactive />)
     const svg = container.querySelector("svg")!

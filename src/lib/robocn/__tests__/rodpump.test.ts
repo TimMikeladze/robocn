@@ -11,6 +11,7 @@ import {
   pumpLoad,
   pumpRegime,
   pumpState,
+  pumpTravel,
   pumpValves,
   ballLift,
   BALL_FLOAT,
@@ -18,13 +19,22 @@ import {
   solveRodPump,
   strokeDirection,
   svOpenTravel,
+  TUBING_STRETCH,
   tvOpenTravel,
   valveFlow,
   volumetricEfficiency,
   type PumpCondition,
 } from "@/lib/robocn/rodpump"
 
-const CONDITIONS: PumpCondition[] = ["full", "gas", "pound", "tv-leak", "sv-leak", "tagging"]
+const CONDITIONS: PumpCondition[] = [
+  "full",
+  "gas",
+  "pound",
+  "tv-leak",
+  "sv-leak",
+  "tagging",
+  "unanchored",
+]
 
 describe("rodpump — the stroke", () => {
   it("puts the plunger on bottom at the start of the cycle and on top at the half", () => {
@@ -194,7 +204,10 @@ describe("rodpump — the card", () => {
       expect(Math.max(...card.points.map((p) => p.y))).toBeCloseTo(card.peak, 6)
       // The dot rides the card it was sampled from.
       const first = card.points[0]
-      expect(first.x).toBeCloseTo(plungerTravel(0), 6)
+      expect(first.x).toBeCloseTo(
+        pumpTravel(0, condition, { ...defaultPumpGeometry, fillage: 0.6 }),
+        6,
+      )
       expect(first.y).toBeCloseTo(pumpLoad(0, condition, { ...defaultPumpGeometry, fillage: 0.6 }), 6)
     }
   })
@@ -368,14 +381,71 @@ describe("rodpump — what actually reaches surface", () => {
     expect(volumetricEfficiency(pumpRegime("sv-leak", geometry))).toBeLessThan(0.9)
   })
 
-  it("reports the production the pump is losing, not the one it displaces", () => {
+  it("reports the efficiency the pump is losing, against a displacement it is not", () => {
     const geometry = { ...defaultPumpGeometry, leak: 0.5 }
     const sound = solveRodPump(0.25, "full", geometry)
     const leaky = solveRodPump(0.25, "tv-leak", geometry)
 
-    expect(leaky.displacement).toBeCloseTo(sound.displacement, 6)
-    expect(leaky.production).toBeCloseTo(sound.production * 0.5, 6)
+    // Displacement is the barrel and the stroke, so a leaking valve cannot
+    // touch it. What it takes is the efficiency, and the pose carries that
+    // rather than a barrels-a-day figure nothing downhole can know.
+    expect(sound.efficiency).toBeCloseTo(1, 6)
     expect(leaky.efficiency).toBeCloseTo(0.5, 6)
+    expect(pumpDisplacement(geometry).displacement).toBeGreaterThan(0)
+  })
+
+  it("takes the stroke an unanchored tubing string moves off the efficiency", () => {
+    expect(volumetricEfficiency(pumpRegime("unanchored", defaultPumpGeometry))).toBeCloseTo(
+      1 - TUBING_STRETCH,
+      6,
+    )
+  })
+})
+
+describe("rodpump — the tubing string", () => {
+  it("sweeps exactly what the plunger travelled while the string is anchored", () => {
+    for (const condition of CONDITIONS.filter((name) => name !== "unanchored")) {
+      for (const cycle of [0, 0.12, 0.25, 0.5, 0.77, 0.95]) {
+        expect(pumpTravel(cycle, condition, defaultPumpGeometry)).toBeCloseTo(
+          plungerTravel(cycle),
+          6,
+        )
+      }
+    }
+  })
+
+  it("loses the string's stretch off the top of the stroke when it is not", () => {
+    // At the top the rods are carrying the whole column, so the tubing is as
+    // short as it gets and the barrel has chased the plunger the full stretch.
+    const top = pumpTravel(0.5, "unanchored", defaultPumpGeometry)
+
+    expect(plungerTravel(0.5)).toBeCloseTo(1, 6)
+    expect(top).toBeCloseTo(1 - TUBING_STRETCH, 2)
+  })
+
+  it("does nothing at all while the rods pick the column up", () => {
+    // Once the load is on, the string is shortening faster than the plunger is
+    // rising: the plunger is moving and the pump is not.
+    for (const cycle of [0.05, 0.08, 0.11]) {
+      expect(pumpTravel(cycle, "unanchored", defaultPumpGeometry)).toBe(0)
+      expect(plungerTravel(cycle)).toBeGreaterThan(0)
+    }
+    // And it is moving again by the time the string has given up its stretch.
+    expect(pumpTravel(0.2, "unanchored", defaultPumpGeometry)).toBeGreaterThan(0.1)
+  })
+
+  it("draws a card short of full stroke, and encloses less of it", () => {
+    const free = pumpCard("unanchored", defaultPumpGeometry)
+    const held = pumpCard("full", defaultPumpGeometry)
+    const width = (card: typeof free) =>
+      Math.max(...card.points.map((p) => p.x)) - Math.min(...card.points.map((p) => p.x))
+    // Under load — the top of the card — is where the stroke is lost.
+    const loaded = (card: typeof free) =>
+      Math.max(...card.points.filter((p) => p.y > 0.9).map((p) => p.x))
+
+    expect(width(free)).toBeLessThanOrEqual(width(held) + 1e-9)
+    expect(loaded(free)).toBeLessThan(loaded(held) - 0.1)
+    expect(free.points.every((p) => p.x >= 0 && p.x <= 1)).toBe(true)
   })
 })
 
@@ -396,7 +466,7 @@ describe("rodpump — the pose", () => {
       leak: Number.NaN,
     })
 
-    for (const value of [pose.travel, pose.load, pose.charge, pose.rodLoad, pose.production]) {
+    for (const value of [pose.travel, pose.swept, pose.load, pose.charge, pose.rodLoad]) {
       expect(Number.isFinite(value)).toBe(true)
     }
     expect(pose.travel).toBe(0)

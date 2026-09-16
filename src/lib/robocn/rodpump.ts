@@ -24,6 +24,13 @@
  * valve bleeds the column off through the upstroke, backflow through the
  * standing valve keeps load on the rods at the bottom.
  *
+ * The third axis is outside the pump altogether. A tubing string that is not
+ * anchored to the casing stretches and shortens as the fluid load transfers on
+ * and off it twice a stroke, and that movement comes off the plunger's travel
+ * *relative to the barrel* — so the pump sweeps less than the rods travelled.
+ * `pumpTravel` is that relative travel, and it is what the card is plotted
+ * against.
+ *
  * Field formulas, unchanged from the handbook: the fluid load
  * `Fo = 0.34 · D² · G · L` and the displacement `PD = 0.1166 · D² · S · N`.
  *
@@ -47,6 +54,7 @@ export type PumpCondition =
   | "tv-leak"
   | "sv-leak"
   | "tagging"
+  | "unanchored"
 
 export interface PumpGeometry {
   /** Plunger bore, inches. */
@@ -110,6 +118,14 @@ export const CONTACT_BAND = 0.015
  * spends most of the stroke.
  */
 export const BALL_FLOAT = 0.55
+
+/**
+ * How much of the stroke an unanchored tubing string takes back. The string
+ * carries the fluid column exactly when the rods do not, so it is long at the
+ * bottom of the stroke and short at the top: the barrel chases the plunger up
+ * the hole and the pump sweeps less than the rods travelled.
+ */
+export const TUBING_STRETCH = 0.16
 
 /** Travel over which a tagging plunger loads up, and how far above Fo it goes. */
 const TAG_TRAVEL = 0.06
@@ -244,6 +260,12 @@ export interface PumpRegime {
   slip: number
   /** Backflow through the standing valve, holding load on at the bottom. */
   backflow: number
+  /**
+   * Stroke fractions the tubing string takes while it is carrying the column,
+   * and so the travel the plunger loses against the barrel. Zero when the
+   * string is anchored to the casing, which is what an anchor is for.
+   */
+  stretch: number
   /** The plunger tags bottom. */
   tag: boolean
 }
@@ -255,7 +277,7 @@ export function pumpRegime(
   const fill = unit(geometry?.fillage, 1)
   const ratio = Math.max(0, finite(geometry?.intakeRatio, defaultPumpGeometry.intakeRatio))
   const leak = unit(geometry?.leak, defaultPumpGeometry.leak)
-  const sound = { fill: 1, ratio, gas: 1, slip: 0, backflow: 0, tag: false }
+  const sound = { fill: 1, ratio, gas: 1, slip: 0, backflow: 0, stretch: 0, tag: false }
   switch (condition) {
     // Gas below the plunger has to be compressed to discharge pressure before
     // the travelling valve will open, and expanded back to intake pressure
@@ -274,6 +296,10 @@ export function pumpRegime(
       return { ...sound, backflow: leak * 0.35 }
     case "tagging":
       return { ...sound, tag: true }
+    // The tubing is free to stretch and shorten under the load it takes on and
+    // off, and the barrel goes with it.
+    case "unanchored":
+      return { ...sound, stretch: TUBING_STRETCH }
     default:
       return sound
   }
@@ -366,14 +392,19 @@ export function svOpenTravel(regime: PumpRegime) {
 }
 
 /**
- * How much of the swept volume actually reaches surface. Three things take
- * their cut: the barrel only fills to `fill`, slip past the travelling valve
- * puts part of what it did lift back underneath the plunger, and backflow
- * through the standing valve puts part of it back in the hole. A pump can be
+ * How much of the swept volume actually reaches surface. Four things take their
+ * cut: the barrel only fills to `fill`, slip past the travelling valve puts
+ * part of what it did lift back underneath the plunger, backflow through the
+ * standing valve puts part of it back in the hole, and an unanchored tubing
+ * string takes its stretch off the stroke before any of that. A pump can be
  * stroking perfectly and still deliver half of what it displaces.
  */
 export function volumetricEfficiency(regime: PumpRegime) {
-  return clamp(regime.fill * (1 - regime.slip) * (1 - regime.backflow), 0, 1)
+  return clamp(
+    regime.fill * (1 - regime.slip) * (1 - regime.backflow) * (1 - regime.stretch),
+    0,
+    1,
+  )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -423,8 +454,36 @@ export function pumpLoad(
     : load
 }
 
+/**
+ * Plunger travel **relative to the barrel**: what the pump actually sweeps.
+ *
+ * It is {@link plungerTravel} when the tubing is anchored to the casing, and
+ * that is the only case the rest of this file needed until now. Let the string
+ * go and the barrel is no longer a fixed datum: the tubing carries the fluid
+ * column exactly when the rods do not, so it is at its longest at the bottom of
+ * the stroke and shortest at the top, and the barrel chases the plunger up the
+ * hole through the whole upstroke.
+ *
+ *   swept = travel − stretch · load
+ *
+ * Clamped, because a pump is spaced out so the plunger does not tag: the
+ * flat left-hand edge that clamp puts on the card is the interval where the
+ * rods are stretching and the tubing is shortening by as much as the plunger is
+ * rising, and the pump is doing nothing at all.
+ */
+export function pumpTravel(
+  cycle: number,
+  condition: PumpCondition = "full",
+  geometry: PumpGeometry = defaultPumpGeometry,
+) {
+  const regime = pumpRegime(condition, geometry)
+  const travel = plungerTravel(cycle)
+  if (regime.stretch <= 0) return travel
+  return clamp(travel - regime.stretch * pumpLoad(cycle, condition, geometry), 0, 1)
+}
+
 export interface PumpCard {
-  /** The closed card: x is plunger travel, y is load as a fraction of Fo. */
+  /** The closed card: x is the travel the pump swept, y is load as a fraction of Fo. */
   points: Vec2[]
   /** The highest load on the card, for scaling it into a frame. */
   peak: number
@@ -443,7 +502,10 @@ export function pumpCard(
   const count = Math.max(24, Math.round(finite(steps, 128)))
   const points = Array.from({ length: count }, (_, index) => {
     const cycle = index / count
-    return { x: plungerTravel(cycle), y: pumpLoad(cycle, condition, geometry) }
+    return {
+      x: pumpTravel(cycle, condition, geometry),
+      y: pumpLoad(cycle, condition, geometry),
+    }
   })
   return { points, peak: points.reduce((high, p) => Math.max(high, p.y), 0) }
 }
@@ -572,6 +634,11 @@ export interface RodPumpPose {
   phase: number
   /** Plunger travel: 0 on bottom, 1 on top. */
   travel: number
+  /**
+   * Travel relative to the barrel — what the pump swept, and the card's
+   * abscissa. Equal to `travel` unless the tubing is free to move.
+   */
+  swept: number
   /** 1 up, −1 down. */
   direction: 1 | -1
   /** Plunger velocity normalised to ±1: zero at both ends, fastest in the middle. */
@@ -597,12 +664,11 @@ export interface RodPumpPose {
   fluidLoad: number
   /** What the rods are carrying at this point in the cycle, pounds. */
   rodLoad: number
-  /** Pump displacement, barrels a day. */
-  displacement: number
-  /** Fraction of the swept volume that reaches surface: fillage, less the leaks. */
+  /**
+   * Fraction of the swept volume that reaches surface: fillage, less the leaks
+   * and less the stroke an unanchored tubing string takes.
+   */
   efficiency: number
-  /** What this pump actually lifts, barrels a day. */
-  production: number
 }
 
 /** The whole pump at one point in its cycle: one call, one frame of drawing. */
@@ -615,11 +681,10 @@ export function solveRodPump(
   const valves = pumpValves(cycle, condition, geometry)
   const load = pumpLoad(cycle, condition, geometry)
   const column = fluidLoad(geometry)
-  const { displacement } = pumpDisplacement(geometry)
-  const efficiency = volumetricEfficiency(regime)
   return {
     phase: pumpPhase(cycle),
     travel: plungerTravel(cycle),
+    swept: pumpTravel(cycle, condition, geometry),
     direction: valves.direction,
     speed: plungerSpeed(cycle),
     chamber: chamberPressure(cycle, condition, geometry),
@@ -633,8 +698,6 @@ export function solveRodPump(
     tvOpen: tvOpenTravel(regime),
     fluidLoad: column,
     rodLoad: load * column,
-    displacement,
-    efficiency,
-    production: displacement * efficiency,
+    efficiency: volumetricEfficiency(regime),
   }
 }
