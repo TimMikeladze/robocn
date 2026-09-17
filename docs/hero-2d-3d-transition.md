@@ -6,7 +6,9 @@ transition that makes the swap legible instead of a hard cut.
 
 ## Shape
 
-`HeroArm` owns a fixed-height stage with two stacked layers:
+`Hero` (`src/components/site/hero.tsx`) owns four quadrants — `docs/hero-quadrants.md` —
+and the wipe lives in the arm's. That quadrant is a fixed-height stage with two stacked
+layers:
 
 | layer | component | mounted |
 | --- | --- | --- |

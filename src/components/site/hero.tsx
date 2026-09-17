@@ -1,16 +1,25 @@
 "use client"
 
 /**
- * The one moving thing on the page that answers to the visitor — and the page's
- * central claim, shown rather than stated: the same pointer target, solved and
- * drawn twice. The wipe between the two renderers is specified in
- * `docs/hero-2d-3d-transition.md`.
+ * The four moving things on the page that answer to the visitor.
+ *
+ * An arm, a face, a duck and a cat — the real registry components at their own
+ * default behaviours, spanning the set rather than matching each other. Notes:
+ * `docs/hero-quadrants.md`.
+ *
+ * The page's central claim is still shown rather than stated, in the arm's
+ * quadrant: the same pointer target, solved and drawn twice. The wipe between
+ * the two renderers is specified in `docs/hero-2d-3d-transition.md`.
  */
 
 import * as React from "react"
 import dynamic from "next/dynamic"
+import Link from "next/link"
 
+import { AnimatronicFace } from "@/components/ui/animatronic-face"
+import { MicroDuck } from "@/components/ui/micro-duck"
 import { RobotArm } from "@/components/ui/robot-arm"
+import { RobotCat } from "@/components/ui/robot-cat"
 import type { Vec3 } from "@/lib/robocn/kinematics"
 import { prefersReducedMotion } from "@/lib/robocn/style"
 import {
@@ -32,12 +41,39 @@ const HeroStage = dynamic(() => loadStage().then((module) => module.HeroStage), 
 })
 
 const REACH_3D = 2.4
-/** Seconds the wipe takes to cross the stage. */
+/** Seconds the wipe takes to cross the quadrant. */
 const DURATION = 1
 
 type Dimension = "2d" | "3d"
 
-function HeroArm() {
+/** One machine in its own cell, named, with its name a way into its page. */
+function Quadrant({
+  slug,
+  name,
+  className,
+  children,
+  ...rest
+}: {
+  slug: string
+  name: string
+  className?: string
+  children: React.ReactNode
+} & React.ComponentProps<"div">) {
+  return (
+    <div className={cn("relative flex items-center justify-center overflow-hidden p-2", className)} {...rest}>
+      {children}
+      {/* Top-left, where no machine has its feet or its shadow. */}
+      <Link
+        href={`/docs/${slug}`}
+        className="absolute top-1.5 left-2 z-10 font-mono text-[10px] text-muted-foreground/70 transition-colors hover:text-foreground"
+      >
+        {name}
+      </Link>
+    </div>
+  )
+}
+
+function Hero() {
   const [dimension, setDimension] = React.useState<Dimension>("2d")
   /** The canvas is only built once someone asks for it. */
   const [solidMounted, setSolidMounted] = React.useState(false)
@@ -114,8 +150,9 @@ function HeroArm() {
     return () => cancelAnimationFrame(frame)
   }, [dimension, stageReady, paint])
 
+  /** The 3D target is read off the arm's own cell, which is what it replaces. */
   const track = React.useCallback((event: React.PointerEvent<HTMLDivElement>) => {
-    // A pointer over the hero is enough intent to warm the canvas chunk, so the
+    // A pointer over the arm is enough intent to warm the canvas chunk, so the
     // first click on 3D does not wait on a network round trip.
     void loadStage()
     const rect = event.currentTarget.getBoundingClientRect()
@@ -147,62 +184,96 @@ function HeroArm() {
 
   return (
     <div className="w-full">
-      <div
-        className="relative h-[320px] w-full overflow-hidden sm:h-[400px]"
-        onPointerMove={track}
-        onPointerLeave={release}
-      >
-        <div
-          ref={flatRef}
-          className="absolute inset-0 flex items-center justify-center will-change-transform"
+      {/* Hairlines between the cells rather than around them: the panel already
+          has its own border and datum ticks. */}
+      <div className="grid h-[320px] w-full grid-cols-2 grid-rows-2 sm:h-[400px]">
+        <Quadrant
+          slug="robot-arm"
+          name="arm"
+          className="border-r border-b border-border"
+          onPointerMove={track}
+          onPointerLeave={release}
         >
-          <RobotArm
-            behavior="pointer"
-            tool="welder"
-            size={420}
-            links={[1, 0.82, 0.34]}
-            showEnvelope
-            label="RC-01"
-            className="h-full max-h-full w-auto max-w-full"
-          />
-        </div>
-
-        {/* The canvas sets its own `pointer-events`, and would otherwise swallow
-            the moves the flat drawing listens for. */}
-        {solidMounted ? (
           <div
-            ref={solidRef}
-            className="pointer-events-none absolute inset-0 [&_canvas]:pointer-events-none"
+            ref={flatRef}
+            className="absolute inset-0 flex items-center justify-center will-change-transform"
           >
-            <HeroStage
-              progress={progress}
-              target={target}
-              pointer={pointer}
-              wireframe={wireframe}
-              awake={awake}
-              onReady={ready}
-              reach={REACH_3D}
+            <RobotArm
+              behavior="pointer"
+              tool="welder"
+              size={230}
+              links={[1, 0.82, 0.34]}
+              showEnvelope
+              className="h-full max-h-full w-auto max-w-full"
             />
           </div>
-        ) : null}
 
-        {/* The scan line rides the seam, so the swap has an edge to read. */}
-        <div
-          ref={seamRef}
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 h-px opacity-0"
-          style={{
-            top: "-10%",
-            background:
-              "linear-gradient(to right, transparent, var(--signal) 12%, var(--signal) 88%, transparent)",
-            boxShadow: "0 0 12px 1px var(--signal)",
-          }}
-        />
+          {/* The canvas sets its own `pointer-events`, and would otherwise
+              swallow the moves the flat drawing listens for. */}
+          {solidMounted ? (
+            <div
+              ref={solidRef}
+              className="pointer-events-none absolute inset-0 [&_canvas]:pointer-events-none"
+            >
+              <HeroStage
+                progress={progress}
+                target={target}
+                pointer={pointer}
+                wireframe={wireframe}
+                awake={awake}
+                onReady={ready}
+                reach={REACH_3D}
+              />
+            </div>
+          ) : null}
+
+          {/* The scan line rides the seam, so the swap has an edge to read. */}
+          <div
+            ref={seamRef}
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 h-px opacity-0"
+            style={{
+              top: "-10%",
+              background:
+                "linear-gradient(to right, transparent, var(--signal) 12%, var(--signal) 88%, transparent)",
+              boxShadow: "0 0 12px 1px var(--signal)",
+            }}
+          />
+        </Quadrant>
+
+        <Quadrant slug="animatronic-face" name="face" className="border-b border-border">
+          <AnimatronicFace
+            behavior="idle"
+            size={170}
+            interactive
+            className="h-full max-h-full w-auto max-w-full"
+          />
+        </Quadrant>
+
+        <Quadrant slug="micro-duck" name="duck" className="border-r border-border">
+          <MicroDuck
+            behavior="walk"
+            size={175}
+            interactive
+            className="h-full max-h-full w-auto max-w-full"
+          />
+        </Quadrant>
+
+        <Quadrant slug="robot-cat" name="cat">
+          <RobotCat
+            behavior="prowl"
+            size={210}
+            interactive
+            className="h-full max-h-full w-auto max-w-full"
+          />
+        </Quadrant>
       </div>
 
       <div className="mt-2 flex items-center justify-between gap-3">
         <p className="font-mono text-[11px] text-muted-foreground">
-          {dimension === "2d" ? "move your pointer" : "same target, solved in 3D"}
+          {dimension === "2d"
+            ? "move your pointer — all four answer to it"
+            : "same target, solved in 3D"}
         </p>
         <DimensionSwitch value={dimension} onChange={switchTo} />
       </div>
@@ -246,4 +317,4 @@ function DimensionSwitch({
   )
 }
 
-export { HeroArm }
+export { Hero }

@@ -2,7 +2,7 @@ import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 
 import { Catalogue, type CatalogueCard } from "@/components/site/catalogue"
-import { HeroArm } from "@/components/site/hero-arm"
+import { Hero } from "@/components/site/hero"
 import { HowItWorks } from "@/components/site/how-it-works"
 import { RobotExport } from "@/components/ui/robot-export"
 import { InstallCommand } from "@/components/site/install-command"
@@ -71,7 +71,7 @@ export default function Home() {
         </div>
         <Panel className="p-4">
           <RobotExport name="robocn-hero" defaults={{ seconds: 4 }}>
-            <HeroArm />
+            <Hero />
           </RobotExport>
         </Panel>
       </section>

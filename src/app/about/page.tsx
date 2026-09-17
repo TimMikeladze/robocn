@@ -1,6 +1,6 @@
 import Link from "next/link"
 
-import { HeroArm } from "@/components/site/hero-arm"
+import { Hero } from "@/components/site/hero"
 import { InstallCommand } from "@/components/site/install-command"
 import { Panel } from "@/components/site/panel"
 import { Button } from "@/components/ui/button"
@@ -202,7 +202,7 @@ export default function AboutPage() {
           <h2 className="text-xl font-semibold tracking-tight">Install one</h2>
           <InstallCommand item="robot-arm" />
           <Panel className="p-4">
-            <HeroArm />
+            <Hero />
           </Panel>
         </section>
 
