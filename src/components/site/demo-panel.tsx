@@ -1,6 +1,7 @@
 "use client"
 
 import { Panel } from "@/components/site/panel"
+import { DemoTheming } from "@/components/site/demo-theming"
 import { demoBySlug } from "@/components/demos/demos"
 import { RobotExport } from "@/components/ui/robot-export"
 
@@ -12,16 +13,19 @@ import { RobotExport } from "@/components/ui/robot-export"
  *
  * The bench is wrapped in `RobotExport`, which is how every item in the
  * registry has a record button on its own page without a per-item edit:
- * `docs/export.md`.
+ * `docs/export.md`. It is wrapped again in `DemoTheming`, which is how every
+ * item has its whole palette on a knob: `docs/component-page-theming.md`.
  */
 function DemoPanel({ slug }: { slug: string }) {
   const Demo = demoBySlug[slug]
   if (!Demo) return null
   return (
     <Panel className="overflow-hidden">
-      <RobotExport name={slug}>
-        <Demo slug={slug} />
-      </RobotExport>
+      <DemoTheming>
+        <RobotExport name={slug}>
+          <Demo slug={slug} />
+        </RobotExport>
+      </DemoTheming>
     </Panel>
   )
 }
