@@ -17,12 +17,15 @@ alike: an industrial arm on a solved chain, a head on a Stewart platform that wa
 pointer across the whole window, a walker on a gait, and a quadruped whose spine drives its
 legs.
 
-## What is kept
+## No 3D in it
 
-The 2D/3D wipe is the arm's, and it stays the arm's: the seam, the mask and the WebGL stage
-all live inside the arm quadrant now instead of spanning the panel. The switch still reads
-2D/3D because what it says is still true — the same target, solved and drawn twice — it just
-says it in a quarter of the space. Mechanics unchanged: `docs/hero-2d-3d-transition.md`.
+The hero had a 2D/3D switch that wiped the arm over to a `three` rig. It is gone: four SVG
+machines and nothing else, so the landing page loads no WebGL context and no `three` chunk,
+and the first thing a visitor touches cannot be the one thing on the site that needs a GPU.
+
+The wipe itself is not deleted — `src/components/site/hero-stage.tsx` and
+`docs/hero-2d-3d-transition.md` still describe it, and `robot-arm-3d` and `robot-stage` are
+where the rig is shown. Putting it back is re-mounting `HeroStage` behind a switch.
 
 ## What each one answers to
 
