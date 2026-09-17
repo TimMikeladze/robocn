@@ -8,6 +8,12 @@ describe("header width", () => {
     expect(isFullBleed("/workbench/robot-arm")).toBe(true)
   })
 
+  it("does the same for Studio, the other app frame", () => {
+    expect(isFullBleed("/studio")).toBe(true)
+    expect(isFullBleed("/studio/acme/designs/dsn_1")).toBe(true)
+    expect(isFullBleed("/studios")).toBe(false)
+  })
+
   it("keeps the reading rail everywhere else", () => {
     expect(isFullBleed("/")).toBe(false)
     expect(isFullBleed("/docs")).toBe(false)

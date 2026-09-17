@@ -5,7 +5,11 @@ import path from "node:path"
 export default defineConfig({
   plugins: [react()],
   resolve: {
-    alias: { "@": path.resolve(import.meta.dirname, "./src") },
+    alias: {
+      "@": path.resolve(import.meta.dirname, "./src"),
+      // The real package throws unless it is built for the server. `docs/studio.md`.
+      "server-only": path.resolve(import.meta.dirname, "./src/lib/studio/__tests__/server-only.stub.ts"),
+    },
   },
   test: {
     environment: "jsdom",

@@ -494,7 +494,8 @@ pnpm og               # recaptures every social card — a quarter of an hour
 pnpm og --only <name> # just that page's card: ~5 s, what a new machine ships with
 pnpm shots            # recaptures docs/screenshots/*.png, the pictures above
 pnpm icons            # recaptures the app icons: icon.svg, apple-icon.png, favicon.ico
-pnpm test             # kinematics, components, registry integrity
+pnpm test             # kinematics, components, registry integrity, Studio's data layer
+pnpm db:migrate       # Studio only: apply drizzle/ to DATABASE_URL
 pnpm typecheck
 pnpm build            # builds the registry, then the site
 ```
@@ -657,6 +658,42 @@ replacing it.
 
 See [the workbench](docs/workbench.md) for the architecture and what it replaced, and
 [holding a folder](docs/checkout.md) for what a directory handle buys.
+
+## Studio
+
+`/studio` is the hosted half: a multi-tenant workspace where a team poses, themes, versions,
+reviews and publishes machines from the registry, and keeps every file that goes with them.
+The workbench is one person and a checkout; Studio is a team and a database.
+
+- **Organizations** with four roles — owner, admin, editor, viewer — invitations by link, and
+  any number of organizations per account. [better-auth](https://better-auth.com) with its
+  `organization` plugin; one pure `can(role, permission)` table that every server action
+  checks.
+- **Designs** are a registry machine plus its props, on the workbench's own stage and derived
+  controls. Saving writes an immutable, numbered **version** with a note and a snapshot;
+  any version can be loaded, restored or diffed. Threaded **review comments** are pinned to
+  the version they were written on.
+- **Publishing** freezes a version at `/d/<slug>` (the live machine, its props, the JSX and
+  the install line), `/embed/<slug>` for iframes and `/api/studio/published/<slug>` as JSON.
+  Anyone can **fork** a published design into their own organization. `/o/<org>` is an
+  organization's public gallery, `/explore` is everyone's, and `/s/<token>` is a private,
+  expiring review link.
+- **Assets**: nested folders, drag-and-drop multi-upload, tags, search, bulk move/tag/trash,
+  trash with restore, replace-in-place, public links, "where is this used", storage totals.
+  Bytes go to Postgres by default and to Vercel Blob when `BLOB_READ_WRITE_TOKEN` is set.
+- **Customizable per organization**: review stages, labels, brand palettes that apply to any
+  machine, default stage, public profile.
+
+It needs Postgres and two environment variables — copy `.env.example` to `.env.local`:
+
+```bash
+pnpm db:migrate       # creates the tables in DATABASE_URL
+pnpm dev              # then open /studio and create an account
+pnpm db:generate      # after changing src/db/schema: writes a migration into drizzle/
+```
+
+The docs site, the registry and the workbench need none of it and run without a database.
+Design and decisions: [docs/studio.md](docs/studio.md).
 
 ## Credits
 

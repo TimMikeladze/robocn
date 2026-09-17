@@ -11,13 +11,15 @@ import { rail } from "@/components/site/rail"
 import { cn } from "@/lib/utils"
 
 /**
- * The workbench is an app frame, not a page: its toolbar, list and prop panel
- * already run edge to edge, so the header drops its 6xl rail there and lines
+ * The workbench and Studio are app frames, not pages: their toolbars, lists and
+ * panels already run edge to edge, so the header drops its rail there and lines
  * up with them instead of floating in the middle of a wide screen.
  */
 function isFullBleed(pathname: string | null) {
   if (!pathname) return false
-  return pathname === "/workbench" || pathname.startsWith("/workbench/")
+  return ["/workbench", "/studio"].some(
+    (root) => pathname === root || pathname.startsWith(`${root}/`),
+  )
 }
 
 function HeaderBar({ children }: { children: React.ReactNode }) {

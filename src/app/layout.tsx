@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next"
 import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google"
 
 import { Analytics } from "@/components/site/analytics"
+import { FooterSlot, HeaderSlot } from "@/components/site/chrome"
 import { SiteFooter } from "@/components/site/site-footer"
 import { SiteHeader } from "@/components/site/site-header"
 import { ThemeProvider } from "@/components/site/theme-provider"
@@ -112,9 +113,13 @@ export default function RootLayout({
         </p>
         <ThemeProvider>
           <div className="flex min-h-dvh flex-col">
-            <SiteHeader />
+            <HeaderSlot>
+              <SiteHeader />
+            </HeaderSlot>
             <main className="flex-1">{children}</main>
-            <SiteFooter />
+            <FooterSlot>
+              <SiteFooter />
+            </FooterSlot>
           </div>
         </ThemeProvider>
       </body>

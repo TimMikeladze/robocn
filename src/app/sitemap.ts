@@ -15,6 +15,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: siteUrl, lastModified: updated, changeFrequency: "weekly", priority: 1 },
     { url: `${siteUrl}/docs`, lastModified: updated, changeFrequency: "weekly", priority: 0.9 },
     { url: `${siteUrl}/workbench`, lastModified: updated, changeFrequency: "weekly", priority: 0.8 },
+    // Studio itself is private; what its organizations publish is listed on Explore.
+    { url: `${siteUrl}/explore`, lastModified: updated, changeFrequency: "daily", priority: 0.7 },
     { url: `${siteUrl}/about`, lastModified: updated, changeFrequency: "monthly", priority: 0.6 },
     ...docs.map((entry) => ({
       url: `${siteUrl}/docs/${entry.slug}`,
