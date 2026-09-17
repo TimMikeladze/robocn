@@ -7,6 +7,7 @@
  */
 
 export const capturedOgSlugs: string[] = [
+  "airframe",
   "airliner",
   "animatronic-face",
   "animatronic-robot",
@@ -182,6 +183,7 @@ export const capturedOgSlugs: string[] = [
   "robot-torso",
   "robot-turtle",
   "rod-pump",
+  "rodpump-geometry",
   "rotary-table",
   "rowing-erg",
   "scara-arm",
