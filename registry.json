@@ -10,7 +10,7 @@
       "description": "A configurable cylindrical utility droid with three dome shapes, two chassis layouts, rotating sensors, and deployable tools. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots"
+        "droids"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -33,7 +33,7 @@
       "description": "A rolling spherical companion with an independently stabilized head, segmented shell, pointer-tracking eye, and configurable antennas. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots"
+        "droids"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -56,7 +56,7 @@
       "description": "A soft-shell pneumatic pod whose pleated dome inflates and settles under a volume-conserving profile, carrying its lens pods and vent with it. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots"
+        "droids"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -78,7 +78,7 @@
       "description": "An articulate humanoid translator with formal, conversational, and cautious poses, four gestures, and optional exposed wiring. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots"
+        "droids"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -101,7 +101,7 @@
       "description": "A tall angular security humanoid with controlled guard and patrol poses, pointer-tracking optics, and an alert state. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots"
+        "droids"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -124,7 +124,7 @@
       "description": "A modular clinical assistant with a diagnostic display, controlled head angle, and five interchangeable instrument ends. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots"
+        "droids"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -147,7 +147,7 @@
       "description": "A mechanical infantry unit with light and heavy frames, four controlled poses, and interchangeable utility equipment. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots"
+        "droids"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -170,8 +170,7 @@
       "description": "A hovering survey probe with a steerable sensor mast, controlled altitude, active scan cone, and three to six appendages. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots",
-        "sensors"
+        "droids"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -194,7 +193,7 @@
       "description": "A compact floor-running courier with controlled heading, front-wheel steering, tread travel, antenna options, and cargo modules. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots"
+        "droids"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -217,7 +216,7 @@
       "description": "An armoured conical casing unit with a hemisphere skirt, rotating dome, elevating eyestalk, swappable manipulator, and emitter rod. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots"
+        "droids"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -240,7 +239,7 @@
       "description": "A barrel repair unit with tripod and bipod ride heights, a rotating dome and radar eye, an opening service panel, a rising periscope, and a holographic projection cone. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots"
+        "droids"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -263,7 +262,7 @@
       "description": "A plated humanoid attendant with a fixed faceplate and vocoder grille, four etiquette poses, and plating levels that strip back to the exposed loom. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots"
+        "droids"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -286,7 +285,7 @@
       "description": "A converted armoured humanoid with a blank slab head, optional side handles, three chest units, a bounded power meter, and four controlled poses. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots"
+        "droids"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -305,11 +304,11 @@
     {
       "name": "robot-hound",
       "type": "registry:ui",
-      "title": "Robot hound",
+      "title": "Hound",
       "description": "A boxy companion tracker on a concealed drive: a flared wedge chassis with a head carried out on a concertina neck, splayed ear dishes, a telescoping probe off the tail, and one attention number that runs all of it. Four camera angles, and a drag to bring its head up.",
       "categories": [
         "robotics",
-        "robots"
+        "animals"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -332,7 +331,7 @@
       "description": "A rotor-lifted visitor guide: a shell body hanging under a spinning rotor, hands and feet carried on coil springs that stretch with hover height, ring optics that track the pointer, and a speaker grille that lights as it talks. Fly it by hand from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots"
+        "droids"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -355,7 +354,7 @@
       "description": "A floating armoured custodian: a rounded casing whose armour segments ride radial rails and bloom into a corona around a lit chassis, with a deep-set gimballed optic behind a three-arm bracket cage and a ring of voice cells. Work the shell by hand from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots"
+        "droids"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -378,7 +377,7 @@
       "description": "A bulkhead-mounted watch station: an identity strip, a gimballed optic behind a solved iris diaphragm that stops down to a pinhole, and a voice grille that lights as it speaks. Work the iris by hand from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots"
+        "droids"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -401,7 +400,7 @@
       "description": "A deployable survey pylon: a sharp triangular plate that folds its legs, its aft strut and its mast inside its own outline, then stands itself up on a tripod and lifts its apex cap off a lit core. One deploy number runs all of it, from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots"
+        "droids"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -424,7 +423,7 @@
       "description": "A slab-bodied walker with no limbs: a rectangular column sliced into parallel slabs, each hinged at its own top face, that splay into a braced stance and stride half a cycle apart. Modelled as solids and projected into any of four camera angles.",
       "categories": [
         "robotics",
-        "robots"
+        "droids"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -442,11 +441,11 @@
     {
       "name": "micro-duck",
       "type": "registry:ui",
-      "title": "Micro duck",
+      "title": "Duck",
       "description": "A desk-scale bipedal duck robot: solved legs, a servo-stack neck, a camera eye that aims where it gazes, and a beak that opens. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots"
+        "droids"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -470,7 +469,7 @@
       "description": "Pure biped pose solver: two rear-breaking legs, a footfall cycle with double support, an S-curve neck chain, and a hinged beak.",
       "categories": [
         "robotics",
-        "math"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -490,7 +489,7 @@
       "description": "A companion robot head on a solved six-rod parallel platform, with pointer-tracking eyes, sprung antennas, and a linkage fault lamp. Drawn from any of four camera angles, including its own axonometric.",
       "categories": [
         "robotics",
-        "robots"
+        "droids"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -514,7 +513,7 @@
       "description": "An expressive humanoid head driven as servo channels: paired brows, lids, cheeks and lip corners, a hinged jaw, nine blendable expressions, pointer-tracked gaze, and drawable push-rods. One ellipsoid geometry, four camera angles.",
       "categories": [
         "robotics",
-        "robots"
+        "droids"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/face-actuation.json",
@@ -538,7 +537,7 @@
       "description": "Closed-form six-degree-of-freedom Stewart platform inverse kinematics with per-leg stroke, travel limits, and a reachability flag.",
       "categories": [
         "robotics",
-        "math"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -558,7 +557,7 @@
       "description": "An animatronic face rig: ten servo channels, six of them paired left and right, nine blendable expressions, per-servo stroke against travel, and exact ellipsoid silhouette projection for the skull.",
       "categories": [
         "robotics",
-        "math"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -575,11 +574,11 @@
     {
       "name": "robot-quadruped",
       "type": "registry:ui",
-      "title": "Robot quadruped",
+      "title": "Quadruped",
       "description": "A four-legged robot with solved leg geometry, controlled gait phase, stance height, stride, foot lift, and contact indicators. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots"
+        "animals"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -602,7 +601,7 @@
       "description": "Pure standing, walking, and trotting pose solver with four planar two-link legs and bounded stance controls.",
       "categories": [
         "robotics",
-        "math"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -618,11 +617,10 @@
     {
       "name": "robot-fish",
       "type": "registry:ui",
-      "title": "Robot fish",
+      "title": "Fish",
       "description": "A swimming fish in profile: a tail-weighted body wave, solved hull outline, dorsal and pectoral fins, pointer steering, and a dart on click. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots",
         "animals"
       ],
       "registryDependencies": [
@@ -643,11 +641,10 @@
     {
       "name": "robot-snake",
       "type": "registry:ui",
-      "title": "Robot snake",
+      "title": "Snake",
       "description": "A serpentine crawler in plan view: an even body wave, sidewinding lift with contact marks, a coil, a pointer-tracking head, and a strike on click. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots",
         "animals"
       ],
       "registryDependencies": [
@@ -668,11 +665,10 @@
     {
       "name": "robot-spider",
       "type": "registry:ui",
-      "title": "Robot spider",
+      "title": "Spider",
       "description": "An eight-legged walker in plan view with solved knees, tripod, wave and ripple gaits, a body that turns to face the pointer, and a crouch on click. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots",
         "animals"
       ],
       "registryDependencies": [
@@ -693,11 +689,10 @@
     {
       "name": "robot-crab",
       "type": "registry:ui",
-      "title": "Robot crab",
+      "title": "Crab",
       "description": "A sideways walker in plan view: the hexapod gait turned across the body, two hinged claws, pointer-tracking eyestalks, and a claw snap on click. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots",
         "animals"
       ],
       "registryDependencies": [
@@ -718,11 +713,10 @@
     {
       "name": "robot-bird",
       "type": "registry:ui",
-      "title": "Robot bird",
+      "title": "Bird",
       "description": "A perching flyer in profile: three-link wings carrying fanned feather plates, a beat cycle, a spreading tail, and a takeoff on click. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots",
         "animals"
       ],
       "registryDependencies": [
@@ -742,11 +736,10 @@
     {
       "name": "robot-dragonfly",
       "type": "registry:ui",
-      "title": "Robot dragonfly",
+      "title": "Dragonfly",
       "description": "A four-winged flyer in plan view: fore and hind wings beating half a cycle apart, a solved abdomen that flicks and curls, pointer yaw, and a dart on click. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots",
         "animals"
       ],
       "registryDependencies": [
@@ -767,11 +760,10 @@
     {
       "name": "robot-bat",
       "type": "registry:ui",
-      "title": "Robot bat",
+      "title": "Bat",
       "description": "A membrane flyer in side elevation: a three-link arm carrying four finger struts with the skin drawn through their tips, an inverted roost, and a drop off the beam on click. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots",
         "animals"
       ],
       "registryDependencies": [
@@ -791,11 +783,10 @@
     {
       "name": "robot-jellyfish",
       "type": "registry:ui",
-      "title": "Robot jellyfish",
+      "title": "Jellyfish",
       "description": "A pulsing bell in front elevation: one contraction number narrows, deepens and flares the whole surface of revolution, with a rippling curtain of solved tentacles and a hard contraction on click.",
       "categories": [
         "robotics",
-        "robots",
         "animals"
       ],
       "registryDependencies": [
@@ -816,11 +807,10 @@
     {
       "name": "robot-manta",
       "type": "registry:ui",
-      "title": "Robot manta",
+      "title": "Manta",
       "description": "A ray in plan view whose travelling wave runs across the span rather than along the body, with a real roll that foreshortens it, cephalic fins, a whip tail, and a surge on click.",
       "categories": [
         "robotics",
-        "robots",
         "animals"
       ],
       "registryDependencies": [
@@ -841,11 +831,10 @@
     {
       "name": "robot-octopus",
       "type": "registry:ui",
-      "title": "Robot octopus",
+      "title": "Octopus",
       "description": "A mantle and eight independently solved arms in front elevation, mounted on a ring rather than a line, reaching toward the pointer, with a pumping siphon and a jet on click.",
       "categories": [
         "robotics",
-        "robots",
         "animals"
       ],
       "registryDependencies": [
@@ -866,11 +855,10 @@
     {
       "name": "robot-seahorse",
       "type": "registry:ui",
-      "title": "Robot seahorse",
+      "title": "Seahorse",
       "description": "An upright swimmer in side elevation whose prehensile grip is the spine solver's own steering taken to the stop, with bony rings on every joint and a dorsal fin running far faster than the body.",
       "categories": [
         "robotics",
-        "robots",
         "animals"
       ],
       "registryDependencies": [
@@ -891,11 +879,10 @@
     {
       "name": "robot-ant",
       "type": "registry:ui",
-      "title": "Robot ant",
+      "title": "Ant",
       "description": "A six-legged forager in plan view: the shared gait solver at six, three body sections articulated on a short spine, tracking antennae, a cargo module, and working mandibles on click.",
       "categories": [
         "robotics",
-        "robots",
         "animals"
       ],
       "registryDependencies": [
@@ -917,11 +904,10 @@
     {
       "name": "robot-scorpion",
       "type": "registry:ui",
-      "title": "Robot scorpion",
+      "title": "Scorpion",
       "description": "An eight-legged stalker in plan view with a metasoma solved in the sagittal plane, so the arch is a real height rather than a shorter drawing, plus hinged pedipalps and a tail strike on click.",
       "categories": [
         "robotics",
-        "robots",
         "animals"
       ],
       "registryDependencies": [
@@ -943,11 +929,10 @@
     {
       "name": "robot-mantis",
       "type": "registry:ui",
-      "title": "Robot mantis",
-      "description": "A stalker in side elevation whose raptorial forelimbs are a two-link chain solved to a real target \u2014 the pointer while it is watched \u2014 with solved walking legs and a strike on click.",
+      "title": "Mantis",
+      "description": "A stalker in side elevation whose raptorial forelimbs are a two-link chain solved to a real target — the pointer while it is watched — with solved walking legs and a strike on click.",
       "categories": [
         "robotics",
-        "robots",
         "animals"
       ],
       "registryDependencies": [
@@ -967,11 +952,10 @@
     {
       "name": "robot-frog",
       "type": "registry:ui",
-      "title": "Robot frog",
+      "title": "Frog",
       "description": "A jumper in side elevation: solved hind legs driven through crouch, launch, airborne trail and landing by one pair of numbers, with a vocal sac on its own clock and a jump on click.",
       "categories": [
         "robotics",
-        "robots",
         "animals"
       ],
       "registryDependencies": [
@@ -991,11 +975,10 @@
     {
       "name": "robot-cat",
       "type": "registry:ui",
-      "title": "Robot cat",
+      "title": "Cat",
       "description": "A quadruped whose body is the mechanism: the shoulder and the hip are the two ends of a solved spine, so arching the back moves both leg roots and four solved legs answer for it. Prowls, sits, arches, and pounces on click.",
       "categories": [
         "robotics",
-        "robots",
         "animals"
       ],
       "registryDependencies": [
@@ -1016,11 +999,10 @@
     {
       "name": "robot-dog",
       "type": "registry:ui",
-      "title": "Robot dog",
+      "title": "Dog",
       "description": "A quadruped with a floating shoulder: the hip is a spine joint and the shoulder is the far end of a scapula that swings on the ribcage, the neck is a solved chain that puts the nose on the floor, and the tail is solved across the centre plane so the wag runs out of the drawing. Trots, sniffs, sits, points, and barks on click.",
       "categories": [
         "robotics",
-        "robots",
         "animals"
       ],
       "registryDependencies": [
@@ -1041,11 +1023,10 @@
     {
       "name": "robot-fox",
       "type": "registry:ui",
-      "title": "Robot fox",
+      "title": "Fox",
       "description": "A quadruped whose attitude is the mechanism: pitch tips the whole animal about its hip, so the shoulder rides up and the foreleg folds once the floor is past its reach. The brush is an output rather than an input, its carriage derived from the pitch and the rate it is changing at, and the two ears pan independently onto one quarry so their axes converge. Mouses, trots, listens, curls up, and dives on click.",
       "categories": [
         "robotics",
-        "robots",
         "animals"
       ],
       "registryDependencies": [
@@ -1070,7 +1051,7 @@
       "description": "Plantigrade stance: a rigid heel-to-toe sole placed on the floor with the leg solved to the ankle it produces, the base of support those intervals union into, and the static share of the standing weight at each contact.",
       "categories": [
         "robotics",
-        "math"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -1086,11 +1067,10 @@
     {
       "name": "robot-bear",
       "type": "registry:ui",
-      "title": "Robot bear",
+      "title": "Bear",
       "description": "The quadruped that stands up. Plantigrade soles make each foot an interval rather than a point, so the four of them union into a base of support with edges; rearing collapses that base to two soles and takes the centre of mass out over it, and the balance rule slides the body back until the margin is positive again. The shoulder hump is an output of what the forelimbs are carrying. Ambles on a lateral sequence, rears, forages, and topples honestly when the balance is off.",
       "categories": [
         "robotics",
-        "robots",
         "animals"
       ],
       "registryDependencies": [
@@ -1112,11 +1092,10 @@
     {
       "name": "robot-polar-bear",
       "type": "registry:ui",
-      "title": "Robot polar bear",
-      "description": "One body with two ways of holding itself up. Swim is the handover: the plantigrade soles unload as the water takes the weight, the hull settles to a waterline, the hind limbs stop stepping and trail, and the forelimbs paddle on a stroke path the shoulder and elbow are solved to. Long body, long neck, small head \u2014 the silhouette does the rest.",
+      "title": "Polar bear",
+      "description": "One body with two ways of holding itself up. Swim is the handover: the plantigrade soles unload as the water takes the weight, the hull settles to a waterline, the hind limbs stop stepping and trail, and the forelimbs paddle on a stroke path the shoulder and elbow are solved to. Long body, long neck, small head — the silhouette does the rest.",
       "categories": [
         "robotics",
-        "robots",
         "animals"
       ],
       "registryDependencies": [
@@ -1138,11 +1117,10 @@
     {
       "name": "robot-panda",
       "type": "registry:ui",
-      "title": "Robot panda",
-      "description": "The bear that sits down to use its hands. Sitting puts a third contact on the floor \u2014 the pelvis, with a span of its own \u2014 which is what buys back a base of support once both forepaws have left it. The sixth digit opposes the other five and the pad gap is an output: a fatter stalk rides the thumb further open at the same grip, and both forelimbs are solved to the stalk itself.",
+      "title": "Panda",
+      "description": "The bear that sits down to use its hands. Sitting puts a third contact on the floor — the pelvis, with a span of its own — which is what buys back a base of support once both forepaws have left it. The sixth digit opposes the other five and the pad gap is an output: a fatter stalk rides the thumb further open at the same grip, and both forelimbs are solved to the stalk itself.",
       "categories": [
         "robotics",
-        "robots",
         "animals"
       ],
       "registryDependencies": [
@@ -1164,11 +1142,10 @@
     {
       "name": "robot-horse",
       "type": "registry:ui",
-      "title": "Robot horse",
-      "description": "A quadruped whose gait is the mechanism: walk, trot, pace, canter and gallop are real footfall sequences whose beat is counted from them, and the load each grounded foot carries drives two joints nobody sets \u2014 a sprung fetlock that sinks under weight and recoils free, and a neck that nods because the forehand is loading and unloading. Drag across it to scrub the stride one footfall at a time.",
+      "title": "Horse",
+      "description": "A quadruped whose gait is the mechanism: walk, trot, pace, canter and gallop are real footfall sequences whose beat is counted from them, and the load each grounded foot carries drives two joints nobody sets — a sprung fetlock that sinks under weight and recoils free, and a neck that nods because the forehand is loading and unloading. Drag across it to scrub the stride one footfall at a time.",
       "categories": [
         "robotics",
-        "robots",
         "animals"
       ],
       "registryDependencies": [
@@ -1190,11 +1167,10 @@
     {
       "name": "robot-pegasus",
       "type": "registry:ui",
-      "title": "Robot pegasus",
+      "title": "Pegasus",
       "description": "A winged quadruped that hands its own weight across: lift is one number splitting the body between the legs and the wings, so the fetlocks recoil as they unload, the legs run out of reach and fold, the stride fades out and the wingbeat fades in. Each wing is three bones solved to a wingtip tracing a real figure of eight, so folding it is only the path closing.",
       "categories": [
         "robotics",
-        "robots",
         "animals"
       ],
       "registryDependencies": [
@@ -1216,11 +1192,10 @@
     {
       "name": "robot-camel",
       "type": "registry:ui",
-      "title": "Robot camel",
-      "description": "The one machine here whose floor is not a line: its ground is a medium with a depth, and the feet go into it. The pad opens under load, that spread drops its pressure, and the pressure is what takes it into the sand \u2014 so an opening foot keeps the animal higher up. The hump is a store that slumps as it empties, and the roll is the gait: a pace throws the body right over and a trot barely moves it.",
+      "title": "Camel",
+      "description": "The one machine here whose floor is not a line: its ground is a medium with a depth, and the feet go into it. The pad opens under load, that spread drops its pressure, and the pressure is what takes it into the sand — so an opening foot keeps the animal higher up. The hump is a store that slumps as it empties, and the roll is the gait: a pace throws the body right over and a trot barely moves it.",
       "categories": [
         "robotics",
-        "robots",
         "animals"
       ],
       "registryDependencies": [
@@ -1242,11 +1217,10 @@
     {
       "name": "robot-turtle",
       "type": "registry:ui",
-      "title": "Robot turtle",
+      "title": "Turtle",
       "description": "A plodder in plan view: the gait solver at four legs on a slow wave, a procedurally plated carapace, and one number that pulls the head, tail and every foot in underneath it.",
       "categories": [
         "robotics",
-        "robots",
         "animals"
       ],
       "registryDependencies": [
@@ -1267,11 +1241,10 @@
     {
       "name": "robot-inchworm",
       "type": "registry:ui",
-      "title": "Robot inchworm",
+      "title": "Inchworm",
       "description": "A looper in side elevation that moves by alternating anchors rather than a travelling wave: the arch height is solved from the anchor span, so shortening the span raises the loop.",
       "categories": [
         "robotics",
-        "robots",
         "animals"
       ],
       "registryDependencies": [
@@ -1296,7 +1269,7 @@
       "description": "An additive build cell that makes its own workpiece: a three-axis deposition head over a build plate, laying a sampled solid voxel by voxel, with a resolution axis that rebuilds the same object out of smaller cells and four camera angles.",
       "categories": [
         "robotics",
-        "machines"
+        "fabrication"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -1316,10 +1289,10 @@
       "name": "voxel-form",
       "type": "registry:ui",
       "title": "Voxel form",
-      "description": "The workpiece on its own: a continuous field sampled into vector voxels and laid cell by cell, with no machine around it \u2014 a resolution axis, a build line you can scrub, and four camera angles.",
+      "description": "The workpiece on its own: a continuous field sampled into vector voxels and laid cell by cell, with no machine around it — a resolution axis, a build line you can scrub, and four camera angles.",
       "categories": [
         "robotics",
-        "machines"
+        "fabrication"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -1342,7 +1315,7 @@
       "description": "An articulated fabricator that reaches for the work: the turret yaws toward the cell being laid and the shoulder and elbow are solved with the analytic two-link elbow, laying the same sampled solid the gantry cell builds.",
       "categories": [
         "robotics",
-        "machines"
+        "fabrication"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -1365,7 +1338,7 @@
       "description": "A free-flying fabricator with no envelope: a repulsor platform that flies to each cell, rides a fixed standoff above the build line, and banks into its own travel while it lays a sampled solid.",
       "categories": [
         "robotics",
-        "machines"
+        "fabrication"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -1388,7 +1361,7 @@
       "description": "Continuous occupancy fields over the unit cube, sampled into buildable voxels: six shapes, a serpentine deposition order, surface extraction that drops every cell buried inside the solid, and the projected paths every fabricator draws them with.",
       "categories": [
         "robotics",
-        "geometry"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -1409,7 +1382,7 @@
       "description": "A serpenoid travelling-wave body solver: joints, tangent angles, ground clearance, taper and steady turn, with every link the same length in every pose.",
       "categories": [
         "robotics",
-        "math"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -1429,7 +1402,7 @@
       "description": "Equine footfall patterns as real sequences: touchdown instants per limb, a beat count derived from them rather than declared, the support pattern, a lead that mirrors the two sides, and the share of the standing weight each grounded foot is carrying.",
       "categories": [
         "robotics",
-        "math"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -1449,7 +1422,7 @@
       "description": "A radial many-legged walker solver: four to ten legs, tripod, wave and ripple gaits, plan-view feet, and knees solved in each leg's own vertical plane.",
       "categories": [
         "robotics",
-        "math"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -1469,7 +1442,7 @@
       "description": "A two- or four-legged walking solver for machines that carry their mass above the hips: a footfall schedule, the support polygon it leaves, and the hull roll and pitch that are the only way such a machine can move its centre of mass over a foot.",
       "categories": [
         "robotics",
-        "math"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -1489,7 +1462,7 @@
       "description": "A three-legged walking solver: a load schedule per foot, the body position that schedule demands, the support polygon it has to stay inside, and knees solved in each leg's own vertical plane.",
       "categories": [
         "robotics",
-        "math"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -1553,7 +1526,7 @@
       "description": "A controlled rotary indexing table with equally spaced fixtures, optional workpieces, a fixed drive motor, and four paint variants. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "machines"
+        "drives"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -1571,11 +1544,11 @@
     {
       "name": "robot-rover",
       "type": "registry:ui",
-      "title": "Robot rover",
+      "title": "Rover",
       "description": "A top-down four- or six-wheel ground robot with controlled heading, front-wheel steering, tread travel, and a sensor turret. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots"
+        "vehicles"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -1594,11 +1567,11 @@
     {
       "name": "robot-drone",
       "type": "registry:ui",
-      "title": "Robot drone",
-      "description": "A four- or six-rotor drone drawn from four camera angles \u2014 plan, front, side and isometric \u2014 that flies its own path or takes a controlled heading, with spinning counter-rotating propellers, landing gear and optional guards.",
+      "title": "Drone",
+      "description": "A four- or six-rotor drone drawn from four camera angles — plan, front, side and isometric — that flies its own path or takes a controlled heading, with spinning counter-rotating propellers, landing gear and optional guards.",
       "categories": [
         "robotics",
-        "robots"
+        "vehicles"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -1641,11 +1614,11 @@
     {
       "name": "robot-gripper",
       "type": "registry:ui",
-      "title": "Robot gripper",
+      "title": "Gripper",
       "description": "Standalone parallel or angular gripper with controlled jaw opening, status lamp, and four paint variants. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "machines"
+        "tools"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -1667,7 +1640,7 @@
       "description": "Conveyor with automatic or controlled belt travel, reversible direction, rollers, and a configurable number of workpieces. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "machines"
+        "drives"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -1689,7 +1662,7 @@
       "description": "A reduction stage with its face off: a sun driving three to five planets inside a held ring, with real meshing teeth and the ratio read off the tooth counts. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "machines"
+        "drives"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -1712,7 +1685,7 @@
       "description": "A toothed belt between two pulleys with an adjustable idler, routed along its real tangents and wrap angles, with the teeth marching by arc length. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "machines"
+        "drives"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -1735,7 +1708,7 @@
       "description": "The energy chain that feeds a moving axis: links placed by arc length along a fixed-length path whose fold travels at half the carriage. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "machines"
+        "drives"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -1758,7 +1731,7 @@
       "description": "A holonomic wheel with six to fourteen barrel rollers modelled at 45 degrees out of the wheel plane, in left and right hands. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "machines"
+        "drives"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -1780,7 +1753,7 @@
       "description": "A robot-side and tool-side coupler that comes apart: one engagement axis closes the gap, seats the halves, then drives the lock balls out into their groove. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "machines"
+        "tools"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -1802,7 +1775,7 @@
       "description": "A bar of bellows cups that descends onto a sheet, compresses against it, and carries it on the lips while the line is live. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "machines"
+        "tools"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -1820,11 +1793,11 @@
     {
       "name": "robot-hand",
       "type": "registry:ui",
-      "title": "Robot hand",
+      "title": "Hand",
       "description": "A five-digit hand on a real saddle-jointed thumb: fingers that abduct about the palm normal, seven named grasps, a handedness, an articulated wrist, and the pad gap a pinch closes. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "machines"
+        "body"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -1847,7 +1820,7 @@
       "description": "A five-digit hand pose solver: three-link fingers abducted about the palm normal, a thumb on a real saddle joint, named grasps, and the pad gap a pinch actually closes.",
       "categories": [
         "robotics",
-        "math"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -1863,11 +1836,11 @@
     {
       "name": "robot-foot",
       "type": "registry:ui",
-      "title": "Robot foot",
+      "title": "Foot",
       "description": "An ankle and a hinged toe plate rolling through a stance: dorsiflexed at heel strike, flat at mid-stance, plantarflexed at push-off, with the load moving heel to ball to toe. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "machines"
+        "body"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -1886,11 +1859,11 @@
     {
       "name": "robot-leg",
       "type": "registry:ui",
-      "title": "Robot leg",
+      "title": "Leg",
       "description": "A hip, knee and ankle solved to wherever the foot has to be, with strut actuators whose stroke is read off the pose. Grab it and the foot is yours. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "machines"
+        "body"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -1910,11 +1883,11 @@
     {
       "name": "robot-torso",
       "type": "registry:ui",
-      "title": "Robot torso",
+      "title": "Torso",
       "description": "A pelvis, a column of equal vertebrae, and a cage of rib hoops that opens along the machine's depth as it breathes. Leaning and twisting move the shoulders without stretching the back. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "machines"
+        "body"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -1933,11 +1906,11 @@
     {
       "name": "robot-skeleton",
       "type": "registry:ui",
-      "title": "Robot skeleton",
+      "title": "Skeleton",
       "description": "The whole biped, walking: solved legs on a rolling foot, an equal-segment spine under a rib cage, counter-swinging arms, and hands on the same solver the standalone hand ships. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots"
+        "body"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -1961,7 +1934,7 @@
       "description": "A biped pose solver: stride cycles with real duty factors, feet that roll heel to toe over a planted sole, an equal-segment spine, and arms swinging against the legs.",
       "categories": [
         "robotics",
-        "math"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -1981,7 +1954,7 @@
       "description": "A whole-humanoid controller and balance solver: one routine intent for the entire body, an attention cascade that spends the eyes before the neck and the neck before the waist, a segment-mass centre of mass against the support polygon the feet actually hold, and the rigid roll that puts the weight back over them.",
       "categories": [
         "robotics",
-        "math"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -2004,7 +1977,7 @@
       "description": "A six-degree-of-freedom Stewart base under a payload deck, with solved leg lengths, visible stroke, and a fault when a pose asks for more travel than it has. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "machines"
+        "drives"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -2165,7 +2138,7 @@
       "description": "The mechanisms in a machine you carry: a hinge that keeps the lid's length, a book fold whose display keeps its own length as it bends, a kickstand whose foot has to reach the desk, rotary detents that wrap in both directions, a constant-pitch link band, and the projection that puts a screen on a plane at any attitude.",
       "categories": [
         "robotics",
-        "geometry"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -2186,7 +2159,7 @@
       "description": "The mechanisms under a machine a person types on: key travel with real hysteresis, an asymmetric keystroke curve, unit-pitch deck layout with a stagger, sculpted row profiles, matrix scan order, typing schedules, and a raked deck frame that keycaps stand on as solids.",
       "categories": [
         "robotics",
-        "geometry"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -2208,7 +2181,7 @@
       "description": "One mechanical keyswitch, sectioned: a stem on a coil spring whose contact closes partway down the travel rather than at the bottom, and opens again higher than it closed. Linear, tactile and clicky legs, and the travel is an axis you can set.",
       "categories": [
         "robotics",
-        "input"
+        "controls"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -2227,11 +2200,11 @@
     {
       "name": "robot-keypad",
       "type": "registry:ui",
-      "title": "Robot keypad",
+      "title": "Keypad",
       "description": "A raked bench entry pad on a scanned matrix: keys that stand on the face as solids and press along its normal, an entry readout that fills a digit at a time, and the cell the scan is reading drawn separately from the key that is down.",
       "categories": [
         "robotics",
-        "input"
+        "controls"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -2250,11 +2223,11 @@
     {
       "name": "robot-keyboard",
       "type": "registry:ui",
-      "title": "Robot keyboard",
+      "title": "Keyboard",
       "description": "A whole key deck placed by a unit grid: rows specified in 1u, 1.25u and 6.25u widths on one pitch, sculpted caps that give the board a real profile in elevation, three layouts including a split deck whose halves are turned apart, and a matrix scan.",
       "categories": [
         "robotics",
-        "input"
+        "controls"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -2277,7 +2250,7 @@
       "description": "A bench console with two coupled mechanisms: a display head canted on a hinge up a column, and a key deck whose strokes are what put glyphs on the screen under a blinking block cursor.",
       "categories": [
         "robotics",
-        "input"
+        "controls"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -2300,7 +2273,7 @@
       "description": "Gear outlines and the phase that meshes them, assembly-valid planetary trains, the taut path of a belt round a set of pulleys, and an energy chain folded over its own bend.",
       "categories": [
         "robotics",
-        "machines"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -2316,11 +2289,11 @@
     {
       "name": "robot-arm",
       "type": "registry:ui",
-      "title": "Robot arm",
+      "title": "Arm",
       "description": "An articulated industrial arm in SVG: any number of links, eight end effectors, four paint variants, four mounts, and pointer tracking. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "svg"
+        "arms"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -2340,11 +2313,11 @@
     {
       "name": "robot-arm-3d",
       "type": "registry:ui",
-      "title": "Robot arm 3D",
+      "title": "Arm 3D",
       "description": "The articulated arm as a procedural react-three-fiber rig: no model to load, and it shares its palette with the SVG components.",
       "categories": [
         "robotics",
-        "3d"
+        "arms"
       ],
       "dependencies": [
         "three",
@@ -2370,11 +2343,11 @@
     {
       "name": "robot-stage",
       "type": "registry:ui",
-      "title": "Robot stage",
+      "title": "Stage",
       "description": "The room the 3D robots stand in: a configured react-three-fiber canvas with lights, a contact shadow, a grid floor and orbit controls.",
       "categories": [
         "robotics",
-        "3d"
+        "arms"
       ],
       "dependencies": [
         "three",
@@ -2396,11 +2369,11 @@
     {
       "name": "scara-arm",
       "type": "registry:ui",
-      "title": "SCARA arm",
+      "title": "SCARA",
       "description": "A SCARA cell in plan view: two rotary links, a Z spindle, the swept area, and a shadow that reads as height. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "svg"
+        "arms"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -2420,11 +2393,11 @@
     {
       "name": "delta-arm",
       "type": "registry:ui",
-      "title": "Delta arm",
+      "title": "Delta",
       "description": "A parallel delta robot drawn in isometric, solved with real delta inverse kinematics rather than an approximation. Drawn from any of four camera angles, including its own free axonometric.",
       "categories": [
         "robotics",
-        "svg"
+        "arms"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -2444,11 +2417,11 @@
     {
       "name": "gantry-arm",
       "type": "registry:ui",
-      "title": "Gantry arm",
+      "title": "Gantry",
       "description": "A cartesian gantry: independent axes, the dog-leg path a real machine takes, and an optional plotter trail. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "svg"
+        "arms"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -2468,11 +2441,11 @@
     {
       "name": "robot-face",
       "type": "registry:ui",
-      "title": "Robot face",
+      "title": "Face",
       "description": "A head whose eyes follow the pointer anywhere on the page, with moods for waiting, succeeded, thinking, failed and asleep.",
       "categories": [
         "robotics",
-        "svg"
+        "controls"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -2491,11 +2464,11 @@
     {
       "name": "robot-loader",
       "type": "registry:ui",
-      "title": "Robot loader",
+      "title": "Loader",
       "description": "A pick-and-place cycle as a loading indicator: indeterminate on its own, or filling the out-tray in proportion to a value.",
       "categories": [
         "robotics",
-        "svg"
+        "controls"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -2513,7 +2486,7 @@
     {
       "name": "arm-controls",
       "type": "registry:ui",
-      "title": "Arm controls",
+      "title": "Controls",
       "description": "A teach pendant: one slider per joint driving an arm in forward kinematics, plus the tool selector and live readouts.",
       "categories": [
         "robotics",
@@ -2542,11 +2515,11 @@
     {
       "name": "robot-kinematics",
       "type": "registry:lib",
-      "title": "Robot kinematics",
+      "title": "Kinematics",
       "description": "Dependency-free inverse and forward kinematics: analytic two-link elbow, FABRIK for longer chains, closed-form delta IK, isometric projection.",
       "categories": [
         "robotics",
-        "math"
+        "foundations"
       ],
       "files": [
         {
@@ -2559,11 +2532,11 @@
     {
       "name": "robot-style",
       "type": "registry:lib",
-      "title": "Robot style",
+      "title": "Style",
       "description": "The shared visual language: size scale, paint variants, palette resolution from CSS variables, the capsule limb geometry every machine is drawn from, and the orthographic camera that projects one model into plan, elevation and isometric views.",
       "categories": [
         "robotics",
-        "theming"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -2668,11 +2641,11 @@
     {
       "name": "robot-color",
       "type": "registry:lib",
-      "title": "Robot color",
+      "title": "Color",
       "description": "Resolves CSS variables and oklch() to something three.js can parse, so the WebGL robots share the theme with the SVG ones.",
       "categories": [
         "robotics",
-        "theming"
+        "foundations"
       ],
       "files": [
         {
@@ -2685,11 +2658,11 @@
     {
       "name": "robot-capture",
       "type": "registry:lib",
-      "title": "Robot capture",
+      "title": "Capture",
       "description": "Records any component out of the page: a snapshotter that bakes the cascade into a clone, a dependency-free GIF89a encoder, and an animated-WebP muxer built on the browser's own encoder.",
       "categories": [
         "robotics",
-        "export"
+        "foundations"
       ],
       "files": [
         {
@@ -2716,7 +2689,7 @@
       "description": "Animated pose for a link chain: eases the tool tip toward a target or a scripted path, and stops rendering entirely once the pose settles.",
       "categories": [
         "robotics",
-        "hooks"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -2737,7 +2710,7 @@
       "description": "The clock every machine runs on and the handle you grab it by: a rate-limited scalar, pointer-capture dragging, and keyboard steps, all parked by a reduced-motion preference.",
       "categories": [
         "robotics",
-        "hooks"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -2758,7 +2731,7 @@
       "description": "Pointer position mapped into a component's own world units, returning null when the pointer is away so a machine can fall back to its idle behaviour.",
       "categories": [
         "robotics",
-        "hooks"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -2800,7 +2773,7 @@
       "description": "An EI or toroidal magnetic core with primary and secondary winding densities, reversible illustrative flux, selectable ratio, and four camera views.",
       "categories": [
         "robotics",
-        "machines"
+        "actuators"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -2822,7 +2795,7 @@
       "description": "A switchable electromagnetic gripper with exposed windings and pole shoes that captures and lifts a steel plate or bar in four camera views.",
       "categories": [
         "robotics",
-        "machines"
+        "tools"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -2866,7 +2839,7 @@
       "description": "A contactless brake whose magnet array overlaps a rotating conductive disc, revealing qualitative eddy paths, optional slots, and four camera views.",
       "categories": [
         "robotics",
-        "machines"
+        "actuators"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -2888,7 +2861,7 @@
       "description": "A levitated carriage travelling above a segmented linear stator with a constant visible air gap, selectable payloads, and four projected views.",
       "categories": [
         "robotics",
-        "machines"
+        "rail"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -2910,7 +2883,7 @@
       "description": "A bidirectional moving-coil actuator travelling through a fixed annular magnet gap, with a visible carriage, qualitative field, and four camera views.",
       "categories": [
         "robotics",
-        "machines"
+        "actuators"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -2932,7 +2905,7 @@
       "description": "A contactless bearing with four opposed electromagnets centering a visibly unsupported rotor along either controlled axis in four camera views.",
       "categories": [
         "robotics",
-        "machines"
+        "actuators"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -2954,7 +2927,7 @@
       "description": "A cutaway induction motor with a balanced three-phase stator, squirrel-cage rotor, configurable poles, visible slip, and four projected camera views.",
       "categories": [
         "robotics",
-        "machines"
+        "actuators"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -2977,7 +2950,7 @@
       "description": "An open stepper motor with four phase windings, a toothed permanent-magnet rotor, discrete indexed motion, detents, and four camera views.",
       "categories": [
         "robotics",
-        "machines"
+        "actuators"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -2998,7 +2971,7 @@
       "description": "A coil-driven plunger switching a two- or three-port valve gallery, with a visible return spring, flow route, and four projected camera views.",
       "categories": [
         "robotics",
-        "machines"
+        "actuators"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -3021,7 +2994,7 @@
       "description": "An exposed relay whose energized coil pulls a hinged armature across one or two normally-open or normally-closed contact sets in four camera views.",
       "categories": [
         "robotics",
-        "machines"
+        "actuators"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -3044,7 +3017,7 @@
       "description": "Dependency-free winding geometry, balanced three-phase field vectors, and ideal resolver sine and cosine channels for electromagnetic machines.",
       "categories": [
         "robotics",
-        "math"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -3064,7 +3037,7 @@
       "description": "Dependency-free solids of revolution: a surface from a profile, a golden-angle lattice spaced by equal surface area, half shells that reassemble, a hinge about any line, and blades that keep their length at every pitch.",
       "categories": [
         "robotics",
-        "math"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -3080,11 +3053,11 @@
     {
       "name": "robot-avocado",
       "type": "registry:ui",
-      "title": "Robot avocado",
+      "title": "Avocado",
       "description": "A split-shell specimen pod: one solid of revolution halved on its own centre plane, the two halves tilting apart on a rod under the machine while the stone rides up out of the gap on a screw column. Four camera angles, and a drag to part it.",
       "categories": [
         "robotics",
-        "robots"
+        "garden"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -3103,11 +3076,11 @@
     {
       "name": "robot-strawberry",
       "type": "registry:ui",
-      "title": "Robot strawberry",
+      "title": "Strawberry",
       "description": "A berry-shelled field unit whose sensor studs are placed by the golden angle over equal areas of its own skin and run out along their own surface normals, under a calyx of rigid blades on one hinge. Four camera angles, and a drag to work the collar.",
       "categories": [
         "robotics",
-        "robots"
+        "garden"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -3126,11 +3099,11 @@
     {
       "name": "robot-tomato",
       "type": "registry:ui",
-      "title": "Robot tomato",
+      "title": "Tomato",
       "description": "A truss-hung crop unit: a clamp, a peduncle with two hinges sharing one swing angle, a lobed shell, and a ripening front that is real coverage of the surface rather than a colour ramp. Four camera angles, and a drag to swing it.",
       "categories": [
         "robotics",
-        "robots"
+        "garden"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -3153,7 +3126,7 @@
       "description": "Dependency-free golden-angle disc lattices with the Fibonacci spiral arms that fall out of them, a dished face and its normals, a two-axis aim solved from a direction, and rigid hinged ray florets.",
       "categories": [
         "robotics",
-        "math"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -3169,12 +3142,11 @@
     {
       "name": "robot-sunflower",
       "type": "registry:ui",
-      "title": "Robot sunflower",
+      "title": "Sunflower",
       "description": "A heliotropic collector mast: a golden-angle floret lattice on a dished head, aimed at the light by a two-axis tracker, on a stem that leans toward it while the gimbal collar takes up the remainder.",
       "categories": [
         "robotics",
-        "robots",
-        "plants"
+        "garden"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -3196,10 +3168,10 @@
       "name": "cactus-geometry",
       "type": "registry:lib",
       "title": "Cactus geometry",
-      "description": "Dependency-free continuum limbs solved from their own curvature \u2014 exact length at every bend \u2014 with ribbed sections, crest lines, a staggered areole lattice, taper-true skin normals, rigid spine fans and rigid hinged petals.",
+      "description": "Dependency-free continuum limbs solved from their own curvature — exact length at every bend — with ribbed sections, crest lines, a staggered areole lattice, taper-true skin normals, rigid spine fans and rigid hinged petals.",
       "categories": [
         "robotics",
-        "math"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -3215,12 +3187,11 @@
     {
       "name": "robot-cactus",
       "type": "registry:ui",
-      "title": "Robot cactus",
+      "title": "Cactus",
       "description": "A potted columnar collector: a ribbed column and two arms solved as one continuum limb that lifts and curls, areoles and spine fans placed on the crests, and a rigid corolla that opens at the crown. Four camera angles, and a drag to work the flowering.",
       "categories": [
         "robotics",
-        "robots",
-        "plants"
+        "garden"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -3244,7 +3215,7 @@
       "description": "The closures in a machine that makes a sound by moving something: a spiral groove geared to its platter, a pivoted tonearm solved from the groove radius with its tracking error, an exponential horn, a spring governor, a comb tuned by length, and a pinned barrel that is also a step sequencer.",
       "categories": [
         "robotics",
-        "geometry"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -3265,7 +3236,7 @@
       "description": "The closures in a grand: an action whose ratio is a product of three levers and whose jack lets the hammer go before the blow, a back check, a damper that leaves the string late, a scale that cannot be ideal, a bridge and bent side that are the envelope of it, and a lid solved from its prop stick.",
       "categories": [
         "robotics",
-        "geometry"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -3285,7 +3256,7 @@
       "description": "A belt-drive deck whose arm is geared to its platter by the groove: one revolution walks the stylus in by exactly one groove pitch, the arm angle is solved from the radius, and the tracking error is in the readout. Drag the platter and it scrubs.",
       "categories": [
         "robotics",
-        "machines"
+        "music"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -3308,7 +3279,7 @@
       "description": "An acoustic deck on a mainspring: a governor holds the platter at its rate until the spring runs down and then lets it sag, the crank is the wind, and the horn is an exponential flare modelled once and projected from every camera.",
       "categories": [
         "robotics",
-        "machines"
+        "music"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -3331,7 +3302,7 @@
       "description": "A pinned barrel plucking a comb tuned by length: the notes are a pattern you pass it, a pin bends its tine further and further and lets go the instant it reaches the tip, and an air brake fly regulates the turn.",
       "categories": [
         "robotics",
-        "machines"
+        "music"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -3350,11 +3321,11 @@
     {
       "name": "robot-grand-piano",
       "type": "registry:ui",
-      "title": "Robot grand piano",
+      "title": "Grand piano",
       "description": "A player grand whose roll drives 88 solved actions: the jack lets each hammer go before it reaches the string, the back check catches it coming down, the dampers leave late, the pedals work, and the bent side of the case is the envelope of the string scale.",
       "categories": [
         "robotics",
-        "machines"
+        "music"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -3378,7 +3349,7 @@
       "description": "A one-machine band whose pose comes from data: a step pattern raises each beater as its step comes round and drops it on the beat, and both arms are two-link solutions to the thing they are about to hit.",
       "categories": [
         "robotics",
-        "robots"
+        "music"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -3401,7 +3372,7 @@
       "description": "A two-legged reconnaissance walker whose cab is a mass well above its hips: with one foot down the support is that foot, so every step is paid for by rolling the whole machine over the leg that stays put. Push it past the roll stops and it says it is off balance. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots"
+        "droids"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/walker-kinematics.json",
@@ -3423,10 +3394,10 @@
       "name": "siege-walker",
       "type": "registry:ui",
       "title": "Siege walker",
-      "description": "A four-legged armoured transport walker on the same solver as the scout: four feet at the corners of a long rectangle contain its mass, so it walks nearly level \u2014 until it is asked to pace, when the support collapses to a line down one flank it cannot roll far enough to reach. Drawn from any of four camera angles.",
+      "description": "A four-legged armoured transport walker on the same solver as the scout: four feet at the corners of a long rectangle contain its mass, so it walks nearly level — until it is asked to pace, when the support collapses to a line down one flank it cannot roll far enough to reach. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots"
+        "droids"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/walker-kinematics.json",
@@ -3451,7 +3422,7 @@
       "description": "A stubby three-legged survey walker: a chamfered slab body on solved legs that has to move its own mass onto the line between two feet before it can lift the third. Push it off balance with the pointer and the reported stability margin goes negative. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots"
+        "droids"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/tripod-kinematics.json",
@@ -3476,7 +3447,7 @@
       "description": "Dependency-free orbital mechanics: Kepler's equation solved to machine precision, elliptical orbits about a focus, the terminator great circle, phase and per-point illumination, limb darkening, body frames, and a deterministic irregular radius field.",
       "categories": [
         "robotics",
-        "math"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -3492,12 +3463,11 @@
     {
       "name": "celestial-planet",
       "type": "registry:ui",
-      "title": "Celestial planet",
-      "description": "A tilted, turning globe with latitude bands, polar caps, longitude storms and a ring system the body genuinely occludes \u2014 the far arc is cut where the silhouette crosses it, and the day-night line is a projected great circle.",
+      "title": "Planet",
+      "description": "A tilted, turning globe with latitude bands, polar caps, longitude storms and a ring system the body genuinely occludes — the far arc is cut where the silhouette crosses it, and the day-night line is a projected great circle.",
       "categories": [
         "robotics",
-        "space",
-        "bodies"
+        "space"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -3516,12 +3486,11 @@
     {
       "name": "celestial-moon",
       "type": "registry:ui",
-      "title": "Celestial moon",
+      "title": "Moon",
       "description": "The phase machine: a lunation whose crescent is the projection of the terminator circle rather than a drawn shape, with libration rocking the body so the limb craters come round and go again.",
       "categories": [
         "robotics",
-        "space",
-        "bodies"
+        "space"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -3540,12 +3509,11 @@
     {
       "name": "celestial-star",
       "type": "registry:ui",
-      "title": "Celestial star",
+      "title": "Star",
       "description": "A luminous body drawn from the limb-darkening law rather than a gradient, with granulation, a rotating spot belt, prominence loops anchored on the limb, and a corona. Three classes change the coefficient.",
       "categories": [
         "robotics",
-        "space",
-        "bodies"
+        "space"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -3564,12 +3532,11 @@
     {
       "name": "celestial-asteroid",
       "type": "registry:ui",
-      "title": "Celestial asteroid",
-      "description": "An irregular body whose radius is a deterministic sum of cosine lobes, so its silhouette genuinely changes as it turns \u2014 and it tumbles about an axis that is itself going round.",
+      "title": "Asteroid",
+      "description": "An irregular body whose radius is a deterministic sum of cosine lobes, so its silhouette genuinely changes as it turns — and it tumbles about an axis that is itself going round.",
       "categories": [
         "robotics",
-        "space",
-        "bodies"
+        "space"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -3592,8 +3559,7 @@
       "description": "A geared model of a system: bodies carried on radial arms whose length is the orbital radius, running fast at periapsis and slow at apoapsis on real Kepler ellipses with the hub at a focus.",
       "categories": [
         "robotics",
-        "space",
-        "machines"
+        "space"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -3616,7 +3582,7 @@
       "description": "Dependency-free geometry for a plated body that comes apart: an equal-area tiling of a sphere into armour plates whose areas sum to exactly one, a fracture front and the straight-line travel behind it, a shock ring as a real circle in a stated plane, and a paraboloid dish that focuses because of its shape.",
       "categories": [
         "robotics",
-        "math"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -3636,8 +3602,7 @@
       "description": "An armoured orbital battle station whose hull is a real tiling: breakup launches every plate down its own straight line behind a fracture front, and putting it back reassembles the sphere exactly. Carries a girdle trench, a plating axis and a paraboloid focusing dish.",
       "categories": [
         "robotics",
-        "space",
-        "machines"
+        "space"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -3661,8 +3626,7 @@
       "description": "What is left of a plated body: a population of hull fragments on straight trajectories from one rupture, each released at its own moment and turning at its own rate, drawn back to front so a near fragment genuinely occludes a far one.",
       "categories": [
         "robotics",
-        "space",
-        "bodies"
+        "space"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -3686,7 +3650,7 @@
       "description": "Dependency-free closed-loop kinematics: a four-bar solved as a circle intersection with a chosen branch, a slider-crank with an analytic stroke, block-and-tackle travel from rope length, and the helpers that lift an elevation drawing into world space.",
       "categories": [
         "robotics",
-        "math"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -3706,7 +3670,7 @@
       "description": "A beam pump solved as the four-bar it is: crank, pitman and walking beam close a real loop, and the polished-rod stroke falls out of the link lengths rather than being tweened. Crank, beam or air balance, and four camera views.",
       "categories": [
         "robotics",
-        "machines"
+        "energy"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -3730,7 +3694,7 @@
       "description": "A mast, a crown block and a travelling block reeved on four to twelve lines, where the drum's payout is shared between the lines so mechanical advantage is visible as rope. Racked pipe, a drawworks drum that turns, and a mud return.",
       "categories": [
         "robotics",
-        "machines"
+        "energy"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -3753,7 +3717,7 @@
       "description": "A simplex, duplex or triplex reciprocating pump whose cylinders are separate slider-cranks a third of a revolution apart, with a discharge readout summed from the solved piston velocities rather than drawn as a constant.",
       "categories": [
         "robotics",
-        "machines"
+        "energy"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -3776,7 +3740,7 @@
       "description": "The pressure-control stack on a completed well: a master, a swab and two wing valves whose rising stems show their state, an adjustable choke, and an accent that follows only the bore the open valves actually leave through.",
       "categories": [
         "robotics",
-        "machines"
+        "energy"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -3799,7 +3763,7 @@
       "description": "A crude tank whose external floating roof rides the liquid, with a rolling ladder solved from wherever the roof is, a spiral stairway on the shell, course seams and a wind girder, or a fixed cone roof instead.",
       "categories": [
         "robotics",
-        "machines"
+        "energy"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -3821,7 +3785,7 @@
       "description": "A crude carrier whose cargo sets her draft, so the boot top, the draft marks and the load line go under while the sea line stays put. Midship manifold, deck hatches, accommodation and funnel, and a gentle swell.",
       "categories": [
         "robotics",
-        "machines"
+        "vehicles"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -3843,7 +3807,7 @@
       "description": "A tractor unit and a road tanker on one kingpin, where the trailer's yaw is solved from the steer by true articulation geometry rather than chosen: it off-tracks inside the tractor's line, the barrel foreshortens as it turns, and the compartments discharge from the rear.",
       "categories": [
         "robotics",
-        "machines"
+        "vehicles"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -3866,7 +3830,7 @@
       "description": "A derrick-supported flare with a knockout drum, a tip, a steam ring and lit pilots, and a plume whose length comes from the flow and whose lean comes from the wind. The plume is drawn, and the docs say so.",
       "categories": [
         "robotics",
-        "machines"
+        "energy"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -3889,7 +3853,7 @@
       "description": "A crude distillation tower whose tray count is the axis: the spacing, the weld-ring seams and the heights the side draws come off are all derived from it. Four named cuts, a movable flash zone, overhead drum and reboiler.",
       "categories": [
         "robotics",
-        "machines"
+        "energy"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -3911,7 +3875,7 @@
       "description": "An offshore jack-up on three or four fixed-length truss legs, where one number is both the air gap above the water and the leg left sticking up above the deck. Spudcans on the seabed, a helideck and a cantilevered derrick.",
       "categories": [
         "robotics",
-        "machines"
+        "energy"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -3933,7 +3897,7 @@
       "description": "Bounce dynamics for machines that leave the ground: an exact ballistic flight, an exact spring-mass stance, contact and flight times derived from the drop height and spring rate, a decaying drop that comes to rest, plus a coil helix that cannot pass its solid height and a constant-volume shell squash.",
       "categories": [
         "robotics",
-        "math"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -3953,7 +3917,7 @@
       "description": "A single-legged hopping rig whose helical spring really compresses: the stance and the flight are solved from the drop height and the spring rate, the coil count never changes, and it cannot be crushed past its own solid height. Drag it down to load it and let go.",
       "categories": [
         "robotics",
-        "robots"
+        "droids"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -3976,7 +3940,7 @@
       "description": "A bounding sensor ball whose shell is its own compliance: it flattens on impact at constant volume, so it has to get exactly that much wider, and dropped with a restitution below one it bounces lower each time and comes to rest. Drawn from any of four camera angles.",
       "categories": [
         "robotics",
-        "robots"
+        "droids"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -3996,10 +3960,10 @@
       "name": "vehicle-geometry",
       "type": "registry:lib",
       "title": "Vehicle geometry",
-      "description": "Ackermann steering, steady-state articulation, coordinated bank, a rigid body sitting on N axles, the rocket equation and surface-piercing foil lift \u2014 the constraints a vehicle works against.",
+      "description": "Ackermann steering, steady-state articulation, coordinated bank, a rigid body sitting on N axles, the rocket equation and surface-piercing foil lift — the constraints a vehicle works against.",
       "categories": [
         "robotics",
-        "math"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -4015,7 +3979,7 @@
     {
       "name": "robot-car",
       "type": "registry:ui",
-      "title": "Robot car",
+      "title": "Car",
       "description": "An autonomous road car whose two front wheels are solved from one steering angle by true Ackermann geometry, with body roll from the turn radius and a body that rides the road on its axles.",
       "categories": [
         "robotics",
@@ -4111,7 +4075,7 @@
       "description": "A two-stage orbital booster that flies a pitch program, gimbals its engine cluster against it, stages, and reports the ideal delta-v left from the rocket equation.",
       "categories": [
         "robotics",
-        "vehicles"
+        "space"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -4134,7 +4098,7 @@
       "description": "A split-foil attack fighter: four wings on two fore-aft hinges that open from a cruise plane into an X, carrying their own engines and tip cannons with them.",
       "categories": [
         "robotics",
-        "vehicles"
+        "space"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -4156,7 +4120,7 @@
       "description": "A twin ion-drive interceptor: hexagonal panels pitching on lateral pylons around a pod that yaws inside them, carrying its viewport and emitters round with it.",
       "categories": [
         "robotics",
-        "vehicles"
+        "space"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -4178,7 +4142,7 @@
       "description": "The closures in the building you live in and the machines inside it: a leaf hinged on an edge that keeps its width, sectional panels that keep their length round a bend, a drum whose whole regime is one Froude number, a tub on a resonant suspension, a lift car roped to a counterweight, tracking slats that report their stops, and Darcy flow through a packed bed.",
       "categories": [
         "robotics",
-        "geometry"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -4195,10 +4159,10 @@
       "name": "gabled-house",
       "type": "registry:ui",
       "title": "Gabled house",
-      "description": "A dwelling drawn as a machine: the ridge height is the roof pitch you pass it, the garage door's rigid panels ride one track from vertical to horizontal, and the louvre fins and the garden array turn to face a sun that is one number \u2014 the time of day.",
+      "description": "A dwelling drawn as a machine: the ridge height is the roof pitch you pass it, the garage door's rigid panels ride one track from vertical to horizontal, and the louvre fins and the garden array turn to face a sun that is one number — the time of day.",
       "categories": [
         "robotics",
-        "machines"
+        "home"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -4221,7 +4185,7 @@
       "description": "A residential tower with the lift left visible: the storey count sets the height, the facade grid and the travel, and the car and counterweight hang on one rope over one sheave, so the weight falls exactly as far as the car rises.",
       "categories": [
         "robotics",
-        "machines"
+        "home"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -4244,7 +4208,7 @@
       "description": "A spring-lever group drawn as the linkage it is: the lever is a crank, the link a connecting rod and the piston a slider, so the declining shot pressure is the spring paying its force back rather than a curve somebody drew.",
       "categories": [
         "robotics",
-        "machines"
+        "home"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -4268,7 +4232,7 @@
       "description": "A cabinet whose doors are solved leaves on vertical hinges, with an interior that is a second drawing revealed by the swing and a lamp thrown by a real door switch. Top-freezer, side-by-side or single.",
       "categories": [
         "robotics",
-        "machines"
+        "home"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -4292,7 +4256,7 @@
       "description": "One drum, and one dimensionless number deciding what it is doing: below a Froude number of one the load is thrown and falls on a real ballistic arc, at or above it the load is pinned to the wall. The tub answers an out-of-balance load through its own resonance.",
       "categories": [
         "robotics",
-        "machines"
+        "home"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -4316,7 +4280,7 @@
       "description": "What a track does to the vehicle standing on it: bogies placed on a curve with the centre and end throw that follow, Klingel hunting on a coned wheelset, a pantograph solved to a working height, and turnout lead geometry with blade throw and detection.",
       "categories": [
         "robotics",
-        "rail"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -4332,12 +4296,11 @@
     {
       "name": "rail-locomotive",
       "type": "registry:ui",
-      "title": "Rail locomotive",
+      "title": "Locomotive",
       "description": "An electric locomotive and its train, placed by the track rather than steered along it: each bogie takes the tangent under its own pivot, each body is the chord between two of them, and the centre and end throw fall out of that.",
       "categories": [
         "robotics",
-        "rail",
-        "vehicles"
+        "rail"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -4356,12 +4319,11 @@
     {
       "name": "rail-bogie",
       "type": "registry:ui",
-      "title": "Rail bogie",
+      "title": "Bogie",
       "description": "A powered two-axle bogie whose wheelsets hunt because they are coned, at exactly Klingel wavelength, with a frame that is not animated but placed by the two wheelsets it joins.",
       "categories": [
         "robotics",
-        "rail",
-        "machines"
+        "rail"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -4380,12 +4342,11 @@
     {
       "name": "pantograph-collector",
       "type": "registry:ui",
-      "title": "Pantograph collector",
+      "title": "Pantograph",
       "description": "A single-arm roof current collector that spends reach to buy height, with a control rod loop that keeps the head level over its working range and a contact wire strung with real stagger.",
       "categories": [
         "robotics",
-        "rail",
-        "machines"
+        "rail"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -4404,12 +4365,11 @@
     {
       "name": "rail-turnout",
       "type": "registry:ui",
-      "title": "Rail turnout",
+      "title": "Turnout",
       "description": "A trailing-point turnout on a point machine: two blades on one throw bar, a route that is detection rather than a setting, and a crossing angle that is the turnout number and nothing else.",
       "categories": [
         "robotics",
-        "rail",
-        "machines"
+        "rail"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -4432,7 +4392,7 @@
       "description": "The football family's maths: the ball as a real prolate spheroid whose silhouette and laces are exact from any angle, drag-free ballistics, counter-rotating wheel exit conditions, a route tree sampled by arc length, a sprung pad arm solved to equilibrium, and the column pitch a hand on the turf implies.",
       "categories": [
         "robotics",
-        "math"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -4449,11 +4409,11 @@
     {
       "name": "robot-football",
       "type": "registry:ui",
-      "title": "Robot football",
+      "title": "Football",
       "description": "The ball, modelled rather than drawn: a prolate spheroid whose outline is its own central section, so end-on it is a circle and broadside it reaches the full length. The laces are stitches on the surface, so a spiral takes them round the back.",
       "categories": [
         "robotics",
-        "robots"
+        "sport"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -4472,11 +4432,11 @@
     {
       "name": "gridiron-lineman",
       "type": "registry:ui",
-      "title": "Gridiron lineman",
+      "title": "Lineman",
       "description": "A three-point stance is a four-contact stance: the hand on the turf carries load, and the flat back is the column pitch that puts the shoulder exactly one arm's length from it. Fires out of the stance and drives.",
       "categories": [
         "robotics",
-        "robots"
+        "sport"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -4496,11 +4456,11 @@
     {
       "name": "gridiron-quarterback",
       "type": "registry:ui",
-      "title": "Gridiron quarterback",
+      "title": "Quarterback",
       "description": "A drop-back and a throw with the arm solved to a release point travelling an arc, so the elbow is an output. The ball leaves on the velocity the hand had, and the readout carries the range and hang time the parabola produced.",
       "categories": [
         "robotics",
-        "robots"
+        "sport"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -4520,11 +4480,11 @@
     {
       "name": "gridiron-receiver",
       "type": "registry:ui",
-      "title": "Gridiron receiver",
+      "title": "Receiver",
       "description": "The route tree as geometry: the runner is a point at an arc length along a polyline, the heading turns the whole machine, and the lean into a cut is the exterior angle at the break. A field-scale route map sits beside the machine.",
       "categories": [
         "robotics",
-        "robots"
+        "sport"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -4544,11 +4504,11 @@
     {
       "name": "gridiron-kicker",
       "type": "registry:ui",
-      "title": "Gridiron kicker",
+      "title": "Kicker",
       "description": "A swing leg solved to an ankle path that passes through the ball, and a drag-free parabola that starts where the strike happened. Whether it clears the bar is read off the flight plot rather than typed in.",
       "categories": [
         "robotics",
-        "robots"
+        "sport"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -4569,10 +4529,10 @@
       "name": "blocking-sled",
       "type": "registry:ui",
       "title": "Blocking sled",
-      "description": "A training sled whose pads sit at a static equilibrium \u2014 the load's moment against a return spring's, solved by bisection \u2014 on a frame that will not move at all until the drive beats the friction under its skids.",
+      "description": "A training sled whose pads sit at a static equilibrium — the load's moment against a return spring's, solved by bisection — on a frame that will not move at all until the drive beats the friction under its skids.",
       "categories": [
         "robotics",
-        "machines"
+        "sport"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -4595,7 +4555,7 @@
       "description": "Two counter-rotating wheels: the ball leaves at the mean of the two surface speeds and turns at their difference over its own diameter. Both numbers come off the same pair of inputs, and both are on the readout.",
       "categories": [
         "robotics",
-        "machines"
+        "sport"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -4615,10 +4575,10 @@
       "name": "assembly-geometry",
       "type": "registry:lib",
       "title": "Assembly geometry",
-      "description": "An ordered exploded assembly: parts taken apart in the reverse of the order they were fitted, each along its own fit axis, in stages, and seated again exactly \u2014 plus the envelope the teardown needs.",
+      "description": "An ordered exploded assembly: parts taken apart in the reverse of the order they were fitted, each along its own fit axis, in stages, and seated again exactly — plus the envelope the teardown needs.",
       "categories": [
         "robotics",
-        "geometry"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -4635,10 +4595,10 @@
       "name": "lantern-geometry",
       "type": "registry:lib",
       "title": "Lantern geometry",
-      "description": "An ordered exploded assembly \u2014 parts taken apart in the reverse of the order they were fitted, each along its own axis, seated again exactly \u2014 with a conserved charge transfer, a recital count, a reserve gauge, a cage, and an inverse-square emission column.",
+      "description": "An ordered exploded assembly — parts taken apart in the reverse of the order they were fitted, each along its own axis, seated again exactly — with a conserved charge transfer, a recital count, a reserve gauge, a cage, and an inverse-square emission column.",
       "categories": [
         "robotics",
-        "math"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -4656,10 +4616,10 @@
       "name": "power-lantern",
       "type": "registry:ui",
       "title": "Power lantern",
-      "description": "A carried reservoir lantern that charges a ring: a ribbed prism barrel in a cage of bowed straps, a round charge port on its face that docks a ring, a conduit that moves charge rather than inventing it, an inscription collar lit a glyph at a time, an emission cone paid for out of the reserve \u2014 and every part of it coming off in the reverse of the order it was fitted.",
+      "description": "A carried reservoir lantern that charges a ring: a ribbed prism barrel in a cage of bowed straps, a round charge port on its face that docks a ring, a conduit that moves charge rather than inventing it, an inscription collar lit a glyph at a time, an emission cone paid for out of the reserve — and every part of it coming off in the reverse of the order it was fitted.",
       "categories": [
         "robotics",
-        "machines"
+        "home"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -4700,11 +4660,11 @@
     {
       "name": "robot-export",
       "type": "registry:ui",
-      "title": "Robot export",
+      "title": "Export",
       "description": "The record button: wrap a machine and it can be saved as an animated WebP, an animated GIF or a still, encoded in the page with nothing uploaded.",
       "categories": [
         "robotics",
-        "export"
+        "foundations"
       ],
       "dependencies": [
         "lucide-react"
@@ -4729,7 +4689,7 @@
       "description": "Five mechanisms that stand between a selected weight and a felt load: rope reeving, a variable-radius cam, an inclined rail, a coupler curve and velocity-squared air drag.",
       "categories": [
         "robotics",
-        "kinematics"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -4750,7 +4710,7 @@
       "description": "Selectorised weight stack reeved through pulleys: the pin picks what rises, and the reeving sets both the handle force and how far the stack travels.",
       "categories": [
         "robotics",
-        "robots"
+        "gym"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -4774,7 +4734,7 @@
       "description": "A lever on a variable-radius cam: the cable leaves at a radius that changes with the angle, so the moment arm is the cam profile and the stack does not rise linearly.",
       "categories": [
         "robotics",
-        "robots"
+        "gym"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -4797,7 +4757,7 @@
       "description": "A sled on inclined rails: only the component of the load along the rails resists, so the rail angle is the resistance and the frame decides the weight.",
       "categories": [
         "robotics",
-        "robots"
+        "gym"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -4820,7 +4780,7 @@
       "description": "A crank and rocker whose footpad rides the coupler: the stride and the shape of the foot path are what the link lengths produce, not a traced ellipse.",
       "categories": [
         "robotics",
-        "robots"
+        "gym"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -4843,7 +4803,7 @@
       "description": "An air flywheel on a one-way clutch: drag goes as the square of rim speed, the damper vent sets the drag factor, and the drive spins it up while the recovery coasts it down.",
       "categories": [
         "robotics",
-        "robots"
+        "gym"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -4866,7 +4826,7 @@
       "description": "Outlines authored in shell coordinates and wrapped onto a lobed body of revolution, carved along their own perimeter, the plugs they free, the light that escapes through them, a flame that answers to the draught, and the projection run backwards so a pointer lands back on the skin it is over.",
       "categories": [
         "robotics",
-        "geometry"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json",
@@ -4887,7 +4847,7 @@
       "description": "A carved gourd lantern: a lobed shell on a scalloped lid and stem, cut anywhere a knife is dragged, turned to any angle in any direction, with a candle inside whose light is paid for by the openings, and every part coming off in the reverse of the order it was fitted.",
       "categories": [
         "robotics",
-        "machines"
+        "home"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -4909,10 +4869,10 @@
       "name": "sport-geometry",
       "type": "registry:lib",
       "title": "Sport geometry",
-      "description": "The kit a game is played with: the sphere and its seams, the puck, and the four dynamics that make five objects behave unlike one another \u2014 a restitution ladder, a Magnus curve, a Coulomb slide and the bat-ball collision, each a closed form sampled at a clock rather than an integrator.",
+      "description": "The kit a game is played with: the sphere and its seams, the puck, and the four dynamics that make five objects behave unlike one another — a restitution ladder, a Magnus curve, a Coulomb slide and the bat-ball collision, each a closed form sampled at a clock rather than an integrator.",
       "categories": [
         "robotics",
-        "kinematics"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -4928,11 +4888,11 @@
     {
       "name": "robot-baseball",
       "type": "registry:ui",
-      "title": "Robot baseball",
+      "title": "Baseball",
       "description": "The ball as a sphere with a real seam: the figure-eight is a closed curve lying exactly on the surface, so spin carries it round the back instead of sliding it across the front.",
       "categories": [
         "robotics",
-        "robots"
+        "sport"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -4955,7 +4915,7 @@
       "description": "A bat on a solved swing arc meeting a pitched ball, with the collision itself solved: effective mass falls away from the sweet spot, so contact off the end hands the ball back less than it brought.",
       "categories": [
         "robotics",
-        "robots"
+        "sport"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -4974,11 +4934,11 @@
     {
       "name": "robot-basketball",
       "type": "registry:ui",
-      "title": "Robot basketball",
+      "title": "Basketball",
       "description": "Eight panels cut by two great circles and one wavy seam, on a ball that bounces by closed-form restitution rather than a tween: every apex is the last one times e squared.",
       "categories": [
         "robotics",
-        "robots"
+        "sport"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -4997,11 +4957,11 @@
     {
       "name": "robot-soccer-ball",
       "type": "registry:ui",
-      "title": "Robot soccer ball",
+      "title": "Soccer ball",
       "description": "A truncated icosahedron inflated onto the sphere: twelve pentagons and twenty hexagons built from the solid, culled by their own normals, and rolled without slipping so the panels turn because it travelled.",
       "categories": [
         "robotics",
-        "robots"
+        "sport"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -5020,11 +4980,11 @@
     {
       "name": "robot-hockey-puck",
       "type": "registry:ui",
-      "title": "Robot hockey puck",
+      "title": "Hockey puck",
       "description": "A cylinder on ice: Coulomb friction is a constant deceleration, so the slide is exact and the puck stops where the maths says. The boards reflect it, and the silhouette is the hull of its two rims.",
       "categories": [
         "robotics",
-        "robots"
+        "sport"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -5044,10 +5004,10 @@
       "name": "construct-geometry",
       "type": "registry:lib",
       "title": "Construct geometry",
-      "description": "Reads a freehand stroke \u2014 resampled by arc length, measured into a frame, classified into an archetype \u2014 and forges it into a filled construct, with the draw it costs.",
+      "description": "Reads a freehand stroke — resampled by arc length, measured into a frame, classified into an archetype — and forges it into a filled construct, with the draw it costs.",
       "categories": [
         "robotics",
-        "kinematics"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -5067,7 +5027,7 @@
       "description": "A signet emitter ring that lights, comes apart, and forges a drawn stroke into a construct of solid light.",
       "categories": [
         "robotics",
-        "machines"
+        "fabrication"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -5087,11 +5047,11 @@
     {
       "name": "animatronic-robot",
       "type": "registry:ui",
-      "title": "Animatronic robot",
+      "title": "Animatronic",
       "description": "The whole animatronic, running itself: one routine intent driving gait, breath, gaze, grip and expression together, an attention cascade through the eyes, neck and waist, a solved face on a solved biped, and a centre of mass it keeps over the support polygon its feet actually hold. Four camera angles, every channel posable.",
       "categories": [
         "robotics",
-        "robots"
+        "droids"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -5118,7 +5078,7 @@
       "description": "Excavation mechanics: the penetration an energy balance at the face allows, the cavity that rate cuts in a slab, the volume conserved into a spoil heap at its own angle of repose, ballistic spall off the kerf, and a bearing cage ratio.",
       "categories": [
         "robotics",
-        "kinematics"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -5138,7 +5098,7 @@
       "description": "A construct-light tunnelling head: a stepped rotary bit forward, a pair of treaded drive wheels on one transverse axle aft that roll it into the face, and a right-angle gear train, thrust rams, grippers and a flushing pump between them, boring through a wall that cracks, spalls and heaps its own spoil.",
       "categories": [
         "robotics",
-        "machines"
+        "energy"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -5159,11 +5119,11 @@
     {
       "name": "airframe",
       "type": "registry:lib",
-      "title": "Airframe",
+      "title": "Airframe geometry",
       "description": "TODO: what airframe solves, in one sentence a stranger can read on a card.",
       "categories": [
         "robotics",
-        "kinematics"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -5183,7 +5143,7 @@
       "description": "A four-engine double-deck widebody airliner: lofted fuselage and swept wing, solved gear retraction, free orbit and a full exploded teardown.",
       "categories": [
         "robotics",
-        "robots"
+        "vehicles"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",
@@ -5203,11 +5163,11 @@
     {
       "name": "rodpump-geometry",
       "type": "registry:lib",
-      "title": "Rodpump geometry",
+      "title": "Rod pump geometry",
       "description": "TODO: what rodpump geometry solves, in one sentence a stranger can read on a card.",
       "categories": [
         "robotics",
-        "kinematics"
+        "foundations"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-kinematics.json"
@@ -5227,7 +5187,7 @@
       "description": "A downhole sucker-rod pump in section: working barrel, plunger, travelling and standing valves, solving its own dynamometer card, fluid load and valve sequence, with the standard pump faults as conditions.",
       "categories": [
         "robotics",
-        "machines"
+        "energy"
       ],
       "registryDependencies": [
         "{REGISTRY_URL}/r/robot-style.json",

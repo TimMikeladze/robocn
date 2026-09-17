@@ -234,8 +234,8 @@ const householdSlugs = [
 ] as const
 
 const entries: CatalogueEntry[] = [
-  { slug: 'robot-arm', title: 'Robot arm', summary: 'Articulated chain with eight tools.', group: 'Arms', item: 'robot-arm' },
-  { slug: 'robot-rover', title: 'Robot rover', summary: 'Ground vehicle with steering.', group: 'Robots', item: 'robot-rover' },
+  { slug: 'robot-arm', title: 'Arm', summary: 'Articulated chain with eight tools.', group: 'Arms', item: 'robot-arm' },
+  { slug: 'robot-rover', title: 'Rover', summary: 'Ground vehicle with steering.', group: 'Vehicles', item: 'robot-rover' },
   { slug: 'installation', title: 'Installation', summary: 'Install source and dependencies.', group: 'Foundations', item: null },
 ]
 
@@ -344,10 +344,10 @@ describe('docs catalogue', () => {
   it('matches case-insensitive title, slug and description terms', () => {
     const { getByRole, queryByRole } = render(<DocsCatalogue entries={entries} />)
     fireEvent.change(getByRole('searchbox'), { target: { value: '  GROUND steering ' } })
-    expect(getByRole('link', { name: /Robot rover/ })).toBeTruthy()
-    expect(queryByRole('link', { name: /Robot arm/ })).toBeNull()
+    expect(getByRole('link', { name: /Rover/ })).toBeTruthy()
+    expect(queryByRole('link', { name: /Arm/ })).toBeNull()
     fireEvent.change(getByRole('searchbox'), { target: { value: 'robot-arm' } })
-    expect(getByRole('link', { name: /Robot arm/ })).toBeTruthy()
+    expect(getByRole('link', { name: /Arm/ })).toBeTruthy()
   })
 
   it('combines category and search, then clears both from an empty result', () => {
@@ -355,10 +355,10 @@ describe('docs catalogue', () => {
     fireEvent.click(getByRole('button', { name: /^Arms/ }))
     fireEvent.change(getByRole('searchbox'), { target: { value: 'rover' } })
     expect(getByRole('status').textContent).toContain('0')
-    expect(queryByRole('link', { name: /Robot rover/ })).toBeNull()
+    expect(queryByRole('link', { name: /Rover/ })).toBeNull()
     fireEvent.click(getByRole('button', { name: 'Clear filters' }))
     expect(getByRole('searchbox').getAttribute('value')).toBe('')
-    expect(getByRole('link', { name: /Robot rover/ })).toBeTruthy()
+    expect(getByRole('link', { name: /Rover/ })).toBeTruthy()
     expect(getByRole('link', { name: /Installation/ })).toBeTruthy()
     expect(getByRole('button', { name: /^All/ }).getAttribute('aria-pressed')).toBe('true')
   })

@@ -66,9 +66,9 @@ describe("the manifest", () => {
 
   it("groups the index past the catch-all first category", () => {
     const sections = componentsByCategory(workbenchComponentList)
-    // Nearly everything leads with "robotics"; the drawer is the one after it.
-    expect(sections.map((section) => section.category)).toContain("robots")
-    expect(sections.map((section) => section.category)).toContain("machines")
+    // Everything leads with "robotics"; the group is the one after it.
+    expect(sections.map((section) => section.category)).toContain("droids")
+    expect(sections.map((section) => section.category)).toContain("animals")
     expect(sections.map((section) => section.category)).not.toContain("robotics")
     expect(sections.flatMap((section) => section.items)).toHaveLength(
       workbenchComponentList.length,

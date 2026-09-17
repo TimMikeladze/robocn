@@ -220,6 +220,6 @@ describe("the workbench", () => {
       target: { value: "duck" },
     })
     expect(screen.queryByRole("button", { name: /Utility droid/ })).toBeNull()
-    expect(screen.getByRole("button", { name: /Micro duck/ })).toBeTruthy()
+    expect(screen.getByRole("button", { name: /^Duck/ })).toBeTruthy()
   })
 })

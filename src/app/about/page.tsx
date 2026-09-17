@@ -5,6 +5,7 @@ import { InstallCommand } from "@/components/site/install-command"
 import { Panel } from "@/components/site/panel"
 import { Button } from "@/components/ui/button"
 import { docGroups, docs } from "@/lib/docs"
+import { groupBlurbs } from "@/lib/groups"
 import { ogSize, siteOgImage } from "@/lib/og"
 import { rail } from "@/components/site/rail"
 import { site } from "@/lib/site"
@@ -45,13 +46,6 @@ const byGroup = docGroups.map((group) => ({
 
 /** One row of the answer to "what is in it", built from the registry itself. */
 function GroupTable() {
-  const what: Record<string, string> = {
-    Arms: "Articulated chains and the rooms they stand in — SVG and WebGL from one solver.",
-    Machines: "Production-line hardware: cells, transports, actuators, transmissions.",
-    Robots: "Droids, walking animals, vehicles and companions with poses and gaits.",
-    Foundations: "The maths and the hooks underneath all of it. No React in the solver.",
-  }
-
   return (
     <div className="grid gap-px border border-border bg-border sm:grid-cols-2">
       {byGroup.map(({ group, count }) => (
@@ -63,7 +57,7 @@ function GroupTable() {
             </span>
           </div>
           <p className="mt-1.5 text-[13.5px] leading-relaxed text-muted-foreground">
-            {what[group]}
+            {groupBlurbs[group]}
           </p>
         </div>
       ))}

@@ -10,6 +10,7 @@
  */
 
 import registry from "../../registry.json"
+import { docGroups, groupOf, type DocGroup } from "@/lib/groups"
 
 export interface PropRow {
   name: string
@@ -18,7 +19,7 @@ export interface PropRow {
   description: string
 }
 
-export type DocGroup = "Arms" | "Machines" | "Robots" | "Foundations"
+export type { DocGroup }
 
 export interface DocEntry {
   slug: string
@@ -157,9 +158,17 @@ const droidForm: PropRow[] = [
   ...palette,
 ]
 
-const authored: DocEntry[] = [
+/**
+ * A written page. The title and the group are the registry item's own — one
+ * rename in `registry.json` moves the sidebar, the index and the card with it —
+ * so an entry only carries them when it has no item to read them from.
+ */
+type AuthoredEntry = Omit<DocEntry, "title" | "group"> &
+  Partial<Pick<DocEntry, "title" | "group">>
+
+const authored: AuthoredEntry[] = [
   {
-    slug: "utility-droid", item: "utility-droid", title: "Utility droid", group: "Robots",
+    slug: "utility-droid", item: "utility-droid",
     summary: "A compact cylindrical utility unit with interchangeable domes, two chassis layouts, rotating optics, and deployable service tools.",
     files: ["components/ui/utility-droid.tsx"],
     usage: `import { UtilityDroid } from "@/components/ui/utility-droid"
@@ -182,7 +191,7 @@ const authored: DocEntry[] = [
     notes: ["Uncontrolled it patrols and sweeps its head; alert overrides whatever behavior says and stands it to guard. Pose it yourself and the stance is yours while the head keeps scanning.", "Front elevation is the drawing it always had. The barrel is round in plan and the legs are set round it rather than side by side, which is the thing one elevation could not say.", "The dome and the tool are controlled when you supply them and self-running when you do not — the usual rule. Pointer tracking beats the behaviour while the pointer is over it.", "All three series share one chassis API; the series changes panel geometry rather than character branding."],
   },
   {
-    slug: "orb-droid", item: "orb-droid", title: "Orb droid", group: "Robots",
+    slug: "orb-droid", item: "orb-droid",
     summary: "A spherical rolling companion with a separately stabilized head, segmented drive shell, tracking optic, and antenna options.",
     files: ["components/ui/orb-droid.tsx"],
     usage: `import { OrbDroid } from "@/components/ui/orb-droid"
@@ -204,7 +213,7 @@ const authored: DocEntry[] = [
     notes: ["Uncontrolled it rolls: the shell turns continuously and the head holds level, which is the mechanism a ball robot is built around. Supply bodyAngle or headAngle and that one channel is yours; supply both and the clock stops.", "A ball is the same circle from every angle, so the body needs no second drawing; the panelling on it is elevation artwork that foreshortens with the camera. The head is a dome, which only reads as one off the front.", "Body and head transforms are independent, so a rolling shell does not drag the stabilized cap around with it.", "Pointer tracking is isolated to this client component and can be disabled or overridden.", "The shell, head and optic carry data-body, data-head and data-optic hooks, so an outer animation loop can drive all three through the DOM without re-rendering the component."],
   },
   {
-    slug: "bellows-droid", item: "bellows-droid", title: "Bellows droid", group: "Robots",
+    slug: "bellows-droid", item: "bellows-droid",
     summary: "A soft-shell pneumatic pod: a pleated dome that inflates and settles on a volume-conserving profile, carrying its lens pods and vent with it.",
     files: ["components/ui/bellows-droid.tsx"],
     usage: `import { BellowsDroid } from "@/components/ui/bellows-droid"
@@ -231,7 +240,7 @@ const authored: DocEntry[] = [
     ],
   },
   {
-    slug: "robot-avocado", item: "robot-avocado", title: "Robot avocado", group: "Robots",
+    slug: "robot-avocado", item: "robot-avocado",
     summary: "A split-shell specimen pod: one body of revolution cut in half, tilting apart on a rod under the machine, with the stone riding up out of the gap on a screw column.",
     files: ["components/ui/robot-avocado.tsx"],
     usage: `import { RobotAvocado } from "@/components/ui/robot-avocado"
@@ -257,7 +266,7 @@ const authored: DocEntry[] = [
     ],
   },
   {
-    slug: "robot-strawberry", item: "robot-strawberry", title: "Robot strawberry", group: "Robots",
+    slug: "robot-strawberry", item: "robot-strawberry",
     summary: "A berry-shelled field unit: sensor studs placed by the golden angle over equal areas of its own skin, running out along their own normals under a calyx of rigid blades.",
     files: ["components/ui/robot-strawberry.tsx"],
     usage: `import { RobotStrawberry } from "@/components/ui/robot-strawberry"
@@ -283,7 +292,7 @@ const authored: DocEntry[] = [
     ],
   },
   {
-    slug: "robot-tomato", item: "robot-tomato", title: "Robot tomato", group: "Robots",
+    slug: "robot-tomato", item: "robot-tomato",
     summary: "A truss-hung crop unit on a two-hinge peduncle, with a lobed shell and a ripening front that is coverage of the surface rather than a colour ramp.",
     files: ["components/ui/robot-tomato.tsx"],
     usage: `import { RobotTomato } from "@/components/ui/robot-tomato"
@@ -310,7 +319,7 @@ const authored: DocEntry[] = [
     ],
   },
   {
-    slug: "protocol-droid", item: "protocol-droid", title: "Protocol droid", group: "Robots",
+    slug: "protocol-droid", item: "protocol-droid",
     summary: "A slim humanoid translator with formal and conversational stances, expressive arm gestures, and optional exposed torso wiring.",
     files: ["components/ui/protocol-droid.tsx"],
     usage: `import { ProtocolDroid } from "@/components/ui/protocol-droid"
@@ -332,7 +341,7 @@ const authored: DocEntry[] = [
     notes: ["Front elevation is the drawing it always had. A humanoid drawn from the front says nothing about its own depth: off that axis the torso, pelvis and head are boxes and the limbs are tubes set through the body, at the same joint angles the pose already solved.", "Each named pose is deterministic and immediately rendered; interpolate props outside the component when animation is needed.", "The form is an original translator archetype rather than a character replica."],
   },
   {
-    slug: "security-droid", item: "security-droid", title: "Security droid", group: "Robots",
+    slug: "security-droid", item: "security-droid",
     summary: "A tall angular guard robot with controlled patrol postures, a pointer-tracking sensor bar, and a visible alert state.",
     files: ["components/ui/security-droid.tsx"],
     usage: `import { SecurityDroid } from "@/components/ui/security-droid"
@@ -354,7 +363,7 @@ const authored: DocEntry[] = [
     notes: ["Front elevation is the drawing it always had. A humanoid drawn from the front says nothing about its own depth: off that axis the torso, pelvis and head are boxes and the limbs are tubes set through the body, at the same joint angles the pose already solved.", "Alert is visual state only; the component does not infer threats or start a timer.", "The tracked sensor translates inside a fixed protective bar so it remains mechanically legible."],
   },
   {
-    slug: "medical-droid", item: "medical-droid", title: "Medical droid", group: "Robots",
+    slug: "medical-droid", item: "medical-droid",
     summary: "A clinical service robot with a diagnostic meter and independently selected scanner, injector, clamp, or probe instruments.",
     files: ["components/ui/medical-droid.tsx"],
     usage: `import { MedicalDroid } from "@/components/ui/medical-droid"
@@ -375,7 +384,7 @@ const authored: DocEntry[] = [
     notes: ["Front elevation is the drawing it always had. The column is a tapered body of revolution rather than a flat panel, and the two instrument arms reach forward out of it \u2014 neither of which one elevation could say.", "Tools change the visible end geometry but do not imply medical advice or simulated treatment.", "The diagnostic value is a display input supplied by the parent application."],
   },
   {
-    slug: "infantry-droid", item: "infantry-droid", title: "Infantry droid", group: "Robots",
+    slug: "infantry-droid", item: "infantry-droid",
     summary: "A mechanical field unit with skeletal and armored frames, four controlled poses, and non-projectile utility equipment.",
     files: ["components/ui/infantry-droid.tsx"],
     usage: `import { InfantryDroid } from "@/components/ui/infantry-droid"
@@ -397,7 +406,7 @@ const authored: DocEntry[] = [
     notes: ["Front elevation is the drawing it always had. A humanoid drawn from the front says nothing about its own depth: off that axis the torso, pelvis and head are boxes and the limbs are tubes set through the body, at the same joint angles the pose already solved.", "Equipment deliberately stays at utility pack, survey scanner, and protective shield silhouettes.", "Light and heavy frames share the same pose contract for easy replacement."],
   },
   {
-    slug: "probe-droid", item: "probe-droid", title: "Probe droid", group: "Robots",
+    slug: "probe-droid", item: "probe-droid",
     summary: "A hovering survey platform with a steerable sensor mast, controlled altitude, scan cone, and configurable manipulator count.",
     files: ["components/ui/probe-droid.tsx"],
     usage: `import { ProbeDroid } from "@/components/ui/probe-droid"
@@ -418,7 +427,7 @@ const authored: DocEntry[] = [
     notes: ["The appendages are set round the pod rather than side by side \u2014 the thing one elevation could not say. Off the front they are tubes on a ring, and the pod is a body of revolution.", "Hover does not animate itself; pass telemetry or a timeline value from outside.", "Appendage tools rotate among claw, probe, and ring end shapes for a readable asymmetric silhouette."],
   },
   {
-    slug: "courier-droid", item: "courier-droid", title: "Courier droid", group: "Robots",
+    slug: "courier-droid", item: "courier-droid",
     summary: "A compact floor-running service bot with controlled heading, front-wheel steering, tread travel, antennas, and cargo modules.",
     files: ["components/ui/courier-droid.tsx"],
     usage: `import { CourierDroid } from "@/components/ui/courier-droid"
@@ -440,7 +449,7 @@ const authored: DocEntry[] = [
     notes: ["Plan view is the identity projection, heading included. The four wheels become cylinders, and the body, cargo module and antenna gain their heights, as the camera comes down off the vertical.", "Heading rotates the complete chassis while steering affects only the front axle.", "Travel changes clipped tread marks without creating an internal animation loop."],
   },
   {
-    slug: "casing-droid", item: "casing-droid", title: "Casing droid", group: "Robots",
+    slug: "casing-droid", item: "casing-droid",
     summary: "An armoured conical casing unit: hemisphere skirt, caged neck, rotating dome, an eyestalk that swings and elevates, and a swappable manipulator.",
     files: ["components/ui/casing-droid.tsx"],
     usage: `import { CasingDroid } from "@/components/ui/casing-droid"
@@ -469,7 +478,7 @@ const authored: DocEntry[] = [
     notes: ["Front elevation is the drawing it always had. The casing is a cone of revolution with a dome on top, and the manipulator and emitter reach forward out of the shoulders rather than sideways across the picture.", "Heading is cyclic: 360 renders identically to 0 rather than sticking at a limit.", "An original armoured-casing archetype; the emitter is a ringed rod with no projectile effect."],
   },
   {
-    slug: "astromech-droid", item: "astromech-droid", title: "Astromech droid", group: "Robots",
+    slug: "astromech-droid", item: "astromech-droid",
     summary: "A barrel repair unit with tripod and bipod ride heights, a rotating dome and radar eye, an opening service panel, a rising periscope, and a holographic projection cone.",
     files: ["components/ui/astromech-droid.tsx"],
     usage: `import { AstromechDroid } from "@/components/ui/astromech-droid"
@@ -497,7 +506,7 @@ const authored: DocEntry[] = [
     notes: ["Front elevation is the drawing it always had. The barrel is a drum, the centre foot stands behind the other two rather than between them, and the dome sits on top of both \u2014 none of which is in a single view.", "Every value is controlled when you supply it and self-running when you do not; pointer tracking beats the behaviour while the pointer is over it.", "Ride height follows the chassis mode, so legMode changes the body transform as well as the feet.", "The periscope is dome-mounted and does not require the service panel to be open."],
   },
   {
-    slug: "attendant-droid", item: "attendant-droid", title: "Attendant droid", group: "Robots",
+    slug: "attendant-droid", item: "attendant-droid",
     summary: "A plated humanoid attendant with a fixed faceplate and vocoder grille, four etiquette poses, and plating levels that strip the body back to its exposed loom.",
     files: ["components/ui/attendant-droid.tsx"],
     usage: `import { AttendantDroid } from "@/components/ui/attendant-droid"
@@ -522,7 +531,7 @@ const authored: DocEntry[] = [
     notes: ["Front elevation is the drawing it always had. A humanoid drawn from the front says nothing about its own depth: off that axis the torso, pelvis and head are boxes and the limbs are tubes set through the body, at the same joint angles the pose already solved.", "Heavier and fully plated where the protocol droid is slim and jointed; the two share the collection prop contract.", "An original attendant archetype rather than a character replica."],
   },
   {
-    slug: "cyber-trooper", item: "cyber-trooper", title: "Cyber trooper", group: "Robots",
+    slug: "cyber-trooper", item: "cyber-trooper",
     summary: "A converted armoured humanoid with a blank slab head, optional side handles, three chest units, a bounded power meter, and four controlled poses.",
     files: ["components/ui/cyber-trooper.tsx"],
     usage: `import { CyberTrooper } from "@/components/ui/cyber-trooper"
@@ -549,7 +558,7 @@ const authored: DocEntry[] = [
     notes: ["Front elevation is the drawing it always had. A humanoid drawn from the front says nothing about its own depth: off that axis the torso, pelvis and head are boxes and the limbs are tubes set through the body, at the same joint angles the pose already solved.", "Supply a value and it renders exactly as given; leave it out and the behaviour runs it.", "The power meter is display state, not a battery model — the parent decides what a reserve means."],
   },
   {
-    slug: "robot-hound", item: "robot-hound", title: "Robot hound", group: "Robots",
+    slug: "robot-hound", item: "robot-hound",
     summary: "A boxy companion tracker with no legs at all: a wedge chassis on a concealed drive, and a head carried out in front of it on a concertina neck that one attention number runs.",
     files: ["components/ui/robot-hound.tsx"],
     usage: `import { RobotHound } from "@/components/ui/robot-hound"
@@ -580,7 +589,7 @@ const authored: DocEntry[] = [
     ],
   },
   {
-    slug: "guide-droid", item: "guide-droid", title: "Guide droid", group: "Robots",
+    slug: "guide-droid", item: "guide-droid",
     summary: "A rotor-lifted visitor guide whose hands and feet ride on coil springs, so one hover-height number flies it and stretches every limb at the same time.",
     files: ["components/ui/guide-droid.tsx"],
     usage: `import { GuideDroid } from "@/components/ui/guide-droid"
@@ -605,7 +614,7 @@ const authored: DocEntry[] = [
     notes: ["Front elevation is the view it is drawn in. The shell and the body are surfaces of revolution and the rotor is a disc, so off that axis they are projected solids rather than second drawings; the face is elevation artwork and goes edge-on in profile, which is what a face does.", "Lift is the whole machine: the same number raises the airframe and sets the spring extension, because a machine hanging in the air puts its limbs in tension and one sitting on its feet puts them in compression.", "Illustrative, not simulated: there is no thrust, mass, drag or spring constant, the sway is a drift term rather than an integrated acceleration, and the rotor is drawn rather than solved. Thrust shows in the wash ring, not the blade rate, so the blades never run backwards.", "The grille is a speaker: voice lights bars because it was told to. Nothing here infers state or starts a timer.", "An original archetype — a rotor-lifted guide companion — not a character."],
   },
   {
-    slug: "custodian-droid", item: "custodian-droid", title: "Custodian droid", group: "Robots",
+    slug: "custodian-droid", item: "custodian-droid",
     summary: "A floating armoured custodian whose shell comes apart: armour segments on radial rails that bloom into a corona around a lit chassis, with a gimballed optic behind a bracket cage.",
     files: ["components/ui/custodian-droid.tsx"],
     usage: `import { CustodianDroid } from "@/components/ui/custodian-droid"
@@ -634,7 +643,7 @@ const authored: DocEntry[] = [
     ],
   },
   {
-    slug: "sentinel-console", item: "sentinel-console", title: "Sentinel console", group: "Robots",
+    slug: "sentinel-console", item: "sentinel-console",
     summary: "A bulkhead-mounted watch station: a gimballed optic behind a solved iris diaphragm, an identity strip, and a voice grille. The one machine in the set that is part of the ship rather than standing on the deck.",
     files: ["components/ui/sentinel-console.tsx"],
     usage: `import { SentinelConsole } from "@/components/ui/sentinel-console"
@@ -668,7 +677,7 @@ const authored: DocEntry[] = [
     ],
   },
   {
-    slug: "pylon-droid", item: "pylon-droid", title: "Pylon droid", group: "Robots",
+    slug: "pylon-droid", item: "pylon-droid",
     summary: "A deployable survey pylon: stowed it is a sharp triangular plate with every limb folded inside its own outline, and one deploy number stands it up on a tripod with its apex cap lifted off a lit core.",
     files: ["components/ui/pylon-droid.tsx"],
     usage: `import { PylonDroid } from "@/components/ui/pylon-droid"
@@ -693,7 +702,7 @@ const authored: DocEntry[] = [
     notes: ["Front elevation is the view it is drawn in, because the plate is the machine and the plate faces you. The faces and their panel detail ride the elevation plane and go edge-on in profile, which is what a plate seen from the side does; the plate solid off that axis is the convex hull of its two faces, which is exact for a prism.", "Stowed, every limb is inside the triangle: the legs fold until the knee lands on the hypotenuse, the aft strut lies up the back face, and the cap sits shut on the core. The limbs are drawn behind the plate, so solid shows the bare outline and outline and wire show the stowed mechanism through it.", "The legs are solved — two-link law of cosines, the knee breaking outward in stowage as much as in stance, an out-of-reach foot clamped onto the leg rather than failing — and the strut's planted angle is acos(-(hinge + rise) / strut) rather than a tuned number.", "Illustrated, not simulated: the mast is a rail pair rather than a modelled screw, the waist loom is a curve, and there is no mass, balance or ground reaction anywhere. It stands; it does not walk.", "An original archetype — a survey pylon that stands itself up — named for the job. No franchise, no logo, no paint scheme."],
   },
   {
-    slug: "monolith-droid", item: "monolith-droid", title: "Monolith droid", group: "Robots",
+    slug: "monolith-droid", item: "monolith-droid",
     summary: "A slab-bodied walker with no limbs: a rectangular column sliced into parallel slabs, each hinged at its own top face, that splay into a braced stance and stride half a cycle apart.",
     files: ["components/ui/monolith-droid.tsx"],
     usage: `import { MonolithDroid } from "@/components/ui/monolith-droid"
@@ -722,7 +731,7 @@ const authored: DocEntry[] = [
     ],
   },
   {
-    slug: "micro-duck", item: "micro-duck", title: "Micro duck", group: "Robots",
+    slug: "micro-duck", item: "micro-duck",
     summary: "A bipedal duck robot: two solved legs on a controlled footfall cycle, a servo-stack neck that cranes and pecks, and a beak that opens.",
     files: ["components/ui/micro-duck.tsx"],
     usage: `import { MicroDuck } from "@/components/ui/micro-duck"
@@ -755,7 +764,7 @@ const authored: DocEntry[] = [
     notes: ["Side elevation is the drawing it always had, with the far leg slid sideways to fake its depth. Off that axis both legs stand either side of the pelvis, and the body, neck and head are solids.", "Supplying phase hands the cycle back to your timeline and stops the internal clock — controlled always wins. Without it the duck runs its own, parked by a reduced-motion preference.", "Legs solve two-link inverse kinematics with the knee breaking rearward, and the neck is a three-link FABRIK chain. The drawing preserves link lengths but does not model balance or ground forces.", "The far leg is drawn behind the body at reduced opacity, which is depth in the illustration rather than a second solve."],
   },
   {
-    slug: "duck-kinematics", item: "duck-kinematics", title: "Duck kinematics", group: "Foundations",
+    slug: "duck-kinematics", item: "duck-kinematics",
     summary: "The pose solver behind the duck. Two planar legs, a footfall cycle that never lifts both feet, and a neck chain swung on a constant radius.",
     files: ["lib/robocn/duck.ts"],
     usage: `import { solveDuck } from "@/lib/robocn/duck"
@@ -773,7 +782,7 @@ pose.head // pivot, angle, beak opening in degrees`,
     notes: ["No React and no three.js: the solver is plain functions over `{x, y}` objects and does not mutate its input.", "Walk holds 0.62 of the cycle in stance and strut 0.52, so at most one foot is ever off the ground. These are illustrative trajectories, not a balance model."],
   },
   {
-    slug: "reachy-mini", item: "reachy-mini", title: "Reachy mini", group: "Robots",
+    slug: "reachy-mini", item: "reachy-mini",
     summary: "A companion robot: a head on a six-rod parallel platform, driven in six degrees of freedom, with pointer-tracking eyes and sprung antennas.",
     files: ["components/ui/reachy-mini.tsx"],
     usage: `import { ReachyMini } from "@/components/ui/reachy-mini"
@@ -804,7 +813,7 @@ pose.head // pivot, angle, beak opening in degrees`,
     notes: ["The whole robot is modelled in world units and the Stewart solve is already three-dimensional, so a view is only a change of projection. `iso` is its own axonometric; the other three are the shared orthographic cameras.", "Every frame of the idle, the scan and the nod goes through the same inverse kinematics as a pose you supply: the motion is six changing leg lengths, not a transform on the picture.", "The linkage is solved: six leg lengths from real Stewart platform inverse kinematics, projected isometrically and depth-sorted. The head shell is an illustration that takes roll from the pose and shifts its face with yaw and pitch.", "A pose that asks a leg for more than its travel lights the fault lamp and paints that rod in the accent colour. The component clamps its own inputs, so faults come from tightening geometry.travel.", "Eye tracking is pointer-driven through use-pointer-target; pass look to control it, or track={false} to hold the gaze still."],
   },
   {
-    slug: "stewart-kinematics", item: "stewart-kinematics", title: "Stewart kinematics", group: "Foundations",
+    slug: "stewart-kinematics", item: "stewart-kinematics",
     summary: "Closed-form inverse kinematics for a six-legged parallel platform: give it a head pose, get six leg lengths and their stroke.",
     files: ["lib/robocn/stewart.ts"],
     usage: `import { solveStewart } from "@/lib/robocn/stewart"
@@ -821,7 +830,7 @@ solution.reachable // false when any leg runs out of travel`,
     notes: ["Anchors sit in three pairs 120° apart on both rings and each leg crosses to the far anchor of its pair, so every leg has the same home length.", "Out-of-range poses still return complete geometry with reachable false, so a UI can draw the fault instead of handling an exception."],
   },
   {
-    slug: "animatronic-face", item: "animatronic-face", title: "Animatronic face", group: "Robots",
+    slug: "animatronic-face", item: "animatronic-face",
     summary: "An expressive humanoid head where every feature is a servo: paired brows, lids, cheeks and lip corners, a hinged jaw, and nine expressions that blend rather than swap.",
     files: ["components/ui/animatronic-face.tsx"],
     usage: `import { AnimatronicFace } from "@/components/ui/animatronic-face"
@@ -865,7 +874,7 @@ solution.reachable // false when any leg runs out of travel`,
     ],
   },
   {
-    slug: "face-actuation", item: "face-actuation", title: "Face actuation", group: "Foundations",
+    slug: "face-actuation", item: "face-actuation",
     summary: "The rig behind the animatronic face: ten servo channels, nine blendable expressions, per-servo stroke against travel, and the ellipsoid maths that puts a feature on a skull.",
     files: ["lib/robocn/face.ts"],
     usage: `import { blendFace, faceShape, solveFace, onFace, ellipsoidOutline } from "@/lib/robocn/face"
@@ -894,7 +903,7 @@ const halfway = blendFace(faceShape("neutral"), faceShape("joy"), 0.5)`,
     ],
   },
   {
-    slug: "robot-quadruped", item: "robot-quadruped", title: "Robot quadruped", group: "Robots",
+    slug: "robot-quadruped", item: "robot-quadruped",
     summary: "A four-legged robot with solved hip, knee, and foot positions. Scrub a walking or trotting cycle, change the stance, and inspect which feet touch the ground.",
     files: ["components/ui/robot-quadruped.tsx"],
     usage: `import { RobotQuadruped } from "@/components/ui/robot-quadruped"
@@ -924,7 +933,7 @@ const halfway = blendFace(faceShape("neutral"), faceShape("joy"), 0.5)`,
     notes: ["Side elevation is the drawing it always had, where one pair of legs is drawn behind the other. Off that axis the legs are tubes either side of the body at half a track out, and the body is a box.", "Supplying phase hands the cycle back to your timeline and stops the internal clock. Without it the robot keeps its own, parked by a reduced-motion preference.", "All four legs solve two-link inverse kinematics in parallel planes. The illustration preserves link lengths but does not simulate balance, forces, or terrain."],
   },
   {
-    slug: "quadruped-kinematics", item: "quadruped-kinematics", title: "Quadruped kinematics", group: "Foundations",
+    slug: "quadruped-kinematics", item: "quadruped-kinematics",
     summary: "The dependency-free pose solver behind the quadruped. Four legs, three footfall patterns, and bounded controls that keep every foot reachable.",
     files: ["lib/robocn/quadruped.ts"],
     usage: `import { solveQuadruped } from "@/lib/robocn/quadruped"
@@ -940,7 +949,7 @@ pose.height // hip height in world units`,
     notes: ["The solver has no React or three.js dependency and does not mutate its inputs. Each side can be projected independently for an SVG or 3D renderer.", "These are illustrative gait trajectories, not a stability or dynamics model. Walk staggers quarter-cycle swings; trot pairs opposite corners."],
   },
   {
-    slug: "robot-fish", item: "robot-fish", title: "Robot fish", group: "Robots",
+    slug: "robot-fish", item: "robot-fish",
     summary: "A swimming fish in profile. The hull is a travelling body wave offset to either side, with the swing piled at the tail, fins that work, and a dart you can set off.",
     files: ["components/ui/robot-fish.tsx"],
     usage: `import { RobotFish } from "@/components/ui/robot-fish"
@@ -970,7 +979,7 @@ pose.height // hip height in world units`,
     notes: ["Side elevation is the drawing it always had. A hull is round in section: off-axis the body is a chain of tubes down the solved spine, each as thick as the hull is there.", "The hull is the solver's output: `spineOutline` offsets every solved joint by a width profile, so the silhouette cannot drift out of step with the wave.", "Body swing is tapered to the tail, which is what a carangiform swimmer does. Thrust, drag and buoyancy are not modelled — this is a pose, not a simulation."],
   },
   {
-    slug: "robot-snake", item: "robot-snake", title: "Robot snake", group: "Robots",
+    slug: "robot-snake", item: "robot-snake",
     summary: "A serpentine crawler from above. One travelling wave gives it serpentine travel, sidewinding with half the body lifted clear, or a resting coil.",
     files: ["components/ui/robot-snake.tsx"],
     usage: `import { RobotSnake } from "@/components/ui/robot-snake"
@@ -1001,7 +1010,7 @@ pose.height // hip height in world units`,
     notes: ["Plan view is the identity projection. The spine solver reports a clearance for every joint, so sidewinding is genuinely off the ground rather than shaded to look it \u2014 from the side the lifted half of the body is visibly clear of it.", "Lifted sections draw an offset shadow and drop out of the contact marks, so sidewinding reads as height rather than as a differently shaped wave.", "The solver integrates a tangent angle instead of moving joints, so every link is exactly the same length at every phase, turn and amplitude."],
   },
   {
-    slug: "robot-spider", item: "robot-spider", title: "Robot spider", group: "Robots",
+    slug: "robot-spider", item: "robot-spider",
     summary: "An eight-legged walker from above, with every knee solved in its own vertical plane. Tripod, wave and ripple gaits, and a body that turns to face where it is going.",
     files: ["components/ui/robot-spider.tsx"],
     usage: `import { RobotSpider } from "@/components/ui/robot-spider"
@@ -1033,7 +1042,7 @@ pose.height // hip height in world units`,
     notes: ["Plan view is the identity projection, facing included. The gait solver already works in three dimensions, so off-axis the legs are simply the solve drawn at the knee heights and foot clearances the plan view could only hint at by sliding them up the screen.", "Stance is pulled in far enough that a full stride still lands inside each leg's reach, so no requested foot is ever out of range.", "The view is plan: raised knees and swinging feet are offset up the screen in proportion to their solved height, which is a depth cue rather than a projection. The leg lengths themselves are solved."],
   },
   {
-    slug: "robot-crab", item: "robot-crab", title: "Robot crab", group: "Robots",
+    slug: "robot-crab", item: "robot-crab",
     summary: "A sideways walker from above: the same gait solver as the spider turned across the body, plus two hinged claws and a pair of tracking eyestalks.",
     files: ["components/ui/robot-crab.tsx"],
     usage: `import { RobotCrab } from "@/components/ui/robot-crab"
@@ -1067,7 +1076,7 @@ pose.height // hip height in world units`,
     notes: ["Plan view is the identity projection. Off-axis the legs are the solve at its own heights, the carapace has a real thickness and the chelipeds are tubes rather than outlines.", "The carapace never turns: only the travel direction handed to the gait solver does, which is the whole mechanical difference between this and the spider.", "Claws are illustrated linkages with one solved degree of freedom — the hinged jaw. The walking legs are the solved part."],
   },
   {
-    slug: "robot-bird", item: "robot-bird", title: "Robot bird", group: "Robots",
+    slug: "robot-bird", item: "robot-bird",
     summary: "A perching flyer in profile. Each wing is a three-link chain carrying fanned feather plates, so folding, extending and beating are one mechanism.",
     files: ["components/ui/robot-bird.tsx"],
     usage: `import { RobotBird } from "@/components/ui/robot-bird"
@@ -1096,7 +1105,7 @@ pose.height // hip height in world units`,
     notes: ["Side elevation is the drawing it always had. The wings are either side of the torso rather than one behind the other, which only reads once the camera comes round.", "Folding and beating are the same chain at different angles, so a wing never has two sets of artwork: spread interpolates the whole linkage between tucked and extended.", "The wing is an illustrated linkage driven by angles rather than an inverse-kinematic solve — there is no target for it to reach. The feather fan opens on the downstroke and closes coming up, which is what a real primary fan does."],
   },
   {
-    slug: "robot-dragonfly", item: "robot-dragonfly", title: "Robot dragonfly", group: "Robots",
+    slug: "robot-dragonfly", item: "robot-dragonfly",
     summary: "A four-winged flyer from above. Fore and hind pairs beat half a cycle apart, which is what lets it hold station, and a beating wing is foreshortened by the cosine of its own stroke angle rather than redrawn.",
     files: ["components/ui/robot-dragonfly.tsx"],
     usage: `import { RobotDragonfly } from "@/components/ui/robot-dragonfly"
@@ -1126,7 +1135,7 @@ pose.height // hip height in world units`,
     notes: ["Plan view is the identity projection. Off-axis the wings stand at their real stroke angle and the body is a chain of tubes — the two things the plan can only imply.", "Fore and hind wings carry a fixed half-cycle offset. That is the mechanism, not a decoration: it is what a dragonfly does instead of bobbing through every stroke.", "The wing plate is an illustrated membrane on a solved projection — the foreshortening is real, the venation is drawn. The abdomen is the spine solver."],
   },
   {
-    slug: "robot-bat", item: "robot-bat", title: "Robot bat", group: "Robots",
+    slug: "robot-bat", item: "robot-bat",
     summary: "A membrane flyer in profile. Four finger struts fan off the wrist of a three-link arm and the skin is drawn through their tips, so furling and beating deform one surface instead of swapping artwork.",
     files: ["components/ui/robot-bat.tsx"],
     usage: `import { RobotBat } from "@/components/ui/robot-bat"
@@ -1154,7 +1163,7 @@ pose.height // hip height in world units`,
     notes: ["Hanging and flying are one body rotated by flight, not two drawings. Everything is written for the flying pose and turned over into the roost.", "The membrane is the boundary the strut tips describe, with the scalloped trailing edge a bat actually has. Move a finger and the skin follows, because there is nothing else for it to follow.", "The wing is an angle-driven linkage rather than an inverse-kinematic solve: there is no target for a wing to reach."],
   },
   {
-    slug: "robot-jellyfish", item: "robot-jellyfish", title: "Robot jellyfish", group: "Robots",
+    slug: "robot-jellyfish", item: "robot-jellyfish",
     summary: "A pulsing bell face on. One contraction number narrows it, deepens it and flares the rim together, and the tentacles hanging off that rim each run their own spine on a delay, so the curtain ripples.",
     files: ["components/ui/robot-jellyfish.tsx"],
     usage: `import { RobotJellyfish } from "@/components/ui/robot-jellyfish"
@@ -1183,7 +1192,7 @@ pose.height // hip height in world units`,
     notes: ["The pulse is asymmetric on purpose: it squeezes in the first third of the cycle and relaxes over the rest, which is the part that makes it swim rather than flutter.", "Front elevation is the drawing it always had. Off-axis the rim comes out as the circle it is, with every tentacle mounted somewhere on it.", "The bell is an illustrated surface of revolution driven by one number — meridians, margin and all. The tentacles are the spine solver."],
   },
   {
-    slug: "robot-manta", item: "robot-manta", title: "Robot manta", group: "Robots",
+    slug: "robot-manta", item: "robot-manta",
     summary: "A ray from above, whose travelling wave runs across the span instead of along the body: the wing root is station 0 and the tip is station 1, so a crest leaves the shoulder and arrives at the tip.",
     files: ["components/ui/robot-manta.tsx"],
     usage: `import { RobotManta } from "@/components/ui/robot-manta"
@@ -1212,7 +1221,7 @@ pose.height // hip height in world units`,
     notes: ["Banking is a roll about the fore-aft axis, so in plan the span foreshortens by its own cosine and one tip rises as the other drops. The yaw comes out of the roll rather than being a second control.", "Plan view is the identity projection. Off-axis the wings are a chain of tubes at the heights the wave actually put them.", "Illustrative, like the rest: no thrust, no added mass, and the animal never leaves the middle of the frame."],
   },
   {
-    slug: "robot-octopus", item: "robot-octopus", title: "Robot octopus", group: "Robots",
+    slug: "robot-octopus", item: "robot-octopus",
     summary: "A mantle and eight arms face on. Each arm is its own spine on its own phase, length and curl, and they are mounted on a ring round the mouth rather than fanned in a line.",
     files: ["components/ui/robot-octopus.tsx"],
     usage: `import { RobotOctopus } from "@/components/ui/robot-octopus"
@@ -1242,7 +1251,7 @@ pose.height // hip height in world units`,
     notes: ["The independent phase per arm is the whole point: run them in lockstep and it reads as a rosette rather than an animal.", "Arms are on a ring, so the ones round the back draw first and shorter. Front elevation implies that; the other three cameras show it.", "Reaching modulates each arm's curl by how nearly it points at the pointer. It is a bias on a trajectory, not an inverse-kinematic solve — the mantis is the machine here with a real target."],
   },
   {
-    slug: "robot-seahorse", item: "robot-seahorse", title: "Robot seahorse", group: "Robots",
+    slug: "robot-seahorse", item: "robot-seahorse",
     summary: "An upright swimmer in profile whose prehensile grip is the spine solver's own steering taken to the stop. Bony rings sit on the solved joints, and the dorsal fin runs an order faster than the body.",
     files: ["components/ui/robot-seahorse.tsx"],
     usage: `import { RobotSeahorse } from "@/components/ui/robot-seahorse"
@@ -1271,7 +1280,7 @@ pose.height // hip height in world units`,
     notes: ["Grip and steer are one control. A seahorse's tail is its rudder taken to the stop, and the component says so by feeding both from the solver's turn.", "The hull and the bony rings are both built from the solved joints, so the plating cannot drift out of step with the bend.", "The dorsal fin is an illustrated rib fan on its own multiple of the clock; the body is the solve."],
   },
   {
-    slug: "robot-ant", item: "robot-ant", title: "Robot ant", group: "Robots",
+    slug: "robot-ant", item: "robot-ant",
     summary: "A six-legged forager from above. The spider's carapace is one plate; this body is three sections on a short spine, so a turn runs down the animal instead of pivoting it as a slab.",
     files: ["components/ui/robot-ant.tsx"],
     usage: `import { RobotAnt } from "@/components/ui/robot-ant"
@@ -1306,7 +1315,7 @@ pose.height // hip height in world units`,
     notes: ["Six legs, fixed. The gait solver takes four to ten, but an ant has six and the component does not pretend otherwise.", "The heading bends the body chain rather than rotating the whole drawing, which is what puts the head into a turn before the gaster follows.", "The mandibles, the antennae and the cargo are illustrated linkages. The legs and the body chain are the solved parts."],
   },
   {
-    slug: "robot-scorpion", item: "robot-scorpion", title: "Robot scorpion", group: "Robots",
+    slug: "robot-scorpion", item: "robot-scorpion",
     summary: "An eight-legged stalker from above with a metasoma solved in the sagittal plane, so the solver's own x is how far back the tail reaches and its y is how high — the arch is a real height, not a shorter drawing.",
     files: ["components/ui/robot-scorpion.tsx"],
     usage: `import { RobotScorpion } from "@/components/ui/robot-scorpion"
@@ -1341,7 +1350,7 @@ pose.height // hip height in world units`,
     notes: ["The tail is one curve supplying two facts: where each segment sits in plan, and how high it is. Arch it and the plan footprint genuinely comes back over the body, because the tail really has curled forward.", "Off-axis the tail is projected at those heights, which is where the arch stops being an inference.", "The pedipalps are illustrated linkages with one solved degree of freedom apiece — the hinged jaw. The legs and the tail are the solved parts."],
   },
   {
-    slug: "robot-mantis", item: "robot-mantis", title: "Robot mantis", group: "Robots",
+    slug: "robot-mantis", item: "robot-mantis",
     summary: "The one animal in the set with somewhere to reach. The raptorial forelimbs are a two-link chain solved to a real target, so the strike is inverse kinematics and an unreachable goal clamps rather than fails.",
     files: ["components/ui/robot-mantis.tsx"],
     usage: `import { RobotMantis } from "@/components/ui/robot-mantis"
@@ -1370,7 +1379,7 @@ pose.height // hip height in world units`,
     notes: ["A goal outside the reach clamps onto the reachable circle, the way every arm in the registry does. Drag the pointer off the frame and you get a stretched limb, not a broken one.", "The four walking legs are solved chains too, planted on the ground plane. The blueprint variant draws the forelimb's reach circle.", "The gait is an illustrative footfall trajectory: no balance, no ground reaction, and the animal never travels across the frame."],
   },
   {
-    slug: "robot-frog", item: "robot-frog", title: "Robot frog", group: "Robots",
+    slug: "robot-frog", item: "robot-frog",
     summary: "A jumper in profile. The hind legs are two-link chains solved hip to ankle, and crouch, launch, the airborne trail and the landing absorb are all the same linkage at different points of one pair of numbers.",
     files: ["components/ui/robot-frog.tsx"],
     usage: `import { RobotFrog } from "@/components/ui/robot-frog"
@@ -1398,7 +1407,7 @@ pose.height // hip height in world units`,
     notes: ["Extension and altitude are the whole animal. The knee is solved from the hip and the ankle, so there is no crouched drawing and no airborne drawing to keep in step.", "The vocal sac runs on its own multiple of the clock, because a call is far faster than a jump.", "No ballistics: the arc is a scripted trajectory, and the frog never travels across the frame. The blueprint variant draws the hind leg's reach circle."],
   },
   {
-    slug: "robot-cat", item: "robot-cat", title: "Robot cat", group: "Robots",
+    slug: "robot-cat", item: "robot-cat",
     summary: "The one machine here whose leg roots are carried by a solved spine. The shoulder is joint 0 of the back and the hip is its last joint, so arching the back moves both and the four solved legs have to answer for it.",
     files: ["components/ui/robot-cat.tsx"],
     usage: `import { RobotCat } from "@/components/ui/robot-cat"
@@ -1433,7 +1442,7 @@ pose.height // hip height in world units`,
     ],
   },
   {
-    slug: "robot-dog", item: "robot-dog", title: "Robot dog", group: "Robots",
+    slug: "robot-dog", item: "robot-dog",
     summary: "The cat's spine carries both leg roots; this one's carries only the hip. A dog has no clavicle, so the shoulder is the far end of a scapula that swings on the ribcage — and the tail is solved across the centre plane, so the wag runs out of the drawing it is drawn in.",
     files: ["components/ui/robot-dog.tsx"],
     usage: `import { RobotDog } from "@/components/ui/robot-dog"
@@ -1470,7 +1479,7 @@ pose.height // hip height in world units`,
     ],
   },
   {
-    slug: "robot-fox", item: "robot-fox", title: "Robot fox", group: "Robots",
+    slug: "robot-fox", item: "robot-fox",
     summary: "The cat's back arches and the dog's shoulder swings; this one tips the whole animal about its hip. The brush is the first tail in the set that is an output rather than an input — its carriage is derived from the pitch — and the two ears pan independently onto one quarry, so their axes converge.",
     files: ["components/ui/robot-fox.tsx"],
     usage: `import { RobotFox } from "@/components/ui/robot-fox"
@@ -1511,7 +1520,7 @@ pose.height // hip height in world units`,
     ],
   },
   {
-    slug: "robot-bear", item: "robot-bear", title: "Robot bear", group: "Robots",
+    slug: "robot-bear", item: "robot-bear",
     summary: "The quadruped that stands up. Its soles are segments on the floor rather than points, so the four of them union into a base of support with edges — and rearing collapses that base to two while taking the centre of mass out over it. The balance rule slides the body back until the margin is positive again; the shoulder hump is an output of what the forelimbs carry.",
     files: ["components/ui/robot-bear.tsx"],
     usage: `import { RobotBear } from "@/components/ui/robot-bear"
@@ -1552,7 +1561,7 @@ pose.height // hip height in world units`,
     ],
   },
   {
-    slug: "robot-polar-bear", item: "robot-polar-bear", title: "Robot polar bear", group: "Robots",
+    slug: "robot-polar-bear", item: "robot-polar-bear",
     summary: "The same plantigrade chassis with a second support system. swim hands the load from the soles to the water in one number: the base of support stops mattering, the hull settles to its waterline, the hind limbs trail, and the forelimbs paddle on a stroke path their two links are solved to.",
     files: ["components/ui/robot-polar-bear.tsx"],
     usage: `import { RobotPolarBear } from "@/components/ui/robot-polar-bear"
@@ -1592,7 +1601,7 @@ pose.height // hip height in world units`,
     ],
   },
   {
-    slug: "robot-panda", item: "robot-panda", title: "Robot panda", group: "Robots",
+    slug: "robot-panda", item: "robot-panda",
     summary: "The bear that sits down to use its hands. The seat is a third contact with a span of its own — which is what buys back a base once both forepaws have left the floor — and the pseudo-thumb's pad gap is an output of whatever is between the pads rather than of the dial.",
     files: ["components/ui/robot-panda.tsx"],
     usage: `import { RobotPanda } from "@/components/ui/robot-panda"
@@ -1634,7 +1643,7 @@ pose.height // hip height in world units`,
     ],
   },
   {
-    slug: "bear-kinematics", item: "bear-kinematics", title: "Bear kinematics", group: "Foundations",
+    slug: "bear-kinematics", item: "bear-kinematics",
     summary: "The plantigrade solver behind the bears: a rigid sole placed on the floor with the leg solved to the ankle it produces, the base of support those intervals make, and the static share of the weight at each contact.",
     files: ["lib/robocn/bear.ts"],
     usage: `import { plantigradeStep, solveSole, solveSupport } from "@/lib/robocn/bear"
@@ -1658,7 +1667,7 @@ solveSupport([{ id: "hind", span: leg.span }], 6).margin // 1 centred, 0 on an e
     ],
   },
   {
-    slug: "robot-horse", item: "robot-horse", title: "Robot horse", group: "Robots",
+    slug: "robot-horse", item: "robot-horse",
     summary: "The first machine here whose gait is a real thing rather than a label: a walk is four beats in a lateral sequence, a trot two on diagonals, a canter three on a lead — and the beat is counted off the footfalls. What each grounded foot is carrying then drives two joints nobody sets: a fetlock that sinks under load, and a neck that nods because the forehand is loading.",
     files: ["components/ui/robot-horse.tsx"],
     usage: `import { RobotHorse } from "@/components/ui/robot-horse"
@@ -1699,7 +1708,7 @@ solveSupport([{ id: "hind", span: leg.span }], 6).margin // 1 centred, 0 on an e
     ],
   },
   {
-    slug: "robot-pegasus", item: "robot-pegasus", title: "Robot pegasus", group: "Robots",
+    slug: "robot-pegasus", item: "robot-pegasus",
     summary: "One body, two ways of holding it up, and the number between them. lift splits the animal's weight between its legs and its wings, and four things answer it at once: the fetlocks recoil, the legs run out of reach and fold, the stride fades out, and the wingbeat fades in. The wing is three bones solved to a tip tracing a figure of eight.",
     files: ["components/ui/robot-pegasus.tsx"],
     usage: `import { RobotPegasus } from "@/components/ui/robot-pegasus"
@@ -1743,7 +1752,7 @@ solveSupport([{ id: "hind", span: leg.span }], 6).margin // 1 centred, 0 on an e
     ],
   },
   {
-    slug: "robot-camel", item: "robot-camel", title: "Robot camel", group: "Robots",
+    slug: "robot-camel", item: "robot-camel",
     summary: "Every other machine in the set stands on a line. This one's ground is a medium with a depth, and its feet go into it — as deep as what each is carrying, and less deep because the pad opens under the load and drops its own pressure. The hump is a store that slumps as it empties, and the roll is an output of the gait.",
     files: ["components/ui/robot-camel.tsx"],
     usage: `import { RobotCamel } from "@/components/ui/robot-camel"
@@ -1784,7 +1793,7 @@ solveSupport([{ id: "hind", span: leg.span }], 6).margin // 1 centred, 0 on an e
     ],
   },
   {
-    slug: "robot-turtle", item: "robot-turtle", title: "Robot turtle", group: "Robots",
+    slug: "robot-turtle", item: "robot-turtle",
     summary: "A plodder from above: the shared gait solver at four legs on a slow wave, under a procedurally plated carapace, with one number that pulls the head, tail and every foot in underneath it.",
     files: ["components/ui/robot-turtle.tsx"],
     usage: `import { RobotTurtle } from "@/components/ui/robot-turtle"
@@ -1817,7 +1826,7 @@ solveSupport([{ id: "hind", span: leg.span }], 6).margin // 1 centred, 0 on an e
     notes: ["Retraction is geometry rather than a fade: the limbs really do come in, and the carapace is drawn after them, so it covers what has been pulled underneath.", "The scutes are laid out from the shell's own dimensions — five vertebrals, four costals a side, and a marginal ring — so a resized carapace re-plates itself.", "Four legs is the low end of the shared gait solver, which always allowed it and had never been asked. The carapace dome only reads off-axis."],
   },
   {
-    slug: "robot-inchworm", item: "robot-inchworm", title: "Robot inchworm", group: "Robots",
+    slug: "robot-inchworm", item: "robot-inchworm",
     summary: "A looper in profile that moves by alternating anchors rather than a travelling wave. The body is a fixed length, so the arch height is solved from the anchor span: close the span and the loop has to rise.",
     files: ["components/ui/robot-inchworm.tsx"],
     usage: `import { RobotInchworm } from "@/components/ui/robot-inchworm"
@@ -1845,7 +1854,7 @@ solveSupport([{ id: "hind", span: leg.span }], 6).margin // 1 centred, 0 on an e
     notes: ["The arch is solved, not drawn: a short bisection on the spine solver's turn finds the arc of the body's own length whose chord is the current anchor span. Shorten the span and the loop rises because there is nowhere else for the length to go.", "No travelling wave anywhere in it, which is what makes it different from every other crawler here. Exactly one end is ever off the surface.", "The animal walks on the spot and the surface marks slide under it, the same convention the conveyor and the rover use. There is no ground friction or adhesion model."],
   },
   {
-    slug: "fabricator", item: "fabricator", title: "Fabricator", group: "Machines",
+    slug: "fabricator", item: "fabricator",
     summary: "An additive build cell that makes its own workpiece. The object on the plate is a continuous field sampled into voxels and laid cell by cell, so raising the resolution rebuilds the same object out of smaller cells rather than drawing a different picture.",
     files: ["components/ui/fabricator.tsx"],
     usage: `import { Fabricator } from "@/components/ui/fabricator"
@@ -1881,7 +1890,7 @@ solveSupport([{ id: "hind", span: leg.span }], 6).margin // 1 centred, 0 on an e
     ],
   },
   {
-    slug: "voxel-form", item: "voxel-form", title: "Voxel form", group: "Machines",
+    slug: "voxel-form", item: "voxel-form",
     summary: "The workpiece on its own, with no machine around it. A continuous field sampled at your resolution and drawn as vector cells, so it can sit in a hero, a card or a loading state without a gantry bolted to it.",
     files: ["components/ui/voxel-form.tsx"],
     usage: `import { VoxelForm } from "@/components/ui/voxel-form"
@@ -1912,7 +1921,7 @@ solveSupport([{ id: "hind", span: leg.span }], 6).margin // 1 centred, 0 on an e
     ],
   },
   {
-    slug: "arm-fabricator", item: "arm-fabricator", title: "Arm fabricator", group: "Machines",
+    slug: "arm-fabricator", item: "arm-fabricator",
     summary: "An articulated fabricator that has to reach for its work. The turret yaws toward the cell being laid and the shoulder and elbow are solved with the analytic two-link elbow, in the arm's own vertical plane.",
     files: ["components/ui/arm-fabricator.tsx"],
     usage: `import { ArmFabricator } from "@/components/ui/arm-fabricator"
@@ -1946,7 +1955,7 @@ solveSupport([{ id: "hind", span: leg.span }], 6).margin // 1 centred, 0 on an e
     ],
   },
   {
-    slug: "drone-fabricator", item: "drone-fabricator", title: "Drone fabricator", group: "Machines",
+    slug: "drone-fabricator", item: "drone-fabricator",
     summary: "A free-flying fabricator with no envelope at all. A repulsor platform flies to each cell, rides a fixed standoff above the build line, and banks into its own travel.",
     files: ["components/ui/drone-fabricator.tsx"],
     usage: `import { DroneFabricator } from "@/components/ui/drone-fabricator"
@@ -1980,7 +1989,7 @@ solveSupport([{ id: "hind", span: leg.span }], 6).margin // 1 centred, 0 on an e
     ],
   },
   {
-    slug: "voxel-geometry", item: "voxel-geometry", title: "Voxel geometry", group: "Foundations",
+    slug: "voxel-geometry", item: "voxel-geometry",
     summary: "The sampler behind the fabricator: continuous occupancy fields over the unit cube, turned into buildable cells in deposition order, with the buried ones dropped.",
     files: ["lib/robocn/voxel.ts"],
     usage: `import { voxelSolid, voxelLaid, voxelBuild } from "@/lib/robocn/voxel"
@@ -2005,7 +2014,7 @@ part.active  // the cell under the nozzle`,
     ],
   },
   {
-    slug: "spine-kinematics", item: "spine-kinematics", title: "Spine kinematics", group: "Foundations",
+    slug: "spine-kinematics", item: "spine-kinematics",
     summary: "The travelling-wave body solver behind the fish and the snake: a serpenoid curve with taper, steady turn, and ground clearance.",
     files: ["lib/robocn/spine.ts"],
     usage: `import { solveSpine, spineOutline } from "@/lib/robocn/spine"
@@ -2023,7 +2032,7 @@ spineOutline(pose, (s) => 12 * (1 - s)) // the hull, as one path`,
     notes: ["Integrating a tangent angle rather than displacing joints is what keeps every link exactly the same length at every phase — the invariant the tests assert.", "A crest travels head to tail as phase rises. Run phase backwards to reverse it. No thrust, drag or friction is modelled."],
   },
   {
-    slug: "gait-kinematics", item: "gait-kinematics", title: "Gait kinematics", group: "Foundations",
+    slug: "gait-kinematics", item: "gait-kinematics",
     summary: "The footfall solver behind the horse, the pegasus and the camel: six named gaits as real touchdown sequences, a beat count derived from them rather than declared, the support pattern, and the share of the body's weight on every grounded foot — plus the three things that one number drives.",
     files: ["lib/robocn/gait.ts"],
     usage: `import { solveGait, fetlockSink, padSpread, footSinkage } from "@/lib/robocn/gait"
@@ -2055,7 +2064,7 @@ footSinkage(leg.load, 0.8)             // how deep it goes into soft ground`,
     ],
   },
   {
-    slug: "hexapod-kinematics", item: "hexapod-kinematics", title: "Hexapod kinematics", group: "Foundations",
+    slug: "hexapod-kinematics", item: "hexapod-kinematics",
     summary: "The radial walking solver behind the spider and the crab: four to ten legs, three gaits, plan-view feet, and knees solved in each leg's own vertical plane.",
     files: ["lib/robocn/hexapod.ts"],
     usage: `import { solveHexapod } from "@/lib/robocn/hexapod"
@@ -2072,7 +2081,7 @@ pose.height // body height in world units`,
     notes: ["Femur and tibia hold their lengths in every pose, because the stance radius is capped so a full stride still lands inside the leg's reach.", "Illustrative trajectories, not dynamics: no balance, no ground reaction, and the body never translates — the feet do."],
   },
   {
-    slug: "walker-kinematics", item: "walker-kinematics", title: "Walker kinematics", group: "Foundations",
+    slug: "walker-kinematics", item: "walker-kinematics",
     summary: "Two or four legs on a rectangular hip base, for machines that carry their mass above the hips: the footfall schedule, the support polygon it leaves, and the hull attitude that is the only way such a machine can move its mass over a foot.",
     files: ["lib/robocn/walker.ts"],
     usage: `import { solveWalker, walkerHullPoint } from "@/lib/robocn/walker"
@@ -2099,7 +2108,7 @@ walkerHullPoint(pose, { x: 0, y: 30, z: 12 }) // a hull-mounted part, in the wor
     ],
   },
   {
-    slug: "tripod-kinematics", item: "tripod-kinematics", title: "Tripod kinematics", group: "Foundations",
+    slug: "tripod-kinematics", item: "tripod-kinematics",
     summary: "The three-legged balance solver: a load schedule per foot, the body position that schedule demands, and the support polygon it has to stay inside.",
     files: ["lib/robocn/tripod.ts"],
     usage: `import { solveTripod, supportMargin } from "@/lib/robocn/tripod"
@@ -2122,7 +2131,7 @@ pose.legs     // hip, knee, foot, kneeHeight, clearance, contact, load`,
     ],
   },
   {
-    slug: "linear-actuator", item: "linear-actuator", title: "Linear actuator", group: "Machines",
+    slug: "linear-actuator", item: "linear-actuator",
     summary: "A linear cylinder with a moving piston and rod. Reveal its internals in cutaway view, or use the complete housing in a production-cell illustration.",
     files: ["components/ui/linear-actuator.tsx"],
     usage: `import { LinearActuator } from "@/components/ui/linear-actuator"
@@ -2148,7 +2157,7 @@ pose.legs     // hip, knee, foot, kneeHeight, clearance, contact, load`,
     notes: ["Side elevation is the drawing it always had. A cylinder is round in section, which only reads off that axis: the barrel, the rod and the end flanges are tubes down the machine\u2019s axis.", "A supplied extension always wins and stops the loop. Uncontrolled the cylinder runs its own cycle; grabbing it pins the stroke to the pointer, and releasing eases it back in at the cylinder's own rate.", "The piston and rod move together through a fixed illustrative stroke; the component does not simulate fluid pressure or force.", "The scale is a percentage of the drawing's stroke, not a measurement in physical units."],
   },
   {
-    slug: "servo-motor", item: "servo-motor", title: "Servo motor", group: "Machines",
+    slug: "servo-motor", item: "servo-motor",
     summary: "A positional servo with mounting tabs, a cable, and interchangeable single, double, or cross horns. Drive the shaft angle from application state.",
     files: ["components/ui/servo-motor.tsx"],
     usage: `import { ServoMotor } from "@/components/ui/servo-motor"
@@ -2175,7 +2184,7 @@ pose.legs     // hip, knee, foot, kneeHeight, clearance, contact, load`,
     notes: ["Front elevation is the drawing it always had. The can, the mounting tabs and the output boss have a depth through the machine that only reads once the camera comes round.", "A supplied angle always wins and stops the loop. The step behavior deliberately jumps its goal: the 210°/s slew rate is what draws the travel between positions, and what carries a released horn back into the sweep.", "The drawing's travel limits are illustrative and do not specify the limits of a particular physical servo."],
   },
   {
-    slug: "assembly-geometry", item: "assembly-geometry", title: "Assembly geometry", group: "Foundations",
+    slug: "assembly-geometry", item: "assembly-geometry",
     summary:
       "Taking a machine apart in the reverse of the order it was put together: each part along the axis it was fitted on, in stages, and seated again exactly — plus the room the teardown needs.",
     files: ["lib/robocn/assembly.ts"],
@@ -2209,7 +2218,7 @@ assemblyEnvelope(parts, 0.4, { min: { x: -30, y: 0, z: -236 }, max: { x: 30, y: 
     ],
   },
   {
-    slug: "lantern-geometry", item: "lantern-geometry", title: "Lantern geometry", group: "Foundations",
+    slug: "lantern-geometry", item: "lantern-geometry",
     summary: "A charge transfer that conserves, a recital count, a reserve gauge, and an emission column priced by the inverse-square law — plus the exploded assembly from `assembly-geometry`, re-exported.",
     files: ["lib/robocn/lantern.ts"],
     usage: `import { explodeAssembly, stepCharge, emissionBeam } from "@/lib/robocn/lantern"
@@ -2252,7 +2261,7 @@ emissionBeam(0.5, 1).length   // reach at √intensity of full range`,
     ],
   },
   {
-    slug: "power-lantern", item: "power-lantern", title: "Power lantern", group: "Machines",
+    slug: "power-lantern", item: "power-lantern",
     summary: "A carried reservoir lantern in the old marine-lamp form — a ribbed prism barrel in a cage of bowed straps, with a round charge port on its face. Charge is moved rather than invented, the recital gates the transfer, the beam is paid for out of the reserve, and every part comes off in the reverse of the order it was fitted.",
     files: ["components/ui/power-lantern.tsx"],
     usage: `import { PowerLantern } from "@/components/ui/power-lantern"
@@ -2301,7 +2310,7 @@ emissionBeam(0.5, 1).length   // reach at √intensity of full range`,
     ],
   },
   {
-    slug: "radial-bloom", item: "radial-bloom", title: "Radial bloom", group: "Machines",
+    slug: "radial-bloom", item: "radial-bloom",
     summary: "A hub of telescoping rams pointed outward in one plane: closed it is an even star, driven out it is a ragged burst. Four guided stages per ram, and a vector of strokes drives each ram on its own.",
     files: ["components/ui/radial-bloom.tsx"],
     usage: `import { RadialBloom } from "@/components/ui/radial-bloom"
@@ -2343,7 +2352,7 @@ emissionBeam(0.5, 1).length   // reach at √intensity of full range`,
     ],
   },
   {
-    slug: "rotary-table", item: "rotary-table", title: "Rotary table", group: "Machines",
+    slug: "rotary-table", item: "rotary-table",
     summary: "A rotary indexing table in plan view. Fixtures and workpieces rotate with the platter while the base, motor, and index pointer stay fixed.",
     files: ["components/ui/rotary-table.tsx"],
     usage: `import { RotaryTable } from "@/components/ui/rotary-table"
@@ -2371,7 +2380,7 @@ emissionBeam(0.5, 1).length   // reach at √intensity of full range`,
     notes: ["Plan view is the identity projection, and the platter\u2019s own rotation composes onto the camera, so a tipped table still indexes truthfully. The base, the platter\u2019s thickness and the fixtures are solids that only read off the vertical.", "A supplied angle always wins and stops the loop; index it yourself by setting angle to stationIndex * 360 / stations. Uncontrolled, indexing is a staircase goal plus a 150°/s slew — the dwell is what is left between steps.", "Zero degrees aligns the first fixture to the fixed pointer at the top. The remaining fixtures are equally spaced clockwise."],
   },
   {
-    slug: "robot-rover", item: "robot-rover", title: "Robot rover", group: "Robots",
+    slug: "robot-rover", item: "robot-rover",
     summary: "A ground robot in plan view. Choose four or six wheels, steer the front axle, and drive its heading and tread travel from your application.",
     files: ["components/ui/robot-rover.tsx"],
     usage: `import { RobotRover } from "@/components/ui/robot-rover"
@@ -2400,7 +2409,7 @@ emissionBeam(0.5, 1).length   // reach at √intensity of full range`,
     notes: ["Plan view is the identity projection, and the heading is carried by the camera rather than by turning the picture, so the rover faces the same way from every angle. The wheels are cylinders and the chassis a box \u2014 neither of which a plan view ever had to have.", "Any axis you supply wins for that axis alone: a controlled heading still leaves the treads and the steering to the component unless you supply those too.", "Steering is not a second animation — it is the heading error, which is why the rover leans into a turn and straightens as it finishes one. It is still an illustration rather than a dynamics solver: nothing integrates a driving path."],
   },
   {
-    slug: "robot-drone", item: "robot-drone", title: "Robot drone", group: "Robots",
+    slug: "robot-drone", item: "robot-drone",
     summary: "A multirotor aircraft with four or six motors, counter-rotating propellers, landing gear and removable guards, drawn from any of four camera angles.",
     files: ["components/ui/robot-drone.tsx"],
     usage: `import { RobotDrone } from "@/components/ui/robot-drone"
@@ -2424,7 +2433,7 @@ emissionBeam(0.5, 1).length   // reach at √intensity of full range`,
     notes: ["Every view draws the same model. Parts are defined in world units and pushed through the shared camera, so heading, guards and blade angle stay truthful from any angle; plan view is the identity projection. Landing gear and the fuselage sides only appear once the camera tips over.", "Non-finite angles use zero. The component illustrates flight; it does not calculate lift."],
   },
   {
-    slug: "lidar-scan", item: "lidar-scan", title: "Lidar scan", group: "Robots",
+    slug: "lidar-scan", item: "lidar-scan",
     summary: "A polar range display for real or simulated lidar samples. Returns stay in sensor coordinates and rotate with its heading.",
     files: ["components/ui/lidar-scan.tsx"],
     usage: `import { LidarScan } from "@/components/ui/lidar-scan"
@@ -2455,7 +2464,7 @@ emissionBeam(0.5, 1).length   // reach at √intensity of full range`,
     notes: ["The component does not generate samples. The demo supplies a deterministic room outline and obstacle, clearly labelled as sample data.", "Negative, non-finite, and beyond-range distances are omitted. Non-finite angles are omitted. Zero-distance returns are valid and plot at the origin.", "Returns are drawn by age: each brightens as the ray passes it and fades over the next 150° of sweep, down to a floor that keeps the plot readable as a map between passes. That is display only — nothing is filtered. Supply a new samples array when fresh sensor data arrives."],
   },
   {
-    slug: "robot-car", item: "robot-car", title: "Robot car", group: "Robots",
+    slug: "robot-car", item: "robot-car",
     summary: "An autonomous road car with a real steering rack: one angle in, two different wheel angles out, plus the lean the turn radius implies and a body that rides the road on its own axles.",
     files: ["components/ui/robot-car.tsx"],
     usage: `import { RobotCar } from "@/components/ui/robot-car"
@@ -2483,7 +2492,7 @@ emissionBeam(0.5, 1).length   // reach at √intensity of full range`,
     notes: ["Solved: the two front wheel angles and the turn radius, from `ackermann()` — the inner wheel always turns harder, because it runs on the smaller circle. The body's heave and pitch are the least-squares line through the axle contacts, which is what a rigid body on springs actually settles to.", "Stated rather than solved: the body leans outward at a roll gradient of 5.5° per g, the way a car on road springs does, off a lateral acceleration capped at 0.8 g — a car at a real rack angle has slowed for the corner. There is no roll stiffness and no weight transfer, and the road is an illustrative profile rather than a measured surface.", "Nothing integrates a path. The steering angle is a pose, not a trajectory, and the car never goes anywhere."],
   },
   {
-    slug: "transit-bus", item: "transit-bus", title: "Transit bus", group: "Robots",
+    slug: "transit-bus", item: "transit-bus",
     summary: "An articulated city bus. Steer the front axle and the rear section's angle is solved from the hitch, so the tail swings out of a turn and comes back straight on its own.",
     files: ["components/ui/transit-bus.tsx"],
     usage: `import { TransitBus } from "@/components/ui/transit-bus"
@@ -2511,7 +2520,7 @@ emissionBeam(0.5, 1).length   // reach at √intensity of full range`,
     notes: ["Solved: the articulation angle, from `hitchAngle()`. The pivot rides a circle behind the drive axle and the towed axle cannot slide sideways, which fixes the angle between the sections. It is a steady state with no history, so a bus that has been round a roundabout comes out of it straight rather than unwinding.", "The concertina ribs belong half to each section, so the fold genuinely opens on the outside of the bend. The plug doors stand off the side before their leaves part, and the wheels stop turning while they are open.", "Illustrated: the kneel is a stated drop and roll on the doors' own number. No tyre model, no load, no swept-path envelope, and nothing integrates a manoeuvre."],
   },
   {
-    slug: "cargo-plane", item: "cargo-plane", title: "Cargo plane", group: "Robots",
+    slug: "cargo-plane", item: "cargo-plane",
     summary: "A high-wing freighter that banks because it was asked to turn. Give it a rate of turn and an airspeed and the bank is solved; the ailerons carry the roll it has not finished.",
     files: ["components/ui/cargo-plane.tsx"],
     usage: `import { CargoPlane } from "@/components/ui/cargo-plane"
@@ -2540,7 +2549,7 @@ emissionBeam(0.5, 1).length   // reach at √intensity of full range`,
     notes: ["Solved: the bank, from `coordinatedBank()`. A rate of turn at an airspeed fixes the radius, and a coordinated turn stands at atan(v²/rg) — so doubling the speed at the same radius asks for four times the tangent.", "The ailerons are not a second animation: they carry the difference between the bank the aircraft is holding and the one the turn asks for, so they return to neutral once the turn is established and never move in level flight.", "Illustrated: the wing is a flat plate and the propellers are drawn rather than solved. Nothing computes lift, drag, load factor or a stall, and the aircraft does not travel."],
   },
   {
-    slug: "hydrofoil-craft", item: "hydrofoil-craft", title: "Hydrofoil craft", group: "Robots",
+    slug: "hydrofoil-craft", item: "hydrofoil-craft",
     summary: "A foilborne ferry — the one machine here that climbs out of its own ground plane. Lift goes as the square of speed, so the surface-piercing V sheds immersed area and the hull rises clear.",
     files: ["components/ui/hydrofoil-craft.tsx"],
     usage: `import { HydrofoilCraft } from "@/components/ui/hydrofoil-craft"
@@ -2567,7 +2576,7 @@ emissionBeam(0.5, 1).length   // reach at √intensity of full range`,
     notes: ["Solved: the rise, from `foilRise()`. A surface-piercing foil carrying a steady weight has to shed immersed area as 1/v², and the only way it can is by climbing until less of the V is wetted — so the accent on each limb is genuinely the part still below the waterline after the boat has risen.", "Below the takeoff speed the foil cannot carry her at all: she stays hullborne and rides the swell, and the ride goes quiet as she comes up, which is what a hydrofoil is for.", "Illustrated: the swell is a stated shape and the bow's lift through the transition is a rule. No drag, no wave-making, no cavitation, no righting moment, and she does not travel."],
   },
   {
-    slug: "launch-vehicle", item: "launch-vehicle", title: "Launch vehicle", group: "Robots",
+    slug: "launch-vehicle", item: "launch-vehicle",
     summary: "A two-stage orbital booster: it flies a pitch program, gimbals against it, throws half of itself away, and reports the ideal Δv left from the rocket equation.",
     files: ["components/ui/launch-vehicle.tsx"],
     usage: `import { LaunchVehicle } from "@/components/ui/launch-vehicle"
@@ -2594,7 +2603,7 @@ emissionBeam(0.5, 1).length   // reach at √intensity of full range`,
     notes: ["Solved: the remaining Δv, from `tsiolkovsky()` summed over the stages still attached — so the number drops the moment the booster lets go, which is the only honest way to draw staging. The stage figures are stated, not a real vehicle.", "The engines gimbal against the program rather than being animated: they carry the pitch the stack has not taken up, so they centre once it is tracking and swing hardest through the pitchover.", "Illustrated: the pitch program is a curve chosen to look like a gravity turn, not a solved trajectory. There is no thrust, drag, mass flow, gravity loss or atmosphere, and no altitude is computed — the drawing is in the vehicle's own frame, and the pad is what falls away."],
   },
   {
-    slug: "strike-starfighter", item: "strike-starfighter", title: "Strike starfighter", group: "Robots",
+    slug: "strike-starfighter", item: "strike-starfighter",
     summary: "A split-foil attack fighter: four wings on two fore-aft hinges that open from a cruise plane into an X, carrying their own engines and tip cannons with them.",
     files: ["components/ui/strike-starfighter.tsx"],
     usage: `import { StrikeStarfighter } from "@/components/ui/strike-starfighter"
@@ -2621,7 +2630,7 @@ emissionBeam(0.5, 1).length   // reach at √intensity of full range`,
     notes: ["One geometry, four panels, two hinges. Each pair swings about a fore-aft axis at its own root, and every panel keeps its span and its chord at every opening — the engines and the tip cannons are carried on the panels rather than drawn where they look right, so opening the foils genuinely spreads the guns and the thrust line.", "`bank` rolls the whole airframe about the same axis, which is why an opened X reads as an X from every camera: it is projected, not redrawn.", "A science-fiction archetype and nothing more: no character, no markings, no livery. Nothing here is aerodynamic — there is no air — and the fighter does not travel."],
   },
   {
-    slug: "ion-interceptor", item: "ion-interceptor", title: "Ion interceptor", group: "Robots",
+    slug: "ion-interceptor", item: "ion-interceptor",
     summary: "A twin ion-drive interceptor: hexagonal panels pitching on lateral pylons, around a pod that yaws inside them and carries its viewport and emitters round with it.",
     files: ["components/ui/ion-interceptor.tsx"],
     usage: `import { IonInterceptor } from "@/components/ui/ion-interceptor"
@@ -2648,7 +2657,7 @@ emissionBeam(0.5, 1).length   // reach at √intensity of full range`,
     notes: ["The panels are flat plates in space, not artwork: the same geometry is a pair of tall hexagons head-on, a pair of lines from straight above when they are square, and a pair of widening slabs as they come round. Pitch is a rotation about each pylon's own axis.", "The pod turns inside the pylons, so the viewport, the armoured face and the emitters all come round with it while the pylons and panels stay where the airframe put them.", "A science-fiction archetype and nothing more: no character, no markings, no livery. There is no aerodynamics here and no ion physics either."],
   },
   {
-    slug: "vehicle-geometry", item: "vehicle-geometry", title: "Vehicle geometry", group: "Foundations",
+    slug: "vehicle-geometry", item: "vehicle-geometry",
     summary: "The constraints a vehicle works against: Ackermann steering, steady-state articulation, the coordinated bank, a rigid body on N axles, the rocket equation, and surface-piercing foil lift.",
     files: ["lib/robocn/vehicle.ts"],
     usage: `import { ackermann, hitchAngle, coordinatedBank, foilRise } from "@/lib/robocn/vehicle"
@@ -2672,9 +2681,9 @@ foilRise(32, 18)           // 0 hullborne .. 1 foilborne`,
     notes: ["Everything here is exact geometry except `pitchProgram` and `roadProfile`, which are stated shapes and say so. Nothing integrates a path, a force or a mass.", "Positive is to starboard everywhere — clockwise seen from above — the same sense as every heading in the set. `rollPoint` follows the aircraft convention instead: positive puts the starboard side down."],
   },
   {
-    slug: "robot-gripper", item: "robot-gripper", title: "Robot gripper",
+    slug: "robot-gripper", item: "robot-gripper",
     summary: "A standalone end effector with parallel or angular fingers. Drive the jaws from application state to build a fixture, tool selector, or work-cell simulation.",
-    group: "Machines", files: ["components/ui/robot-gripper.tsx"],
+    files: ["components/ui/robot-gripper.tsx"],
     usage: `import { RobotGripper } from "@/components/ui/robot-gripper"
 
 <RobotGripper fingers="parallel" active size="lg" />
@@ -2698,9 +2707,9 @@ foilRise(32, 18)           // 0 hullborne .. 1 foilborne`,
     notes: ["Front elevation is the drawing it always had. The body, the wrist block and the jaw plates gain their depth through the tool as the camera comes round.", "A supplied opening always wins and stops the loop. Uncontrolled, the jaws work a pick cycle, parked by a reduced-motion preference.", "The drawing exposes an accessible name with its opening percentage. Override aria-label for application-specific context."],
   },
   {
-    slug: "conveyor-belt", item: "conveyor-belt", title: "Conveyor belt",
+    slug: "conveyor-belt", item: "conveyor-belt",
     summary: "A production-line conveyor with rollers and workpieces. Runs automatically or follows a controlled travel value, wrapping in either direction.",
-    group: "Machines", files: ["components/ui/conveyor-belt.tsx"],
+    files: ["components/ui/conveyor-belt.tsx"],
     usage: `import { ConveyorBelt } from "@/components/ui/conveyor-belt"
 
 <ConveyorBelt parts={4} direction="right" size="lg" />
@@ -2725,7 +2734,7 @@ foilRise(32, 18)           // 0 hullborne .. 1 foilborne`,
     notes: ["Side elevation is the drawing it always had. A conveyor is a bed, so the width across the line, the rollers as cylinders and the side frames only appear once the camera comes round.", "A supplied position updates immediately and disables the internal animation loop. The travel slider in the demo shows this controlled mode.", "A scrubbed belt does not snap back to line speed on release: it eases up to it, on the same rate limiter every other machine in the set returns on.", "Omit position for automatic motion, or set animate={false} for a still illustration. The animation loop is cleaned up on unmount."],
   },
   {
-    slug: "planetary-gearbox", item: "planetary-gearbox", title: "Planetary gearbox", group: "Machines",
+    slug: "planetary-gearbox", item: "planetary-gearbox",
     summary: "A reduction stage with its face off: a sun driving planets inside a held ring, with real meshing teeth. The reduction is read off the tooth counts rather than typed in.",
     files: ["components/ui/planetary-gearbox.tsx"],
     usage: `import { PlanetaryGearbox } from "@/components/ui/planetary-gearbox"
@@ -2758,7 +2767,7 @@ foilRise(32, 18)           // 0 hullborne .. 1 foilborne`,
     ],
   },
   {
-    slug: "belt-drive", item: "belt-drive", title: "Belt drive", group: "Machines",
+    slug: "belt-drive", item: "belt-drive",
     summary: "A toothed belt between two pulleys with an idler you can wind down to take up slack. The belt is routed along its real tangents, and its teeth march by arc length.",
     files: ["components/ui/belt-drive.tsx"],
     usage: `import { BeltDrive } from "@/components/ui/belt-drive"
@@ -2791,7 +2800,7 @@ foilRise(32, 18)           // 0 hullborne .. 1 foilborne`,
     ],
   },
   {
-    slug: "cable-carrier", item: "cable-carrier", title: "Cable carrier", group: "Machines",
+    slug: "cable-carrier", item: "cable-carrier",
     summary: "The energy chain that feeds a moving axis. The chain cannot change length, so its fold travels at exactly half the carriage — which is the whole mechanism.",
     files: ["components/ui/cable-carrier.tsx"],
     usage: `import { CableCarrier } from "@/components/ui/cable-carrier"
@@ -2822,7 +2831,7 @@ foilRise(32, 18)           // 0 hullborne .. 1 foilborne`,
     ],
   },
   {
-    slug: "mecanum-wheel", item: "mecanum-wheel", title: "Mecanum wheel", group: "Machines",
+    slug: "mecanum-wheel", item: "mecanum-wheel",
     summary: "The wheel that lets a base drive sideways: barrel rollers set at 45° out of the wheel plane, in a left hand and a right hand.",
     files: ["components/ui/mecanum-wheel.tsx"],
     usage: `import { MecanumWheel } from "@/components/ui/mecanum-wheel"
@@ -2852,7 +2861,7 @@ foilRise(32, 18)           // 0 hullborne .. 1 foilborne`,
     ],
   },
   {
-    slug: "tool-changer", item: "tool-changer", title: "Tool changer", group: "Machines",
+    slug: "tool-changer", item: "tool-changer",
     summary: "The coupler between a wrist and whatever it is holding, and the only machine in the set that comes apart. One axis seats the halves and then drives the lock.",
     files: ["components/ui/tool-changer.tsx"],
     usage: `import { ToolChanger } from "@/components/ui/tool-changer"
@@ -2883,7 +2892,7 @@ foilRise(32, 18)           // 0 hullborne .. 1 foilborne`,
     ],
   },
   {
-    slug: "suction-gripper", item: "suction-gripper", title: "Suction gripper", group: "Machines",
+    slug: "suction-gripper", item: "suction-gripper",
     summary: "A bar of bellows cups and the sheet it picks. The head stops where the part is and everything past contact goes into the bellows instead of the stroke.",
     files: ["components/ui/suction-gripper.tsx"],
     usage: `import { SuctionGripper } from "@/components/ui/suction-gripper"
@@ -2915,7 +2924,7 @@ foilRise(32, 18)           // 0 hullborne .. 1 foilborne`,
     ],
   },
   {
-    slug: "robot-hand", item: "robot-hand", title: "Robot hand", group: "Machines",
+    slug: "robot-hand", item: "robot-hand",
     summary: "Five digits on a thumb with a real saddle joint. Fingers abduct about the palm normal, the thumb opposes across the palm, and the gap between the two pads is a number the solver produces rather than a shape the drawing implies.",
     files: ["components/ui/robot-hand.tsx"],
     usage: `import { RobotHand } from "@/components/ui/robot-hand"
@@ -2955,7 +2964,7 @@ foilRise(32, 18)           // 0 hullborne .. 1 foilborne`,
     ],
   },
   {
-    slug: "hand-kinematics", item: "hand-kinematics", title: "Hand kinematics", group: "Foundations",
+    slug: "hand-kinematics", item: "hand-kinematics",
     summary: "The dependency-free hand solver: five digits in one frame, a thumb on a two-angle saddle joint with the coupled axial roll opposition really is, and the pad gap that falls out of it.",
     files: ["lib/robocn/hand.ts"],
     usage: `import { solveHand, graspProfile } from "@/lib/robocn/hand"
@@ -2978,7 +2987,7 @@ graspProfile("tripod") // { digits, opposition, spread }`,
     ],
   },
   {
-    slug: "robot-foot", item: "robot-foot", title: "Robot foot", group: "Machines",
+    slug: "robot-foot", item: "robot-foot",
     summary: "One ankle, one toe hinge, and the load moving between them: dorsiflexed at heel strike, flat at mid-stance, plantarflexed with the heel lifted at push-off.",
     files: ["components/ui/robot-foot.tsx"],
     usage: `import { RobotFoot } from "@/components/ui/robot-foot"
@@ -3009,7 +3018,7 @@ graspProfile("tripod") // { digits, opposition, spread }`,
     ],
   },
   {
-    slug: "robot-leg", item: "robot-leg", title: "Robot leg", group: "Machines",
+    slug: "robot-leg", item: "robot-leg",
     summary: "A hip, a knee and an ankle solved to wherever the foot has to be, with the knee breaking forward and two strut actuators drawn between solved points. Grab it and the foot is yours.",
     files: ["components/ui/robot-leg.tsx"],
     usage: `import { RobotLeg } from "@/components/ui/robot-leg"
@@ -3042,7 +3051,7 @@ graspProfile("tripod") // { digits, opposition, spread }`,
     ],
   },
   {
-    slug: "robot-torso", item: "robot-torso", title: "Robot torso", group: "Machines",
+    slug: "robot-torso", item: "robot-torso",
     summary: "A pelvis, a column of equal vertebrae, and a cage of rib hoops. Leaning and twisting move the shoulders without stretching the back, and breathing opens the cage along the machine's depth.",
     files: ["components/ui/robot-torso.tsx"],
     usage: `import { RobotTorso } from "@/components/ui/robot-torso"
@@ -3076,7 +3085,7 @@ graspProfile("tripod") // { digits, opposition, spread }`,
     ],
   },
   {
-    slug: "robot-skeleton", item: "robot-skeleton", title: "Robot skeleton", group: "Robots",
+    slug: "robot-skeleton", item: "robot-skeleton",
     summary: "The whole biped, walking: legs solved to a rolling foot, an equal-segment spine under a rib cage, arms counter-swinging, and hands on the same solver the standalone hand ships on.",
     files: ["components/ui/robot-skeleton.tsx"],
     usage: `import { RobotSkeleton } from "@/components/ui/robot-skeleton"
@@ -3117,7 +3126,7 @@ graspProfile("tripod") // { digits, opposition, spread }`,
     ],
   },
   {
-    slug: "skeleton-kinematics", item: "skeleton-kinematics", title: "Skeleton kinematics", group: "Foundations",
+    slug: "skeleton-kinematics", item: "skeleton-kinematics",
     summary: "The dependency-free biped solver: stride cycles with real duty factors, a foot that rolls heel to toe over a planted sole, an equal-segment spine, and arms swinging against the legs.",
     files: ["lib/robocn/skeleton.ts"],
     usage: `import { solveSkeleton, footRoll, solveLeg } from "@/lib/robocn/skeleton"
@@ -3142,7 +3151,7 @@ footRoll(0.9)  // { angle, contact, heelLoad, ballLoad, toeLoad }`,
     ],
   },
   {
-    slug: "animatronic-kinematics", item: "animatronic-kinematics", title: "Animatronic kinematics", group: "Foundations",
+    slug: "animatronic-kinematics", item: "animatronic-kinematics",
     summary: "The whole-humanoid layer over the biped: one routine intent for the entire body, an attention cascade through the eyes, the neck and the waist, and a centre of mass measured against the ground the feet actually hold.",
     files: ["lib/robocn/animatronic.ts"],
     usage: `import { routineIntent, solveAttention, solveAnimatronic, balanceOf } from "@/lib/robocn/animatronic"
@@ -3172,7 +3181,7 @@ body.roll             // the rigid roll taken to get there, in degrees`,
     ],
   },
   {
-    slug: "motion-platform", item: "motion-platform", title: "Motion platform", group: "Machines",
+    slug: "motion-platform", item: "motion-platform",
     summary: "Six actuators and a deck: the Stewart platform doing the job it was invented for, with visible stroke and a fault when a pose asks for more travel than it has.",
     files: ["components/ui/motion-platform.tsx"],
     usage: `import { MotionPlatform } from "@/components/ui/motion-platform"
@@ -3207,7 +3216,7 @@ body.roll             // the rigid roll taken to get there, in degrees`,
     ],
   },
   {
-    slug: "clamshell-laptop", item: "clamshell-laptop", title: "Clamshell laptop", group: "Machines",
+    slug: "clamshell-laptop", item: "clamshell-laptop",
     summary: "A portable workstation on one solved hinge. The lid keeps its own length at every angle, and the screen is drawn only from a camera that can actually see it.",
     files: ["components/ui/clamshell-laptop.tsx"],
     usage: `import { ClamshellLaptop } from "@/components/ui/clamshell-laptop"
@@ -3240,7 +3249,7 @@ body.roll             // the rigid roll taken to get there, in degrees`,
     ],
   },
   {
-    slug: "slate-tablet", item: "slate-tablet", title: "Slate tablet", group: "Machines",
+    slug: "slate-tablet", item: "slate-tablet",
     summary: "A slate and the kickstand under it. One recline axis leans the slate and solves the stand's foot onto the desk; a leg too short to reach folds instead of stretching.",
     files: ["components/ui/slate-tablet.tsx"],
     usage: `import { SlateTablet } from "@/components/ui/slate-tablet"
@@ -3273,7 +3282,7 @@ body.roll             // the rigid roll taken to get there, in degrees`,
     ],
   },
   {
-    slug: "wheel-player", item: "wheel-player", title: "Wheel player", group: "Machines",
+    slug: "wheel-player", item: "wheel-player",
     summary: "A pocket media player whose click wheel is geared to its list: one turn is one pass of the rows, and the detents wrap in both directions.",
     files: ["components/ui/wheel-player.tsx"],
     usage: `import { WheelPlayer } from "@/components/ui/wheel-player"
@@ -3307,7 +3316,7 @@ body.roll             // the rigid roll taken to get there, in degrees`,
     ],
   },
   {
-    slug: "slab-handset", item: "slab-handset", title: "Slab handset", group: "Machines",
+    slug: "slab-handset", item: "slab-handset",
     summary: "A touchscreen handset modelled once and turned about its own axis. A quarter turn takes the screen edge on; a half turn shows the back and its camera array.",
     files: ["components/ui/slab-handset.tsx"],
     usage: `import { SlabHandset } from "@/components/ui/slab-handset"
@@ -3340,7 +3349,7 @@ body.roll             // the rigid roll taken to get there, in degrees`,
     ],
   },
   {
-    slug: "folding-handset", item: "folding-handset", title: "Folding handset", group: "Machines",
+    slug: "folding-handset", item: "folding-handset",
     summary: "A book-fold handset and the display that has to survive it. The crease is a real bend radius, the sheet keeps its own length, and the leaves roll on the bend rather than pivoting on a pin.",
     files: ["components/ui/folding-handset.tsx"],
     usage: `import { FoldingHandset } from "@/components/ui/folding-handset"
@@ -3376,7 +3385,7 @@ body.roll             // the rigid roll taken to get there, in degrees`,
     ],
   },
   {
-    slug: "wrist-terminal", item: "wrist-terminal", title: "Wrist terminal", group: "Machines",
+    slug: "wrist-terminal", item: "wrist-terminal",
     summary: "A wrist display on two solved mechanisms: a crown geared to the dial, and a constant-pitch link band that keeps its length however far it is opened.",
     files: ["components/ui/wrist-terminal.tsx"],
     usage: `import { WristTerminal } from "@/components/ui/wrist-terminal"
@@ -3411,7 +3420,7 @@ body.roll             // the rigid roll taken to get there, in degrees`,
     ],
   },
   {
-    slug: "device-geometry", item: "device-geometry", title: "Device geometry", group: "Foundations",
+    slug: "device-geometry", item: "device-geometry",
     summary: "The mechanisms in a machine you carry: a hinge, a book fold whose display keeps its length, a kickstand that has to close, rotary detents that wrap, a band that keeps its length, and a screen on a plane at any attitude.",
     files: ["lib/robocn/device.ts"],
     usage: `import { hingePose, foldPose, standPose, detent, bandLinks, panelTransform } from "@/lib/robocn/device"
@@ -3440,7 +3449,7 @@ const panel = panelTransform(camera, corner, along, down, 104, 78)`,
     ],
   },
   {
-    slug: "keyboard-geometry", item: "keyboard-geometry", title: "Keyboard geometry", group: "Foundations",
+    slug: "keyboard-geometry", item: "keyboard-geometry",
     summary: "The mechanisms under a machine you type on: travel with real hysteresis, an asymmetric keystroke, a unit-pitch deck with a stagger, matrix scan order, and caps standing on a raked plane.",
     files: ["lib/robocn/keyboard.ts"],
     usage: `import { keyTravel, keyboardLayout, matrixScan, deckFrame, capSolid } from "@/lib/robocn/keyboard"
@@ -3469,7 +3478,7 @@ const cap = capSolid(camera, face, deck.keys[3], key.fraction)`,
     ],
   },
   {
-    slug: "key-switch", item: "key-switch", title: "Key switch", group: "Machines",
+    slug: "key-switch", item: "key-switch",
     summary: "One mechanical keyswitch, sectioned: a stem on a coil spring whose contact closes partway down the travel and opens again higher than it closed.",
     files: ["components/ui/key-switch.tsx"],
     usage: `import { KeySwitch } from "@/components/ui/key-switch"
@@ -3504,7 +3513,7 @@ const cap = capSolid(camera, face, deck.keys[3], key.fraction)`,
     ],
   },
   {
-    slug: "robot-keypad", item: "robot-keypad", title: "Robot keypad", group: "Machines",
+    slug: "robot-keypad", item: "robot-keypad",
     summary: "A raked bench entry pad on a scanned matrix: the key that is down and the cell the scan is reading are two different things, and both are drawn.",
     files: ["components/ui/robot-keypad.tsx"],
     usage: `import { RobotKeypad } from "@/components/ui/robot-keypad"
@@ -3542,7 +3551,7 @@ const cap = capSolid(camera, face, deck.keys[3], key.fraction)`,
     ],
   },
   {
-    slug: "robot-keyboard", item: "robot-keyboard", title: "Robot keyboard", group: "Machines",
+    slug: "robot-keyboard", item: "robot-keyboard",
     summary: "A whole key deck placed by a unit grid: rows in 1u, 1.25u and 6.25u widths on one pitch, sculpted caps, and a split layout whose halves are genuinely turned apart.",
     files: ["components/ui/robot-keyboard.tsx"],
     usage: `import { RobotKeyboard } from "@/components/ui/robot-keyboard"
@@ -3578,7 +3587,7 @@ const cap = capSolid(camera, face, deck.keys[3], key.fraction)`,
     ],
   },
   {
-    slug: "input-terminal", item: "input-terminal", title: "Input terminal", group: "Machines",
+    slug: "input-terminal", item: "input-terminal",
     summary: "A bench console with two coupled mechanisms: a head canted on a hinge, and a key deck whose strokes are what put glyphs on its screen.",
     files: ["components/ui/input-terminal.tsx"],
     usage: `import { InputTerminal } from "@/components/ui/input-terminal"
@@ -3612,7 +3621,7 @@ const cap = capSolid(camera, face, deck.keys[3], key.fraction)`,
     ],
   },
   {
-    slug: "produce-geometry", item: "produce-geometry", title: "Produce geometry", group: "Foundations",
+    slug: "produce-geometry", item: "produce-geometry",
     summary: "Solids of revolution with a real profile: the surface, a golden-angle lattice spaced by equal area, half shells that reassemble, a hinge about any line, and blades that keep their length.",
     files: ["lib/robocn/produce.ts"],
     usage: `import { revolveProfile, goldenLattice, halfShell, hingeRotate, bladeRing } from "@/lib/robocn/produce"
@@ -3643,7 +3652,7 @@ const calyx = bladeRing(6, { radius: 28, height: 86, length: 19, width: 19, pitc
     ],
   },
   {
-    slug: "transmission-geometry", item: "transmission-geometry", title: "Transmission geometry", group: "Foundations",
+    slug: "transmission-geometry", item: "transmission-geometry",
     summary: "Where the flexible thing goes, and where the teeth are: gear outlines and mesh phase, assembly-valid planetary trains, taut belt paths, and an energy chain over its bend.",
     files: ["lib/robocn/transmission.ts"],
     usage: `import { planetaryTrain, planetaryPose, beltLayout } from "@/lib/robocn/transmission"
@@ -3672,9 +3681,9 @@ belt.length // spans plus wraps`,
     slug: "installation",
     item: null,
     title: "Installation",
+    group: "Foundations",
     summary:
       "robocn is a shadcn registry. Components install as source into your project, with their dependencies and theme variables.",
-    group: "Foundations",
     files: [],
     notes: [
       "Run `shadcn init` first if the project has no components.json — robocn components import `cn` from your utils alias.",
@@ -3685,10 +3694,8 @@ belt.length // spans plus wraps`,
   {
     slug: "robot-arm",
     item: "robot-arm",
-    title: "Robot arm",
     summary:
       "The articulated arm: any number of links, eight end effectors, four paint variants, four mounts. Give it a target, a behaviour, or a set of joint angles.",
-    group: "Arms",
     files: ["components/ui/robot-arm.tsx"],
     usage: `import { RobotArm } from "@/components/ui/robot-arm"
 
@@ -3809,10 +3816,8 @@ export function Cell() {
   {
     slug: "robot-arm-3d",
     item: "robot-arm-3d",
-    title: "Robot arm 3D",
     summary:
       "The same arm as a procedural react-three-fiber rig — no model to load, and the same target puts the tip in the same place as the SVG one.",
-    group: "Arms",
     files: ["components/ui/robot-arm-3d.tsx"],
     usage: `import { RobotArm3D } from "@/components/ui/robot-arm-3d"
 import { RobotStage } from "@/components/ui/robot-stage"
@@ -3888,10 +3893,8 @@ export function Cell() {
   {
     slug: "robot-stage",
     item: "robot-stage",
-    title: "Robot stage",
     summary:
       "The room the 3D robots stand in: lights, a contact shadow, an optional grid floor, and orbit controls.",
-    group: "Arms",
     files: ["components/ui/robot-stage.tsx"],
     usage: `<RobotStage camera={[3.6, 2.6, 4.6]} floor="grid" autoRotate>
   <RobotArm3D behavior="sweep" />
@@ -3934,10 +3937,8 @@ export function Cell() {
   {
     slug: "scara-arm",
     item: "scara-arm",
-    title: "SCARA arm",
     summary:
       "A SCARA cell from directly above: two rotary links, a Z spindle, and the swept area you actually plan a line around.",
-    group: "Machines",
     files: ["components/ui/scara-arm.tsx"],
     usage: `<ScaraArm behavior="orbit" z={0.6} tool="vacuum" showEnvelope />`,
     props: [
@@ -3998,10 +3999,8 @@ export function Cell() {
   {
     slug: "delta-arm",
     item: "delta-arm",
-    title: "Delta arm",
     summary:
       "A parallel delta in isometric, solved with the closed-form delta IK. Change the geometry and the arms behave the way that machine would.",
-    group: "Machines",
     files: ["components/ui/delta-arm.tsx"],
     usage: `<DeltaArm
   geometry={{ base: 62, platform: 18, upper: 17, lower: 58 }}
@@ -4061,10 +4060,8 @@ export function Cell() {
   {
     slug: "gantry-arm",
     item: "gantry-arm",
-    title: "Gantry arm",
     summary:
       "A cartesian gantry. The axes are independent, so the head takes the dog-leg path a real machine takes rather than an arc.",
-    group: "Machines",
     files: ["components/ui/gantry-arm.tsx"],
     usage: `<GantryArm behavior="sweep" trail tool="painter" />`,
     props: [
@@ -4117,10 +4114,8 @@ export function Cell() {
   {
     slug: "robot-face",
     item: "robot-face",
-    title: "Robot face",
     summary:
       "A head whose eyes follow the pointer anywhere on the page, with moods for the states a product actually has.",
-    group: "Robots",
     files: ["components/ui/robot-face.tsx"],
     usage: `<RobotFace mood="curious" size="lg" label="RC-01" />`,
     props: [
@@ -4170,10 +4165,8 @@ export function Cell() {
   {
     slug: "robot-loader",
     item: "robot-loader",
-    title: "Robot loader",
     summary:
       "A pick-and-place cycle as a loading indicator. Indeterminate on its own; give it a value and the out-tray fills in proportion.",
-    group: "Robots",
     files: ["components/ui/robot-loader.tsx"],
     usage: `<RobotLoader label="Deploying" />
 <RobotLoader value={62} capacity={5} />`,
@@ -4213,10 +4206,8 @@ export function Cell() {
   {
     slug: "arm-controls",
     item: "arm-controls",
-    title: "Arm controls",
     summary:
       "A teach pendant: one slider per joint, driving an arm in forward kinematics. Pass the same angles array to the arm.",
-    group: "Robots",
     files: ["components/ui/arm-controls.tsx"],
     usage: `const [angles, setAngles] = React.useState([62, -70, -28])
 
@@ -4279,10 +4270,8 @@ export function Cell() {
   {
     slug: "robot-kinematics",
     item: "robot-kinematics",
-    title: "Robot kinematics",
     summary:
       "The maths every component shares. No React, no three.js, no dependencies — import it on its own if you only want the solver.",
-    group: "Foundations",
     files: ["lib/robocn/kinematics.ts"],
     usage: `import { solveChain2, chainAngles2 } from "@/lib/robocn/kinematics"
 
@@ -4327,10 +4316,8 @@ const angles = chainAngles2(joints)`,
   {
     slug: "robot-style",
     item: "robot-style",
-    title: "Robot style",
     summary:
       "Sizes, variants, palette resolution and the capsule limb geometry — plus the CSS variables and keyframes the whole set is themed with.",
-    group: "Foundations",
     files: ["lib/robocn/style.ts"],
     usage: `:root {
   --robot-shell: oklch(0.72 0.17 47);
@@ -4370,10 +4357,8 @@ const angles = chainAngles2(joints)`,
   {
     slug: "robot-color",
     item: "robot-color",
-    title: "Robot color",
     summary:
       "CSS variables and oklch() turned into something three.js can parse, so the WebGL robots share one theme with the SVG ones.",
-    group: "Foundations",
     files: ["lib/robocn/color.ts"],
     api: [
       {
@@ -4392,10 +4377,8 @@ const angles = chainAngles2(joints)`,
   {
     slug: "use-robot-arm",
     item: "use-robot-arm",
-    title: "useRobotArm",
     summary:
       "Animated pose for a link chain. It eases the tip toward its goal, solves seeded with the previous frame, and stops the loop once the pose settles.",
-    group: "Foundations",
     files: ["hooks/use-robot-arm.ts"],
     usage: `const pose = useRobotArm({
   links: [30, 24, 16],
@@ -4427,10 +4410,8 @@ pose.angles // degrees, relative to the previous segment`,
   {
     slug: "use-robot-motion",
     item: "use-robot-motion",
-    title: "useRobotMotion",
     summary:
       "The clock every machine runs on and the handle you grab it by: a rate-limited scalar, pointer-capture dragging, and keyboard steps — all parked by a reduced-motion preference.",
-    group: "Foundations",
     files: ["hooks/use-robot-motion.ts"],
     usage: `const motion = useRobotScalar((clock) => Math.sin(clock * Math.PI * 2) * 90, {
   rate: 210,        // degrees per second on the way back
@@ -4485,10 +4466,8 @@ const dragging = useRobotDrag(svgRef, {
   {
     slug: "use-pointer-target",
     item: "use-pointer-target",
-    title: "usePointerTarget",
     summary:
       "Pointer position in a component's own world units. Returns null when the pointer is away, so a machine can fall back to its idle behaviour.",
-    group: "Foundations",
     files: ["hooks/use-pointer-target.ts"],
     usage: `const pointer = usePointerTarget<SVGSVGElement>({
   within: "window",
@@ -4516,7 +4495,7 @@ const dragging = useRobotDrag(svgRef, {
     ],
   },
   {
-    slug: "resolver", item: "resolver", title: "Resolver", group: "Machines",
+    slug: "resolver", item: "resolver",
     summary: "A rotary transformer turns shaft angle into ideal sine and cosine secondary channels. The exposed windings make the sensor legible without a waveform panel.",
     files: ["components/ui/resolver.tsx"],
     usage: `import { Resolver } from "@/components/ui/resolver"
@@ -4533,7 +4512,7 @@ const dragging = useRobotDrag(svgRef, {
     ], notes: ["The sine and cosine channels are ideal trigonometric outputs. No winding impedance, phase error, harmonics, voltage or calibration error is modelled."],
   },
   {
-    slug: "transformer-core", item: "transformer-core", title: "Transformer core", group: "Machines",
+    slug: "transformer-core", item: "transformer-core",
     summary: "Primary and secondary windings share an EI or toroidal magnetic core. Phase reverses the illustrative flux direction and ratio changes winding density inside one envelope.",
     files: ["components/ui/transformer-core.tsx"],
     usage: `import { TransformerCore } from "@/components/ui/transformer-core"
@@ -4550,7 +4529,7 @@ const dragging = useRobotDrag(svgRef, {
     ], notes: ["Winding density indicates a ratio and flux direction indicates polarity only. No voltage, current, saturation, loss, leakage, temperature or load is inferred."],
   },
   {
-    slug: "magnetic-gripper", item: "magnetic-gripper", title: "Magnetic gripper", group: "Machines",
+    slug: "magnetic-gripper", item: "magnetic-gripper",
     summary: "Two energized pole shoes capture and lift a ferromagnetic plate or bar without a moving jaw. Field strength drives the visible capture sequence.",
     files: ["components/ui/magnetic-gripper.tsx"],
     usage: `import { MagneticGripper } from "@/components/ui/magnetic-gripper"
@@ -4566,7 +4545,7 @@ const dragging = useRobotDrag(svgRef, {
     ], notes: ["Capture at half strength is an explicit visual state transition, not a force calculation. No mass, permeability, current, temperature or safety factor is inferred."],
   },
   {
-    slug: "inductive-sensor", item: "inductive-sensor", title: "Inductive sensor", group: "Machines",
+    slug: "inductive-sensor", item: "inductive-sensor",
     summary: "A threaded proximity sensor exposes its oscillator coil and a movable metal target. Distance and range determine a qualitative detected output without inventing a target.",
     files: ["components/ui/inductive-sensor.tsx"],
     usage: `import { InductiveSensor } from "@/components/ui/inductive-sensor"
@@ -4583,7 +4562,7 @@ const dragging = useRobotDrag(svgRef, {
     ], notes: ["Distance is normalized to the drawing and is not calibrated. The component does not infer material, frequency, field strength or millimetres."],
   },
   {
-    slug: "eddy-current-brake", item: "eddy-current-brake", title: "Eddy-current brake", group: "Machines",
+    slug: "eddy-current-brake", item: "eddy-current-brake",
     summary: "A magnet array moves across a rotating conductive disc and reveals qualitative eddy paths in the overlap. The disc and brake never touch.",
     files: ["components/ui/eddy-current-brake.tsx"],
     usage: `import { EddyCurrentBrake } from "@/components/ui/eddy-current-brake"
@@ -4600,7 +4579,7 @@ const dragging = useRobotDrag(svgRef, {
     ], notes: ["The disc visibly slows as overlap grows, but that timing is illustrative. No conductivity, braking torque, heat, speed or field density is calculated."],
   },
   {
-    slug: "maglev-carriage", item: "maglev-carriage", title: "Maglev carriage", group: "Machines",
+    slug: "maglev-carriage", item: "maglev-carriage",
     summary: "A payload carriage travels above a segmented linear stator while preserving a visible air gap. Deck, bin and compact robot payloads share the same transport.",
     files: ["components/ui/maglev-carriage.tsx"],
     usage: `import { MaglevCarriage } from "@/components/ui/maglev-carriage"
@@ -4616,7 +4595,7 @@ const dragging = useRobotDrag(svgRef, {
     ], notes: ["The air gap and linear geometry are illustrated. The component does not simulate lift force, stability, commutation, mass or acceleration."],
   },
   {
-    slug: "voice-coil-actuator", item: "voice-coil-actuator", title: "Voice-coil actuator", group: "Machines",
+    slug: "voice-coil-actuator", item: "voice-coil-actuator",
     summary: "A moving coil and carriage travel in both directions through a fixed annular magnetic gap. Unlike the generic linear cylinder, its electromagnetic working parts remain exposed.",
     files: ["components/ui/voice-coil-actuator.tsx"],
     usage: `import { VoiceCoilActuator } from "@/components/ui/voice-coil-actuator"
@@ -4634,7 +4613,7 @@ const dragging = useRobotDrag(svgRef, {
     notes: ["The coil travel and gap are geometric. Field marks do not report force, flux density, current, frequency or heating."],
   },
   {
-    slug: "magnetic-bearing", item: "magnetic-bearing", title: "Magnetic bearing", group: "Machines",
+    slug: "magnetic-bearing", item: "magnetic-bearing",
     summary: "Four opposed electromagnets centre a rotor across a visible air gap. Offset moves the unsupported rotor and changes the opposing correction emphasis.",
     files: ["components/ui/magnetic-bearing.tsx"],
     usage: `import { MagneticBearing } from "@/components/ui/magnetic-bearing"
@@ -4654,9 +4633,7 @@ const dragging = useRobotDrag(svgRef, {
   {
     slug: "induction-motor",
     item: "induction-motor",
-    title: "Induction motor",
     summary: "A cutaway three-phase stator around a squirrel-cage rotor. The ideal field vector and mechanical rotor angle separate by a configurable illustrative slip.",
-    group: "Machines",
     files: ["components/ui/induction-motor.tsx"],
     usage: `import { InductionMotor } from "@/components/ui/induction-motor"
 
@@ -4676,9 +4653,7 @@ const dragging = useRobotDrag(svgRef, {
   {
     slug: "stepper-motor",
     item: "stepper-motor",
-    title: "Stepper motor",
     summary: "Four phase windings index a toothed rotor through a selected number of discrete positions. Its output never rests between integer steps.",
-    group: "Machines",
     files: ["components/ui/stepper-motor.tsx"],
     usage: `import { StepperMotor } from "@/components/ui/stepper-motor"
 
@@ -4698,10 +4673,8 @@ const dragging = useRobotDrag(svgRef, {
   {
     slug: "solenoid-valve",
     item: "solenoid-valve",
-    title: "Solenoid valve",
     summary:
       "A helical coil pulls a sprung plunger across a two- or three-port valve gallery. The plunger, spring and visible flow route all answer the same controlled position.",
-    group: "Machines",
     files: ["components/ui/solenoid-valve.tsx"],
     usage: `import { SolenoidValve } from "@/components/ui/solenoid-valve"
 
@@ -4727,10 +4700,8 @@ const dragging = useRobotDrag(svgRef, {
   {
     slug: "electromagnetic-relay",
     item: "electromagnetic-relay",
-    title: "Electromagnetic relay",
     summary:
       "An exposed coil pulls a hinged armature into one or two contact sets. Normally-open and normally-closed modes invert the contact result without changing the mechanism.",
-    group: "Machines",
     files: ["components/ui/electromagnetic-relay.tsx"],
     usage: `import { ElectromagneticRelay } from "@/components/ui/electromagnetic-relay"
 
@@ -4756,10 +4727,8 @@ const dragging = useRobotDrag(svgRef, {
   {
     slug: "electromagnetism-geometry",
     item: "electromagnetism-geometry",
-    title: "Electromagnetism geometry",
     summary:
       "Winding geometry, a balanced three-phase resultant, and ideal resolver quadrature. Pure TypeScript with no React and no claim to solve a complete electromagnetic field.",
-    group: "Foundations",
     files: ["lib/robocn/electromagnetism.ts"],
     usage: `import { coilWinding, threePhaseField, resolverSignals } from "@/lib/robocn/electromagnetism"
 
@@ -4788,7 +4757,7 @@ const channels = resolverSignals(37)`,
     ],
   },
   {
-    slug: "turntable-deck", item: "turntable-deck", title: "Turntable deck", group: "Machines",
+    slug: "turntable-deck", item: "turntable-deck",
     summary: "A belt-drive deck whose arm is geared to its platter by the groove: one revolution walks the stylus in by exactly one groove pitch, and the arm angle is solved from the radius it reaches.",
     files: ["components/ui/turntable-deck.tsx"],
     usage: `import { TurntableDeck } from "@/components/ui/turntable-deck"
@@ -4822,7 +4791,7 @@ const channels = resolverSignals(37)`,
     ],
   },
   {
-    slug: "gramophone-horn", item: "gramophone-horn", title: "Gramophone horn", group: "Machines",
+    slug: "gramophone-horn", item: "gramophone-horn",
     summary: "The acoustic deck a century before the electric one: a mainspring and its governor drive the platter, the crank is the wind, and the horn is an exponential flare modelled once and projected.",
     files: ["components/ui/gramophone-horn.tsx"],
     usage: `import { GramophoneHorn } from "@/components/ui/gramophone-horn"
@@ -4854,7 +4823,7 @@ const channels = resolverSignals(37)`,
     ],
   },
   {
-    slug: "music-box-drum", item: "music-box-drum", title: "Music box drum", group: "Machines",
+    slug: "music-box-drum", item: "music-box-drum",
     summary: "A pinned barrel plucking a comb tuned by length. The notes are data you pass it: one row per tine, any non-blank character a pin.",
     files: ["components/ui/music-box-drum.tsx"],
     usage: `import { MusicBoxDrum } from "@/components/ui/music-box-drum"
@@ -4888,7 +4857,7 @@ const channels = resolverSignals(37)`,
     ],
   },
   {
-    slug: "busker-droid", item: "busker-droid", title: "Busker droid", group: "Robots",
+    slug: "busker-droid", item: "busker-droid",
     summary: "A one-machine band whose pose comes from data: a step pattern raises each beater as its step comes round and drops it on the beat, and both arms are solved to what they are about to hit.",
     files: ["components/ui/busker-droid.tsx"],
     usage: `import { BuskerDroid } from "@/components/ui/busker-droid"
@@ -4921,7 +4890,7 @@ const channels = resolverSignals(37)`,
     ],
   },
   {
-    slug: "scout-walker", item: "scout-walker", title: "Scout walker", group: "Robots",
+    slug: "scout-walker", item: "scout-walker",
     summary: "A two-legged reconnaissance walker whose cab is a mass above its hips: with one foot down the support is that foot, so it rolls the whole machine over the leg that is staying put.",
     files: ["components/ui/scout-walker.tsx"],
     usage: `import { ScoutWalker } from "@/components/ui/scout-walker"
@@ -4957,7 +4926,7 @@ const channels = resolverSignals(37)`,
     ],
   },
   {
-    slug: "siege-walker", item: "siege-walker", title: "Siege walker", group: "Robots",
+    slug: "siege-walker", item: "siege-walker",
     summary: "A four-legged armoured transport walker on the same solver: four feet at the corners of a long rectangle already contain its mass, so it walks nearly level — and cannot pace at all.",
     files: ["components/ui/siege-walker.tsx"],
     usage: `import { SiegeWalker } from "@/components/ui/siege-walker"
@@ -4993,7 +4962,7 @@ const channels = resolverSignals(37)`,
     ],
   },
   {
-    slug: "tripod-droid", item: "tripod-droid", title: "Tripod droid", group: "Robots",
+    slug: "tripod-droid", item: "tripod-droid",
     summary: "A stubby three-legged survey walker that has to move its own mass onto the line between two feet before it can lift the third — and reports how much room it has left.",
     files: ["components/ui/tripod-droid.tsx"],
     usage: `import { TripodDroid } from "@/components/ui/tripod-droid"
@@ -5030,7 +4999,7 @@ const channels = resolverSignals(37)`,
     ],
   },
   {
-    slug: "robot-grand-piano", item: "robot-grand-piano", title: "Robot grand piano", group: "Machines",
+    slug: "robot-grand-piano", item: "robot-grand-piano",
     summary: "A player grand whose roll drives 88 solved actions. The jack lets each hammer go before it reaches the string, because you cannot hold a hammer against one.",
     files: ["components/ui/robot-grand-piano.tsx"],
     usage: `import { RobotGrandPiano } from "@/components/ui/robot-grand-piano"
@@ -5069,7 +5038,7 @@ const channels = resolverSignals(37)`,
     ],
   },
   {
-    slug: "sound-geometry", item: "sound-geometry", title: "Sound geometry", group: "Foundations",
+    slug: "sound-geometry", item: "sound-geometry",
     summary: "The closures in a machine that makes a sound by moving something: a spiral groove, a pivoted tonearm's tracking error, an exponential horn, a spring governor, a tuned comb, and a pinned barrel.",
     files: ["lib/robocn/sound.ts"],
     usage: `import { groovePose, tonearmPose, governorPose, pinBarrel, combLift } from "@/lib/robocn/sound"
@@ -5105,7 +5074,7 @@ combLift(barrel, 0, 4)                  // 1 at the pin, 0 the instant after`,
     ],
   },
   {
-    slug: "piano-geometry", item: "piano-geometry", title: "Piano geometry", group: "Foundations",
+    slug: "piano-geometry", item: "piano-geometry",
     summary: "The closures in a grand: an action that lets its hammer go before the blow, a back check, a late damper, a scale that cannot be ideal, the bent side that is the envelope of it, and a lid solved from its prop.",
     files: ["lib/robocn/piano.ts"],
     usage: `import { actionPose, hammerPose, pianoLayout, lidPose } from "@/lib/robocn/piano"
@@ -5135,7 +5104,7 @@ lidPose("full", { width: 52 }).angle    // 47°, solved from three sides`,
     ],
   },
   {
-    slug: "phyllotaxis-geometry", item: "phyllotaxis-geometry", title: "Phyllotaxis geometry", group: "Foundations",
+    slug: "phyllotaxis-geometry", item: "phyllotaxis-geometry",
     summary: "The golden-angle disc, the Fibonacci spiral arms that fall out of it, a dished face and its normals, and the two-axis aim that points the whole thing at a light.",
     files: ["lib/robocn/phyllotaxis.ts"],
     usage: `import { aimFrom, parastichyOffsets, trackerFrame, vogelDisc } from "@/lib/robocn/phyllotaxis"
@@ -5162,7 +5131,7 @@ const frame = trackerFrame(aimFrom({ x: 0.3, y: 0.8, z: -0.5 }))`,
     ],
   },
   {
-    slug: "robot-sunflower", item: "robot-sunflower", title: "Robot sunflower", group: "Robots",
+    slug: "robot-sunflower", item: "robot-sunflower",
     summary: "A heliotropic collector mast: a golden-angle floret lattice on a dished head aimed at the light by a two-axis tracker, on a stem that leans toward it while the gimbal collar takes up exactly what the stem did not.",
     files: ["components/ui/robot-sunflower.tsx"],
     usage: `import { RobotSunflower } from "@/components/ui/robot-sunflower"
@@ -5196,7 +5165,7 @@ const frame = trackerFrame(aimFrom({ x: 0.3, y: 0.8, z: -0.5 }))`,
     ],
   },
   {
-    slug: "cactus-geometry", item: "cactus-geometry", title: "Cactus geometry", group: "Foundations",
+    slug: "cactus-geometry", item: "cactus-geometry",
     summary: "Continuum limbs solved from their own curvature — exactly as long bent as straight — with ribbed sections, crest lines, a staggered areole lattice, taper-true skin normals, and rigid spine fans and petals.",
     files: ["lib/robocn/cactus.ts"],
     usage: `import { solveCactusLimb, areoleSites, spineFan } from "@/lib/robocn/cactus"
@@ -5223,7 +5192,7 @@ areoleSites(arm, { ribs: 10, depth: 0.2, perRib: 4 }).map((pad) => spineFan(pad)
     ],
   },
   {
-    slug: "robot-cactus", item: "robot-cactus", title: "Robot cactus", group: "Robots",
+    slug: "robot-cactus", item: "robot-cactus",
     summary: "A potted columnar collector: the ribbed column and both arms are one continuum solver at different settings, the areoles and spine fans sit on the solved crests, and a rigid corolla opens at the crown.",
     files: ["components/ui/robot-cactus.tsx"],
     usage: `import { RobotCactus } from "@/components/ui/robot-cactus"
@@ -5261,7 +5230,7 @@ areoleSites(arm, { ribs: 10, depth: 0.2, perRib: 4 }).map((pad) => spineFan(pad)
     ],
   },
   {
-    slug: "celestial-geometry", item: "celestial-geometry", title: "Celestial geometry", group: "Foundations",
+    slug: "celestial-geometry", item: "celestial-geometry",
     summary: "Kepler's equation solved to machine precision, ellipses about a focus, the terminator great circle, illumination and limb darkening, body frames, and a deterministic irregular radius field.",
     files: ["lib/robocn/celestial.ts"],
     usage: `import { orbitalState, terminator, limbDarkening } from "@/lib/robocn/celestial"
@@ -5291,7 +5260,7 @@ terminator(44, { x: 0.4, y: 0.7, z: -0.6 })`,
     ],
   },
   {
-    slug: "celestial-planet", item: "celestial-planet", title: "Celestial planet", group: "Machines",
+    slug: "celestial-planet", item: "celestial-planet",
     summary: "A tilted, turning globe with latitude bands, polar caps, longitude storms and a ring system the body genuinely occludes — the far arc is cut where the silhouette crosses it.",
     files: ["components/ui/celestial-planet.tsx"],
     usage: `import { CelestialPlanet } from "@/components/ui/celestial-planet"
@@ -5324,7 +5293,7 @@ terminator(44, { x: 0.4, y: 0.7, z: -0.6 })`,
     ],
   },
   {
-    slug: "celestial-moon", item: "celestial-moon", title: "Celestial moon", group: "Machines",
+    slug: "celestial-moon", item: "celestial-moon",
     summary: "The phase machine: a lunation whose crescent is the projection of the terminator circle rather than a drawn shape, with libration rocking the body so the limb craters come round and go again.",
     files: ["components/ui/celestial-moon.tsx"],
     usage: `import { CelestialMoon } from "@/components/ui/celestial-moon"
@@ -5357,7 +5326,7 @@ terminator(44, { x: 0.4, y: 0.7, z: -0.6 })`,
     ],
   },
   {
-    slug: "celestial-star", item: "celestial-star", title: "Celestial star", group: "Machines",
+    slug: "celestial-star", item: "celestial-star",
     summary: "A luminous body drawn from the limb-darkening law rather than a gradient, with granulation, a rotating spot belt, prominence loops anchored on the limb, and a corona.",
     files: ["components/ui/celestial-star.tsx"],
     usage: `import { CelestialStar } from "@/components/ui/celestial-star"
@@ -5391,7 +5360,7 @@ terminator(44, { x: 0.4, y: 0.7, z: -0.6 })`,
     ],
   },
   {
-    slug: "celestial-asteroid", item: "celestial-asteroid", title: "Celestial asteroid", group: "Machines",
+    slug: "celestial-asteroid", item: "celestial-asteroid",
     summary: "An irregular body whose radius is a deterministic sum of cosine lobes, so its silhouette genuinely changes as it turns — and it tumbles about an axis that is itself going round.",
     files: ["components/ui/celestial-asteroid.tsx"],
     usage: `import { CelestialAsteroid } from "@/components/ui/celestial-asteroid"
@@ -5422,7 +5391,7 @@ terminator(44, { x: 0.4, y: 0.7, z: -0.6 })`,
     ],
   },
   {
-    slug: "orrery", item: "orrery", title: "Orrery", group: "Machines",
+    slug: "orrery", item: "orrery",
     summary: "A geared model of a system: bodies carried on radial arms whose length is the orbital radius, running fast at periapsis and slow at apoapsis on real Kepler ellipses with the hub at a focus.",
     files: ["components/ui/orrery.tsx"],
     usage: `import { Orrery } from "@/components/ui/orrery"
@@ -5453,7 +5422,7 @@ terminator(44, { x: 0.4, y: 0.7, z: -0.6 })`,
     ],
   },
   {
-    slug: "hull-geometry", item: "hull-geometry", title: "Hull geometry", group: "Foundations",
+    slug: "hull-geometry", item: "hull-geometry",
     summary: "An equal-area tiling of a sphere into armour plates whose areas sum to exactly one, a fracture front and the straight-line travel behind it, a shock ring as a real circle, and a paraboloid dish.",
     files: ["lib/robocn/hull.ts"],
     usage: `import { hullPlates, burst, dish, dishNormal } from "@/lib/robocn/hull"
@@ -5479,7 +5448,7 @@ burst(plates[7], 0.4, { origin: { x: 0, y: 0, z: -1 }, spread: 1.6 })`,
     ],
   },
   {
-    slug: "battle-station", item: "battle-station", title: "Battle station", group: "Machines",
+    slug: "battle-station", item: "battle-station",
     summary: "An armoured orbital station whose hull is a real tiling: the breakup launches every plate down its own line behind a fracture front, and putting it back reassembles the sphere exactly.",
     files: ["components/ui/battle-station.tsx"],
     usage: `import { BattleStation } from "@/components/ui/battle-station"
@@ -5522,7 +5491,7 @@ burst(plates[7], 0.4, { origin: { x: 0, y: 0, z: -1 }, spread: 1.6 })`,
     ],
   },
   {
-    slug: "debris-field", item: "debris-field", title: "Debris field", group: "Machines",
+    slug: "debris-field", item: "debris-field",
     summary: "A population of hull fragments on straight trajectories from one rupture, each released at its own moment and turning at its own rate, drawn back to front so a near fragment occludes a far one.",
     files: ["components/ui/debris-field.tsx"],
     usage: `import { DebrisField } from "@/components/ui/debris-field"
@@ -5556,7 +5525,7 @@ burst(plates[7], 0.4, { origin: { x: 0, y: 0, z: -1 }, spread: 1.6 })`,
     ],
   },
   {
-    slug: "linkage-geometry", item: "linkage-geometry", title: "Linkage geometry", group: "Foundations",
+    slug: "linkage-geometry", item: "linkage-geometry",
     summary:
       "Closed-loop kinematics: a four-bar, a slider-crank and a block and tackle, plus the helpers that lift an elevation drawing into world space. No React, no dependencies, and no dynamics.",
     files: ["lib/robocn/linkage.ts"],
@@ -5578,7 +5547,7 @@ const block = tacklePosition(3, { lines: 8, drumRadius: 11, topHeight: 204, floo
     ],
   },
   {
-    slug: "pumpjack", item: "pumpjack", title: "Pumpjack", group: "Machines",
+    slug: "pumpjack", item: "pumpjack",
     summary:
       "A beam pump with its four-bar actually solved. The crank turns, the pitman closes the loop, and the polished-rod stroke is what the link lengths produce — not a number anyone typed.",
     files: ["components/ui/pumpjack.tsx"],
@@ -5606,7 +5575,7 @@ const block = tacklePosition(3, { lines: 8, drumRadius: 11, topHeight: 204, floo
     ],
   },
   {
-    slug: "drilling-derrick", item: "drilling-derrick", title: "Drilling derrick", group: "Machines",
+    slug: "drilling-derrick", item: "drilling-derrick",
     summary:
       "A mast, a crown, and a travelling block that is reeved rather than positioned: the drum's payout is shared between the strung lines, so mechanical advantage shows up as rope.",
     files: ["components/ui/drilling-derrick.tsx"],
@@ -5628,7 +5597,7 @@ const block = tacklePosition(3, { lines: 8, drumRadius: 11, topHeight: 204, floo
     ],
   },
   {
-    slug: "mud-pump", item: "mud-pump", title: "Mud pump", group: "Machines",
+    slug: "mud-pump", item: "mud-pump",
     summary:
       "The only multi-cylinder machine in the set. Each cylinder is its own slider-crank at its own throw angle, and the discharge readout is the sum of the solved piston velocities.",
     files: ["components/ui/mud-pump.tsx"],
@@ -5650,7 +5619,7 @@ const block = tacklePosition(3, { lines: 8, drumRadius: 11, topHeight: 204, floo
     ],
   },
   {
-    slug: "wellhead-tree", item: "wellhead-tree", title: "Wellhead tree", group: "Machines",
+    slug: "wellhead-tree", item: "wellhead-tree",
     summary:
       "The valve stack on a completed well. Every valve's rising stem shows its state, and the accent is drawn only along the bore the open valves actually leave through.",
     files: ["components/ui/wellhead-tree.tsx"],
@@ -5673,7 +5642,7 @@ const block = tacklePosition(3, { lines: 8, drumRadius: 11, topHeight: 204, floo
     ],
   },
   {
-    slug: "storage-tank", item: "storage-tank", title: "Storage tank", group: "Machines",
+    slug: "storage-tank", item: "storage-tank",
     summary:
       "A tank whose roof has no fixed height. The floating roof rides the liquid and the rolling ladder, hinged at the shell top with its wheels on the deck, is solved from wherever the roof is.",
     files: ["components/ui/storage-tank.tsx"],
@@ -5696,7 +5665,7 @@ const block = tacklePosition(3, { lines: 8, drumRadius: 11, topHeight: 204, floo
     ],
   },
   {
-    slug: "oil-tanker", item: "oil-tanker", title: "Oil tanker", group: "Machines",
+    slug: "oil-tanker", item: "oil-tanker",
     summary:
       "The one machine in the set whose ground plane cuts through it. Cargo moves the hull down through the waterline, carrying the boot top, the draft marks and the load line under with it.",
     files: ["components/ui/oil-tanker.tsx"],
@@ -5718,7 +5687,7 @@ const block = tacklePosition(3, { lines: 8, drumRadius: 11, topHeight: 204, floo
     ],
   },
   {
-    slug: "tanker-truck", item: "tanker-truck", title: "Tanker truck", group: "Machines",
+    slug: "tanker-truck", item: "tanker-truck",
     summary:
       "A tractor unit and a road tanker on one kingpin. Steer the front axle and the trailer's yaw is solved, not chosen — so it off-tracks inside the tractor's line, and the barrel foreshortens in side elevation as it turns.",
     files: ["components/ui/tanker-truck.tsx"],
@@ -5750,7 +5719,7 @@ const block = tacklePosition(3, { lines: 8, drumRadius: 11, topHeight: 204, floo
     ],
   },
   {
-    slug: "flare-stack", item: "flare-stack", title: "Flare stack", group: "Machines",
+    slug: "flare-stack", item: "flare-stack",
     summary:
       "The one machine in the family that is a process rather than a mechanism: a knockout drum, a derrick-supported riser and a tip, under a plume whose length is the flow and whose lean is the wind.",
     files: ["components/ui/flare-stack.tsx"],
@@ -5772,7 +5741,7 @@ const block = tacklePosition(3, { lines: 8, drumRadius: 11, topHeight: 204, floo
     ],
   },
   {
-    slug: "fractionating-column", item: "fractionating-column", title: "Fractionating column", group: "Machines",
+    slug: "fractionating-column", item: "fractionating-column",
     summary:
       "A crude tower whose tray count is the axis. The spacing, the weld-ring seams and the heights the side draws come off are all derived from it, so more trays rebuilds the column rather than redrawing it.",
     files: ["components/ui/fractionating-column.tsx"],
@@ -5795,7 +5764,7 @@ const block = tacklePosition(3, { lines: 8, drumRadius: 11, topHeight: 204, floo
     ],
   },
   {
-    slug: "jackup-rig", item: "jackup-rig", title: "Jack-up rig", group: "Machines",
+    slug: "jackup-rig", item: "jackup-rig",
     summary:
       "One number that is both halves of the drawing: the legs are a fixed length, so raising the hull out of the water shortens the stick-up above it by exactly the same amount.",
     files: ["components/ui/jackup-rig.tsx"],
@@ -5817,7 +5786,7 @@ const block = tacklePosition(3, { lines: 8, drumRadius: 11, topHeight: 204, floo
     ],
   },
   {
-    slug: "spring-hopper", item: "spring-hopper", title: "Spring hopper", group: "Robots",
+    slug: "spring-hopper", item: "spring-hopper",
     summary: "A single-legged rig that bounces on a real spring. Flight is a parabola and stance is a mass on a spring, and how long each lasts is a consequence of the drop height and the spring rate rather than a duty knob.",
     files: ["components/ui/spring-hopper.tsx"],
     usage: `import { SpringHopper } from "@/components/ui/spring-hopper"
@@ -5852,7 +5821,7 @@ const block = tacklePosition(3, { lines: 8, drumRadius: 11, topHeight: 204, floo
     ],
   },
   {
-    slug: "ball-hopper", item: "ball-hopper", title: "Ball hopper", group: "Robots",
+    slug: "ball-hopper", item: "ball-hopper",
     summary: "A bounding sensor ball whose shell is its own compliance. It flattens on impact at constant volume — so it has to get exactly that much wider — and with a restitution below one it bounces lower each time and comes to rest.",
     files: ["components/ui/ball-hopper.tsx"],
     usage: `import { BallHopper } from "@/components/ui/ball-hopper"
@@ -5889,7 +5858,7 @@ const block = tacklePosition(3, { lines: 8, drumRadius: 11, topHeight: 204, floo
     ],
   },
   {
-    slug: "hopper-dynamics", item: "hopper-dynamics", title: "Hopper dynamics", group: "Foundations",
+    slug: "hopper-dynamics", item: "hopper-dynamics",
     summary: "The bounce solver behind both hoppers: an exact parabola in the air, an exact spring-mass stance on the ground, and the split between them derived rather than dialled.",
     files: ["lib/robocn/hopper.ts"],
     usage: `import { solveHop, hopTimings, solveDrop, springCoils, squashRadii } from "@/lib/robocn/hopper"
@@ -5919,7 +5888,7 @@ squashRadii(30, 0.25)  // { rx, ry }, at constant volume`,
     ],
   },
   {
-    slug: "gabled-house", item: "gabled-house", title: "Gabled house", group: "Machines",
+    slug: "gabled-house", item: "gabled-house",
     summary: "A dwelling drawn as a machine: the ridge is the pitch you pass it, the garage door's rigid panels ride one track, and the fins and the array turn to face a sun that is just the time of day.",
     files: ["components/ui/gabled-house.tsx"],
     usage: `import { GabledHouse } from "@/components/ui/gabled-house"
@@ -5956,7 +5925,7 @@ squashRadii(30, 0.25)  // { rx, ry }, at constant volume`,
     ],
   },
   {
-    slug: "tower-block", item: "tower-block", title: "Tower block", group: "Machines",
+    slug: "tower-block", item: "tower-block",
     summary: "A residential tower with the lift left visible: the car and the counterweight hang on one rope over one sheave, so the weight falls exactly as far as the car rises.",
     files: ["components/ui/tower-block.tsx"],
     usage: `import { TowerBlock } from "@/components/ui/tower-block"
@@ -5992,7 +5961,7 @@ squashRadii(30, 0.25)  // { rx, ry }, at constant volume`,
     ],
   },
   {
-    slug: "espresso-machine", item: "espresso-machine", title: "Espresso machine", group: "Machines",
+    slug: "espresso-machine", item: "espresso-machine",
     summary: "A spring-lever group drawn as the linkage it is: lever, connecting rod, piston. The declining shot pressure is the spring paying its force back, not a curve somebody drew.",
     files: ["components/ui/espresso-machine.tsx"],
     usage: `import { EspressoMachine } from "@/components/ui/espresso-machine"
@@ -6028,7 +5997,7 @@ squashRadii(30, 0.25)  // { rx, ry }, at constant volume`,
     ],
   },
   {
-    slug: "refrigerator", item: "refrigerator", title: "Refrigerator", group: "Machines",
+    slug: "refrigerator", item: "refrigerator",
     summary: "A cabinet whose doors are solved leaves on vertical hinges, with an interior that is a second drawing revealed by the swing and a lamp thrown by a real door switch.",
     files: ["components/ui/refrigerator.tsx"],
     usage: `import { Refrigerator } from "@/components/ui/refrigerator"
@@ -6063,7 +6032,7 @@ squashRadii(30, 0.25)  // { rx, ry }, at constant volume`,
     ],
   },
   {
-    slug: "washing-machine", item: "washing-machine", title: "Washing machine", group: "Machines",
+    slug: "washing-machine", item: "washing-machine",
     summary: "One drum, and one dimensionless number deciding what it is doing: below a Froude number of one the load is thrown, at or above it the load is pinned to the wall.",
     files: ["components/ui/washing-machine.tsx"],
     usage: `import { WashingMachine } from "@/components/ui/washing-machine"
@@ -6099,7 +6068,7 @@ squashRadii(30, 0.25)  // { rx, ry }, at constant volume`,
     ],
   },
   {
-    slug: "household-geometry", item: "household-geometry", title: "Household geometry", group: "Foundations",
+    slug: "household-geometry", item: "household-geometry",
     summary: "The closures in the building you live in and the machines inside it: hinged leaves, sectional panels, a tumbling drum, a resonant suspension, a roped hoist, tracking slats, and flow through a packed bed.",
     files: ["lib/robocn/household.ts"],
     usage: `import { swingPose, sectionalPanels, tumblePose, suspensionPose, hoistPose } from "@/lib/robocn/household"
@@ -6131,7 +6100,7 @@ hoistPose(0.8, { travel: 180, sheave: 220 }).length // the same at every positio
     ],
   },
   {
-    slug: "rail-geometry", item: "rail-geometry", title: "Rail geometry", group: "Foundations",
+    slug: "rail-geometry", item: "rail-geometry",
     summary: "What a track does to the vehicle standing on it: bogies placed on a curve and the centre and end throw that follow, Klingel hunting on a coned wheelset, a pantograph solved to a working height, and a turnout's lead, crossing angle and blade throw.",
     files: ["lib/robocn/rail.ts"],
     usage: `import { bogieRide, curveRadius, huntingPose, klingelWavelength, turnoutGeometry } from "@/lib/robocn/rail"
@@ -6162,7 +6131,7 @@ turnoutGeometry(8, 20).crossingAngle   // atan(1/8) in degrees`,
     ],
   },
   {
-    slug: "rail-locomotive", item: "rail-locomotive", title: "Rail locomotive", group: "Robots",
+    slug: "rail-locomotive", item: "rail-locomotive",
     summary: "An electric locomotive and the train behind it, placed by the track rather than steered along it. Bend the track and each bogie takes the tangent under its own pivot, each body becomes the chord between two of them, and the sideways throw of the middle and the ends follows.",
     files: ["components/ui/rail-locomotive.tsx"],
     usage: `import { RailLocomotive } from "@/components/ui/rail-locomotive"
@@ -6195,7 +6164,7 @@ turnoutGeometry(8, 20).crossingAngle   // atan(1/8) in degrees`,
     ],
   },
   {
-    slug: "rail-bogie", item: "rail-bogie", title: "Rail bogie", group: "Machines",
+    slug: "rail-bogie", item: "rail-bogie",
     summary: "A powered two-axle bogie, and the only self-excited motion in the set: nothing commands the wheelsets to wander, they wander because they are coned — at exactly Klingel's wavelength, until the flange stops them.",
     files: ["components/ui/rail-bogie.tsx"],
     usage: `import { RailBogie } from "@/components/ui/rail-bogie"
@@ -6228,7 +6197,7 @@ turnoutGeometry(8, 20).crossingAngle   // atan(1/8) in degrees`,
     ],
   },
   {
-    slug: "pantograph-collector", item: "pantograph-collector", title: "Pantograph collector", group: "Machines",
+    slug: "pantograph-collector", item: "pantograph-collector",
     summary: "A single-arm roof current collector. Height and reach are not independent — asking for height folds the knee in and walks the pan back over its own base — and the head stays level because a control rod says so, not because it was pinned there.",
     files: ["components/ui/pantograph-collector.tsx"],
     usage: `import { PantographCollector } from "@/components/ui/pantograph-collector"
@@ -6260,7 +6229,7 @@ turnoutGeometry(8, 20).crossingAngle   // atan(1/8) in degrees`,
     ],
   },
   {
-    slug: "rail-turnout", item: "rail-turnout", title: "Rail turnout", group: "Machines",
+    slug: "rail-turnout", item: "rail-turnout",
     summary: "The points, and the fact that a route is a state rather than a setting: two blades on one throw bar, and what decides where a train goes is detection — so a turnout caught in mid stroke has no route set at all.",
     files: ["components/ui/rail-turnout.tsx"],
     usage: `import { RailTurnout } from "@/components/ui/rail-turnout"
@@ -6294,7 +6263,7 @@ turnoutGeometry(8, 20).crossingAngle   // atan(1/8) in degrees`,
     ],
   },
   {
-    slug: "gridiron-geometry", item: "gridiron-geometry", title: "Gridiron geometry", group: "Foundations",
+    slug: "gridiron-geometry", item: "gridiron-geometry",
     summary: "The football family's dependency-free maths: the ball as a real prolate spheroid, drag-free ballistics, counter-rotating wheel exit conditions, a route tree sampled by arc length, a sprung pad arm at equilibrium, and the column pitch a hand on the turf implies.",
     files: ["lib/robocn/gridiron.ts"],
     usage: `import { ballSilhouette, kickFlight, launcherExit, sampleRoute } from "@/lib/robocn/gridiron"
@@ -6326,7 +6295,7 @@ sampleRoute(routePath("post", { depth: 12 }), 13.4)  // { point, heading, turn }
     ],
   },
   {
-    slug: "robot-football", item: "robot-football", title: "Robot football", group: "Robots",
+    slug: "robot-football", item: "robot-football",
     summary: "The ball, modelled rather than drawn: a prolate spheroid whose outline is its own central section, with laces on the surface that go round the back when it spins.",
     files: ["components/ui/robot-football.tsx"],
     usage: `import { RobotFootball } from "@/components/ui/robot-football"
@@ -6361,7 +6330,7 @@ sampleRoute(routePath("post", { depth: 12 }), 13.4)  // { point, heading, turn }
     ],
   },
   {
-    slug: "gridiron-lineman", item: "gridiron-lineman", title: "Gridiron lineman", group: "Robots",
+    slug: "gridiron-lineman", item: "gridiron-lineman",
     summary: "The three-point stance as a four-contact stance: the hand on the turf carries load, and the flat back is the column pitch that being down there implies.",
     files: ["components/ui/gridiron-lineman.tsx"],
     usage: `import { GridironLineman } from "@/components/ui/gridiron-lineman"
@@ -6397,7 +6366,7 @@ sampleRoute(routePath("post", { depth: 12 }), 13.4)  // { point, heading, turn }
     ],
   },
   {
-    slug: "gridiron-quarterback", item: "gridiron-quarterback", title: "Gridiron quarterback", group: "Robots",
+    slug: "gridiron-quarterback", item: "gridiron-quarterback",
     summary: "A drop-back and a throw with the arm solved to a release point travelling an arc, and a ball that leaves on the velocity the hand had.",
     files: ["components/ui/gridiron-quarterback.tsx"],
     usage: `import { GridironQuarterback } from "@/components/ui/gridiron-quarterback"
@@ -6433,7 +6402,7 @@ sampleRoute(routePath("post", { depth: 12 }), 13.4)  // { point, heading, turn }
     ],
   },
   {
-    slug: "gridiron-receiver", item: "gridiron-receiver", title: "Gridiron receiver", group: "Robots",
+    slug: "gridiron-receiver", item: "gridiron-receiver",
     summary: "The route tree as geometry: the runner is a point at an arc length along a polyline, and the lean into a cut is the exterior angle at the break.",
     files: ["components/ui/gridiron-receiver.tsx"],
     usage: `import { GridironReceiver } from "@/components/ui/gridiron-receiver"
@@ -6470,7 +6439,7 @@ sampleRoute(routePath("post", { depth: 12 }), 13.4)  // { point, heading, turn }
     ],
   },
   {
-    slug: "gridiron-kicker", item: "gridiron-kicker", title: "Gridiron kicker", group: "Robots",
+    slug: "gridiron-kicker", item: "gridiron-kicker",
     summary: "A swing leg solved to an ankle path that passes through the ball, and a drag-free parabola that starts where the strike happened. Whether it is good is read off the plot.",
     files: ["components/ui/gridiron-kicker.tsx"],
     usage: `import { GridironKicker } from "@/components/ui/gridiron-kicker"
@@ -6508,7 +6477,7 @@ sampleRoute(routePath("post", { depth: 12 }), 13.4)  // { point, heading, turn }
     ],
   },
   {
-    slug: "blocking-sled", item: "blocking-sled", title: "Blocking sled", group: "Machines",
+    slug: "blocking-sled", item: "blocking-sled",
     summary: "Pads at a static equilibrium — the load's moment against a return spring's — on a frame that will not move at all until the drive beats the friction under its skids.",
     files: ["components/ui/blocking-sled.tsx"],
     usage: `import { BlockingSled } from "@/components/ui/blocking-sled"
@@ -6542,7 +6511,7 @@ sampleRoute(routePath("post", { depth: 12 }), 13.4)  // { point, heading, turn }
     ],
   },
   {
-    slug: "ball-launcher", item: "ball-launcher", title: "Ball launcher", group: "Machines",
+    slug: "ball-launcher", item: "ball-launcher",
     summary: "Two counter-rotating wheels: the ball leaves at the mean of their surface speeds and turns at their difference over its own diameter. Both numbers are on the readout.",
     files: ["components/ui/ball-launcher.tsx"],
     usage: `import { BallLauncher } from "@/components/ui/ball-launcher"
@@ -6573,7 +6542,7 @@ sampleRoute(routePath("post", { depth: 12 }), 13.4)  // { point, heading, turn }
     ],
   },
   {
-    slug: "robot-capture", item: "robot-capture", title: "Robot capture", group: "Foundations",
+    slug: "robot-capture", item: "robot-capture",
     summary:
       "Records a component out of the page: a snapshotter that bakes the cascade into a clone, a GIF89a encoder, and an animated-WebP muxer built on the browser's own encoder. No dependencies, no server, nothing uploaded.",
     files: ["lib/robocn/capture.ts", "lib/robocn/gif.ts", "lib/robocn/webp.ts"],
@@ -6603,7 +6572,7 @@ download(await encodeFrames(frames, "webp"), "robot-arm.webp")`,
     ],
   },
   {
-    slug: "robot-export", item: "robot-export", title: "Robot export", group: "Machines",
+    slug: "robot-export", item: "robot-export",
     summary:
       "The record button. Wrap any machine and it can be saved as an animated WebP, an animated GIF or a still — encoded in the page, with nothing uploaded.",
     files: ["components/ui/robot-export.tsx"],
@@ -6649,7 +6618,7 @@ download(await encodeFrames(frames, "webp"), "robot-arm.webp")`,
     ],
   },
   {
-    slug: "gym-geometry", item: "gym-geometry", title: "Gym geometry", group: "Foundations",
+    slug: "gym-geometry", item: "gym-geometry",
     summary:
       "The five mechanisms that stand between a selected weight and a felt load: rope reeving, a variable-radius cam, an inclined rail, a coupler curve, and velocity-squared air drag.",
     files: ["lib/robocn/gym.ts"],
@@ -6673,7 +6642,7 @@ download(await encodeFrames(frames, "webp"), "robot-arm.webp")`,
     ],
   },
   {
-    slug: "cable-station", item: "cable-station", title: "Cable station", group: "Machines",
+    slug: "cable-station", item: "cable-station",
     summary:
       "Selectorised weight stack reeved through pulleys: the pin picks what rises, and the reeving sets both the handle force and how far the stack travels.",
     files: ["components/ui/cable-station.tsx"],
@@ -6713,7 +6682,7 @@ download(await encodeFrames(frames, "webp"), "robot-arm.webp")`,
     ],
   },
   {
-    slug: "resistance-cam", item: "resistance-cam", title: "Resistance cam", group: "Machines",
+    slug: "resistance-cam", item: "resistance-cam",
     summary:
       "A lever on a variable-radius cam: the cable leaves at a radius that changes with the angle, so the moment arm is the cam profile and the stack does not rise linearly.",
     files: ["components/ui/resistance-cam.tsx"],
@@ -6755,7 +6724,7 @@ download(await encodeFrames(frames, "webp"), "robot-arm.webp")`,
     ],
   },
   {
-    slug: "leg-press", item: "leg-press", title: "Leg press", group: "Machines",
+    slug: "leg-press", item: "leg-press",
     summary:
       "A sled on inclined rails: only the component of the load along the rails resists, so the rail angle is the resistance and the frame decides the weight.",
     files: ["components/ui/leg-press.tsx"],
@@ -6795,7 +6764,7 @@ download(await encodeFrames(frames, "webp"), "robot-arm.webp")`,
     ],
   },
   {
-    slug: "cross-trainer", item: "cross-trainer", title: "Cross trainer", group: "Machines",
+    slug: "cross-trainer", item: "cross-trainer",
     summary:
       "A crank and rocker whose footpad rides the coupler: the stride and the shape of the foot path are what the link lengths produce, not a traced ellipse.",
     files: ["components/ui/cross-trainer.tsx"],
@@ -6835,7 +6804,7 @@ download(await encodeFrames(frames, "webp"), "robot-arm.webp")`,
     ],
   },
   {
-    slug: "rowing-erg", item: "rowing-erg", title: "Rowing erg", group: "Machines",
+    slug: "rowing-erg", item: "rowing-erg",
     summary:
       "An air flywheel on a one-way clutch: drag goes as the square of rim speed, the damper vent sets the drag factor, and the drive spins it up while the recovery coasts it down.",
     files: ["components/ui/rowing-erg.tsx"],
@@ -6875,7 +6844,7 @@ download(await encodeFrames(frames, "webp"), "robot-arm.webp")`,
     ],
   },
   {
-    slug: "carve-geometry", item: "carve-geometry", title: "Carve geometry", group: "Foundations",
+    slug: "carve-geometry", item: "carve-geometry",
     summary:
       "Outlines authored in shell coordinates and wrapped onto a lobed body of revolution, carved along their own perimeter, the plugs they free, the light that escapes through them, and a flame that answers to the draught.",
     files: ["lib/robocn/carve.ts"],
@@ -6905,7 +6874,7 @@ download(await encodeFrames(frames, "webp"), "robot-arm.webp")`,
     ],
   },
   {
-    slug: "jack-o-lantern", item: "jack-o-lantern", title: "Jack-o'-lantern", group: "Machines",
+    slug: "jack-o-lantern", item: "jack-o-lantern",
     summary:
       "A carved gourd lantern: a lobed shell on a scalloped lid and stem, a face cut one feature at a time with the plugs pushing out of it, a candle inside whose light is paid for by the openings, and every part coming off in the reverse of the order it was fitted.",
     files: ["components/ui/jack-o-lantern.tsx"],
@@ -6963,7 +6932,7 @@ download(await encodeFrames(frames, "webp"), "robot-arm.webp")`,
     ],
   },
   {
-    slug: "sport-geometry", item: "sport-geometry", title: "Sport geometry", group: "Foundations",
+    slug: "sport-geometry", item: "sport-geometry",
     summary:
       "The kit a game is played with: the sphere and its seams, the puck, and the four dynamics that make five objects behave unlike one another — restitution bounce, Magnus curve, Coulomb slide, and the bat-ball collision.",
     files: ["lib/robocn/sport.ts"],
@@ -6999,7 +6968,7 @@ download(await encodeFrames(frames, "webp"), "robot-arm.webp")`,
     ],
   },
   {
-    slug: "robot-baseball", item: "robot-baseball", title: "Robot baseball", group: "Robots",
+    slug: "robot-baseball", item: "robot-baseball",
     summary:
       "The ball as a sphere with a real seam: the figure-eight is a closed curve lying exactly on the surface, so spin carries it round the back instead of sliding it across the front.",
     files: ["components/ui/robot-baseball.tsx"],
@@ -7032,7 +7001,7 @@ download(await encodeFrames(frames, "webp"), "robot-arm.webp")`,
     ],
   },
   {
-    slug: "batting-rig", item: "batting-rig", title: "Batting rig", group: "Robots",
+    slug: "batting-rig", item: "batting-rig",
     summary:
       "A bat on a solved swing arc meeting a pitched ball, with the collision itself solved: effective mass falls away from the sweet spot, so contact off the end hands the ball back less than it brought.",
     files: ["components/ui/batting-rig.tsx"],
@@ -7066,7 +7035,7 @@ download(await encodeFrames(frames, "webp"), "robot-arm.webp")`,
     ],
   },
   {
-    slug: "robot-basketball", item: "robot-basketball", title: "Robot basketball", group: "Robots",
+    slug: "robot-basketball", item: "robot-basketball",
     summary:
       "Eight panels cut by two great circles and one wavy seam, on a ball that bounces by closed-form restitution rather than a tween: every apex is the last one times e squared.",
     files: ["components/ui/robot-basketball.tsx"],
@@ -7098,7 +7067,7 @@ download(await encodeFrames(frames, "webp"), "robot-arm.webp")`,
     ],
   },
   {
-    slug: "robot-soccer-ball", item: "robot-soccer-ball", title: "Robot soccer ball", group: "Robots",
+    slug: "robot-soccer-ball", item: "robot-soccer-ball",
     summary:
       "A truncated icosahedron inflated onto the sphere: twelve pentagons and twenty hexagons built from the solid, culled by their own normals, and rolled without slipping so the panels turn because it travelled.",
     files: ["components/ui/robot-soccer-ball.tsx"],
@@ -7131,7 +7100,7 @@ download(await encodeFrames(frames, "webp"), "robot-arm.webp")`,
     ],
   },
   {
-    slug: "robot-hockey-puck", item: "robot-hockey-puck", title: "Robot hockey puck", group: "Robots",
+    slug: "robot-hockey-puck", item: "robot-hockey-puck",
     summary:
       "A cylinder on ice: Coulomb friction is a constant deceleration, so the slide is exact and the puck stops where the maths says. The boards reflect it, and the silhouette is the hull of its two rims.",
     files: ["components/ui/robot-hockey-puck.tsx"],
@@ -7164,7 +7133,7 @@ download(await encodeFrames(frames, "webp"), "robot-arm.webp")`,
     ],
   },
   {
-    slug: "construct-geometry", item: "construct-geometry", title: "Construct geometry", group: "Foundations",
+    slug: "construct-geometry", item: "construct-geometry",
     summary:
       "Reads a freehand stroke — resampled by arc length, measured into a frame, classified into an archetype — and forges it into a filled construct, with the draw it costs.",
     files: ["lib/robocn/construct.ts"],
@@ -7187,7 +7156,7 @@ download(await encodeFrames(frames, "webp"), "robot-arm.webp")`,
     ],
   },
   {
-    slug: "construct-ring", item: "construct-ring", title: "Construct ring", group: "Machines",
+    slug: "construct-ring", item: "construct-ring",
     summary:
       "A signet emitter ring: a lit bezel over a knurled band, a teardown in fitting order, and a forge that turns a stroke you draw into a construct of solid light.",
     files: ["components/ui/construct-ring.tsx"],
@@ -7232,7 +7201,7 @@ download(await encodeFrames(frames, "webp"), "robot-arm.webp")`,
     ],
   },
   {
-    slug: "animatronic-robot", item: "animatronic-robot", title: "Animatronic robot", group: "Robots",
+    slug: "animatronic-robot", item: "animatronic-robot",
     summary: "The whole animatronic: a solved biped under a breathing cage, an expressive head on top of it, hands on the end of it, and a centre of mass it keeps over the ground its feet actually hold.",
     files: ["components/ui/animatronic-robot.tsx"],
     usage: `import { AnimatronicRobot } from "@/components/ui/animatronic-robot"
@@ -7293,7 +7262,7 @@ download(await encodeFrames(frames, "webp"), "robot-arm.webp")`,
     ],
   },
   {
-    slug: "bore-geometry", item: "bore-geometry", title: "Bore geometry", group: "Foundations",
+    slug: "bore-geometry", item: "bore-geometry",
     summary:
       "Excavation mechanics: the penetration an energy balance at the face allows, the cavity that rate cuts in a slab, the volume conserved into a spoil heap at its own angle of repose, and ballistic spall off the kerf.",
     files: ["lib/robocn/boring.ts"],
@@ -7316,7 +7285,7 @@ download(await encodeFrames(frames, "webp"), "robot-arm.webp")`,
     ],
   },
   {
-    slug: "bore-construct", item: "bore-construct", title: "Bore construct", group: "Machines",
+    slug: "bore-construct", item: "bore-construct",
     summary:
       "A construct-light tunnelling head: a stepped rotary bit forward, a pair of treaded drive wheels on one transverse axle aft that roll it into the face, and a right-angle gear train, thrust rams, grippers and a flushing pump between them, boring through a wall that cracks, spalls and heaps its own spoil.",
     files: ["components/ui/bore-construct.tsx"],
@@ -7354,7 +7323,7 @@ download(await encodeFrames(frames, "webp"), "robot-arm.webp")`,
     ],
   },
   {
-    slug: "airframe", item: "airframe", title: "Airframe", group: "Foundations",
+    slug: "airframe", item: "airframe",
     summary:
       "The geometry an aeroplane is made of — a fuselage lofted along its own axis with a second deck on the crown, a swept and kinked wing you can sample anywhere — and the one mechanism on it that is really solved: a leg swinging about its trunnion with a side stay that folds.",
     files: ["lib/robocn/airframe.ts"],
@@ -7397,7 +7366,7 @@ controlMix({ roll: 8, configuration: 0.6 })`,
     ],
   },
   {
-    slug: "airliner", item: "airliner", title: "Airliner", group: "Robots",
+    slug: "airliner", item: "airliner",
     summary:
       "A four-engine double-deck widebody you can walk all the way round and take completely to bits. The camera goes to any angle at all, the skin opens on the reader's side wherever they are standing, and the teardown is the build order run backwards.",
     files: ["components/ui/airliner.tsx"],
@@ -7456,7 +7425,7 @@ controlMix({ roll: 8, configuration: 0.6 })`,
     ],
   },
   {
-    slug: "rodpump-geometry", item: "rodpump-geometry", title: "Rod pump geometry", group: "Foundations",
+    slug: "rodpump-geometry", item: "rodpump-geometry",
     summary:
       "The mechanics of a downhole sucker-rod pump: plunger travel off a crank, the fluid load and displacement from the field formulas, the travel at which each ball valve lifts, and the dynamometer card that falls out of the two.",
     files: ["lib/robocn/rodpump.ts"],
@@ -7491,7 +7460,7 @@ controlMix({ roll: 8, configuration: 0.6 })`,
     ],
   },
   {
-    slug: "rod-pump", item: "rod-pump", title: "Rod pump", group: "Machines",
+    slug: "rod-pump", item: "rod-pump",
     summary:
       "A downhole sucker-rod pump in section: mud anchor, working barrel, plunger, travelling and standing valves, solving its own dynamometer card, fluid load and valve sequence, with the standard pump faults as conditions.",
     files: ["components/ui/rod-pump.tsx"],
@@ -7543,18 +7512,7 @@ controlMix({ roll: 8, configuration: 0.6 })`,
     ],
   },
 ]
-/**
- * Which group a registry item lands in when nobody has written its page yet.
- * Deliberately coarse: it only has to be near enough that the item is visible
- * and findable, because the moment someone writes the entry above, that wins.
- */
-function groupFor(item: (typeof registry.items)[number]): DocGroup {
-  if (item.type !== "registry:ui") return "Foundations"
-  const categories: string[] = item.categories ?? []
-  if (categories.includes("3d") || /(^|-)arm(-|$)/.test(item.name)) return "Arms"
-  if (categories.includes("robots") || categories.includes("animals")) return "Robots"
-  return "Machines"
-}
+const byName = new Map(registry.items.map((item) => [item.name, item]))
 
 /**
  * Every registry item has a page, whether or not anybody wrote one.
@@ -7566,22 +7524,31 @@ function groupFor(item: (typeof registry.items)[number]): DocGroup {
  *
  * Notes: `docs/gallery-coverage.md`.
  */
-const generated: DocEntry[] = registry.items
+const generated: AuthoredEntry[] = registry.items
   .filter((item) => !authored.some((entry) => entry.slug === item.name))
   .map((item) => ({
     slug: item.name,
     item: item.name,
-    title: item.title,
     summary: item.description,
-    group: groupFor(item),
     files: item.files.map((file) => file.path.replace(/^src\//, "")),
   }))
 
-export const docs: DocEntry[] = [...authored, ...generated]
+/** The registry supplies the name and the group; the page supplies the rest. */
+function join(entry: AuthoredEntry): DocEntry {
+  const item = entry.item ? byName.get(entry.item) : undefined
+  const title = entry.title ?? item?.title
+  const group = entry.group ?? (item ? groupOf(item) : undefined)
+  if (!title || !group) {
+    throw new Error(`${entry.slug}: no registry item, so it needs its own title and group`)
+  }
+  return { ...entry, title, group }
+}
+
+export const docs: DocEntry[] = [...authored, ...generated].map(join)
 
 export const docBySlug = (slug: string) => docs.find((entry) => entry.slug === slug)
 
 /** Items the registry ships that nobody has written a page for yet. */
 export const generatedDocSlugs = generated.map((entry) => entry.slug)
 
-export const docGroups: DocGroup[] = ["Arms", "Machines", "Robots", "Foundations"]
+export { docGroups }

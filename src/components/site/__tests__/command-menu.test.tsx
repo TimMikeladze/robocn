@@ -7,23 +7,23 @@ const entries: CatalogueEntry[] = [
   {
     slug: "robot-gripper",
     item: "robot-gripper",
-    title: "Robot gripper",
+    title: "Gripper",
     summary: "A standalone end effector with parallel or angular fingers.",
-    group: "Machines",
+    group: "Tools",
   },
   {
     slug: "suction-gripper",
     item: "suction-gripper",
     title: "Suction gripper",
     summary: "A bar of bellows cups and the sheet it picks.",
-    group: "Machines",
+    group: "Tools",
   },
   {
     slug: "robot-dog",
     item: "robot-dog",
-    title: "Robot dog",
+    title: "Dog",
     summary: "A four-legged walker with a trot gait.",
-    group: "Robots",
+    group: "Animals",
   },
 ]
 
@@ -62,7 +62,7 @@ describe("command palette", () => {
       item: `machine-${i}`,
       title: `Machine ${i}`,
       summary: "",
-      group: "Machines",
+      group: "Drives",
     }))
     const components = resultsFor("machine", many).filter((r) => r.group !== "Pages")
     expect(components).toHaveLength(40)

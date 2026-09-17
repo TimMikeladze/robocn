@@ -150,11 +150,11 @@ describe("pnpm robot:new", () => {
     expect(result.stdout).not.toContain("src/components/site/catalogue.tsx")
   })
 
-  it("refuses a docs group that is not one of the four", () => {
-    const result = run(["scaffold-probe", "--dry-run", "--group", "Gadgets"])
+  it("refuses a group that is not in the taxonomy", () => {
+    const result = run(["scaffold-probe", "--dry-run", "--group", "gadgets"])
 
     expect(result.status).toBe(1)
-    expect(result.stderr).toMatch(/--group must be one of/)
+    expect(result.stderr).toMatch(/The second category is the group/)
   })
 
   it("refuses a name the registry already ships", () => {

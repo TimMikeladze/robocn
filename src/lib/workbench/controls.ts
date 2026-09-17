@@ -8,6 +8,7 @@
  */
 
 import generated from "./generated.json"
+import { groupIds, type GroupId } from "@/lib/groups"
 
 export type ControlKind =
   | "enum"
@@ -64,16 +65,16 @@ export const workbenchComponent = (id: string | null | undefined) =>
   workbenchComponentList.find((component) => component.id === id) ?? null
 
 /**
- * The category a component files under in the index. Nearly every item leads
- * with "robotics", which would put the whole library in one drawer, so the
- * second category wins where there is one.
+ * The category a component files under in the index: its group. Every item
+ * leads with the "robotics" umbrella, which would put the whole library in one
+ * drawer, so the second category — the group — wins where there is one.
  */
 export const categoryOf = (component: WorkbenchComponent) =>
   component.categories[1] ?? component.categories[0] ?? "other"
 
 /**
- * Sidebar order: category, then the component's title. Drafts come first —
- * what you are making outranks what is already made.
+ * Sidebar order: the taxonomy's own order, then the component's title. Drafts
+ * come first — what you are making outranks what is already made.
  */
 export function componentsByCategory(components = workbenchComponentList) {
   const sections = new Map<string, WorkbenchComponent[]>()
@@ -83,11 +84,17 @@ export function componentsByCategory(components = workbenchComponentList) {
   }
   return [...sections.entries()]
     .map(([category, items]) => ({ category, items }))
-    .sort((a, b) =>
-      a.category === "drafts" || b.category === "drafts"
-        ? Number(b.category === "drafts") - Number(a.category === "drafts")
-        : a.category.localeCompare(b.category),
-    )
+    .sort((a, b) => {
+      if (a.category === "drafts" || b.category === "drafts") {
+        return Number(b.category === "drafts") - Number(a.category === "drafts")
+      }
+      // A category the taxonomy does not know goes last, alphabetically.
+      const rank = (category: string) => {
+        const at = groupIds.indexOf(category as GroupId)
+        return at === -1 ? groupIds.length : at
+      }
+      return rank(a.category) - rank(b.category) || a.category.localeCompare(b.category)
+    })
 }
 
 /** `Folding handset` → `folding-handset`, the file name and the item name. */

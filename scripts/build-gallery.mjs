@@ -60,13 +60,20 @@ const lines = [
   "",
   "/** Interfaces do not share machine-only gallery props. Their wrappers make",
   " *  the generated component type honest while preserving each useful default. */",
-  ...resolved
-    .filter((entry) => entry.interface && !entry.webgl)
-    .map(
-      (entry) =>
-        `const ${previewName(entry)}: React.ComponentType<GalleryProps> = () => ` +
-        `<${entry.export}Source />`,
-    ),
+  // One wrapper per component. Several items can draw the same widget — a
+  // solver draws the machine that exercises it — and two consts of one name
+  // do not compile.
+  ...[
+    ...new Map(
+      resolved
+        .filter((entry) => entry.interface && !entry.webgl)
+        .map((entry) => [
+          previewName(entry),
+          `const ${previewName(entry)}: React.ComponentType<GalleryProps> = () => ` +
+            `<${entry.export}Source />`,
+        ]),
+    ).values(),
+  ],
   "",
   "export interface GalleryEntry {",
   "  /** Registry item name, which is also the doc slug. */",

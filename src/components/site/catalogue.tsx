@@ -518,8 +518,8 @@ const firstClause = (summary: string) => {
 
 /**
  * A card for an item nobody hand-posed: its own component. Machines receive
- * the art-well size; Interfaces render their useful default without machine
- * props, inside an inert wrapper because the whole card is already a link.
+ * the art-well size; the Controls group renders its useful default without
+ * machine props, inside an inert wrapper because the card is already a link.
  */
 export function fallbackArt(card: CatalogueCard): Art | null {
   const entry = galleryEntries[card.slug]
@@ -527,7 +527,9 @@ export function fallbackArt(card: CatalogueCard): Art | null {
   const line = card.summary ? firstClause(card.summary) : card.title
   if (!entry.component) return { line, art: <CatalogueStage floor="shadow" /> }
   const Machine = entry.component
-  if (card.group === "Interfaces") {
+  // The gallery map carries it: an item in the `controls` category is a widget
+  // and draws itself, not a machine that takes a size.
+  if (entry.interface) {
     return {
       line,
       art: (
@@ -556,7 +558,7 @@ export const catalogueArt = art
 
 /**
  * Cards mounted before anything is observed, counted down the whole grid rather
- * than per group — the first group is Arms and it is three cards long. Two rows
+ * than per group — the first group is Arms and it is six cards long. Two rows
  * at the widest breakpoint, so the top of the grid is in the server HTML and is
  * painted before hydration rather than after.
  */

@@ -21,7 +21,7 @@
  */
 
 import { mkdir, readFile, writeFile } from "node:fs/promises"
-import { existsSync } from "node:fs"
+import { existsSync, readFileSync } from "node:fs"
 import path from "node:path"
 
 const VIEWS = ["plan", "front", "profile", "iso"]
@@ -35,12 +35,13 @@ function usage(message) {
                             registry test; a placeholder is written if omitted.
     --view <${VIEWS.join("|")}>
                             The view the machine is drawn in. Default: front.
-    --categories <a,b>      Registry categories. Default: robotics,robots.
+    --categories <a,b>      Registry categories: the robotics umbrella, then the
+                            group the item belongs to. Default: robotics,droids.
     --deps <a,b>            Extra robocn registry items this one imports.
     --solver <name>         Also scaffold src/lib/robocn/<name>.ts, its tests and
                             its own registry:lib item.
-    --group <name>          Docs group: Arms | Machines | Robots | Foundations.
-                            Default: inferred from the categories.
+    --group <id>            The group category, if it is easier to say than a
+                            categories list: one of the ids in src/lib/groups.ts.
     --label <text>          The technical caption the demo passes. Default: the
                             name, upper-cased.
     --minimal               Only the required files — component, tests, registry
@@ -55,7 +56,7 @@ function usage(message) {
 function parseArgs(argv) {
   const options = {
     view: "front",
-    categories: "robotics,robots",
+    categories: "robotics,droids",
     deps: "",
     views: true,
     wiring: true,
@@ -573,7 +574,7 @@ function registryItems({ name, title, description, categories, deps, solver }) {
       type: "registry:lib",
       title: sentence(solver),
       description: `TODO: what ${words(solver)} solves, in one sentence a stranger can read on a card.`,
-      categories: ["robotics", "kinematics"],
+      categories: ["robotics", "foundations"],
       registryDependencies: [url("robot-kinematics")],
       files: [{ path: `src/lib/robocn/${solverFile(solver)}.ts`, type: "registry:lib", target: `@lib/${solverFile(solver)}.ts` }],
     })
@@ -608,7 +609,7 @@ const firstClause = (summary) => summary.split(/(?<=\.)\s/)[0] ?? summary
  * `view`, `loop`, `form` and `palette` are module-local in docs.ts and in scope
  * where this lands.
  */
-function docsEntry({ name, title, description, group, view, solver }) {
+function docsEntry({ name, description, view, solver }) {
   const Component = pascal(name)
   const rows = [
     `      { name: "reach", type: "number", description: "TODO: what this number is, in the machine's own terms. Supplying it stops the loop." },`,
@@ -624,7 +625,7 @@ function docsEntry({ name, title, description, group, view, solver }) {
     `      ...palette,`,
   ]
   const machine = `  {
-    slug: "${name}", item: "${name}", title: "${title}", group: "${group}",
+    slug: "${name}", item: "${name}",
     summary:
       ${JSON.stringify(description)},
     files: ["components/ui/${name}.tsx"],
@@ -647,7 +648,7 @@ ${rows.join("\n")}
 
   const Solve = `solve${pascal(solver)}`
   const lib = `  {
-    slug: "${solver}", item: "${solver}", title: "${sentence(solver)}", group: "Foundations",
+    slug: "${solver}", item: "${solver}",
     summary:
       "TODO: what ${words(solver)} solves, in one sentence a stranger can read on a card.",
     files: ["lib/robocn/${solverFile(solver)}.ts"],
@@ -747,9 +748,9 @@ function insertIntoBlock(source, opener, row, where, { closer = "\n}\n", before 
 const uiImport = /^import \{ [^}]+ \} from "@\/components\/ui\/[^"]+"$/
 
 function withDocsEntry(source, spec) {
-  return insertIntoBlock(source, "const authored: DocEntry[] = [", docsEntry(spec), "docs.ts", {
+  return insertIntoBlock(source, "const authored: AuthoredEntry[] = [", docsEntry(spec), "docs.ts", {
     closer: "\n]\n",
-    before: "function groupFor(",
+    before: "const byName = new Map(",
   })
 }
 
@@ -853,19 +854,19 @@ if (options.solver) {
 }
 
 /**
- * Which docs group the machine lands in. Mirrors `groupFor` in docs.ts, so the
- * written entry sits where the generated one would have.
+ * The group the machine lands in. It is a registry category, so the site reads
+ * it straight off the item — `src/lib/groups.ts` is the list, read from there
+ * rather than copied, so a new group needs no edit here.
  */
-const GROUPS = ["Arms", "Machines", "Robots", "Foundations"]
-const categoryList = options.categories.split(",").map((value) => value.trim()).filter(Boolean)
-const group =
-  options.group ??
-  (categoryList.includes("3d") || /(^|-)arm(-|$)/.test(name)
-    ? "Arms"
-    : categoryList.includes("robots") || categoryList.includes("animals")
-      ? "Robots"
-      : "Machines")
-if (!GROUPS.includes(group)) usage(`--group must be one of ${GROUPS.join(", ")}.`)
+const GROUPS = [...readFileSync(at("src/lib", "groups.ts"), "utf8").matchAll(/^  (\w+): "/gm)].map(
+  (match) => match[1],
+)
+let categoryList = options.categories.split(",").map((value) => value.trim()).filter(Boolean)
+if (options.group) categoryList = ["robotics", options.group]
+const group = categoryList[1]
+if (!GROUPS.includes(group)) {
+  usage(`The second category is the group, and must be one of: ${GROUPS.join(", ")}.`)
+}
 
 const items = registryItems({
   name,

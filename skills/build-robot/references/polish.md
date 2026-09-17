@@ -35,7 +35,7 @@ back to `AutoDemo`, and `catalogue.test.tsx` enforces *resolution*, not authorsh
 
 ```ts
 {
-  slug: "casing-droid", item: "casing-droid", title: "Casing droid", group: "Robots",
+  slug: "casing-droid", item: "casing-droid",   // the title and the group come from registry.json
   summary: "One sentence a stranger can read on a card.",
   files: ["components/ui/casing-droid.tsx"],        // relative to src/, shown under "Source"
   usage: `import { CasingDroid } from "@/components/ui/casing-droid"
@@ -119,7 +119,7 @@ starts a family of its own joins neither. Everything else in those files is deri
   "type": "registry:ui",                    // registry:ui | registry:lib | registry:hook
   "title": "Casing droid",
   "description": "An armoured conical casing unit with a rotating dome, elevating eyestalk, and swappable manipulator.",
-  "categories": ["robotics", "robots"],
+  "categories": ["robotics", "droids"],      // the umbrella, then the group: src/lib/groups.ts
   "registryDependencies": [
     "{REGISTRY_URL}/r/robot-style.json",
     "{REGISTRY_URL}/r/robot-kinematics.json"

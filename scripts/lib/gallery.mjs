@@ -102,7 +102,7 @@ export async function resolveGallery(registry) {
       export: match,
       module: file.path.replace(/^src\//, "@/").replace(/\.tsx?$/, ""),
       webgl: isWebgl(source),
-      interface: item.categories?.includes("interfaces") ?? false,
+      interface: item.categories?.includes("controls") ?? false,
     })
   }
 

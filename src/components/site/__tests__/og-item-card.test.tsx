@@ -34,7 +34,7 @@ const card = (slug: string) => {
 describe("page social card", () => {
   it("names the page it is the card for", () => {
     const text = card("micro-duck").container.textContent ?? ""
-    expect(text).toContain("Micro duck")
+    expect(text).toContain("Duck")
     // The tile label off the contact sheet, kept so the set reads as one.
     expect(text).toContain("micro-duck")
     expect(text).toContain("robocn")
