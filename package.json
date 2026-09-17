@@ -2,7 +2,7 @@
   "name": "robocn",
   "version": "0.1.0",
   "private": true,
-  "description": "A shadcn-compatible registry of robot components: articulated arms in SVG and WebGL, SCARA, delta and gantry cells, mobile robots, robotic animals and sensor displays — all solving their own kinematics, themed with CSS variables, installed as source.",
+  "description": "A shadcn-compatible registry of robot components: articulated arms in SVG and WebGL, SCARA, delta and gantry cells, mobile robots, robotic animals and sensor displays \u2014 all solving their own kinematics, themed with CSS variables, installed as source.",
   "keywords": [
     "shadcn",
     "shadcn-ui",
@@ -43,7 +43,7 @@
   "scripts": {
     "dev": "pnpm generate && next dev",
     "postinstall": "node scripts/setup-skills.mjs",
-    "build": "pnpm generate && pnpm registry:build && next build",
+    "build": "pnpm generate && pnpm registry:build && node scripts/db-deploy.mjs && next build",
     "generate": "pnpm workbench:prepare && pnpm gallery:prepare",
     "workbench:prepare": "node scripts/build-workbench.mjs",
     "gallery:prepare": "node scripts/build-gallery.mjs",
@@ -60,7 +60,8 @@
     "icons": "node scripts/build-icons.mjs",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "db:deploy": "node scripts/db-deploy.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
