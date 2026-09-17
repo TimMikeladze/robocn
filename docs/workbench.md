@@ -24,7 +24,9 @@ people actually do here: look hard at a machine while changing it.
 ## What it does
 
 **Every registry component, one keystroke away.** The sidebar lists all `registry:ui`
-items, grouped by their registry category, filtered by a search box on `/`.
+items, grouped by their registry category, filtered by a search box on `/`. A bare
+`/workbench` opens the animatronic face — it moves on its own and has a knob for every part
+of it, which is the tool in one machine.
 
 **Controls it derives, not controls anyone wrote.** No stories, no `argTypes`. A build step
 parses each component's props interface with the TypeScript AST and emits a control per

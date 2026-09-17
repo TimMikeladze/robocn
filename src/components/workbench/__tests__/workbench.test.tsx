@@ -98,6 +98,14 @@ describe("the workbench", () => {
     window.localStorage.setItem("robocn-workbench-setup", "1")
   })
 
+  it("opens on the animatronic face when the URL names nothing", async () => {
+    render(<Workbench initialQuery={{}} />)
+    expect(await screen.findByRole("img", { name: /animatronic face/i })).toBeTruthy()
+    await waitFor(() => {
+      expect(new URLSearchParams(window.location.search).get("c")).toBe("animatronic-face")
+    })
+  })
+
   it("opens on the component the URL names and draws it", async () => {
     open()
     expect(await screen.findByRole("img", { name: /robotic arm/i })).toBeTruthy()

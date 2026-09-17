@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Check, Copy, Dices, RotateCcw, SwatchBook } from "lucide-react"
+import { Check, Copy, Dices, RotateCcw, Settings } from "lucide-react"
 import { useTheme } from "next-themes"
 
 import { Button } from "@/components/ui/button"
@@ -278,7 +278,7 @@ function ThemeCustomizer() {
             className="size-8 text-muted-foreground"
             aria-label="Change theme"
           >
-            <SwatchBook className="size-4" />
+            <Settings className="size-4" />
           </Button>
         }
       />

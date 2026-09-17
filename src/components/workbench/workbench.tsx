@@ -66,7 +66,14 @@ import {
 } from "@/lib/workbench/controls"
 import { cn } from "@/lib/utils"
 
-const FALLBACK = workbenchComponentList[0]?.id ?? "robot-arm"
+/**
+ * What opens when the URL names no machine: the animatronic face, which moves
+ * on its own and has a knob for every part of it — the machine that shows what
+ * the bench is for. Falls back to the first in the manifest if it is ever gone.
+ */
+const DEFAULT_COMPONENT = "animatronic-face"
+const FALLBACK =
+  (workbenchComponent(DEFAULT_COMPONENT) ?? workbenchComponentList[0])?.id ?? DEFAULT_COMPONENT
 
 const zooms = [0.25, 0.4, 0.6, 0.8, 1, 1.25, 1.5, 2, 3]
 
