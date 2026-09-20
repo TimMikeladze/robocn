@@ -35,6 +35,7 @@ import { controlsFor, indexTypes, isRobotSource, titleCase } from "./lib/workben
 const wrapped = {
   "robot-arm-3d": { export: "StagedArm3D", module: "@/components/workbench/webgl" },
   "robot-stage": { export: "StageWithArm", module: "@/components/workbench/webgl" },
+  "puzzle-cube": { export: "StagedPuzzleCube", module: "@/components/workbench/webgl" },
   "robot-export": { export: "ExportedArm", module: "@/components/workbench/wrappers" },
 }
 

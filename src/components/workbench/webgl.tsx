@@ -1,7 +1,7 @@
 "use client"
 
 /**
- * The two components that cannot mount bare on the stage.
+ * The components that cannot mount bare on the stage.
  *
  * `robot-arm-3d` needs a WebGL canvas around it and `robot-stage` *is* that
  * canvas, so it needs a machine to hold. The generated registry points both at
@@ -9,6 +9,7 @@
  * itself. `scripts/build-workbench.mjs` records the pairing.
  */
 
+import { PuzzleCube, type PuzzleCubeProps } from "@/components/ui/puzzle-cube"
 import { RobotArm3D, type RobotArm3DProps } from "@/components/ui/robot-arm-3d"
 import { RobotStage, type RobotStageProps } from "@/components/ui/robot-stage"
 
@@ -32,4 +33,13 @@ function StageWithArm({ children, ...props }: RobotStageProps) {
   )
 }
 
-export { StagedArm3D, StageWithArm }
+/** The cube, lit and framed, with the camera off one corner. */
+function StagedPuzzleCube(props: PuzzleCubeProps) {
+  return (
+    <RobotStage style={fill} camera={[3.4, 2.9, 4.2]} floor="shadow">
+      <PuzzleCube {...props} />
+    </RobotStage>
+  )
+}
+
+export { StagedArm3D, StagedPuzzleCube, StageWithArm }

@@ -225,6 +225,8 @@ import { ConstructRing, type ConstructArchetype, type ConstructRingBehavior } fr
 import { AnimatronicRobot, type AnimatronicChassis, type AnimatronicRobotBehavior } from "@/components/ui/animatronic-robot"
 import { BoreConstruct, type BoreConstructBehavior } from "@/components/ui/bore-construct"
 import { RodPump, type RodPumpBehavior } from "@/components/ui/rod-pump"
+import { PuzzleCube, type PuzzleCubeApi, type PuzzleCubeBehavior } from "@/components/ui/puzzle-cube"
+import { isSolved } from "@/lib/robocn/cube"
 import {
   defaultPumpGeometry,
   solveRodPump,
@@ -5772,6 +5774,52 @@ function RodPumpDemo() {
   )
 }
 
+function PuzzleCubeDemo() {
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [behavior, setBehavior] = React.useState<PuzzleCubeBehavior>("cycle")
+  const [order, setOrder] = React.useState(3)
+  const [moves, setMoves] = React.useState(0)
+  const [solved, setSolved] = React.useState(true)
+  const api = React.useRef<PuzzleCubeApi | null>(null)
+  // The rig hands its driver out once; the bench keeps it for the buttons.
+  const take = React.useCallback((next: PuzzleCubeApi) => {
+    api.current = next
+  }, [])
+
+  const button = "border border-border px-3 py-2 text-[12px] hover:border-foreground"
+
+  return (
+    <Bench controls={<>
+      <Segmented label="motion" value={behavior} options={["cycle", "scramble", "static"] as const} onChange={setBehavior} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <NumberControl label="order" value={order} min={2} max={5} onChange={setOrder} />
+      <div className="flex flex-wrap gap-2">
+        <button type="button" className={button} onClick={() => api.current?.scramble()}>Scramble</button>
+        <button type="button" className={button} onClick={() => api.current?.undo()}>Undo</button>
+        <button type="button" className={button} onClick={() => api.current?.reset()}>Reset</button>
+      </div>
+      <Hint>
+        Drag a face to turn that layer; drag the background to orbit. Click the cube
+        and type U D L R F B — shift for anticlockwise, S to scramble, escape to reset.
+      </Hint>
+      <Readout rows={[["turns", String(moves)], ["state", solved ? "solved" : "scrambled"]]} />
+    </>}>
+      <RobotStage className="h-80 w-full" floor="shadow" camera={[3.4, 2.9, 4.2]}>
+        <PuzzleCube
+          key={order}
+          order={order}
+          behavior={behavior}
+          variant={variant}
+          interactive
+          controls={take}
+          onStateChange={(state) => setSolved(isSolved(state))}
+          onMove={() => setMoves((count) => count + 1)}
+        />
+      </RobotStage>
+    </Bench>
+  )
+}
+
 export const demos: Record<string, React.ComponentType<DemoProps>> = {
   "robot-football": RobotFootballDemo,
   "gridiron-geometry": RobotFootballDemo,
@@ -5994,6 +6042,8 @@ export const demos: Record<string, React.ComponentType<DemoProps>> = {
   "airframe": AirlinerDemo,
   "rod-pump": RodPumpDemo,
   "rodpump-geometry": RodPumpDemo,
+  "puzzle-cube": PuzzleCubeDemo,
+  "cube-geometry": PuzzleCubeDemo,
 }
 
 /**

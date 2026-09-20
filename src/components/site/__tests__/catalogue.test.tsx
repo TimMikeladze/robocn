@@ -149,15 +149,15 @@ describe("landing catalogue", () => {
         ? card?.querySelector('[data-slot^="robotic-"]')
         : card?.querySelector("svg")
     })
-    // The two WebGL cards hold their "3D" placeholder here rather than a canvas.
-    expect(cards.length - drawn.length).toBe(2)
+    // The WebGL cards hold their "3D" placeholder here rather than a canvas.
+    expect(cards.length - drawn.length).toBe(4)
   })
 
   it("holds a placeholder for the WebGL cards instead of a canvas", () => {
     // jsdom has no IntersectionObserver, which is the signal `CatalogueStage`
     // uses for "not a browser" — three must never be pulled into a render here.
     const { container } = render(<Catalogue entries={cards} />)
-    for (const slug of ["robot-arm-3d", "robot-stage"]) {
+    for (const slug of ["robot-arm-3d", "robot-stage", "puzzle-cube", "cube-geometry"]) {
       const card = container.querySelector(`a[href="/docs/${slug}"]`)
       expect(card?.textContent, slug).toContain("3D")
       expect(card?.querySelector("canvas"), slug).toBeNull()

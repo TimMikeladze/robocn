@@ -7511,6 +7511,85 @@ controlMix({ roll: 8, configuration: 0.6 })`,
       "A generic API-style insert pump named for its job. No manufacturer, field or operator names, and the default palette is the theme's.",
     ],
   },
+  {
+    slug: "cube-geometry", item: "cube-geometry",
+    summary:
+      "An N×N×N twisty puzzle as exact integer state: cubies on a lattice, each with an orientation matrix, plus moves, notation, scrambles, sticker lookup and the drag maths.",
+    files: ["lib/robocn/cube.ts"],
+    usage: `import { applyMove, createCube, isSolved, parseAlgorithm } from "@/lib/robocn/cube"
+
+const solved = createCube(3)
+const scrambled = parseAlgorithm("R U R' U'").reduce(applyMove, solved)
+
+isSolved(scrambled) // false — and true again after six repeats.`,
+    api: [
+      { name: "createCube(order?)", type: "(order?: number) => CubeState", description: "A solved cube, `order` cubies to a side. 2 … 7, clamped." },
+      { name: "applyMove(state, move)", type: "(state: CubeState, move: CubeMove) => CubeState", description: "The state after one turn. Immutable — the previous state is untouched." },
+      { name: "applyMoves(state, moves)", type: "(state: CubeState, moves: CubeMove[]) => CubeState", description: "A whole algorithm, in order." },
+      { name: "isSolved(state)", type: "(state: CubeState) => boolean", description: "Every cubie home and every orientation the identity. Exact, never a tolerance." },
+      { name: "parseMove / parseAlgorithm", type: `(text: string) => CubeMove | null`, description: "The notation people type: `R`, `U'`, `F2`, `2R'`. Anything else is dropped rather than guessed at." },
+      { name: "formatMove / formatAlgorithm", type: "(move: CubeMove) => string", description: "The same notation back out." },
+      { name: "invertMove / invertMoves", type: "(moves: CubeMove[]) => CubeMove[]", description: "The undo of a sequence: reversed, each turn the other way." },
+      { name: "scrambleMoves(order?, count?, seed?)", type: "(order?: number, count?: number, seed?: number) => CubeMove[]", description: "A deterministic scramble — same seed, same shuffle — never repeating a face back to back." },
+      { name: "moveToTurn / turnToMove", type: "(move: CubeMove, order: number) => CubeTurn", description: "A person's move (clockwise from outside) as the renderer's turn (right-handed about the positive axis), and back." },
+      { name: "moveFromDrag(drag)", type: "(drag: CubeDrag) => CubeMove | null", description: "The turn a drag across a face asks for: the grabbed face, the grabbed cubie and a direction in world units. Null when the drag has no direction in the plane of the face." },
+      { name: "stickerFace(cubie, face)", type: "(cubie: Cubie, face: CubeFace) => CubeFace", description: "Which face's colour the sticker on that side of the cubie now shows." },
+      { name: "exposedFaces / shellCubies", type: "(cubie: Cubie, order: number) => CubeFace[]", description: "The sides of a cubie that are on the outside, and the cubies worth drawing at all." },
+    ],
+    notes: [
+      "State is exact integer arithmetic: lattice indices and 3×3 matrices of -1, 0 and 1. A cube turned ten thousand times is bit-identical to one turned none, so `isSolved` is a comparison rather than a tolerance.",
+      "Clockwise means clockwise **looking at that face from outside**, the way notation means it. The sign flip that costs — negative right-handed about a positive normal — lives in `moveToTurn` and nowhere else.",
+      "No solver in the other sense: nothing here works out how to unscramble a cube. `createCube()` restores one, which is a different thing.",
+      "Pure functions over plain objects: no React, no three.js, no dependencies.",
+    ],
+  },
+  {
+    slug: "puzzle-cube", item: "puzzle-cube",
+    summary:
+      "The classic twisty cube as a real react-three-fiber rig: orbit it, drag a face to turn that layer, type moves at it, scramble it — every turn going through the pure cube solver.",
+    files: ["components/ui/puzzle-cube.tsx"],
+    usage: `import { PuzzleCube, type PuzzleCubeApi } from "@/components/ui/puzzle-cube"
+import { RobotStage } from "@/components/ui/robot-stage"
+
+export function Desk() {
+  const api = React.useRef<PuzzleCubeApi | null>(null)
+
+  return (
+    <>
+      <RobotStage floor="shadow" className="h-96" camera={[3.4, 2.8, 4.2]}>
+        <PuzzleCube interactive behavior="static" controls={(next) => (api.current = next)} />
+      </RobotStage>
+      <button onClick={() => api.current?.scramble()}>Scramble</button>
+    </>
+  )
+}`,
+    props: [
+      { name: "order", type: "number", default: "3", description: "Cubies to a side, 2 … 7. 3 is the cube everyone means." },
+      { name: "size", type: "number", default: "2.4", description: "The cube's edge in three.js world units." },
+      { name: "algorithm", type: "string | CubeMove[]", description: "Controlled: the cube is exactly this algorithm applied to a solved one, and the behaviour loop stops. Appending a move animates it; anything else rebuilds the state." },
+      { name: "behavior", type: `"cycle" | "scramble" | "static"`, default: `"cycle"`, description: "What it does with nobody driving it. `cycle` repeats R U R' U', which comes home every six repeats; `scramble` walks a seeded shuffle." },
+      { name: "interactive", type: "boolean", default: "true", description: "Drag a face to turn that layer, and click the canvas to type moves at it: U D L R F B, shift for anticlockwise, S to scramble, backspace to undo, escape to reset." },
+      { name: "controls", type: "(api: PuzzleCubeApi) => void", description: "Handed a driver: `turn`, `scramble`, `reset`, `undo`, `state`." },
+      { name: "faces", type: "Partial<Record<CubeFace, string>>", description: "Per-face colour overrides. Each face otherwise resolves prop → `--robot-cube-<face>` → the standard scheme." },
+      { name: "scrambleOnMount", type: "boolean | number", default: "false", description: "Start shuffled rather than solved; a number says how many turns." },
+      { name: "seed", type: "number", default: "1", description: "Fixes the scramble, so two cubes on a page can be told to agree." },
+      { name: "onMove", type: "(move: CubeMove, state: CubeState) => void", description: "Every turn, once it has landed." },
+      { name: "onSolved", type: "() => void", description: "The moment it comes home." },
+      { name: "speed", type: "number", default: "0.9", description: "Turns per second for the loop, and how fast a turn travels." },
+      ...loop,
+      // `size` is world units here, not pixels, so it is listed above instead.
+      ...form.slice(0, 1),
+      ...palette,
+    ],
+    notes: [
+      "Solved, not illustrated: the state, every turn, the scramble, the drag-to-move and the sticker colours all come from `cube-geometry` — exact integer arithmetic, tested on its own. Illustrated: the eased travel of a turn, and the flat sticker on a square cubie.",
+      "It does not solve a scrambled cube. `reset()` restores a solved one and `undo()` walks the history back; neither searches for a solution, and nothing here claims to.",
+      "Drag turns the layer a hand expects, from any camera angle: the drag is projected into the plane of the face you grabbed and crossed with that face's normal. A face never turns about its own normal, so dragging *on* the right face turns a front or top layer — which is how a real cube behaves.",
+      "Six face colours are the one place the four palette roles are not enough, so each face resolves prop → `--robot-cube-u` … `--robot-cube-l` → the standard white, yellow, green, blue, red, orange. The body, the highlight and the solved glow still come from the theme.",
+      "It needs a WebGL canvas: mount it inside `robot-stage`, which brings the lights, the shadow and the orbit controls. Keyboard and `data-cube-*` hooks are set on that canvas element.",
+      "Reduced motion lands each turn immediately rather than animating it, and parks the behaviour loop — input still works.",
+    ],
+  },
 ]
 const byName = new Map(registry.items.map((item) => [item.name, item]))
 

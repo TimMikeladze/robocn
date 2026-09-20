@@ -1,7 +1,7 @@
 "use client"
 
 /**
- * The two WebGL cards in the landing catalogue.
+ * The WebGL cards in the landing catalogue.
  *
  * `three` is loaded through `next/dynamic({ ssr: false })` and the canvas is
  * only mounted once the card is near the viewport, so the landing page still
@@ -24,9 +24,11 @@ const CardStage = dynamic(
 
 export interface CatalogueStageProps {
   floor?: "grid" | "shadow" | "none"
+  /** Which machine stands on the card. */
+  machine?: "arm" | "cube"
 }
 
-function CatalogueStage({ floor = "shadow" }: CatalogueStageProps) {
+function CatalogueStage({ floor = "shadow", machine = "arm" }: CatalogueStageProps) {
   // `once`: a context is expensive enough to start that it is not torn down for
   // a scroll past — the card around it unmounts this whole component when it
   // goes a viewport away, which is what actually releases it.
@@ -41,7 +43,7 @@ function CatalogueStage({ floor = "shadow" }: CatalogueStageProps) {
   return (
     <div ref={holder} className="h-44 w-full [&_canvas]:pointer-events-none">
       {near ? (
-        <CardStage floor={floor} calm={prefersReducedMotion()} />
+        <CardStage floor={floor} machine={machine} calm={prefersReducedMotion()} />
       ) : (
         <div className="flex h-full items-center justify-center font-mono text-[12px] text-muted-foreground opacity-50">
           3D

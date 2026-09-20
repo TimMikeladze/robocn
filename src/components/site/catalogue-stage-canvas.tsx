@@ -17,6 +17,7 @@
  * every frame shows nothing moving, which is what was actually asked for.
  */
 
+import { PuzzleCube } from "@/components/ui/puzzle-cube"
 import { RobotArm3D } from "@/components/ui/robot-arm-3d"
 import { RobotStage } from "@/components/ui/robot-stage"
 
@@ -28,25 +29,42 @@ export interface CardStageProps {
   floor?: "grid" | "shadow" | "none"
   /** Reduced motion: hold one pose instead of running the cycle. */
   calm?: boolean
+  machine?: "arm" | "cube"
 }
 
-function CardStage({ floor = "shadow", calm = false }: CardStageProps) {
+/** The cube sits on the origin, so it needs no look-at correction. */
+const CUBE_AIM: [number, number, number] = [0, 0, 0]
+
+function CardStage({ floor = "shadow", calm = false, machine = "arm" }: CardStageProps) {
+  const cube = machine === "cube"
+  const aim = cube ? CUBE_AIM : AIM
+
   return (
     <RobotStage
       className="h-full w-full"
-      camera={[3.2, 2.9, 4.4]}
+      camera={cube ? [3.1, 2.7, 3.8] : [3.2, 2.9, 4.4]}
       fov={38}
       controls={false}
-      floor={floor}
-      canvasProps={{ onCreated: ({ camera }) => camera.lookAt(...AIM) }}
+      floor={cube ? "none" : floor}
+      canvasProps={{ onCreated: ({ camera }) => camera.lookAt(...aim) }}
     >
-      <RobotArm3D
-        links={[1, 0.82, 0.34]}
-        reach={REACH}
-        tool="gripper"
-        behavior={calm ? "static" : "idle"}
-        animate={!calm}
-      />
+      {cube ? (
+        <PuzzleCube
+          size={2.2}
+          behavior={calm ? "static" : "cycle"}
+          interactive={false}
+          animate={!calm}
+          scrambleOnMount={calm ? 9 : false}
+        />
+      ) : (
+        <RobotArm3D
+          links={[1, 0.82, 0.34]}
+          reach={REACH}
+          tool="gripper"
+          behavior={calm ? "static" : "idle"}
+          animate={!calm}
+        />
+      )}
     </RobotStage>
   )
 }

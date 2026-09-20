@@ -5202,6 +5202,54 @@
           "target": "@ui/rod-pump.tsx"
         }
       ]
+    },
+    {
+      "name": "cube-geometry",
+      "type": "registry:lib",
+      "title": "Cube geometry",
+      "description": "An N×N×N twisty puzzle as exact integer state: cubies on a lattice with orientation matrices, moves, notation, scrambles, sticker lookup and drag-to-move.",
+      "categories": [
+        "robotics",
+        "foundations"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "src/lib/robocn/cube.ts",
+          "type": "registry:lib",
+          "target": "@lib/cube.ts"
+        }
+      ]
+    },
+    {
+      "name": "puzzle-cube",
+      "type": "registry:ui",
+      "title": "Puzzle cube",
+      "description": "The classic twisty cube as a real 3D rig: drag a face to turn that layer, orbit it, scramble it, and every turn goes through a pure cube solver.",
+      "categories": [
+        "robotics",
+        "devices"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-color.json",
+        "{REGISTRY_URL}/r/robot-stage.json",
+        "{REGISTRY_URL}/r/cube-geometry.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/puzzle-cube.tsx",
+          "type": "registry:ui",
+          "target": "@ui/puzzle-cube.tsx"
+        }
+      ],
+      "dependencies": [
+        "three",
+        "@react-three/fiber"
+      ],
+      "devDependencies": [
+        "@types/three"
+      ]
     }
   ]
 }
