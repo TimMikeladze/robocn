@@ -9,7 +9,7 @@
  * itself. `scripts/build-workbench.mjs` records the pairing.
  */
 
-import { PuzzleCube, type PuzzleCubeProps } from "@/components/ui/puzzle-cube"
+import { RubiksCube, type RubiksCubeProps } from "@/components/ui/rubiks-cube"
 import { RobotArm3D, type RobotArm3DProps } from "@/components/ui/robot-arm-3d"
 import { RobotStage, type RobotStageProps } from "@/components/ui/robot-stage"
 
@@ -34,12 +34,12 @@ function StageWithArm({ children, ...props }: RobotStageProps) {
 }
 
 /** The cube, lit and framed, with the camera off one corner. */
-function StagedPuzzleCube(props: PuzzleCubeProps) {
+function StagedRubiksCube(props: RubiksCubeProps) {
   return (
     <RobotStage style={fill} camera={[3.4, 2.9, 4.2]} floor="shadow">
-      <PuzzleCube {...props} />
+      <RubiksCube {...props} />
     </RobotStage>
   )
 }
 
-export { StagedArm3D, StagedPuzzleCube, StageWithArm }
+export { StagedArm3D, StagedRubiksCube, StageWithArm }

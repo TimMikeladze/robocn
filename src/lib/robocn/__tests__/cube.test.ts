@@ -7,14 +7,20 @@ import {
   cubeFaces,
   exposedFaces,
   formatAlgorithm,
+  formatMove,
+  grabFromDrag,
   invertMoves,
   isSolved,
   moveFromDrag,
   moveToTurn,
   parseAlgorithm,
   parseMove,
+  rotationMatrix,
   scrambleMoves,
   shellCubies,
+  simplifyMoves,
+  solveCube,
+  solveStep,
   stickerFace,
   turnToMove,
   type CubeFace,
@@ -188,4 +194,134 @@ describe("cube", () => {
       expect(isSolved(applyMoves(scrambled, invertMoves(scramble)))).toBe(true)
     }
   })
+
+  it("winds a drag as well as answering it: same turn, plus the tangent to pull along", () => {
+    const grab = grabFromDrag({
+      face: "R",
+      cubie: { i: 2, j: 1, k: 1 },
+      direction: [0, 1, 0],
+      order: 3,
+    })
+
+    expect(grab).not.toBeNull()
+    expect(grab!.move).toEqual(moveFromDrag({
+      face: "R",
+      cubie: { i: 2, j: 1, k: 1 },
+      direction: [0, 1, 0],
+      order: 3,
+    }))
+    // Dragging up the right face pulls along +y, and turns about z.
+    expect(grab!.tangent).toEqual([0, 1, 0])
+    expect(grab!.turn.axis).toBe("z")
+    expect(grab!.turn.slice).toBe(1)
+  })
+
+  it("cancels and fuses a line rather than playing it back move for move", () => {
+    expect(formatAlgorithm(simplifyMoves(parseAlgorithm("R R'")))).toBe("")
+    expect(formatAlgorithm(simplifyMoves(parseAlgorithm("R R")))).toBe("R2")
+    expect(formatAlgorithm(simplifyMoves(parseAlgorithm("R R R R")))).toBe("")
+    expect(formatAlgorithm(simplifyMoves(parseAlgorithm("R U U' R2")))).toBe("R'")
+    // A different layer of the same face is a different move, and stays.
+    expect(formatAlgorithm(simplifyMoves(parseAlgorithm("R 2R")))).toBe("R 2R")
+  })
+
+  it("solves a cube it is handed, and the line is the thing that solves it", () => {
+    for (const seed of [1, 7, 31, 404, 9001]) {
+      const scramble = scrambleMoves(3, 30, seed)
+      const scrambled = applyMoves(createCube(3), scramble)
+      const line = solveCube(scrambled)
+
+      expect(line, `seed ${seed}`).not.toBeNull()
+      expect(isSolved(applyMoves(scrambled, line!))).toBe(true)
+      // Every move of it is a move a person could write down and play.
+      for (const move of line!) {
+        expect(parseMove(formatMove(move))).toEqual(move)
+      }
+    }
+  })
+
+  it("costs nothing on a solved cube, and hints the first move of the line", () => {
+    expect(solveCube(createCube(3))).toEqual([])
+    expect(solveStep(createCube(3))).toBeNull()
+
+    const scrambled = applyMoves(createCube(3), scrambleMoves(3, 12, 5))
+    expect(solveStep(scrambled)).toEqual(solveCube(scrambled)![0])
+  })
+
+  it("says no rather than guessing on a cube the method does not cover", () => {
+    expect(solveCube(applyMoves(createCube(4), scrambleMoves(4, 10, 2)))).toBeNull()
+    expect(solveCube(createCube(2))).toBeNull()
+    // @ts-expect-error — a consumer holding rubbish gets null, not a throw.
+    expect(solveCube(null)).toBeNull()
+  })
+
+  it("calls a cube solved when every sticker is home, spun centres and all", () => {
+    // Four U turns is the identity; one is not, and neither is any of them
+    // reported as solved by luck.
+    let cube = createCube(3)
+    for (let turn = 0; turn < 3; turn++) {
+      cube = applyMove(cube, { face: "U", layer: 0, turns: 1 })
+      expect(isSolved(cube)).toBe(false)
+    }
+    expect(isSolved(applyMove(cube, { face: "U", layer: 0, turns: 1 }))).toBe(true)
+
+    // A centre spun about its own normal shows the same square, so a cube
+    // whose stickers all match is solved even though that matrix is not the
+    // identity. Spin the U centre a quarter turn in place and ask.
+    const spun = createCube(3)
+    const centre = spun.cubies.find((cubie) => cubie.i === 1 && cubie.j === 2 && cubie.k === 1)!
+    centre.orientation = rotationMatrix("y", 1)
+
+    expect(centre.orientation).not.toEqual([1, 0, 0, 0, 1, 0, 0, 0, 1])
+    expect(isSolved(spun)).toBe(true)
+    expect(stickerFace(centre, "U")).toBe("U")
+    // An edge spun in place is a different matter: its stickers stop matching.
+    const edge = spun.cubies.find((cubie) => cubie.i === 1 && cubie.j === 2 && cubie.k === 2)!
+    edge.orientation = rotationMatrix("y", 1)
+    expect(isSolved(spun)).toBe(false)
+  })
+
+  it("solves a cube whose middle slices have been turned, centres and all", () => {
+    // A middle-slice turn moves the centres, so the cube is no longer sitting
+    // in the frame its face names were written in. The solver turns it round
+    // in its head and writes the answer back out in the caller's frame.
+    for (const seed of [2, 19, 77]) {
+      const scramble = [
+        ...scrambleMoves(3, 12, seed),
+        ...parseAlgorithm("2R 2U' 2F 2R'"),
+        ...scrambleMoves(3, 8, seed + 1),
+      ]
+      const scrambled = applyMoves(createCube(3), scramble)
+      const line = solveCube(scrambled)
+
+      expect(line, `seed ${seed}`).not.toBeNull()
+      // No slice moves in the answer: a solve is face turns, and the cube ends
+      // up wherever the slices left it — every face one colour.
+      expect(line!.every((move) => move.layer === 0)).toBe(true)
+      expect(isSolved(applyMoves(scrambled, line!))).toBe(true)
+    }
+  })
+
+  it("calls a cube in your hands solved however it is being held", () => {
+    // A whole-cube rotation is four turns of the same axis, layer by layer.
+    const turned = applyMoves(createCube(3), parseAlgorithm("U 2U D' U 2U D'"))
+    expect(isSolved(turned)).toBe(true)
+    // But it is genuinely turned: the piece from the top-front is elsewhere.
+    expect(turned.cubies[slotIndex(1, 2, 2)]).not.toMatchObject({ i: 1, j: 2, k: 2 })
+    expect(isSolved(applyMove(turned, { face: "R", layer: 0, turns: 1 }))).toBe(false)
+  })
+
+  it("takes the short way back when the cube is only a few turns from home", () => {
+    // Five turns of fiddling should cost five moves, not the hundred and
+    // thirty a layer-by-layer method would happily spend.
+    const near = applyMoves(createCube(3), parseAlgorithm("R U F L D"))
+    const line = solveCube(near)
+
+    expect(line).not.toBeNull()
+    expect(line!.length).toBe(5)
+    expect(isSolved(applyMoves(near, line!))).toBe(true)
+  })
 })
+
+/** The array index of a home cell, which is the piece that lives there. */
+const slotIndex = (i: number, j: number, k: number) => i * 9 + j * 3 + k

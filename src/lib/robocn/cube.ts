@@ -7,7 +7,7 @@
  * currently is. So the state here is a lattice of cubies, each carrying an
  * integer orientation matrix, and a move is one exact matrix multiply — no
  * floating point ever enters the state, and `isSolved` is "every orientation
- * is the identity" rather than a string compare. Notes: `docs/puzzle-cube.md`.
+ * is the identity" rather than a string compare. Notes: `docs/rubiks-cube.md`.
  *
  * Pure functions over plain objects. No React, no three.js, no dependencies —
  * the drag maths the r3f rig runs on is the same code the tests sample.
@@ -145,14 +145,33 @@ export function createCube(order = 3): CubeState {
   return { order: n, cubies }
 }
 
-export const isSolved = (state: CubeState): boolean =>
-  state.cubies.every(
-    (cubie, index) =>
-      cubie.orientation.every((value, slot) => value === identityMatrix[slot]) &&
-      // A turned-but-symmetric piece still has to be *where* it started.
-      index ===
-        cubie.i * state.order * state.order + cubie.j * state.order + cubie.k,
-  )
+/**
+ * Solved is what a person holding one means by solved: **every face one
+ * colour**. Not "every orientation is the identity", and not even "every
+ * sticker shows its own face" — both of those call a cube unsolved that
+ * nobody would, because both count things you cannot see. A centre spun about
+ * its own normal shows the same square; a cube turned round in your hands, or
+ * one whose middle slices have been turned, has its whites somewhere else and
+ * is still solved.
+ *
+ * It is no weaker for it: nine stickers of each colour means two faces cannot
+ * show the same one, so six uniform faces is a solved cube. And it is exact —
+ * integer comparisons through `stickerFace`, never a tolerance.
+ */
+export function isSolved(state: CubeState): boolean {
+  const cubies = state?.cubies
+  if (!cubies?.length) return false
+  const shown: Partial<Record<CubeFace, CubeFace>> = {}
+  for (const cubie of cubies) {
+    for (const face of exposedFaces(cubie, state.order)) {
+      const shows = stickerFace(cubie, face)
+      const seen = shown[face]
+      if (seen === undefined) shown[face] = shows
+      else if (seen !== shows) return false
+    }
+  }
+  return true
+}
 
 /** Lattice index → centred coordinate, doubled so it stays an integer. */
 const centred = (index: number, order: number) => 2 * index - (order - 1)
@@ -363,16 +382,28 @@ export interface CubeDrag {
   order: number
 }
 
+export interface CubeGrab {
+  /** The turn the drag is winding on. */
+  turn: CubeTurn
+  /** The same thing as a person would write it. */
+  move: CubeMove
+  /** The unit direction along which travel winds `turn` forwards. */
+  tangent: readonly [number, number, number]
+}
+
 /**
- * The turn a drag across a face asks for.
+ * The whole drag, not just its answer: the turn it is winding, and the
+ * direction the hand has to keep pulling to keep winding it.
  *
  * The drag is projected onto the two axes in the plane of the grabbed face,
  * the dominant one is taken, and the rotation axis is its cross product with
  * the face normal — so dragging up the right-hand face lifts that column,
- * whichever way the camera happens to be pointing. Null when the drag is too
- * small to have a direction, or rubbish.
+ * whichever way the camera happens to be pointing. A rig that follows the
+ * pointer rather than snapping at a threshold needs the tangent as well, and
+ * it is the same geometry, so it comes from here rather than being re-derived
+ * against a camera. Null when the drag has no direction in the face's plane.
  */
-export function moveFromDrag(drag: CubeDrag): CubeMove | null {
+export function grabFromDrag(drag: CubeDrag): CubeGrab | null {
   if (!drag || !cubeFaces.includes(drag.face)) return null
   const n = clampOrder(drag.order)
   const normal = faceNormals[drag.face]
@@ -417,8 +448,13 @@ export function moveFromDrag(drag: CubeDrag): CubeMove | null {
       ),
     ),
   )
-  return turnToMove({ axis: turnAxis, slice, quarterTurns }, n)
+  const turn: CubeTurn = { axis: turnAxis, slice, quarterTurns }
+  return { turn, move: turnToMove(turn, n), tangent: along }
 }
+
+/** The turn a drag across a face asks for, and nothing else. */
+export const moveFromDrag = (drag: CubeDrag): CubeMove | null =>
+  grabFromDrag(drag)?.move ?? null
 
 const dot = (
   a: readonly [number, number, number],
@@ -433,3 +469,446 @@ const cross = (
   a[2] * b[0] - a[0] * b[2],
   a[0] * b[1] - a[1] * b[0],
 ]
+
+/* --------------------------------------------------------------- solving */
+
+/**
+ * A layer-by-layer solve, and the only part of this file that searches.
+ *
+ * The method is the beginner's one — cross, first-layer corners, middle
+ * edges, last-layer cross, twist, place — but it is not written as a hundred
+ * hand-cased positions. Each stage is an iterative-deepening search a few
+ * symbols deep over an alphabet of *macros*: the U turns, plus one standard
+ * algorithm rotated into each of the four side slots. A small search over big
+ * steps, rather than a big search over small ones.
+ *
+ * The search runs on a packed encoding — where each piece sits (0 … 26) and
+ * which of the 24 rotations it carries — so a turn is 27 table lookups and no
+ * allocation. `solveCube` decodes nothing back until the end, replays the
+ * answer through `applyMoves`, and returns `null` unless that replay comes
+ * home. It never returns a line it has not checked.
+ */
+
+/** The eighteen face turns of a 3×3, in a fixed order the tables index by. */
+const basicMoves: CubeMove[] = cubeFaces.flatMap((face) =>
+  [1, 2, 3].map((turns) => ({ face, layer: 0, turns })),
+)
+
+/** The 24 orientations a cubie can carry, identity first. */
+const orientations: CubeMatrix[] = (() => {
+  const key = (m: CubeMatrix) => m.join(",")
+  const list: CubeMatrix[] = [identityMatrix]
+  const seen = new Set([key(identityMatrix)])
+  const generators = [
+    rotationMatrix("x", 1),
+    rotationMatrix("y", 1),
+    rotationMatrix("z", 1),
+  ]
+  for (let index = 0; index < list.length; index++) {
+    for (const generator of generators) {
+      const next = multiplyMatrix(generator, list[index])
+      if (seen.has(key(next))) continue
+      seen.add(key(next))
+      list.push(next)
+    }
+  }
+  return list
+})()
+
+const orientationIndex = new Map(orientations.map((m, index) => [m.join(","), index]))
+
+/** Is this orientation's own +y still pointing at the world's +y? */
+const upright: boolean[] = orientations.map((m) => m[1] === 0 && m[4] === 1 && m[7] === 0)
+
+/** Lattice cell ↔ slot number, for a 3×3. A piece's home slot is its index. */
+const slotOf = (i: number, j: number, k: number) => i * 9 + j * 3 + k
+
+/** Per move: where each slot goes, how an orientation turns, which slots move. */
+const moveTables = basicMoves.map((move) => {
+  const turn = moveToTurn(move, 3)
+  const rotation = rotationMatrix(turn.axis, turn.quarterTurns)
+  const slots = new Uint8Array(27)
+  const moved = new Uint8Array(27)
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      for (let k = 0; k < 3; k++) {
+        const slot = slotOf(i, j, k)
+        const here = { i, j, k, orientation: identityMatrix }
+        if (!inTurn(here, turn)) {
+          slots[slot] = slot
+          continue
+        }
+        const [x, y, z] = applyMatrix(rotation, [
+          centred(i, 3),
+          centred(j, 3),
+          centred(k, 3),
+        ])
+        slots[slot] = slotOf(uncentred(x, 3), uncentred(y, 3), uncentred(z, 3))
+        moved[slot] = 1
+      }
+    }
+  }
+  const turns = new Uint8Array(24)
+  for (let index = 0; index < 24; index++) {
+    turns[index] =
+      orientationIndex.get(multiplyMatrix(rotation, orientations[index]).join(",")) ?? index
+  }
+  return { slots, moved, turns }
+})
+
+/** The face a unit normal points at, or null. */
+const faceFromNormal = (normal: readonly [number, number, number]): CubeFace | null => {
+  for (const face of cubeFaces) {
+    const [x, y, z] = faceNormals[face]
+    if (normal[0] === x && normal[1] === y && normal[2] === z) return face
+  }
+  return null
+}
+
+/**
+ * The 24 ways a whole cube can sit in your hands, as remaps of the packed
+ * form. Turning a middle slice moves the centres, and a cube whose centres
+ * have moved cannot be solved by face turns in the frame it is sitting in —
+ * so the solver turns the *cube* first, in its head, and writes the answer
+ * back out in the frame you are holding.
+ */
+const wholeRotations = orientations.map((matrix) => {
+  const slots = new Uint8Array(27)
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      for (let k = 0; k < 3; k++) {
+        const [x, y, z] = applyMatrix(matrix, [centred(i, 3), centred(j, 3), centred(k, 3)])
+        slots[slotOf(i, j, k)] = slotOf(uncentred(x, 3), uncentred(y, 3), uncentred(z, 3))
+      }
+    }
+  }
+  const turns = new Uint8Array(24)
+  for (let index = 0; index < 24; index++) {
+    turns[index] =
+      orientationIndex.get(multiplyMatrix(matrix, orientations[index]).join(",")) ?? index
+  }
+  // Where each face ends up, and the way back — which is what writes a move
+  // found in the turned frame back into the one the caller is holding.
+  const faceTo = {} as Record<CubeFace, CubeFace>
+  const faceBack = {} as Record<CubeFace, CubeFace>
+  for (const face of cubeFaces) {
+    const moved = faceFromNormal(applyMatrix(matrix, faceNormals[face])) ?? face
+    faceTo[face] = moved
+    faceBack[moved] = face
+  }
+  return { slots, turns, faceBack }
+})
+
+/** Where every piece is and which way it points, as two flat arrays. */
+interface PackedCube {
+  /** `slot[p]` — the slot piece `p` currently occupies. `p` is its home slot. */
+  slot: Uint8Array
+  /** `spin[p]` — its orientation, as an index into the 24. 0 is home. */
+  spin: Uint8Array
+}
+
+const packCube = (state: CubeState): PackedCube => {
+  const slot = new Uint8Array(27)
+  const spin = new Uint8Array(27)
+  state.cubies.forEach((cubie, piece) => {
+    slot[piece] = slotOf(cubie.i, cubie.j, cubie.k)
+    spin[piece] = orientationIndex.get(cubie.orientation.join(",")) ?? 0
+  })
+  return { slot, spin }
+}
+
+/** One face turn, in place. Each piece is read and written on its own, so it is safe. */
+function turnPacked(cube: PackedCube, move: number) {
+  const table = moveTables[move]
+  for (let piece = 0; piece < 27; piece++) {
+    const at = cube.slot[piece]
+    if (!table.moved[at]) continue
+    cube.slot[piece] = table.slots[at]
+    cube.spin[piece] = table.turns[cube.spin[piece]]
+  }
+}
+
+/* ----------------------------------------------------------- the alphabet */
+
+/** The four side faces in the order a turn about the U axis cycles them. */
+const sideFaces: CubeFace[] = ["F", "R", "B", "L"]
+
+/** The same algorithm, rotated `k` quarter turns about the U–D axis. */
+const yaw = (moves: CubeMove[], k: number): CubeMove[] =>
+  moves.map((move) => {
+    const side = sideFaces.indexOf(move.face)
+    return side < 0 ? move : { ...move, face: sideFaces[(side + k) % 4] }
+  })
+
+const moveNumber = new Map(
+  basicMoves.map((move, index) => [`${move.face}${move.turns}`, index]),
+)
+
+const asMacro = (moves: CubeMove[]): number[] =>
+  moves.map((move) => moveNumber.get(`${move.face}${move.turns}`) as number)
+
+/** A symbol the stage search may play: a macro, and what it must not repeat. */
+interface CubeSymbol {
+  moves: number[]
+  /** Two symbols of the same group never run back to back — they'd merge. */
+  group: string | null
+}
+
+const uTurns: CubeSymbol[] = [1, 2, 3].map((turns) => ({
+  moves: asMacro([{ face: "U", layer: 0, turns }]),
+  group: "U",
+}))
+
+const everyFaceTurn: CubeSymbol[] = basicMoves.map((move, index) => ({
+  moves: [index],
+  group: move.face,
+}))
+
+/** One algorithm at all four side slots. */
+const atEverySlot = (text: string): CubeSymbol[] => {
+  const moves = parseAlgorithm(text)
+  return [0, 1, 2, 3].map((k) => ({ moves: asMacro(yaw(moves, k)), group: null }))
+}
+
+const sexyMove = atEverySlot("R U R' U'")
+/** The short corner inserts, which is what a first layer is actually built from. */
+const cornerInserts = [
+  "R U R'", "R U' R'", "R U2 R'",
+  "F' U F", "F' U' F", "F' U2 F",
+].flatMap(atEverySlot)
+const rightInsert = atEverySlot("U R U' R' U' F' U F")
+const leftInsert = atEverySlot("U' L' U L U F U' F'")
+const crossAlgorithm = atEverySlot("F R U R' U' F'")
+const sune = [
+  ...atEverySlot("R U R' U R U2 R'"),
+  ...atEverySlot("R U2 R' U' R U' R'"),
+]
+const cornerCycle = atEverySlot("U R U' L' U R' U' L")
+const edgeCycle = [
+  ...atEverySlot("R U' R U R U R U' R' U' R2"),
+  ...atEverySlot("R2 U R U R' U' R' U' R' U R'"),
+]
+
+/* ------------------------------------------------------------- the stages */
+
+const edgeAt = (i: number, j: number, k: number) => slotOf(i, j, k)
+
+const downEdges = [edgeAt(1, 0, 2), edgeAt(2, 0, 1), edgeAt(1, 0, 0), edgeAt(0, 0, 1)]
+const downCorners = [slotOf(2, 0, 2), slotOf(2, 0, 0), slotOf(0, 0, 0), slotOf(0, 0, 2)]
+const middleEdges = [slotOf(2, 1, 2), slotOf(2, 1, 0), slotOf(0, 1, 0), slotOf(0, 1, 2)]
+const upEdges = [edgeAt(1, 2, 2), edgeAt(2, 2, 1), edgeAt(1, 2, 0), edgeAt(0, 2, 1)]
+const upCorners = [slotOf(2, 2, 2), slotOf(2, 2, 0), slotOf(0, 2, 0), slotOf(0, 2, 2)]
+/** The six face centres, which is what says which way round the cube is. */
+const cubeCentres = [
+  slotOf(0, 1, 1), slotOf(2, 1, 1),
+  slotOf(1, 0, 1), slotOf(1, 2, 1),
+  slotOf(1, 1, 0), slotOf(1, 1, 2),
+]
+
+const homeYet = (cube: PackedCube, pieces: number[]) =>
+  pieces.every((piece) => cube.slot[piece] === piece && cube.spin[piece] === 0)
+
+const placedYet = (cube: PackedCube, pieces: number[]) =>
+  pieces.every((piece) => cube.slot[piece] === piece)
+
+const uprightYet = (cube: PackedCube, pieces: number[]) =>
+  pieces.every((piece) => upright[cube.spin[piece]])
+
+interface CubeStage {
+  /**
+   * Tried in order. A first pass over many short algorithms finds the tidy
+   * answer nearly every time; the fallback is a small alphabet searched deep,
+   * which always has one but spends moves to get it.
+   */
+  tiers: { alphabet: CubeSymbol[]; depth: number }[]
+  done: (cube: PackedCube) => boolean
+}
+
+/**
+ * The method, in order. Each stage's goal carries every earlier stage's, so a
+ * search cannot buy one piece by spending another.
+ */
+function stages(): CubeStage[] {
+  const list: CubeStage[] = []
+  const firstLayer = [...downEdges, ...downCorners]
+  const twoLayers = [...firstLayer, ...middleEdges]
+
+  downEdges.forEach((_, count) => {
+    const wanted = downEdges.slice(0, count + 1)
+    list.push({
+      tiers: [{ alphabet: everyFaceTurn, depth: 6 }],
+      done: (cube) => homeYet(cube, wanted),
+    })
+  })
+  downCorners.forEach((_, count) => {
+    const wanted = [...downEdges, ...downCorners.slice(0, count + 1)]
+    list.push({
+      tiers: [
+        { alphabet: [...uTurns, ...cornerInserts], depth: 3 },
+        { alphabet: [...uTurns, ...sexyMove], depth: 8 },
+      ],
+      done: (cube) => homeYet(cube, wanted),
+    })
+  })
+  middleEdges.forEach((_, count) => {
+    const wanted = [...firstLayer, ...middleEdges.slice(0, count + 1)]
+    list.push({
+      tiers: [{ alphabet: [...uTurns, ...rightInsert, ...leftInsert], depth: 6 }],
+      done: (cube) => homeYet(cube, wanted),
+    })
+  })
+  list.push({
+    tiers: [{ alphabet: [...uTurns, ...crossAlgorithm], depth: 5 }],
+    done: (cube) => homeYet(cube, twoLayers) && uprightYet(cube, upEdges),
+  })
+  list.push({
+    tiers: [{ alphabet: [...uTurns, ...sune], depth: 6 }],
+    done: (cube) =>
+      homeYet(cube, twoLayers) && uprightYet(cube, upEdges) && uprightYet(cube, upCorners),
+  })
+  list.push({
+    tiers: [{ alphabet: [...uTurns, ...cornerCycle], depth: 5 }],
+    done: (cube) =>
+      homeYet(cube, twoLayers) &&
+      uprightYet(cube, upEdges) &&
+      uprightYet(cube, upCorners) &&
+      placedYet(cube, upCorners),
+  })
+  list.push({
+    tiers: [{ alphabet: [...uTurns, ...edgeCycle], depth: 5 }],
+    done: (cube) => homeYet(cube, [...twoLayers, ...upEdges, ...upCorners]),
+  })
+  return list
+}
+
+/* ------------------------------------------------------------- the search */
+
+/** Iterative deepening over one alphabet. Move numbers, or null. */
+function searchTier(
+  cube: PackedCube,
+  done: (cube: PackedCube) => boolean,
+  alphabet: CubeSymbol[],
+  depth: number,
+): number[] | null {
+  if (done(cube)) return []
+  // One scratch cube per level, reused: the search allocates nothing per node.
+  const levels = Array.from({ length: depth + 1 }, () => ({
+    slot: new Uint8Array(27),
+    spin: new Uint8Array(27),
+  }))
+  levels[0].slot.set(cube.slot)
+  levels[0].spin.set(cube.spin)
+  const played: CubeSymbol[] = []
+
+  const walk = (level: number, left: number): boolean => {
+    if (!left) return false
+    const here = levels[level]
+    const next = levels[level + 1]
+    for (const symbol of alphabet) {
+      if (symbol.group && symbol.group === played[level - 1]?.group) continue
+      next.slot.set(here.slot)
+      next.spin.set(here.spin)
+      for (const move of symbol.moves) turnPacked(next, move)
+      played[level] = symbol
+      if (done(next)) {
+        played.length = level + 1
+        return true
+      }
+      if (walk(level + 1, left - 1)) return true
+    }
+    return false
+  }
+
+  for (let limit = 1; limit <= depth; limit++) {
+    played.length = 0
+    if (walk(0, limit)) return played.flatMap((symbol) => symbol.moves)
+  }
+  return null
+}
+
+/** The stage's tiers in order: the tidy answer first, the sure one second. */
+function searchStage(cube: PackedCube, stage: CubeStage): number[] | null {
+  for (const tier of stage.tiers) {
+    const line = searchTier(cube, stage.done, tier.alphabet, tier.depth)
+    if (line) return line
+  }
+  return null
+}
+
+/* ------------------------------------------------------------- the answer */
+
+/** `R R` → `R2`, `R R'` → nothing, `R2 R2` → nothing. Same face, same layer. */
+export function simplifyMoves(moves: CubeMove[]): CubeMove[] {
+  const out: CubeMove[] = []
+  for (const move of moves ?? []) {
+    const turns = (((Math.round(move?.turns ?? 0) % 4) + 4) % 4)
+    if (!turns || !cubeFaces.includes(move.face)) continue
+    const last = out.at(-1)
+    if (last && last.face === move.face && last.layer === move.layer) {
+      out.pop()
+      const merged = (last.turns + turns) % 4
+      if (merged) out.push({ ...last, turns: merged })
+      continue
+    }
+    out.push({ ...move, turns })
+  }
+  return out
+}
+
+/**
+ * A line that takes this cube home, or `null`.
+ *
+ * 3×3 only — the method is the 3×3 one, and a 4×4 has parities it does not
+ * know about, so every other order is honestly `null` rather than a guess.
+ * The answer is replayed and checked before it is handed back.
+ */
+export function solveCube(state: CubeState): CubeMove[] | null {
+  if (!state || state.order !== 3 || state.cubies?.length !== 27) return null
+  if (isSolved(state)) return []
+  const cube = packCube(state)
+
+  // Sit the cube the right way up first: the method turns faces, and faces
+  // are named by the centres they carry, so the centres have to be home
+  // before any of it means anything. A legal cube always has exactly such a
+  // rotation; anything else is not a cube this can solve.
+  const aligned = wholeRotations.find((rotation) => {
+    for (const centre of cubeCentres) {
+      if (rotation.slots[cube.slot[centre]] !== centre) return false
+    }
+    return true
+  })
+  if (!aligned) return null
+  for (let piece = 0; piece < 27; piece++) {
+    cube.slot[piece] = aligned.slots[cube.slot[piece]]
+    cube.spin[piece] = aligned.turns[cube.spin[piece]]
+  }
+
+  // A cube a few turns from home is solved *properly* rather than by the
+  // method: a short exhaustive search first, so undoing five turns of
+  // fiddling is five moves back and not a hundred and thirty.
+  const everything = [...downEdges, ...downCorners, ...middleEdges, ...upEdges, ...upCorners]
+  const short = searchTier(
+    cube,
+    (near) => homeYet(near, everything) && placedYet(near, cubeCentres),
+    everyFaceTurn,
+    5,
+  )
+
+  const found: number[] = short ?? []
+  for (const stage of short ? [] : stages()) {
+    const line = searchStage(cube, stage)
+    if (!line) return null
+    for (const move of line) turnPacked(cube, move)
+    found.push(...line)
+  }
+  const solution = simplifyMoves(
+    // Back into the frame the caller is holding: the same turn, on the face
+    // that was standing where this one is now.
+    found.map((move) => ({ ...basicMoves[move], face: aligned.faceBack[basicMoves[move].face] })),
+  )
+  return isSolved(applyMoves(state, solution)) ? solution : null
+}
+
+/** The next move of a solve — which is what a hint is. */
+export const solveStep = (state: CubeState): CubeMove | null =>
+  solveCube(state)?.[0] ?? null

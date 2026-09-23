@@ -157,7 +157,7 @@ describe("landing catalogue", () => {
     // jsdom has no IntersectionObserver, which is the signal `CatalogueStage`
     // uses for "not a browser" — three must never be pulled into a render here.
     const { container } = render(<Catalogue entries={cards} />)
-    for (const slug of ["robot-arm-3d", "robot-stage", "puzzle-cube", "cube-geometry"]) {
+    for (const slug of ["robot-arm-3d", "robot-stage", "rubiks-cube", "cube-geometry"]) {
       const card = container.querySelector(`a[href="/docs/${slug}"]`)
       expect(card?.textContent, slug).toContain("3D")
       expect(card?.querySelector("canvas"), slug).toBeNull()

@@ -502,7 +502,7 @@ const art: Record<string, Art> = {
     art: <RodPump size={120} condition="pound" geometry={{ fillage: 0.45 }} showCard={false} speed={0.22} phase={0.62} />,
   },
   "rodpump-geometry": { line: "The solver under it, drawn as the machine it solves for.", art: <RodPump size={168} variant="blueprint" /> },
-  "puzzle-cube": { line: "Drag a face and that layer turns, from any angle.", art: <CatalogueStage machine="cube" floor="none" /> },
+  "rubiks-cube": { line: "Grab a face, turn it with your hand, let go and it snaps.", art: <CatalogueStage machine="cube" floor="none" /> },
   "cube-geometry": { line: "Exact integer state: a lattice of cubies, each with its own orientation.", art: <CatalogueStage machine="cube" floor="none" /> },
 }
 

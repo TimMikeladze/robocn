@@ -5207,7 +5207,7 @@
       "name": "cube-geometry",
       "type": "registry:lib",
       "title": "Cube geometry",
-      "description": "An N×N×N twisty puzzle as exact integer state: cubies on a lattice with orientation matrices, moves, notation, scrambles, sticker lookup and drag-to-move.",
+      "description": "An N×N×N twisty cube as exact integer state: cubies on a lattice with orientation matrices, moves, notation, scrambles, sticker lookup, drag geometry and a layer-by-layer solver.",
       "categories": [
         "robotics",
         "foundations"
@@ -5222,10 +5222,10 @@
       ]
     },
     {
-      "name": "puzzle-cube",
+      "name": "rubiks-cube",
       "type": "registry:ui",
-      "title": "Puzzle cube",
-      "description": "The classic twisty cube as a real 3D rig: drag a face to turn that layer, orbit it, scramble it, and every turn goes through a pure cube solver.",
+      "title": "Rubik's cube",
+      "description": "The Rubik's cube as a game: grab a face and the layer turns with your hand, let go and it snaps, type moves at it, scramble it, ask for a hint, or watch it solve itself.",
       "categories": [
         "robotics",
         "devices"
@@ -5238,9 +5238,9 @@
       ],
       "files": [
         {
-          "path": "src/components/ui/puzzle-cube.tsx",
+          "path": "src/components/ui/rubiks-cube.tsx",
           "type": "registry:ui",
-          "target": "@ui/puzzle-cube.tsx"
+          "target": "@ui/rubiks-cube.tsx"
         }
       ],
       "dependencies": [

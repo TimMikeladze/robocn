@@ -17,7 +17,7 @@
  * every frame shows nothing moving, which is what was actually asked for.
  */
 
-import { PuzzleCube } from "@/components/ui/puzzle-cube"
+import { RubiksCube } from "@/components/ui/rubiks-cube"
 import { RobotArm3D } from "@/components/ui/robot-arm-3d"
 import { RobotStage } from "@/components/ui/robot-stage"
 
@@ -49,7 +49,7 @@ function CardStage({ floor = "shadow", calm = false, machine = "arm" }: CardStag
       canvasProps={{ onCreated: ({ camera }) => camera.lookAt(...aim) }}
     >
       {cube ? (
-        <PuzzleCube
+        <RubiksCube
           size={2.2}
           behavior={calm ? "static" : "cycle"}
           interactive={false}

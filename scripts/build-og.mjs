@@ -45,9 +45,15 @@ const SETTLE_MS = 2500
 /**
  * A page card has one machine on it rather than twelve, and every one of them
  * is parked by the reduced-motion preference below, so there is less to wait
- * for — which matters when there are 170 of them.
+ * for — which matters when there are 200 of them.
+ *
+ * It cannot go much below this: the WebGL cards are drawn by a software
+ * rasteriser, and `rubiks-cube` — 26 bodies and 54 stickers — took a second and
+ * a half longer than the old 1400 ms to put up its first frame. A card that is
+ * photographed early is not a slow card, it is a **blank** one, so the number
+ * buys the same margin for every machine rather than only for that one.
  */
-const PAGE_SETTLE_MS = 1400
+const PAGE_SETTLE_MS = 3200
 
 /**
  * The card's own root. Nothing is photographed until it is on the page: a route

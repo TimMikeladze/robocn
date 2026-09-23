@@ -25,6 +25,13 @@ export interface RobotStageProps
   fov?: number
   /** Drag to orbit. Off makes the stage a static illustration. */
   controls?: boolean
+  /**
+   * How far round the machine the camera may go. `ground` keeps it above the
+   * floor, which is what a machine that stands on one wants; `free` lets it
+   * go all the way over and under, for something you hold rather than
+   * something that stands — a cube you can look at every side of.
+   */
+  orbit?: "ground" | "free"
   autoRotate?: boolean
   /**
    * Stop the auto-rotation while the pointer is over the stage, so a machine
@@ -42,6 +49,7 @@ function RobotStage({
   camera = [3.6, 2.6, 4.6],
   fov = 40,
   controls = true,
+  orbit = "ground",
   autoRotate = false,
   pauseOnHover = true,
   floor = "shadow",
@@ -94,7 +102,15 @@ function RobotStage({
         gl={{ antialias: true, alpha: true, preserveDrawingBuffer: true }}
         {...canvasProps}
       >
-        <hemisphereLight intensity={0.55} groundColor="#20242b" />
+        {/* A machine that stands on a floor is never seen from under it, so
+            the ground half of the sky is dark. One you can orbit all the way
+            round is, and an unlit underside reads as a hole rather than a
+            face — so `free` lifts the ground colour and adds a fill from
+            below, with no shadow of its own to fight the key. */}
+        <hemisphereLight
+          intensity={orbit === "free" ? 0.7 : 0.55}
+          groundColor={orbit === "free" ? "#5b626d" : "#20242b"}
+        />
         <directionalLight
           position={[4, 6, 3]}
           intensity={2.1}
@@ -103,6 +119,9 @@ function RobotStage({
           shadow-normalBias={0.02}
         />
         <directionalLight position={[-5, 2, -3]} intensity={0.5} />
+        {orbit === "free" ? (
+          <directionalLight position={[-2.5, -5, -1.5]} intensity={0.9} />
+        ) : null}
         {floor === "grid" ? (
           <Grid
             args={[20, 20]}
@@ -133,8 +152,10 @@ function RobotStage({
             autoRotate={autoRotate && !(pauseOnHover && hovered)}
             autoRotateSpeed={0.8}
             enablePan={false}
-            minPolarAngle={0.2}
-            maxPolarAngle={Math.PI / 2.05}
+            // Straight up and straight down are singular for an orbit camera,
+            // so `free` stops a hair short of each pole rather than at it.
+            minPolarAngle={orbit === "free" ? 0.01 : 0.2}
+            maxPolarAngle={orbit === "free" ? Math.PI - 0.01 : Math.PI / 2.05}
             minDistance={2.4}
             maxDistance={14}
           />

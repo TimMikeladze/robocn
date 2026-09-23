@@ -14,7 +14,7 @@ import { catalogueArt } from "@/components/site/catalogue"
  */
 
 /** jsdom holds a placeholder for these rather than starting a WebGL context. */
-const webgl = ["robot-arm-3d", "robot-stage", "puzzle-cube", "cube-geometry"]
+const webgl = ["robot-arm-3d", "robot-stage", "rubiks-cube", "cube-geometry"]
 
 afterEach(() => {
   cleanup()

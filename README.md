@@ -272,8 +272,8 @@ installs at.
 | `airframe` | The geometry an aeroplane is made of: a fuselage lofted along its own axis with a second deck standing on the crown, a swept and kinked wing every moving surface is cut out of, a retracting leg whose side stay folds by the law of cosines, and the mix that turns pitch, roll, yaw and a flap lever into every surface that carries them. |
 | `rod-pump` | The downhole end of a beam-pumped well, in section: mud anchor, working barrel, plunger, and the two ball valves whose sequence the whole thing turns on, with the dynamometer card drawn beside it. The set's first cutaway subject — every tubular is the cylinder it is, opened on the plane the camera cuts it with — and the seven standard pump faults are seven points in one model, not seven drawn shapes. |
 | `rodpump-geometry` | Rod-pump mechanics: plunger travel off a crank, the fluid load and displacement from the field formulas, the travel at which each ball lifts from an isothermal compression of the gas trapped below the plunger, the travel an unanchored tubing string takes back off the stroke, and the dynamometer card that falls out of them. |
-| `puzzle-cube` | The classic twisty cube as a real react-three-fiber rig: orbit it, drag a face to turn that layer, type moves at it, scramble it — every turn through a pure cube solver. |
-| `cube` | TODO: what cube solves, in the same voice as the rest. |
+| `rubiks-cube` | The Rubik's cube as a game in react-three-fiber: grab a face and the layer follows your hand, let go and it snaps, type moves at it, scramble it, take a hint, or watch it solve itself with a real layer-by-layer method. |
+| `cube-geometry` | A twisty cube as exact integer state: cubies on a lattice, each carrying an integer orientation matrix, plus moves and notation, scrambles, sticker lookup, the drag geometry a rig follows the pointer with, and a layer-by-layer solver whose line is replayed and checked before it is handed back. |
 
 Installing a component pulls in what it needs: `robot-arm` brings `robot-kinematics`,
 `robot-style` and both hooks, and the theme variables ride along with `robot-style`.
