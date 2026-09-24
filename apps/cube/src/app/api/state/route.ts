@@ -2,8 +2,8 @@
  * GET /api/state — the whole game state, and the first handshake.
  *
  * Establishes the anonymous player cookie on first contact, then returns the
- * live round, its recent moves, the previous round's news, and whether this
- * player may move today.
+ * six live cubes, recent moves from across the shelf, the previous round's
+ * news, and whether this player may move on each cube today.
  */
 
 import { cookies } from "next/headers"

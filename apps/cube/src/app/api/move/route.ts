@@ -1,12 +1,13 @@
 /**
- * POST /api/move — one person's one move of the day.
+ * POST /api/move — one person's one move of the day, on one cube.
  *
- * Body: `{ "move": "R'" }`. The server is the only authority: the notation is
- * parsed here, the budget is checked here, and the cube's state is recomputed
- * here from the scramble and the whole log.
+ * Body: `{ "move": "R'", "cube": 3 }` — `cube` is the shelf slot, 1–6. The
+ * server is the only authority: the notation is parsed here, the budget is
+ * checked here, and the cube's state is recomputed here from its scramble and
+ * its whole log.
  *
  * 200 ok · 400 bad move · 403 no identity (bootstrap with GET /api/state) ·
- * 429 daily/spam limit · 503 the database is asleep.
+ * 404 no such cube · 429 daily/spam limit · 503 the database is asleep.
  */
 
 import { cookies } from "next/headers"
@@ -20,14 +21,13 @@ export async function POST(request: Request) {
     return Response.json({ error: "identity" }, { status: 403 })
   }
 
-  let move: unknown
+  let body: { move?: unknown; cube?: unknown }
   try {
-    const body = (await request.json()) as { move?: unknown }
-    move = body?.move
+    body = (await request.json()) as { move?: unknown; cube?: unknown }
   } catch {
     return Response.json({ error: "bad-move" }, { status: 400 })
   }
-  if (typeof move !== "string") {
+  if (typeof body?.move !== "string" || typeof body?.cube !== "number") {
     return Response.json({ error: "bad-move" }, { status: 400 })
   }
 
@@ -35,9 +35,17 @@ export async function POST(request: Request) {
   const ipHash = hashIp(clientIp(request), secret)
 
   try {
-    const result = await submitMove({ notation: move, playerId, ipHash })
+    const result = await submitMove({
+      cube: body.cube,
+      notation: body.move,
+      playerId,
+      ipHash,
+    })
     if (result.kind === "bad-move") {
       return Response.json({ error: "bad-move" }, { status: 400 })
+    }
+    if (result.kind === "unknown-cube") {
+      return Response.json({ error: "unknown-cube" }, { status: 404 })
     }
     if (result.kind === "blocked") {
       return Response.json(

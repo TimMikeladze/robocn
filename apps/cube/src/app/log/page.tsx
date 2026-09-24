@@ -13,13 +13,22 @@ function timeLabel(iso: string): string {
 }
 
 /**
- * The whole log of the live cube — the paper trail the state is derived from.
+ * The whole log of one shared cube — the paper trail its state is derived
+ * from. `?cube=N` picks the slot (1–6); the switcher walks the shelf.
  */
-export default async function LogPage() {
+export default async function LogPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ cube?: string }>
+}) {
+  const params = await searchParams
+  const wanted = Number.parseInt(params.cube ?? "1", 10)
+  const slot = Number.isInteger(wanted) && wanted >= 1 && wanted <= 6 ? wanted : 1
+
   let log: RoundLog | null = null
   let failed = false
   try {
-    log = await getLog()
+    log = await getLog(slot)
   } catch (error) {
     console.error("cube: log failed", error)
     failed = true
@@ -47,10 +56,26 @@ export default async function LogPage() {
           <span className="font-mono">{log.round.scramble}</span>
         </p>
       </div>
-      <p className="mt-1 mb-6 text-sm text-muted-foreground">
-        Every move ever played on the live cube, newest first. The cube&apos;s
-        state is derived from exactly this list — nothing else.
+      <p className="mt-1 mb-4 text-sm text-muted-foreground">
+        Every move ever played on this shared cube, newest first. Its state is
+        derived from exactly this list — nothing else.
       </p>
+
+      <nav className="mb-6 flex gap-1 font-mono text-[12px]">
+        {log.cubes.map((cube) => (
+          <Link
+            key={cube.slot}
+            href={`/log?cube=${cube.slot}`}
+            className={`border px-3 py-1.5 tracking-wide ${
+              cube.slot === log.round.slot
+                ? "border-foreground bg-foreground text-background"
+                : "border-border text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            c{cube.slot} · #{cube.id} · {cube.moveCount}mv
+          </Link>
+        ))}
+      </nav>
 
       {log.moves.length === 0 ? (
         <div className="datum-frame border border-border bg-panel px-4 py-8 text-center text-sm text-muted-foreground">

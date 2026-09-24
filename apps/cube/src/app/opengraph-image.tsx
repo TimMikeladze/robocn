@@ -33,10 +33,10 @@ export default function OpengraphImage() {
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div style={{ fontSize: 96, fontWeight: 700, letterSpacing: -3 }}>
-            one move a day
+            six moves a day
           </div>
           <div style={{ fontSize: 38, opacity: 0.8 }}>
-            One Rubik&apos;s cube. Owned by everybody. Archived forever.
+            Six Rubik&apos;s cubes. Owned by everybody. Archived forever.
           </div>
         </div>
         <div style={{ display: "flex", gap: 36, fontSize: 26, opacity: 0.65 }}>

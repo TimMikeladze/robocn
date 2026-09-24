@@ -2,7 +2,7 @@
   "name": "@robocn/cube",
   "version": "0.1.0",
   "private": true,
-  "description": "cube.robocn.dev — one shared Rubik's cube, one move per person per day. A dedicated robocn example.",
+  "description": "cube.robocn.dev — six shared Rubik's cubes, one move per cube per person per day. A dedicated robocn example.",
   "license": "MIT",
   "scripts": {
     "dev": "next dev -p 3100",
@@ -15,15 +15,12 @@
     "dev:solve": "tsx scripts/dev-solve.mts"
   },
   "dependencies": {
-    "@react-three/drei": "^10.7.8",
-    "@react-three/fiber": "^9.7.0",
     "cn": "^0.2.6",
     "nanoid": "^5.1.5",
     "next": "16.3.5",
     "pg": "^8.16.1",
     "react": "19.2.8",
-    "react-dom": "19.2.8",
-    "three": "^0.186.0"
+    "react-dom": "19.2.8"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -31,7 +28,6 @@
     "@types/pg": "^8.15.4",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@types/three": "^0.186.0",
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.3.5",

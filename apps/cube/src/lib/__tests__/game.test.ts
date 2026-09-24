@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  CUBE_SLOTS,
+  IP_DAILY_LIMIT,
   PLAYER_DAILY_LIMIT,
   checkMoveBudget,
   daysBetween,
@@ -14,33 +16,37 @@ import {
 import { makePlayerId } from "@/lib/identity"
 
 describe("checkMoveBudget", () => {
-  it("allows a first move on a quiet round", () => {
+  it("allows a first move on a quiet cube", () => {
     expect(
       checkMoveBudget({ playerMovesToday: 0, ipMovesToday: 0, msSinceLastMove: null }),
     ).toEqual({ ok: true })
   })
 
-  it("allows a move once the round has settled", () => {
+  it("allows a move once the cube has settled", () => {
     expect(
       checkMoveBudget({ playerMovesToday: 0, ipMovesToday: 0, msSinceLastMove: 60_000 }),
     ).toEqual({ ok: true })
   })
 
-  it("blocks a player who already moved today", () => {
+  it("blocks a player who already moved on that cube today — one cube does not spend another's move", () => {
     const result = checkMoveBudget({
       playerMovesToday: PLAYER_DAILY_LIMIT,
       ipMovesToday: 0,
       msSinceLastMove: null,
     })
     expect(result).toEqual({ ok: false, reason: "player" })
+    // The budget is per cube, so the same counts on a different round are a
+    // different budget — the scoping lives in db.ts's queries.
+    expect(PLAYER_DAILY_LIMIT).toBe(1)
+    expect(CUBE_SLOTS).toBe(6)
   })
 
   it("blocks an address that has spent its daily moves on fresh cookies", () => {
-    const result = checkMoveBudget({ playerMovesToday: 0, ipMovesToday: 3, msSinceLastMove: null })
+    const result = checkMoveBudget({ playerMovesToday: 0, ipMovesToday: IP_DAILY_LIMIT, msSinceLastMove: null })
     expect(result).toEqual({ ok: false, reason: "ip" })
   })
 
-  it("blocks machine-gun submits to the same round", () => {
+  it("blocks machine-gun submits to the same cube", () => {
     const result = checkMoveBudget({ playerMovesToday: 0, ipMovesToday: 0, msSinceLastMove: 500 })
     expect(result).toEqual({ ok: false, reason: "too-fast" })
   })

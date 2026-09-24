@@ -17,16 +17,16 @@ const plexMono = IBM_Plex_Mono({
 })
 
 const description =
-  "One Rubik's cube, owned by everybody. Each person gets one move a day. When it is solved it is archived forever."
+  "Six Rubik's cubes, owned by everybody. One move per cube per person per day. When one is solved it is archived forever."
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://cube.robocn.dev"),
-  title: { default: "cube — one move a day", template: "%s — cube" },
+  title: { default: "cube — six moves a day", template: "%s — cube" },
   description,
   applicationName: "cube",
   robots: { index: true, follow: true },
   openGraph: {
-    title: "cube — one move a day",
+    title: "cube — six moves a day",
     description,
     url: "/",
     siteName: "cube",
@@ -116,11 +116,11 @@ export default function RootLayout({
               <span>
                 built with the{" "}
                 <a href="https://robocn.dev" className="underline underline-offset-2 hover:text-foreground">
-                  rubiks-cube
+                  puzzle-cube
                 </a>{" "}
                 component from robocn
               </span>
-              <span>one move a day, forever</span>
+              <span>six cubes, one move each a day, forever</span>
             </div>
           </footer>
         </div>

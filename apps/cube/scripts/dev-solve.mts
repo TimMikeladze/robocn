@@ -1,30 +1,34 @@
 /**
  * dev-solve — verification tool, not part of the game.
  *
- * Plays a real solution onto the live round through the real `submitMove`
- * path — one synthetic player per move, honouring every rate limit — until the
- * cube is archived and the next one is scrambled. Run it against the preview
- * database and watch the archive → leaderboard → new-round transition happen.
+ * Plays a real solution onto one cube's live round through the real
+ * `submitMove` path — one synthetic player per move, honouring every rate
+ * limit — until the cube is archived and that slot's next round is scrambled.
+ * Run it against the preview database and watch the archive → leaderboard →
+ * next-round transition happen. Usage: `pnpm dev:solve [cube 1-6]`.
  */
 import { getLeaderboard, getState, submitMove } from "../src/lib/db"
 import { makePlayerId } from "../src/lib/identity"
+import { CUBE_SLOTS } from "../src/lib/game"
 import { formatMove, invertMoves, parseAlgorithm } from "../src/lib/robocn/cube"
 
 import { loadEnv } from "./env.mts"
 
 loadEnv()
 
+const slot = Math.min(CUBE_SLOTS, Math.max(1, Number.parseInt(process.argv[2] ?? "1", 10) || 1))
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 async function main() {
   const before = await getState({ playerId: makePlayerId(), ipHash: "script" })
+  const round = before.rounds.find((entry) => entry.slot === slot) ?? before.rounds[0]
   console.log(
-    `cube #${before.round.id}: ${before.round.moveCount} moves played so far, scramble ${before.round.scramble}`,
+    `c${round.slot} #${round.id}: ${round.moveCount} moves played so far, scramble ${round.scramble}`,
   )
 
   // The exact inverse of everything the cube has been through — the shortest
   // honest line home, and a check of invertMoves on the way.
-  const line = invertMoves(parseAlgorithm(before.round.state))
+  const line = invertMoves(parseAlgorithm(round.state))
   console.log(`inverse line: ${line.length} moves`)
 
   let step = 0
@@ -33,6 +37,7 @@ async function main() {
     // Each synthetic player is fresh; the round-level 2 s gap is honoured.
     await sleep(2100)
     const result = await submitMove({
+      cube: round.slot,
       notation: formatMove(move),
       playerId: makePlayerId(),
       ipHash: `script-${step}`,
@@ -51,7 +56,8 @@ async function main() {
   }
 
   const after = await getState({ playerId: makePlayerId(), ipHash: "script" })
-  console.log(`live cube is now #${after.round.id} with scramble ${after.round.scramble}`)
+  const next = after.rounds.find((entry) => entry.slot === slot)
+  console.log(`c${slot} is now #${next?.id} with scramble ${next?.scramble}`)
   const board = await getLeaderboard()
   console.log(`leaderboard: ${board.length} solved cube(s), newest is #${board[0]?.id}`)
   process.exit(0)

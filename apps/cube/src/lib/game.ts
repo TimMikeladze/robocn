@@ -1,5 +1,5 @@
 /**
- * game — the rules of the shared cube, as pure functions.
+ * game — the rules of the shared cubes, as pure functions.
  *
  * Everything here is decidable without the database: what a legal shared move
  * is, whether a player may make one, what the state of a round is, what a
@@ -20,11 +20,13 @@ import {
 
 /* ------------------------------------------------------------------ limits */
 
-/** One move per person per UTC day — the whole idea of the game. */
+/** How many cubes the shelf holds — one live round each, always. */
+export const CUBE_SLOTS = 6
+/** One move per person per cube per UTC day — the whole idea of the game. */
 export const PLAYER_DAILY_LIMIT = 1
-/** A second, blunter brake: fresh cookies from one address. */
+/** A second, blunter brake: fresh cookies from one address, per cube. */
 export const IP_DAILY_LIMIT = 3
-/** The round itself is protected from machine-gun submits. */
+/** Each cube is protected from machine-gun submits of its own. */
 export const MIN_MOVE_GAP_MS = 2_000
 
 /** Why a move may not be made right now. */
@@ -163,6 +165,8 @@ export function playerNameFor(playerId: string): string {
 /** One logged move, as the feed and the log page show it. */
 export interface PublicMove {
   seq: number
+  /** The slot of the cube it was played on. */
+  cube: number
   notation: string
   playerName: string
   at: string
@@ -171,6 +175,8 @@ export interface PublicMove {
 /** A cube: live or archived, whole or in summary. */
 export interface RoundView {
   id: number
+  /** The shelf slot the cube sits in, 1–6. Stable across rounds. */
+  slot: number
   scramble: string
   state: string
   moveCount: number
@@ -183,6 +189,7 @@ export interface RoundView {
 /** A solved cube on the leaderboard. */
 export interface ArchivedRound {
   id: number
+  slot: number
   moveCount: number
   playerCount: number
   days: number
@@ -193,22 +200,30 @@ export interface ArchivedRound {
   state: string
 }
 
+/** Whether this player may turn this cube right now. Keyed by round id. */
+export interface CubeStatus {
+  canMove: boolean
+  blockedBy: MoveBlockReason | null
+}
+
 export interface YouView {
   id: string
   name: string
-  canMove: boolean
-  blockedBy: MoveBlockReason | null
+  /** How many of today's per-cube moves are still unspent (0…6). */
+  movesLeftToday: number
   nextMoveAt: string | null
+  cubes: Record<number, CubeStatus>
 }
 
 export interface GameStatePayload {
-  round: RoundView
-  /** The round before this one, while its solve is still fresh enough to show. */
+  /** The shelf: six live cubes, ordered by slot. */
+  rounds: RoundView[]
+  /** The round before the newest archive, while its solve is still news. */
   previous: ArchivedRound | null
   recent: PublicMove[]
   you: YouView
 }
 
-export const RECENT_MOVES = 12
+export const RECENT_MOVES = 18
 /** How long after a solve the banner keeps appearing for arriving players. */
 export const SOLVED_BANNER_MS = 5 * 60_000
