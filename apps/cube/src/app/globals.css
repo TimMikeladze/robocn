@@ -1,0 +1,119 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+/* The machine-shop palette, distilled from robocn.dev: cool steel ground, ink
+   type, one teal signal colour, the machines' orange kept for the mark. */
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-panel: var(--panel);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-signal: var(--signal);
+  --color-shell: var(--shell);
+  --color-datum: var(--datum);
+  --color-ring: var(--ring);
+  --font-sans: var(--font-plex-sans);
+  --font-mono: var(--font-plex-mono);
+}
+
+:root,
+.light {
+  --background: oklch(0.966 0.003 240);
+  --foreground: oklch(0.23 0.014 250);
+  --panel: oklch(0.995 0.001 240);
+  --border: oklch(0.885 0.006 245);
+  --muted: oklch(0.93 0.004 245);
+  --muted-foreground: oklch(0.52 0.012 250);
+  --signal: oklch(0.56 0.11 176);
+  --shell: oklch(0.63 0.18 44);
+  --datum: oklch(0.78 0.01 245);
+  --ring: oklch(0.62 0.12 176);
+  /* The robot palette the stage and cube read. */
+  --robot-shell: oklch(0.72 0.17 47);
+  --robot-metal: oklch(0.85 0.012 250);
+  --robot-dark: oklch(0.32 0.02 250);
+  --robot-accent: oklch(0.72 0.15 176);
+  --robot-glow: oklch(0.78 0.16 176);
+  --robot-grid: oklch(0.62 0.02 250);
+}
+
+.dark {
+  --background: oklch(0.175 0.012 252);
+  --foreground: oklch(0.95 0.004 240);
+  --panel: oklch(0.215 0.013 252);
+  --border: oklch(0.3 0.013 252);
+  --muted: oklch(0.265 0.013 252);
+  --muted-foreground: oklch(0.68 0.012 250);
+  --signal: oklch(0.8 0.14 176);
+  --shell: oklch(0.73 0.19 46);
+  --datum: oklch(0.38 0.013 252);
+  --ring: oklch(0.78 0.14 176);
+  --robot-shell: oklch(0.7 0.18 47);
+  --robot-metal: oklch(0.72 0.015 250);
+  --robot-dark: oklch(0.26 0.02 250);
+  --robot-accent: oklch(0.84 0.16 176);
+  --robot-glow: oklch(0.88 0.17 176);
+  --robot-grid: oklch(0.55 0.02 250);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+/* Datum marks: the corner ticks on a drawing frame, on the panel that holds
+   the live cube. */
+.datum-frame {
+  position: relative;
+}
+
+.datum-frame::before,
+.datum-frame::after {
+  content: "";
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-color: var(--datum);
+  pointer-events: none;
+}
+
+.datum-frame::before {
+  top: -1px;
+  left: -1px;
+  border-top: 1px solid;
+  border-left: 1px solid;
+}
+
+.datum-frame::after {
+  right: -1px;
+  bottom: -1px;
+  border-right: 1px solid;
+  border-bottom: 1px solid;
+}
+
+@keyframes cube-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.cube-live-dot {
+  animation: cube-pulse 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cube-live-dot {
+    animation: none;
+  }
+}

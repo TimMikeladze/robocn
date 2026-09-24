@@ -346,6 +346,13 @@ The details, per machine, are in [docs/motion-and-interaction.md](docs/motion-an
 Every component page on the site is a bench: the machine on the left, every prop it takes
 wired to a control on the right, and the install line for it above.
 
+**A dedicated example app: [cube.robocn.dev](https://cube.robocn.dev).** One shared
+Rubik's cube, owned by everybody — each person gets a single move per day, the cube's
+state is recomputed server-side from its full move log, and every solved cube is archived
+on a leaderboard. It lives in [`apps/cube`](apps/cube) in this repo, built from the
+`rubiks-cube` registry item exactly as a consumer would install it (see
+[`apps/cube/SPEC.md`](apps/cube/SPEC.md)).
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/docs-dark.png">
   <img alt="The Robot arm component page: the arm rendered in a framed bench on the left, and controls for view, variant, tool, motion, mount, colour and link count on the right" src="docs/screenshots/docs-light.png">
