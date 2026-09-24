@@ -5935,8 +5935,10 @@ function PuzzleCubeDemo() {
       </div>
       <Hint>
         Press a sticker and the layer turns with your hand; let go and it snaps.
-        Focus the cube and type U D L R F B — shift for anticlockwise, S
-        scrambles, H hints, enter solves it, backspace undoes, escape resets.
+        Press the plastic and the whole cube turns — any direction, over the
+        top and under the bottom. Focus it and type U D L R F B — shift for
+        anticlockwise, arrows turn the cube, S scrambles, H hints, enter solves
+        it, backspace undoes, escape resets.
       </Hint>
       <Readout rows={[
         ["time", clock],

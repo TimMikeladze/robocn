@@ -22,6 +22,14 @@ through `robotCamera(view)`, so all four views come out of one model. The native
 — three faces at once, which is what a puzzle cube has to show to read as one. `fitTransform`
 frames the envelope; nothing is redrawn per view.
 
+The camera is not pinned to those four: press the plastic and sweep, and it runs through
+`robotCameraAt` to any azimuth and elevation at all — over the top, under the bottom, wrapping
+all the way round — carrying the same projection, depth sort and drag geometry with it. A
+press on a sticker belongs to the layer; a press anywhere else belongs to the camera. The
+ground shadow steps out when the camera drops to its plane rather than degenerating into a
+line. `azimuth` / `elevation` / `onOrbitChange` make the camera controlled, the same contract
+`airliner` set.
+
 Visibility is two passes, both exact for this machine:
 
 - **Back-face culling by signed area.** A cubie face whose projected quad winds backwards is
@@ -68,7 +76,8 @@ state only when the settle lands.
 ## Keyboard and the driver
 
 The typewriter from the sibling: `U D L R F B` (+ shift for anticlockwise), `S` scramble,
-`H` hint, `Enter` solve, backspace undo, escape reset, `⌘Z`/`⌘⇧Z` undo/redo. The `controls`
+`H` hint, `Enter` solve, backspace undo, escape reset, `⌘Z`/`⌘⇧Z` undo/redo, and the arrow
+keys turn the cube itself (Home stands the camera back where the view put it). The `controls`
 prop hands over the same driver the sibling has — `turn`, `scramble`, `reset`, `undo`, `redo`,
 `solve`, `hint`, `state`, `history`, `solved` — and `algorithm` makes the component controlled:
 exactly that line applied to a solved cube. Every turn carries where it came from, so a

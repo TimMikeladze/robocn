@@ -54,7 +54,6 @@ import {
   resolveRobotSize,
   robotCamera,
   type RobotCamera,
-  type RobotFrame,
   type RobotPaletteProps,
   type RobotSize,
   type RobotVariant,
@@ -74,7 +73,10 @@ export type PuzzleCubeSource = "user" | "solver" | "scramble" | "loop" | "undo" 
 export interface PuzzleCubeOrbit {
   /** Degrees round the cube. Any angle at all, and it wraps. */
   azimuth: number
-  /** Degrees above the view's own elevation, clamped to ±88. */
+  /**
+   * Degrees above the view's own elevation. Clamped so the camera runs to
+   * straight overhead and straight underneath — both poles — and no further.
+   */
   elevation: number
 }
 
@@ -121,6 +123,39 @@ const viewNames: Record<RobotView, string> = {
   profile: "side elevation",
   iso: "isometric view",
 }
+
+/* The camera a hand turns: drag sweeps it round, and the cube can be looked
+ * at from anywhere at all — over the top, under the bottom — not only from
+ * the four angles the set names. */
+
+/** Shortest way round: a camera turned 370 degrees is turned 10. */
+const wrapTurn = (degrees: number) =>
+  Number.isFinite(degrees) ? (((degrees % 360) + 360) % 360) : 0
+
+const finiteNum = (value: number, fallback = 0) =>
+  Number.isFinite(value) ? value : fallback
+
+const clampNum = (value: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, value))
+
+/**
+ * How far the camera stands from looking straight down or straight up. Those
+ * are the poles of the projection, not cliffs short of it: the drawing is
+ * exact at both (plan view *is* the pole), so the orbit runs all the way to
+ * them — it just cannot go past, the same wall every orbit camera has.
+ */
+const POLE = 90
+
+/** How far off its view a hand may turn the camera: to overhead, or underneath. */
+const elevationBounds = (stanceElevation: number) => ({
+  min: -POLE - stanceElevation,
+  max: POLE - stanceElevation,
+})
+/** Degrees of camera per pixel of drag: a whole cube-width of sweep per half
+ * the cube's screen, which is about what a wrist expects. */
+const ORBIT_SWEEP = 0.9
+const ORBIT_RISE = 0.5
+const ORBIT_STEP = 12
 
 /**
  * The key light, in world axes — the whole lighting model. Top brightest,
@@ -430,6 +465,19 @@ export interface PuzzleCubeProps
   interactive?: boolean
   /** Where the camera stands. Default is the isometric view it was designed in. */
   view?: RobotView
+  /**
+   * Degrees the camera swings round the cube, on top of `view`. Any angle at
+   * all, and it wraps: the far side is 180 either way. Supplying it (or
+   * `elevation`) takes the camera away from the pointer.
+   */
+  azimuth?: number
+  /**
+   * Degrees the camera rises above the view's own elevation — all the way to
+   * straight underneath, or straight overhead, where it stops. The poles are
+   * the far ends, not a cliff short of them.
+   */
+  elevation?: number
+  onOrbitChange?: (orbit: PuzzleCubeOrbit) => void
   showGround?: boolean
   /** Per-face colour overrides. `{ U: "var(--chart-1)" }` retints one face. */
   faces?: Partial<Record<CubeFace, string>>
@@ -463,6 +511,9 @@ function PuzzleCube({
   paused = false,
   interactive = false,
   view = NATIVE_VIEW,
+  azimuth,
+  elevation,
+  onOrbitChange,
   showGround = true,
   faces,
   onMove,
@@ -534,6 +585,22 @@ function PuzzleCube({
   // The move count is read by the drawing, so it is state rather than a dip
   // into the history ref mid-render.
   const [moveCount, setMoveCount] = React.useState(0)
+
+  /* The camera: the view's own angles, plus however far a hand has turned it.
+   * A supplied `azimuth` or `elevation` wins and takes the camera away from
+   * the pointer. */
+  const [turned, setTurned] = React.useState<PuzzleCubeOrbit>({ azimuth: 0, elevation: 0 })
+  // A press on the plastic, held: where it started. The trace itself lives in
+  // the effect below, so the drag is one closure and nothing is left behind.
+  const [orbitPress, setOrbitPress] = React.useState<{ x: number; y: number } | null>(null)
+  const stanceLimits = elevationBounds((robotViews[view] ?? robotViews.iso).elevation)
+  const orbit: PuzzleCubeOrbit =
+    azimuth !== undefined || elevation !== undefined
+      ? {
+          azimuth: finiteNum(azimuth ?? 0, 0),
+          elevation: clampNum(finiteNum(elevation ?? 0, 0), stanceLimits.min, stanceLimits.max),
+        }
+      : turned
 
   const push = React.useCallback(
     (move: CubeMove | string, source: PuzzleCubeSource = "user", record = true) => {
@@ -849,7 +916,19 @@ function PuzzleCube({
 
   /* ------------------------------------------------------------ the hand */
 
-  const camera = robotCamera(view)
+  // The camera: the view's own angles, plus however far it has been turned.
+  // Unswung and unrised it is exactly `robotCamera(view)`, so the native view
+  // stays byte-identical however the cube has been looked at.
+  const stance = robotViews[view] ?? robotViews.iso
+  const swung = wrapTurn(orbit.azimuth)
+  const camera =
+    swung === 0 && orbit.elevation === 0
+      ? robotCamera(view)
+      : robotCameraAt(
+          stance.azimuth + swung,
+          clampNum(stance.elevation + orbit.elevation, -POLE, POLE),
+          view,
+        )
   const frame = fitFrame(ENVELOPE, camera, VIEW_WIDTH, VIEW_HEIGHT)
   const viewRef = React.useRef({ camera, frame })
   React.useEffect(() => {
@@ -957,6 +1036,11 @@ function PuzzleCube({
     (event: React.PointerEvent, index: number, face: CubeFace) => {
       if (!interactive || event.button !== 0) return
       event.preventDefault()
+      // One press, one hand: taking a layer takes the camera back with it.
+      setOrbitPress(null)
+      // The sticker keeps the press for its layer; the plastic and the
+      // background give it to the camera, below.
+      event.stopPropagation()
       // A hand on the cube lands whatever was still travelling, rather than
       // the release throwing that turn away: the next frame finishes it into
       // the state before the drag begins.
@@ -976,6 +1060,72 @@ function PuzzleCube({
     [interactive],
   )
 
+  /* A press anywhere but a sticker turns the *cube* rather than a layer: the
+   * camera sweeps round it, any direction at all, over the top and under the
+   * bottom. The turn works on the movement, not the spot — the trace is the
+   * effect's own closure, so nothing is left behind when the hand comes off. */
+  const orbitScene = React.useRef({
+    orbit,
+    limits: elevationBounds((robotViews[view] ?? robotViews.iso).elevation),
+  })
+  React.useEffect(() => {
+    orbitScene.current = {
+      orbit,
+      limits: elevationBounds((robotViews[view] ?? robotViews.iso).elevation),
+    }
+  })
+  const orbitChange = React.useRef(onOrbitChange)
+  React.useEffect(() => {
+    orbitChange.current = onOrbitChange
+  })
+
+  const turnOrbit = React.useCallback(
+    (next: PuzzleCubeOrbit) => {
+      const { limits } = orbitScene.current
+      const bounded = {
+        azimuth: wrapTurn(next.azimuth),
+        elevation: clampNum(finiteNum(next.elevation, 0), limits.min, limits.max),
+      }
+      orbitScene.current = { ...orbitScene.current, orbit: bounded }
+      setTurned(bounded)
+      orbitChange.current?.(bounded)
+    },
+    [],
+  )
+
+  const beginOrbit = React.useCallback(
+    (event: React.PointerEvent) => {
+      if (!interactive || event.button !== 0 || event.defaultPrevented) return
+      // One press, one hand: a layer being wound outranks the camera.
+      if (holdRef.current) return
+      event.preventDefault()
+      setOrbitPress({ x: event.clientX, y: event.clientY })
+    },
+    [interactive],
+  )
+
+  React.useEffect(() => {
+    if (!orbitPress) return
+    let last = orbitPress
+    const move = (event: PointerEvent) => {
+      const from = orbitScene.current.orbit
+      turnOrbit({
+        azimuth: from.azimuth - (event.clientX - last.x) * ORBIT_SWEEP,
+        elevation: from.elevation - (event.clientY - last.y) * ORBIT_RISE,
+      })
+      last = { x: event.clientX, y: event.clientY }
+    }
+    const up = () => setOrbitPress(null)
+    window.addEventListener("pointermove", move)
+    window.addEventListener("pointerup", up)
+    window.addEventListener("pointercancel", up)
+    return () => {
+      window.removeEventListener("pointermove", move)
+      window.removeEventListener("pointerup", up)
+      window.removeEventListener("pointercancel", up)
+    }
+  }, [orbitPress, turnOrbit])
+
   /* -------------------------------------------------------------- paint */
 
   const solvedNow = isSolved(cube)
@@ -994,6 +1144,11 @@ function PuzzleCube({
     viewNames[view] ?? viewNames.iso,
   ]
 
+  // Straight down and straight up are singular for this camera, and a shadow
+  // seen edge-on is a line — the ground and the underglow step out rather
+  // than degenerate.
+  const flat = camera.flatten
+
   return (
     <svg
       ref={svgRef}
@@ -1002,15 +1157,25 @@ function PuzzleCube({
         ariaLabel ??
         `${ariaParts.filter(Boolean).join(", ")}.` +
           (interactive
-            ? " Drag a sticker to turn that layer, or type a move: U, D, L, R, F, B, with shift for anticlockwise. S scrambles, H hints, Enter solves, Backspace undoes, Escape resets."
+            ? " Drag a sticker to turn that layer; drag the plastic to turn the whole cube over. Or type a move: U, D, L, R, F, B, with shift for anticlockwise. Arrow keys turn the cube, S scrambles, H hints, Enter solves, Backspace undoes, Escape resets."
             : "")
       }
       tabIndex={tabIndex ?? (interactive ? 0 : undefined)}
+      onPointerDown={interactive ? beginOrbit : undefined}
       onKeyDown={(event) => {
         onKeyDown?.(event)
         if (!interactive || event.defaultPrevented) return
         const letter = event.key.toUpperCase()
-        if (cubeFaces.includes(letter as CubeFace)) {
+        const step = event.shiftKey ? ORBIT_STEP * 3 : ORBIT_STEP
+        // From the ref, not from this render: two presses in one tick would
+        // otherwise both read the same angle and the second would undo the first.
+        const from = orbitScene.current.orbit
+        if (event.key === "ArrowLeft") turnOrbit({ ...from, azimuth: from.azimuth + step })
+        else if (event.key === "ArrowRight") turnOrbit({ ...from, azimuth: from.azimuth - step })
+        else if (event.key === "ArrowUp") turnOrbit({ ...from, elevation: from.elevation + step })
+        else if (event.key === "ArrowDown") turnOrbit({ ...from, elevation: from.elevation - step })
+        else if (event.key === "Home") turnOrbit({ azimuth: 0, elevation: 0 })
+        else if (cubeFaces.includes(letter as CubeFace)) {
           push({ face: letter as CubeFace, layer: 0, turns: event.shiftKey ? 3 : 1 })
         } else if (letter === "S") {
           api.scramble()
@@ -1037,13 +1202,15 @@ function PuzzleCube({
       data-cube-order={n}
       data-cube-solved={String(solvedNow)}
       data-cube-turning={spin ? spin.axis : ""}
-      data-cube-dragging={holding ? "true" : ""}
+      data-cube-dragging={holding || orbitPress ? "true" : ""}
       data-cube-moves={moveCount}
+      data-azimuth={px(swung)}
+      data-elevation={px(orbit.elevation)}
       className={cn(
         "max-w-full select-none",
         interactive &&
           "cursor-grab touch-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[currentColor]",
-        holding && "cursor-grabbing",
+        (holding || orbitPress) && "cursor-grabbing",
         className,
       )}
       style={{ color: palette.foreground, ...style }}
@@ -1053,24 +1220,24 @@ function PuzzleCube({
         data-view={view}
         transform={frame.transform || undefined}
       >
-        {showGround ? (
+        {showGround && flat > 0.03 ? (
           <ellipse
             data-ground
             cx={px(under.x)}
             cy={px(under.y + 4)}
             rx={px(EDGE * 0.78)}
-            ry={px(EDGE * 0.78 * camera.flatten + 0.4)}
+            ry={px(EDGE * 0.78 * flat + 0.4)}
             fill={palette.dark}
             opacity={0.12}
           />
         ) : null}
-        {solvedNow ? (
+        {solvedNow && flat > 0.03 ? (
           <ellipse
             data-glow
             cx={px(under.x)}
             cy={px(under.y + 4)}
             rx={px(EDGE * 0.66)}
-            ry={px(EDGE * 0.66 * camera.flatten + 0.4)}
+            ry={px(EDGE * 0.66 * flat + 0.4)}
             fill={palette.glow}
             opacity={0.16}
           />

@@ -123,6 +123,86 @@ describe("puzzle-cube", () => {
     expect(container.innerHTML).not.toMatch(/NaN|Infinity/)
   })
 
+  it("turns the camera with a press on the plastic, and not with one on a sticker", () => {
+    const { container } = render(<PuzzleCube animate={false} interactive />)
+    const svg = container.querySelector("svg")!
+
+    // A press on the background is the camera's, and a sweep of the pointer
+    // turns the cube under it: any direction, wrapping all the way round.
+    act(() => {
+      svg.dispatchEvent(new MouseEvent("pointerdown", { bubbles: true, button: 0 }))
+    })
+    act(() => {
+      window.dispatchEvent(new MouseEvent("pointermove", { clientX: 100, clientY: -40 }))
+    })
+    expect(svg.getAttribute("data-azimuth")).toBe("270")
+    expect(svg.getAttribute("data-elevation")).toBe("20")
+    act(() => {
+      window.dispatchEvent(new MouseEvent("pointerup"))
+    })
+    expect(svg.getAttribute("data-cube-dragging")).toBe("")
+
+    // A press on a sticker belongs to the layer, so the camera stays put.
+    const sticker = container.querySelector("[data-sticker]")!
+    act(() => {
+      sticker.dispatchEvent(new MouseEvent("pointerdown", { bubbles: true, button: 0 }))
+    })
+    act(() => {
+      window.dispatchEvent(new MouseEvent("pointermove", { clientX: 300, clientY: 0 }))
+      window.dispatchEvent(new MouseEvent("pointerup"))
+    })
+    expect(svg.getAttribute("data-azimuth")).toBe("270")
+
+    // Home stands the camera back where the view put it.
+    act(() => {
+      svg.dispatchEvent(new KeyboardEvent("keydown", { key: "Home", bubbles: true }))
+    })
+    expect(svg.getAttribute("data-azimuth")).toBe("0")
+    expect(svg.getAttribute("data-elevation")).toBe("0")
+  })
+
+  it("takes a controlled camera angle, on top of whichever view it starts from", () => {
+    const { container } = render(<PuzzleCube animate={false} azimuth={135} elevation={-10} />)
+    const svg = container.querySelector("svg")!
+    expect(svg.getAttribute("data-azimuth")).toBe("135")
+    expect(svg.getAttribute("data-elevation")).toBe("-10")
+    const paths = container.querySelectorAll("[data-sticker]")
+    expect(paths.length).toBeGreaterThan(0)
+    expect(container.innerHTML).not.toMatch(/NaN|Infinity/)
+  })
+
+  it("orbits all the way under the cube and all the way over it", () => {
+    const { container } = render(<PuzzleCube animate={false} interactive />)
+    const svg = container.querySelector("svg")!
+
+    // Sweep the camera down as far as it will go: from the iso stance (26°)
+    // the pole underneath is 116° below it, and the drag asks for far more.
+    act(() => {
+      svg.dispatchEvent(new MouseEvent("pointerdown", { bubbles: true, button: 0 }))
+    })
+    act(() => {
+      window.dispatchEvent(new MouseEvent("pointermove", { clientX: 0, clientY: 10000 }))
+      window.dispatchEvent(new MouseEvent("pointerup"))
+    })
+    expect(svg.getAttribute("data-elevation")).toBe("-116")
+    // Seen from underneath, the bottom face is the one on screen and the top
+    // face is culled — the cube really did go all the way over.
+    expect(container.querySelector('[data-sticker][data-face="D"]')).not.toBeNull()
+    expect(container.querySelector('[data-sticker][data-face="U"]')).toBeNull()
+
+    // And all the way over the top: 64° above the same stance.
+    act(() => {
+      svg.dispatchEvent(new MouseEvent("pointerdown", { bubbles: true, button: 0 }))
+    })
+    act(() => {
+      window.dispatchEvent(new MouseEvent("pointermove", { clientX: 0, clientY: -10000 }))
+      window.dispatchEvent(new MouseEvent("pointerup"))
+    })
+    expect(svg.getAttribute("data-elevation")).toBe("64")
+    expect(container.querySelector('[data-sticker][data-face="U"]')).not.toBeNull()
+    expect(container.querySelector('[data-sticker][data-face="D"]')).toBeNull()
+  })
+
   it("degrades to a stable drawing for a stale prop and a rubbish order", () => {
     const { container } = render(
       // @ts-expect-error — a stale prop from a consumer should degrade, not throw.
