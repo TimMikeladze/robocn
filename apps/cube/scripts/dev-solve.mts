@@ -6,8 +6,6 @@
  * cube is archived and the next one is scrambled. Run it against the preview
  * database and watch the archive → leaderboard → new-round transition happen.
  */
-import { randomUUID } from "node:crypto"
-
 import { getLeaderboard, getState, submitMove } from "../src/lib/db"
 import { makePlayerId } from "../src/lib/identity"
 import { formatMove, invertMoves, parseAlgorithm } from "../src/lib/robocn/cube"

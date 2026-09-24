@@ -7612,6 +7612,50 @@ export function Game() {
       "Reduced motion lands each turn immediately rather than animating it, parks the behaviour loop and drops the solved swell — drag, keys and the solver all still work.",
     ],
   },
+  {
+    slug: "puzzle-cube", item: "puzzle-cube",
+    summary:
+      "The twisty cube as a flat SVG machine: orthographic projection, painter's algorithm and flat shading over the same permutation solver as the WebGL rig.",
+    files: ["components/ui/puzzle-cube.tsx"],
+    usage: `import { PuzzleCube } from "@/components/ui/puzzle-cube"
+
+// Runs its own cycle.
+<PuzzleCube behavior="cycle" />
+
+// Or drive it, which stops the loop.
+<PuzzleCube algorithm="R U R' U'" interactive />`,
+    props: [
+      { name: "order", type: "number", default: "3", description: "Cubies to a side, 2 … 7. 3 is the cube everyone means." },
+      { name: "algorithm", type: "string | CubeMove[]", description: "Controlled: the cube is exactly this algorithm applied to a solved one, and the behaviour loop stops. Appending a move animates it; anything else rebuilds the state." },
+      { name: "behavior", type: `"cycle" | "scramble" | "solve" | "static"`, default: `"cycle"`, description: "What it does with nobody driving it. `solve` is the live one — it scrambles itself, solves itself with the real method, and starts again; `cycle` repeats R U R' U', which comes home every six repeats; `scramble` walks a seeded shuffle." },
+      { name: "interactive", type: "boolean", default: "false", description: "Press a sticker and the layer turns with the pointer, snapping to the nearest quarter turn when you let go. Focus the cube and type at it: U D L R F B, shift for anticlockwise, S to scramble, H for a hint, enter to solve it, backspace to undo, escape to reset." },
+      { name: "controls", type: "(api: PuzzleCubeApi) => void", description: "Handed a driver: `turn`, `scramble`, `solve`, `hint`, `undo`, `redo`, `reset`, `state`, `history`, `solved`." },
+      { name: "faces", type: "Partial<Record<CubeFace, string>>", description: "Per-face colour overrides. Each face otherwise resolves prop → `--robot-cube-<face>` → the standard scheme — the same variables the WebGL rig reads, so one variable retints both renderers." },
+      { name: "scrambleOnMount", type: "boolean | number", default: "false", description: "Start shuffled rather than solved; a number says how many turns." },
+      { name: "seed", type: "number", default: "1", description: "Fixes the scramble, so two cubes on a page can be told to agree." },
+      { name: "onMove", type: "(move: CubeMove, state: CubeState, source: PuzzleCubeSource) => void", description: "Every turn, once it has landed, and where it came from: `user`, `solver`, `scramble`, `loop`, `undo`, `redo`. A stopwatch that times a person reads that third argument." },
+      { name: "onSolved", type: "() => void", description: "The moment it comes home." },
+      { name: "onSolvedChange", type: "(solved: boolean) => void", description: "Both edges of solved — the one a stopwatch starts and stops on." },
+      { name: "onHistoryChange", type: "(moves: CubeMove[]) => void", description: "The turns made so far, as they are made and unmade." },
+      { name: "speed", type: "number", default: "0.9", description: "Turns per second for the loop, and how fast a turn travels." },
+      { name: "showGround", type: "boolean", default: "true", description: "The contact shadow under the cube." },
+      { name: "label", type: "string", description: "Optional technical caption under the drawing." },
+      view("iso", "the cube, showing three faces"),
+      ...loop,
+      ...form.slice(0, 2),
+      ...palette,
+    ],
+    notes: [
+      "One solver, two renderers: the state, every turn, the scramble, the drag geometry, the sticker colours and the solve all come from `cube-geometry`, exactly as they do in `rubiks-cube`. This component owns only the projection and the paint, so nothing is solved twice. Solved, not illustrated: everything the solver owns. Illustrated: the flat shading — one key light, no rays — the eased travel of a turn, the gap between stickers and the underglow when it comes home.",
+      "The cube is modelled once in world units and pushed through `robotCamera`, so all four views are one projection, never four drawings. Faces pointing away from the camera are culled by their projected normal; what is left is painter-sorted by cubie centre, which is exact for convex boxes that never interpenetrate — including the middle of a turn, when the travelling slice is carried by the same partial rotation as a rigid body.",
+      "`solve()` is a real solve: `cube-geometry` searches out a layer-by-layer line, replays it to check it, and the cube plays it one turn at a time so you can watch it. `hint()` is the first move of that line. On anything but a 3×3 there is no method, so both return `null` and nothing is queued — the cube says so rather than turning at random.",
+      "Drag follows the hand, and the picking is the drawing: the sticker polygon you press is its own hit target. The camera is linear, so the two in-plane axes of the grabbed face project to a 2×2 basis and the screen drag solves back through it into an exact world direction — the same `grabFromDrag` the WebGL rig feeds. The press decides the layer on the first few pixels and then holds it; the release snaps to the quarter turn it is nearest, so letting go half way back snaps back rather than through.",
+      "A move carries where it came from, so a game can time a person without timing the idle loop or the solver. That is what the demo's stopwatch runs on.",
+      "Six face colours are the one place the four palette roles are not enough, so each face resolves prop → `--robot-cube-u` … `--robot-cube-l` → the standard white, yellow, green, blue, red, orange — the same names the WebGL rig reads. The plastic body and the solved glow still come from the theme.",
+      "No canvas, no WebGL, no `three`: it is SVG all the way down, installs as source, and works anywhere a `<svg>` does — which is the whole reason it exists next to `rubiks-cube`. The `data-cube-*` hooks (`order`, `solved`, `turning`, `dragging`, `moves`) are set on the `<svg>` itself.",
+      "Reduced motion lands each turn immediately rather than animating it, parks the behaviour loop and drops the solved swell — drag, keys and the solver all still work.",
+    ],
+  },
 ]
 const byName = new Map(registry.items.map((item) => [item.name, item]))
 

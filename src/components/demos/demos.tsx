@@ -226,6 +226,7 @@ import { AnimatronicRobot, type AnimatronicChassis, type AnimatronicRobotBehavio
 import { BoreConstruct, type BoreConstructBehavior } from "@/components/ui/bore-construct"
 import { RodPump, type RodPumpBehavior } from "@/components/ui/rod-pump"
 import { RubiksCube, type RubiksCubeApi, type RubiksCubeBehavior } from "@/components/ui/rubiks-cube"
+import { PuzzleCube, type PuzzleCubeApi, type PuzzleCubeBehavior } from "@/components/ui/puzzle-cube"
 import { formatAlgorithm, isSolved, type CubeMove } from "@/lib/robocn/cube"
 import {
   defaultPumpGeometry,
@@ -5870,6 +5871,103 @@ function RubiksCubeDemo() {
   )
 }
 
+/**
+ * The flat cube as the same game: a stopwatch that starts on the person's
+ * first turn and stops when the cube comes home, a move counter that counts
+ * *their* moves, a hint, and a solve they can watch — plus the view switch,
+ * which the WebGL rig gets from orbiting instead.
+ */
+function PuzzleCubeDemo() {
+  const [view, setView] = React.useState<RobotView>("iso")
+  const [variant, setVariant] = React.useState<RobotVariant>("solid")
+  const [behavior, setBehavior] = React.useState<PuzzleCubeBehavior>("solve")
+  const [order, setOrder] = React.useState(3)
+  const [moves, setMoves] = React.useState<CubeMove[]>([])
+  const [solved, setSolved] = React.useState(true)
+  const [assisted, setAssisted] = React.useState(false)
+  const [elapsed, setElapsed] = React.useState(0)
+  const [running, setRunning] = React.useState(false)
+  const api = React.useRef<PuzzleCubeApi | null>(null)
+  // The cube hands its driver out once; the bench keeps it for the buttons.
+  const take = React.useCallback((next: PuzzleCubeApi) => {
+    api.current = next
+  }, [])
+
+  // One interval while the clock runs, and the clock only runs between a
+  // person's first turn on a scrambled cube and the moment it is solved.
+  const startedAt = React.useRef(0)
+  React.useEffect(() => {
+    if (!running) return
+    const tick = window.setInterval(() => setElapsed(Date.now() - startedAt.current), 100)
+    return () => window.clearInterval(tick)
+  }, [running])
+
+  const start = () => {
+    if (running) return
+    startedAt.current = Date.now()
+    setRunning(true)
+  }
+
+  const scramble = () => {
+    setElapsed(0)
+    setRunning(false)
+    setAssisted(false)
+    setMoves([])
+    api.current?.scramble(20)
+  }
+
+  const button = "border border-border px-3 py-2 text-[12px] hover:border-foreground"
+  const clock = `${Math.floor(elapsed / 1000)}.${Math.floor((elapsed % 1000) / 100)}s`
+
+  return (
+    <Bench controls={<>
+      <Segmented label="idle" value={behavior} options={["solve", "cycle", "scramble", "static"] as const} onChange={setBehavior} />
+      <Segmented label="view" value={view} options={views} onChange={setView} />
+      <Segmented label="variant" value={variant} options={variants} onChange={setVariant} />
+      <NumberControl label="order" value={order} min={2} max={5} onChange={setOrder} />
+      <div className="flex flex-wrap gap-2">
+        <button type="button" className={button} onClick={scramble}>Scramble</button>
+        <button type="button" className={button} onClick={() => { setAssisted(true); api.current?.hint() }}>Hint</button>
+        <button type="button" className={button} onClick={() => { setAssisted(true); api.current?.solve() }}>Solve it</button>
+        <button type="button" className={button} onClick={() => api.current?.undo()}>Undo</button>
+        <button type="button" className={button} onClick={() => api.current?.redo()}>Redo</button>
+        <button type="button" className={button} onClick={() => { setElapsed(0); setRunning(false); setAssisted(false); setMoves([]); api.current?.reset() }}>Reset</button>
+      </div>
+      <Hint>
+        Press a sticker and the layer turns with your hand; let go and it snaps.
+        Focus the cube and type U D L R F B — shift for anticlockwise, S
+        scrambles, H hints, enter solves it, backspace undoes, escape resets.
+      </Hint>
+      <Readout rows={[
+        ["time", clock],
+        ["your turns", String(moves.length)],
+        ["state", solved ? (assisted ? "solved (assisted)" : "solved") : "scrambled"],
+        ["last", formatAlgorithm(moves.slice(-6)) || "—"],
+      ]} />
+    </>}>
+      <PuzzleCube
+        key={order}
+        size={320}
+        order={order}
+        view={view}
+        variant={variant}
+        behavior={behavior}
+        interactive
+        controls={take}
+        onMove={(move, state, source) => {
+          if (source !== "user") return
+          setMoves((made) => [...made, move])
+          if (!isSolved(state)) start()
+        }}
+        onSolvedChange={(next) => {
+          setSolved(next)
+          if (next) setRunning(false)
+        }}
+      />
+    </Bench>
+  )
+}
+
 export const demos: Record<string, React.ComponentType<DemoProps>> = {
   "robot-football": RobotFootballDemo,
   "gridiron-geometry": RobotFootballDemo,
@@ -6094,6 +6192,7 @@ export const demos: Record<string, React.ComponentType<DemoProps>> = {
   "rodpump-geometry": RodPumpDemo,
   "rubiks-cube": RubiksCubeDemo,
   "cube-geometry": RubiksCubeDemo,
+  "puzzle-cube": PuzzleCubeDemo,
 }
 
 /**

@@ -46,6 +46,10 @@ function countdown(iso: string): string {
   return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`
 }
 
+function count(value: number, unit: string): string {
+  return `${value} ${unit}${value === 1 ? "" : "s"}`
+}
+
 export function GameClient({ initial }: { initial: GameStatePayload }) {
   const [payload, setPayload] = React.useState<GameStatePayload>(initial)
   const [display, setDisplay] = React.useState<Display>({
@@ -335,8 +339,9 @@ export function GameClient({ initial }: { initial: GameStatePayload }) {
                 </p>
                 <p className="mt-1 text-sm">
                   Cube #{news.id} was solved by{" "}
-                  <span className="font-medium">{news.solvedBy}</span> — {news.moveCount}{" "}
-                  moves, {news.playerCount} players, {news.days} days.
+                  <span className="font-medium">{news.solvedBy}</span> —{" "}
+                  {count(news.moveCount, "move")}, {count(news.playerCount, "player")},{" "}
+                  {count(news.days, "day")}.
                 </p>
                 <button
                   type="button"
@@ -356,8 +361,8 @@ export function GameClient({ initial }: { initial: GameStatePayload }) {
               cube #{payload.round.id}
             </span>
             <span>day {day}</span>
-            <span>{payload.round.moveCount} moves</span>
-            <span>{payload.round.playerCount} players</span>
+            <span>{count(payload.round.moveCount, "move")}</span>
+            <span>{count(payload.round.playerCount, "player")}</span>
             <a href="/log" className="underline underline-offset-2 hover:text-foreground">
               full log
             </a>

@@ -274,6 +274,7 @@ installs at.
 | `rodpump-geometry` | Rod-pump mechanics: plunger travel off a crank, the fluid load and displacement from the field formulas, the travel at which each ball lifts from an isothermal compression of the gas trapped below the plunger, the travel an unanchored tubing string takes back off the stroke, and the dynamometer card that falls out of them. |
 | `rubiks-cube` | The Rubik's cube as a game in react-three-fiber: grab a face and the layer follows your hand, let go and it snaps, type moves at it, scramble it, take a hint, or watch it solve itself with a real layer-by-layer method. |
 | `cube-geometry` | A twisty cube as exact integer state: cubies on a lattice, each carrying an integer orientation matrix, plus moves and notation, scrambles, sticker lookup, the drag geometry a rig follows the pointer with, and a layer-by-layer solver whose line is replayed and checked before it is handed back. |
+| `puzzle-cube` | The same cube drawn flat in SVG: one model pushed through `robotCamera`, back-face culled and painter-sorted, flat-shaded under one key light — press a sticker and the layer follows your hand, exactly as it does in the WebGL rig, because both feed the same drag solver. No canvas, no `three`; installs anywhere an `<svg>` renders. |
 
 Installing a component pulls in what it needs: `robot-arm` brings `robot-kinematics`,
 `robot-style` and both hooks, and the theme variables ride along with `robot-style`.

@@ -109,6 +109,7 @@ import { AnimatronicRobot } from "@/components/ui/animatronic-robot"
 import { BoreConstruct } from "@/components/ui/bore-construct"
 import { Airliner } from "@/components/ui/airliner"
 import { RodPump } from "@/components/ui/rod-pump"
+import { PuzzleCube } from "@/components/ui/puzzle-cube"
 
 /**
  * The native view is the default, and adding the `view` axis to a machine is
@@ -256,6 +257,7 @@ const machines: Record<string, (view?: RobotView) => React.ReactElement> = {
   ),
   "airliner": (view) => <Airliner animate={false} explode={0.35} cutaway={0.4} view={view} />,
   "rod-pump": (view) => <RodPump animate={false} cycle={0.3} view={view} />,
+  "puzzle-cube": (view) => <PuzzleCube animate={false} scrambleOnMount={7} view={view} />,
 }
 
 /**
@@ -369,6 +371,7 @@ const natives: Partial<Record<keyof typeof machines, RobotView>> = {
   "bore-construct": "profile",
   "airliner": "iso",
   "rod-pump": "front",
+  "puzzle-cube": "iso",
 }
 
 const tippedFrom = (native: RobotView): RobotView =>

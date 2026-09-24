@@ -207,6 +207,7 @@ import { AnimatronicRobot } from "@/components/ui/animatronic-robot"
 import { BoreConstruct } from "@/components/ui/bore-construct"
 import { Airliner } from "@/components/ui/airliner"
 import { RodPump } from "@/components/ui/rod-pump"
+import { PuzzleCube } from "@/components/ui/puzzle-cube"
 import { galleryEntries } from "@/components/site/gallery.generated"
 import { Panel } from "@/components/site/panel"
 
@@ -504,6 +505,7 @@ const art: Record<string, Art> = {
   "rodpump-geometry": { line: "The solver under it, drawn as the machine it solves for.", art: <RodPump size={168} variant="blueprint" /> },
   "rubiks-cube": { line: "Grab a face, turn it with your hand, let go and it snaps.", art: <CatalogueStage machine="cube" floor="none" /> },
   "cube-geometry": { line: "Exact integer state: a lattice of cubies, each with its own orientation.", art: <CatalogueStage machine="cube" floor="none" /> },
+  "puzzle-cube": { line: "The same cube, drawn in SVG — no canvas, no WebGL.", art: <PuzzleCube size={168} behavior="solve" seed={7} /> },
 }
 
 /** Exported for the coverage test — a card that exists nowhere else is a bug. */

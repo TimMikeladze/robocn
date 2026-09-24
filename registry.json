@@ -5250,6 +5250,31 @@
       "devDependencies": [
         "@types/three"
       ]
+    },
+    {
+      "name": "puzzle-cube",
+      "type": "registry:ui",
+      "title": "Puzzle cube",
+      "description": "The twisty cube as a flat SVG machine: orthographic projection, painter's algorithm and flat shading over the same permutation solver as the WebGL rig.",
+      "categories": [
+        "robotics",
+        "devices"
+      ],
+      "registryDependencies": [
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-kinematics.json",
+        "{REGISTRY_URL}/r/use-robot-motion.json",
+        "{REGISTRY_URL}/r/robot-style.json",
+        "{REGISTRY_URL}/r/robot-color.json",
+        "{REGISTRY_URL}/r/cube-geometry.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/puzzle-cube.tsx",
+          "type": "registry:ui",
+          "target": "@ui/puzzle-cube.tsx"
+        }
+      ]
     }
   ]
 }

@@ -9,6 +9,7 @@ while it is travelling between two of them.
 |---|---|---|
 | `cube-geometry` | lib | An N×N×N twisty cube as cubies on an integer lattice, each carrying an integer orientation matrix. Moves, algebra, scramble, drag geometry, sticker lookup, and a layer-by-layer solver. |
 | `rubiks-cube` | ui | The cube as a game: grab a face and the layer turns with your hand, type moves, scramble, hint, solve, undo. |
+| `puzzle-cube` | ui | The flat sibling: the same solver drawn in SVG. Notes: `docs/puzzle-cube.md`. |
 
 ## Why a matrix per cubie, and not 54 facelets
 
