@@ -112,6 +112,7 @@ export const capturedOgSlugs: string[] = [
   "produce-geometry",
   "protocol-droid",
   "pumpjack",
+  "puzzle-cube",
   "pylon-droid",
   "quadruped-kinematics",
   "radial-bloom",
